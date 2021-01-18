@@ -45,6 +45,9 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(np.all((sz*sx-sx*sz).full_matrix ==
                                (1.0j*sy).full_matrix))
 
+        # Test equality
+        self.assertTrue(2*sx == SpinOperator(0.5, 'x', 2))
+
     def test_multi(self):
 
         Sx = SpinOperator()

@@ -1,6 +1,6 @@
 """spinop.py
 
-Utility functions to create and manipulate spin operators
+Utility class to create and manipulate spin operators
 """
 
 import numpy as np
@@ -96,6 +96,13 @@ class SpinOperator(object):
         return self._prefac*M
 
     def clone(self):
+        """Return a copy of this SpinOperator
+
+        Return a copy of this SpinOperator
+
+        Returns:
+            SpinOperator -- Clone of this operator
+        """
 
         ans = SpinOperator.__new__(SpinOperator)
         ans._Is = list(self.Is)
@@ -178,7 +185,34 @@ class SpinOperator(object):
 
         raise TypeError('Unsupported operation for SpinOperator')
 
+    def __eq__(self, x):
+
+        if not isinstance(x, SpinOperator):
+            return False
+
+        if self.dimension != x.dimension:
+            return False
+
+        p1 = self._prefac
+        p2 = x._prefac
+        return all([np.all(p1*m1 == p2*m2)
+                    for m1, m2 in zip(self._matrices, x._matrices)])
+
     def kron(self, x):
+        """Tensor product between this and another SpinOperator
+
+        Performs a tensor product between this and another SpinOperator,
+        raising the overall rank of the tensor they represent.
+
+        Arguments:
+            x {SpinOperator} -- Other operator
+
+        Returns:
+            SpinOperator -- Result
+
+        Raises:
+            ValueError -- Thrown if x is not the right type of object
+        """
 
         if not isinstance(x, SpinOperator):
             raise ValueError('Can only perform Kronecker product with'
