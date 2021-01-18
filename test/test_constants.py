@@ -32,5 +32,3 @@ class TestConstants(unittest.TestCase):
         self.assertEqual(constants.spin('e'), 0.5)
         self.assertEqual(constants.spin('H'), 0.5)
         self.assertEqual(constants.spin('H', 2), 1.0)
-
-
