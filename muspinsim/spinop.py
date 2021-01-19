@@ -35,7 +35,23 @@ def _S0(mvals):
 
 class SpinOperator(object):
 
-    def __init__(self, Is=0.5, axes='x', prefactor=1.0):
+    def __init__(self, matrix, dim=None):
+
+        matrix = np.array(matrix)+.0j
+
+        if not (matrix.shape[0] == matrix.shape[1]):
+            raise ValueError('Matrix passed to SpinOperator must be square')
+
+        if dim is None:
+            dim = (matrix.shape[0],)
+        elif np.prod(dim) != matrix.shape[0]:
+            raise ValueError('Dimensions are not compatible with matrix')
+
+        self._dim = dim
+        self._matrix = matrix
+
+    @classmethod
+    def from_axes(self, Is=0.5, axes='x', prefactor=1.0):
 
         if not hasattr(Is, '__getitem__'):
             Is = [Is]
@@ -43,14 +59,12 @@ class SpinOperator(object):
         if not hasattr(axes, '__getitem__'):
             axes = [axes]
 
-        if len(Is) != len(axes):
+        if len(Is) != len(axes) or len(Is) == 0:
             raise ValueError(
-                'Arrays of moments and axes must have same length')
+                'Arrays of moments and axes must have same length > 0')
 
-        self._Is = Is
-        self._prefac = prefactor
-        self._dim = tuple([int(2*I+1) for I in Is])
-        self._matrices = []
+        dim = tuple(int(2*I+1) for I in Is)
+        matrices = []
 
         for I, axis in zip(Is, axes):
 
@@ -71,29 +85,31 @@ class SpinOperator(object):
                 '0': _S0
             }[axis](mvals)
 
-            self._matrices.append(o)
+            matrices.append(o)
+
+        M = matrices[0]
+        for m in matrices[1:]:
+            M = np.kron(M, m)
+
+        M *= prefactor
+
+        return self(M, dim=dim)
 
     @property
     def Is(self):
-        return np.array(self._Is)
+        return tuple((d-1)/2.0 for d in self._dim)
 
     @property
     def dimension(self):
         return self._dim
 
     @property
-    def matrices(self):
-        return [np.array(m) for m in self._matrices]
+    def matrix(self):
+        return np.array(self._matrix)
 
     @property
-    def full_matrix(self):
-
-        M = self._matrices[0]
-
-        for m in self._matrices[1:]:
-            M = np.kron(M, m)
-
-        return self._prefac*M
+    def is_hermitian(self):
+        return np.all(self._matrix == self._matrix.conj().T)
 
     def clone(self):
         """Return a copy of this SpinOperator
@@ -105,10 +121,8 @@ class SpinOperator(object):
         """
 
         ans = SpinOperator.__new__(SpinOperator)
-        ans._Is = list(self.Is)
-        ans._prefac = self._prefac
         ans._dim = tuple(self._dim)
-        ans._matrices = self.matrices
+        ans._matrix = self.matrix
 
         return ans
 
@@ -121,9 +135,7 @@ class SpinOperator(object):
                                       ' with different dimensions')
 
             ans = self.clone()
-            ans._prefac = 1.0
-            ans._matrices = [(self._prefac*m1+x._prefac*m2)
-                             for m1, m2 in zip(self._matrices, x._matrices)]
+            ans._matrix += x._matrix
 
             return ans
 
@@ -137,10 +149,10 @@ class SpinOperator(object):
                 raise ArithmeticError('Can not multiply to SpinOperators'
                                       ' with different dimensions')
 
-            x = x.clone()
-            x._prefac *= -1
+            ans = self.clone()
+            ans._matrix -= x._matrix
 
-            return self + x
+            return ans
 
         raise TypeError('Unsupported operation for SpinOperator')
 
@@ -153,16 +165,14 @@ class SpinOperator(object):
                                       ' with different dimensions')
 
             ans = self.clone()
-            ans._prefac *= x._prefac
-            ans._matrices = [np.dot(m1, m2)
-                             for m1, m2 in zip(self._matrices, x._matrices)]
+            ans._matrix = np.dot(ans._matrix, x._matrix)
 
             return ans
 
         elif isinstance(x, Number):
 
             ans = self.clone()
-            ans._prefac = ans._prefac*x
+            ans._matrix *= x
 
             return ans
 
@@ -193,10 +203,7 @@ class SpinOperator(object):
         if self.dimension != x.dimension:
             return False
 
-        p1 = self._prefac
-        p2 = x._prefac
-        return all([np.all(p1*m1 == p2*m2)
-                    for m1, m2 in zip(self._matrices, x._matrices)])
+        return np.all(self._matrix == x._matrix)
 
     def kron(self, x):
         """Tensor product between this and another SpinOperator
@@ -220,10 +227,7 @@ class SpinOperator(object):
 
         # Doing it this way saves some time
         ans = SpinOperator.__new__(SpinOperator)
-
-        ans._Is = list(self._Is) + list(x._Is)
-        ans._prefac = self._prefac*x._prefac
         ans._dim = self._dim + x._dim
-        ans._matrices = self.matrices + x.matrices
+        ans._matrix = np.kron(self._matrix, x._matrix)
 
         return ans

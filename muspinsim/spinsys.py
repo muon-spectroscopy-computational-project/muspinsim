@@ -28,7 +28,7 @@ class SpinSystem(object):
             Qs.append(quadrupole_moment(el, iso))
             Is.append(spin(el, iso))
 
-            opdict = {a: SpinOperator(Is[-1], a) for a in 'xyz+-0'}
+            opdict = {a: SpinOperator.from_axes(Is[-1], a) for a in 'xyz+-0'}
 
             operators.append(opdict)
 

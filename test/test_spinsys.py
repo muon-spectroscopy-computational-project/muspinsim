@@ -26,6 +26,6 @@ class TestSpinSystem(unittest.TestCase):
         ssys = SpinSystem(['mu', 'e'])
 
         self.assertEqual(ssys.operator({0: 'x'}),
-                         SpinOperator([0.5, 0.5], 'x0'))
+                         SpinOperator.from_axes([0.5, 0.5], 'x0'))
         self.assertEqual(ssys.operator({0: 'z', 1: 'y'}),
-                         SpinOperator([0.5, 0.5], 'zy'))
+                         SpinOperator.from_axes([0.5, 0.5], 'zy'))
