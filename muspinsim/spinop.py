@@ -267,3 +267,47 @@ class SpinOperator(object):
         ans._matrix = np.kron(self._matrix, x._matrix)
 
         return ans
+
+    def diag(self):
+        """Diagonalise the operator
+
+        Return eigenvalues and corresponding eigenvectors for this operator.
+
+        Returns:
+            (ndarray, ndarray) -- Eigenvalues and eigenvector matrix, as 
+                                  returned by numpy.linalg.eigh
+        """
+
+        return np.linalg.eigh(self._matrix)
+
+    def basis_change(self, basis):
+        """Return a version of this SpinOperator with different basis
+
+        Transform this SpinOperator to use a different basis. The basis
+        must be a matrix of orthogonal vectors. Passing as basis
+        the eigenvectors of the operator will diagonalise it. 
+
+        Arguments:
+            basis {ndarray} -- Basis to transform the operator to.
+
+        Returns:
+            SpinOperator -- Basis transformed version of this operator
+        """
+
+        ans = self.clone()
+        ans._matrix = np.linalg.multi_dot([basis.T.conj(), ans._matrix, basis])
+
+        return ans
+
+    def partial_trace(self, tracedim=[]):
+
+        axsum = tuple(tracedim) + tuple(np.array(tracedim) + len(self._dim))
+        m = self._matrix.reshape(self._dim+self._dim)
+        m = np.sum(m, axis=axsum)
+
+        ans = SpinOperator.__new__(SpinOperator)
+        ans._dim = tuple(d for i, d in enumerate(self._dim)
+                         if not (i in tracedim))
+        ans._matrix = m
+
+        return ans
