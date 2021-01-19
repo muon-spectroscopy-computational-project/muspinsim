@@ -36,6 +36,25 @@ def _S0(mvals):
 class SpinOperator(object):
 
     def __init__(self, matrix, dim=None):
+        """Create a SpinOperator object
+
+        Create an object representing a spin operator. These can 
+        be manipulated by e.g. multiplying them by a scalar or among themselves
+        (equivalent to a dot product), or adding and subtracting them.
+
+        Arguments:
+            matrix {ndarray} -- Matrix describing the operator (must be a 
+                                square 2D array)
+
+        Keyword Arguments:
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example, 
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix. 
+                               If not specified, it's taken from the size of 
+                               the matrix (default: {None})
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        """
 
         matrix = np.array(matrix)+.0j
 
@@ -51,7 +70,26 @@ class SpinOperator(object):
         self._matrix = matrix
 
     @classmethod
-    def from_axes(self, Is=0.5, axes='x', prefactor=1.0):
+    def from_axes(self, Is=0.5, axes='x'):
+        """Construct a SpinOperator from spins and axes
+
+        Construct a SpinOperator from a list of spin values and directions. For
+        example, Is=[0.5, 0.5] axes=['x', 'z'] will create a SxIz operator between
+        two spin 1/2 particles.
+
+        Keyword Arguments:
+            Is {[number]} -- List of spins (must be half-integers). Can pass a 
+                             number if it's only one value (default: {0.5})
+            axes {[str]} -- List of axes, can pass a single character if it's 
+                            only one value. Each value can be x, y, z, +, -, 
+                            or 0 (for the identity operator) (default: {'x'})
+
+        Returns:
+            SpinOperator -- Operator built according to specifications
+
+        Raises:
+            ValueError -- Any of the values passed is invalid
+        """
 
         if not hasattr(Is, '__getitem__'):
             Is = [Is]
@@ -90,8 +128,6 @@ class SpinOperator(object):
         M = matrices[0]
         for m in matrices[1:]:
             M = np.kron(M, m)
-
-        M *= prefactor
 
         return self(M, dim=dim)
 

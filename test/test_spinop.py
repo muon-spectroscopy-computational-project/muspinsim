@@ -22,6 +22,15 @@ class TestSpinOperator(unittest.TestCase):
         with self.assertRaises(ValueError):
             SpinOperator(data, dim=(2, 3))  # Incompatible dimensions
 
+    def test_herm(self):
+
+        data = np.array([[1, 1.0j], [0, 1]])
+
+        s = SpinOperator(data)
+        self.assertFalse(s.is_hermitian)
+        s = SpinOperator(data+data.T.conj())
+        self.assertTrue(s.is_hermitian)
+
     def test_pauli(self):
 
         sx = SpinOperator.from_axes(0.5, 'x')
