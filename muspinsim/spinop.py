@@ -353,6 +353,30 @@ class DensityOperator(Operator):
 
     @classmethod
     def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0):
+        """Construct a density matrix state from real space vectors
+
+        Construct a density matrix state by specifying a number of spins and
+        real space directions. The state is initialised as the tensor product
+        of independent spin states each pointing in the specified direction.
+        A parameter gamma can be used to include decoherence effects and thus
+        dampen or zero out all off-diagonal elements.        
+
+        Keyword Arguments:
+            Is {[number]} -- List of spins (must be half-integers). Can pass a 
+                             number if it's only one value (default: {0.5})
+            vectors {[ndarray]} -- List of vectors. Can pass a single 3D vector
+                                   if it's only one value (default: {[0, 0, 1]})
+            gammas {[number]} -- List of gamma factors. Can pass a single number
+                                 if it's only one value. All off-diagonal 
+                                 elements for each corresponding density matrix
+                                 will be multiplied by 1-gamma. (default: {0})
+
+        Returns:
+            DensityOperator -- The composite density operator
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        """
 
         if not hasattr(Is, '__getitem__'):
             Is = [Is]
@@ -408,9 +432,23 @@ class DensityOperator(Operator):
         return np.trace(self._matrix)
 
     def normalize(self):
+        """Normalize this DensityOperator to have trace equal to one.
+        """
         self._matrix /= self.trace
 
     def partial_trace(self, tracedim=[]):
+        """Perform a partial trace operation
+
+        Perform a partial trace over the specified dimensions and return the
+        resulting DensityOperator.
+
+        Keyword Arguments:
+            tracedim {[int]} -- Indices of dimensions to perform the partial
+                                trace over (default: {[]})
+
+        Returns:
+            DensityOperator -- Operator with partial trace
+        """
 
         axsum = tuple(tracedim) + tuple(np.array(tracedim) + len(self._dim))
         m = self._matrix.reshape(self._dim+self._dim)
@@ -422,3 +460,30 @@ class DensityOperator(Operator):
         ans._matrix = m
 
         return ans
+
+    def expectation(self, operator):
+        """Compute expectation value of one operator
+
+        Compute expectation value of an operator over the state defined by
+        this DensityOperator.
+
+        Arguments:
+            operator {SpinOperator} -- Operator to compute the expectation 
+                                       value of
+
+        Returns:
+            number -- Expectation value
+
+        Raises:
+            TypeError -- The argument isn't a SpinOperator
+            ValueError -- The operator isn't compatible with this one
+        """
+
+        if not isinstance(operator, SpinOperator):
+            raise TypeError('Argument must be a SpinOperator')
+
+        if not operator.dimension == self.dimension:
+            raise ValueError('SpinOperator and DensityOperator do not have'
+                             ' compatible dimensions')
+
+        return np.sum(operator.matrix*self.matrix.T)
