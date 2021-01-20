@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from muspinsim.spinop import SpinOperator
+from muspinsim.spinop import SpinOperator, DensityOperator, Operator
 
 
 class TestSpinOperator(unittest.TestCase):
@@ -21,6 +21,16 @@ class TestSpinOperator(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             SpinOperator(data, dim=(2, 3))  # Incompatible dimensions
+
+    def test_clone(self):
+
+        s = SpinOperator.from_axes()
+
+        s2 = s.clone()
+
+        self.assertIsInstance(s2, SpinOperator)
+        self.assertIsInstance(s2, Operator)
+        self.assertNotIsInstance(s2, DensityOperator)
 
     def test_herm(self):
 
@@ -70,6 +80,9 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(np.all((sz*sx-sx*sz).matrix ==
                                (1.0j*sy).matrix))
 
+        self.assertTrue(np.all((sx+0.5).matrix == 0.5*np.ones((2, 2))))
+        self.assertTrue(np.all((sz-0.5).matrix == np.diag([0, -1])))
+
         # Test equality
         self.assertTrue(sx == SpinOperator.from_axes(0.5, 'x'))
         self.assertFalse(SpinOperator(np.eye(4)) == SpinOperator(np.eye(4),
@@ -106,10 +119,26 @@ class TestSpinOperator(unittest.TestCase):
 
         self.assertTrue(np.all(np.isclose(Sxrot.matrix, np.diag(evals))))
 
-    def test_ptrace(self):
+    def test_density(self):
 
-        rho = SpinOperator(np.eye(6)/6.0, (2, 3))
+        rho = DensityOperator(np.eye(6)/6.0, (2, 3))
         rhosmall = rho.partial_trace([1])
 
         self.assertEqual(rhosmall.dimension, (2,))
         self.assertTrue(np.all(np.isclose(rhosmall.matrix, np.eye(2)/2)))
+
+        with self.assertRaises(ValueError):
+            DensityOperator(np.array([[0, 1], [1, 0]]))
+
+        with self.assertRaises(ValueError):
+            DensityOperator(np.array([[1, 1], [0, 1]]))
+
+        rho = DensityOperator.from_vectors(0.5, [1, 0, 0])
+
+        self.assertTrue(np.all(rho.matrix == np.ones((2, 2))*0.5))
+
+        rho = DensityOperator.from_vectors(0.5, [0, 1, 0], 0.5)
+
+        self.assertTrue(np.all(np.isclose(rho.matrix,
+                                          np.array([[0.5, -0.25j], 
+                                                    [0.25j, 0.5]]))))
