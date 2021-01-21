@@ -7,7 +7,7 @@ import numpy as np
 from numbers import Number
 import scipy.constants as cnst
 
-from muspinsim.constants import EFG_2_MHZ
+from muspinsim.constants import EFG_2_MHZ, MU_TAU
 from muspinsim.spinop import SpinOperator, DensityOperator
 from muspinsim.spinsys import SpinSystem
 
@@ -270,7 +270,7 @@ class Hamiltonian(object):
         ll = 2.0j*np.pi*(evals[:, None]-evals[None, :])
 
         # Integral operators
-        intops = np.array([(-o.basis_change(evecs).matrix/(ll*tau-1.0)).T
+        intops = np.array([(-o.basis_change(evecs).matrix/(ll-1.0/tau)).T
                            for o in operators])
 
         result = np.sum(rho0[None, :, :]*intops[:, :, :],
@@ -342,3 +342,9 @@ class MuonHamiltonian(Hamiltonian):
                                'removed manually; please set B = 0')
         else:
             super(MuonHamiltonian, self).remove_term(term)
+
+    def average_half_life(self, rho0, operators=[]):
+
+        result = self.integrate_decaying(rho0, MU_TAU, operators)
+
+        return result/MU_TAU
