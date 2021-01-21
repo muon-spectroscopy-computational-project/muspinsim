@@ -75,6 +75,18 @@ class SpinSystem(object):
         """
         return self._Qs[i]
 
+    def I(self, i):
+        """Returns the spin of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Spin in units of hbar
+        """
+
+        return self._Is[i]
+
     def operator(self, terms={}):
         """Return an operator for this spin system
 

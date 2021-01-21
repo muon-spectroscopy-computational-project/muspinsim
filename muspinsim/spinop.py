@@ -274,11 +274,8 @@ class SpinOperator(Operator):
             ValueError -- Any of the values passed is invalid
         """
 
-        if not hasattr(Is, '__getitem__'):
+        if isinstance(Is, Number):
             Is = [Is]
-
-        if not hasattr(axes, '__getitem__'):
-            axes = [axes]
 
         if len(Is) != len(axes) or len(Is) == 0:
             raise ValueError(
@@ -378,13 +375,13 @@ class DensityOperator(Operator):
             ValueError -- Any of the passed values are invalid
         """
 
-        if not hasattr(Is, '__getitem__'):
+        if isinstance(Is, Number):
             Is = [Is]
 
         if len(np.array(vectors).shape) == 1:
             vectors = [vectors]
 
-        if not hasattr(gammas, '__getitem__'):
+        if isinstance(gammas, Number):
             gammas = [gammas]
 
         if len(Is) != len(vectors) or len(Is) != len(gammas) or len(Is) == 0:

@@ -12,6 +12,8 @@ class TestSpinSystem(unittest.TestCase):
 
         ssys = SpinSystem(['mu', 'e'])
 
+        ssys = SpinSystem(['mu', ('H', 2)])
+
     def test_check(self):
 
         ssys = SpinSystem(['mu', 'e'])
