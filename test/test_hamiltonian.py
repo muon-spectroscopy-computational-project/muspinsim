@@ -3,21 +3,21 @@ import numpy as np
 
 from muspinsim import constants
 from muspinsim.spinop import SpinOperator, DensityOperator
-from muspinsim.hamiltonian import (Hamiltonian, MuonHamiltonian,
-                                   SingleTerm, DoubleTerm)
+from muspinsim.hamiltonian import (Hamiltonian, SpinHamiltonian,
+                                   MuonHamiltonian, SingleTerm, DoubleTerm)
 
 
-class TestHamiltonian(unittest.TestCase):
+class TestSpinHamiltonian(unittest.TestCase):
 
     def test_creation(self):
 
-        H = Hamiltonian(['e'])
+        H = SpinHamiltonian(['e'])
 
         self.assertEqual(len(H.spin_system), 1)
 
     def test_terms(self):
 
-        H = Hamiltonian(['mu', 'e'])
+        H = SpinHamiltonian(['mu', 'e'])
 
         H.add_linear_term(0, [0, 0, 1])
         H.add_bilinear_term(0, 1, np.eye(3).astype(int))
@@ -47,7 +47,7 @@ class TestHamiltonian(unittest.TestCase):
 
     def test_compile(self):
 
-        H = Hamiltonian(['mu', 'e'])
+        H = SpinHamiltonian(['mu', 'e'])
 
         H.add_linear_term(0, [0, 0, 1])
         H.add_linear_term(1, [0, 0, 2])
@@ -61,7 +61,7 @@ class TestHamiltonian(unittest.TestCase):
 
     def test_rotate(self):
 
-        H = Hamiltonian(['mu'])
+        H = SpinHamiltonian(['mu'])
 
         H.add_linear_term(0, [0, 1, 0])
         R = np.array([[0, 1, 0],
@@ -74,9 +74,11 @@ class TestHamiltonian(unittest.TestCase):
 
     def test_muonham(self):
 
-        mH = MuonHamiltonian()
+        mH = MuonHamiltonian(['e', 'mu'])
 
         self.assertEqual(len(mH.spin_system), 2)
+        self.assertEqual(mH.e, 0)
+        self.assertEqual(mH.mu, 1)
 
         gmu = constants.MU_GAMMA
         ge = constants.ELEC_GAMMA
@@ -98,11 +100,11 @@ class TestHamiltonian(unittest.TestCase):
         self.assertEqual(mH.terms[0].label, 'Zeeman')
 
         # A more complex Hamiltonian for dipolar and quadrupolar couplings
-        mH = MuonHamiltonian([('H', 2)])
+        mH = MuonHamiltonian(['mu', ('H', 2)])
 
     def test_evolve(self):
 
-        H = Hamiltonian(['e'])
+        H = SpinHamiltonian(['e'])
 
         H.add_linear_term(0, [1, 0, 0])       # Precession around x
         rho0 = DensityOperator.from_vectors()  # Start along z
@@ -113,7 +115,7 @@ class TestHamiltonian(unittest.TestCase):
 
     def test_integrate(self):
 
-        H = Hamiltonian(['e'])
+        H = SpinHamiltonian(['e'])
 
         H.add_linear_term(0, [1, 0, 0])       # Precession around x
         rho0 = DensityOperator.from_vectors()  # Start along z
@@ -121,3 +123,52 @@ class TestHamiltonian(unittest.TestCase):
                                    H.spin_system.operator({0: 'z'}))
 
         self.assertTrue(np.isclose(avg[0], 0.5/(1.0+4*np.pi**2)))
+
+    def test_reduced(self):
+
+        Amu = 1
+        AH = 0.1
+        # Field at which mu and H resonate
+        B = (Amu-AH)/(2*(constants.MU_GAMMA-42.577))
+
+        t = np.linspace(0, 2*np.pi, 100)
+
+        mHnoipso = MuonHamiltonian(['e', 'mu'])
+        mHnoipso.set_B_field(B)
+
+        mHnoipso.add_hyperfine_term(1, np.eye(3)*Amu)
+
+        mH = MuonHamiltonian(['e', 'mu', 'H'])
+        mH.set_B_field(5.0)
+
+        mH.add_hyperfine_term(1, np.eye(3)*Amu)
+        mH.add_hyperfine_term(2, np.eye(3)*AH)
+
+        mHred = mH.reduced_hamiltonian()
+
+        rho0 = DensityOperator.from_vectors([0.5, 0.5, 0.5],
+                                            [[0, 0, 1],
+                                             [1, 0, 0],
+                                             [1, 0, 0]],
+                                            [0, 0, 0])
+        evol = mH.evolve(rho0, t, mH.spin_system.operator({1: 'x'}))
+
+        rho0red = DensityOperator.from_vectors([0.5, 0.5],
+                                               [[1, 0, 0],
+                                                [1, 0, 0]],
+                                               [0, 0])
+        opred = SpinOperator.from_axes([0.5, 0.5], ['x', '0'])
+        evolred = mHred.evolve(rho0red, t, opred)
+
+        rho0noipso = DensityOperator.from_vectors([0.5, 0.5],
+                                                  [[0, 0, 1],
+                                                   [1, 0, 0]],
+                                                  [0, 0])
+        opnoipso = SpinOperator.from_axes([0.5, 0.5], ['0', 'x'])
+        evolnoipso = mHnoipso.evolve(rho0noipso, t, opnoipso)
+
+        errred = np.sum(abs(evolred-evol))
+        errnoipso = np.sum(abs(evolnoipso-evol))
+
+        self.assertTrue(errred < errnoipso)
+        self.assertTrue(errred/len(t) < 1e-3)

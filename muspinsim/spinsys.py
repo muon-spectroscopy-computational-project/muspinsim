@@ -46,12 +46,18 @@ class SpinSystem(object):
         self._spins = list(spins)
         self._gammas = np.array(gammas)
         self._Qs = np.array(Qs)
+        self._Is = np.array(Is)
+        self._dim = tuple((2*self._Is+1).astype(int))
 
         self._operators = operators
 
     @property
     def spins(self):
         return list(self._spins)
+
+    @property
+    def dim(self):
+        return self._dim
 
     def gamma(self, i):
         """Returns the gyromagnetic ratio of a given particle

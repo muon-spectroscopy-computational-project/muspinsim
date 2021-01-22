@@ -140,5 +140,5 @@ class TestSpinOperator(unittest.TestCase):
         rho = DensityOperator.from_vectors(0.5, [0, 1, 0], 0.5)
 
         self.assertTrue(np.all(np.isclose(rho.matrix,
-                                          np.array([[0.5, -0.25j], 
+                                          np.array([[0.5, -0.25j],
                                                     [0.25j, 0.5]]))))

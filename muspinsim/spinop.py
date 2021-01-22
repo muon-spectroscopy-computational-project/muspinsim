@@ -212,7 +212,7 @@ class Operator(object):
                              ' another Operator')
 
         # Doing it this way saves some time
-        ans = Operator.__new__(Operator)
+        ans = self.__class__.__new__(self.__class__)
         ans._dim = self._dim + x._dim
         ans._matrix = np.kron(self._matrix, x._matrix)
 
@@ -386,7 +386,7 @@ class DensityOperator(Operator):
 
         if len(Is) != len(vectors) or len(Is) != len(gammas) or len(Is) == 0:
             raise ValueError(
-                'Arrays of moments and axes must have same length > 0')
+                'Arrays of moments, axes and gammas must have same length > 0')
 
         dim = tuple(int(2*I+1) for I in Is)
         matrices = []
