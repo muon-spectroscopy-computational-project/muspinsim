@@ -99,6 +99,16 @@ class DoubleTerm(HamiltonianTerm):
 class Hamiltonian(object):
 
     def __init__(self, matrix):
+        """Create an Hamiltonian
+
+        Create an Hamiltonian from a hermitian complex matrix
+
+        Arguments:
+            matrix {ndarray} -- Matrix representation of the Hamiltonian
+
+        Raises:
+            ValueError -- Matrix isn't square or hermitian
+        """
 
         M = np.array(matrix)
         n = len(M)
@@ -112,7 +122,42 @@ class Hamiltonian(object):
     def matrix(self):
         return self._matrix.copy()
 
+    def diag(self):
+        """Diagonalize this Hamiltonian
+
+        Return eigenvalues and eigenvectors of this Hamiltonian
+
+        Returns:
+            (ndarray, ndarray) -- Eigenvalues and eigenvectors
+        """
+        return np.linalg.eigh(self._matrix)
+
     def evolve(self, rho0, times, operators=[]):
+        """Time evolution of a state under this Hamiltonian
+
+        Perform an evolution of a state described by a DensityOperator under
+        this Hamiltonian and return either a sequence of DensityOperators or
+        a sequence of expectation values for given SpinOperators.
+
+        Arguments:
+            rho0 {DensityOperator} -- Initial state
+            times {ndarray} -- Times to compute the evolution for, in microseconds
+
+        Keyword Arguments:
+            operators {[SpinOperator]} -- List of SpinOperators to compute the
+                                          expectation values of at each step.
+                                          If omitted, the states' density 
+                                          matrices will be returned instead
+                                           (default: {[]})
+
+        Returns:
+            [DensityOperator | ndarray] -- DensityOperators or expectation values
+
+        Raises:
+            TypeError -- Invalid operators
+            ValueError -- Invalid values of times or operators
+            RuntimeError -- Hamiltonian is not hermitian
+        """
 
         if not isinstance(rho0, DensityOperator):
             raise TypeError('rho0 must be a valid DensityOperator')
@@ -164,6 +209,29 @@ class Hamiltonian(object):
         return result
 
     def integrate_decaying(self, rho0, tau, operators=[]):
+        """Integrate one or more expectation values in time with decay
+
+        Perform an integral in time from 0 to +inf of an expectation value
+        computed on an evolving state, times a decay factor exp(-t/tau).
+        This can be done numerically using evolve, but here is executed with
+        a single evaluation, making it a lot faster.
+
+        Arguments:
+            rho0 {DensityOperator} -- Initial state
+            tau {float} -- Decay time, in microseconds
+
+        Keyword Arguments:
+            operators {list} -- Operators to compute the expectation values 
+                                of (default: {[]})
+
+        Returns:
+            ndarray -- List of integral values
+
+        Raises:
+            TypeError -- Invalid operators
+            ValueError -- Invalid values of tau or operators
+            RuntimeError -- Hamiltonian is not hermitian
+        """
 
         if not isinstance(rho0, DensityOperator):
             raise TypeError('rho0 must be a valid DensityOperator')
@@ -205,11 +273,38 @@ class Hamiltonian(object):
 class SpinHamiltonian(Hamiltonian):
 
     def __init__(self, spins=[]):
+        """Create a SpinHamiltonian from a list of spins
+
+        Create a SpinHamiltonian from a list of spins
+
+        Keyword Arguments:
+            spins {list} -- List of symbols of the spins to use, same rules
+                            as for a SpinSystem (default: {[]})
+        """
 
         self._spinsys = SpinSystem(spins)
         self._terms = []
 
     def add_linear_term(self, i, vector, label='Single'):
+        """Add to the Hamiltonian a term linear in one spin
+
+        Add a term of the form v*S_i, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            i {int} -- Index of the spin
+            vector {ndarray} -- Vector v
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {'Single'})
+
+        Raises:
+            ValueError -- Invalid index or vector
+        """
 
         if i < 0 or i >= len(self._spinsys):
             raise ValueError('Invalid index i')
@@ -223,6 +318,26 @@ class SpinHamiltonian(Hamiltonian):
         self._terms.append(term)
 
     def add_bilinear_term(self, i, j, matrix, label='Double'):
+        """Add to the Hamiltonian a term bilinear in two spins
+
+        Add a term of the form S_i*M*S_j, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i, and same for S_j.
+
+        Arguments:
+            i {int} -- Index of first spin
+            j {int} -- Index of second spin
+            matrix {ndarray} -- Matrix M
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {'Double'})
+
+        Raises:
+            ValueError -- Invalid index or vector
+        """
 
         if i < 0 or i >= len(self._spinsys):
             raise ValueError('Invalid index i')
@@ -239,6 +354,13 @@ class SpinHamiltonian(Hamiltonian):
         self._terms.append(term)
 
     def remove_term(self, term):
+        """Remove the given term, if present
+
+        Remove a coupling term from the SpinHamiltonian
+
+        Arguments:
+            term {HamiltonianTerm} -- Term to remove
+        """
 
         self._terms.remove(term)
 
@@ -299,6 +421,21 @@ class SpinHamiltonian(Hamiltonian):
 class MuonHamiltonian(SpinHamiltonian):
 
     def __init__(self, spins=['e', 'mu']):
+        """Create a MuonHamiltonian
+
+        Create a MuonHamiltonian, a SpinHamiltonian specialised for muonic
+        systems. It has to contain exactly one muon (mu) and can contain up to
+        one electron (e). The indices of these two special particles can for
+        convenience be accessed with properties .e and .mu
+
+        Keyword Arguments:
+            spins {list} -- Symbols of the spins to be part of the system.
+                            Must contain at least one 'mu' 
+                            (default: {['e', 'mu']})
+
+        Raises:
+            ValueError -- Invalid spins for the system
+        """
 
         # Find the electron and muon
         self._elec_i = [i for i, s in enumerate(spins) if s == 'e']
@@ -329,6 +466,14 @@ class MuonHamiltonian(SpinHamiltonian):
         self._zeeman_terms = self.terms
 
     def set_B_field(self, B=[0, 0, 0]):
+        """Set a magnetic field for the Hamiltonian
+
+        Set a magnetic field (in Tesla) for the Hamiltonian, adding it to all
+        the Zeeman terms.        
+
+        Keyword Arguments:
+            B {list} -- Magnetic field to set, in Tesla (default: {[0, 0, 0]})
+        """
 
         if isinstance(B, Number):
             B = [0, 0, B]
@@ -339,6 +484,18 @@ class MuonHamiltonian(SpinHamiltonian):
             t._v = B*self.spin_system.gamma(i)
 
     def add_hyperfine_term(self, i, A):
+        """Add a hyperfine term
+
+        Add a hyperfine term for a given spin, provided that an electron is
+        present.
+
+        Arguments:
+            i {int} -- Index of the spin (must be different from electron)
+            A {[type]} -- Hyperfine tensor (in MHz)
+
+        Raises:
+            ValueError -- Invalid index
+        """
 
         j = self.e
 
@@ -352,6 +509,20 @@ class MuonHamiltonian(SpinHamiltonian):
         self.add_bilinear_term(i, j, A, 'Hyperfine')
 
     def add_dipolar_term(self, i, j, r):
+        """Add a dipolar term
+
+        Add a spin-spin dipolar coupling between two distinct spins. The 
+        coupling is calculated geometrically from the vector connecting them,
+        in Angstrom.
+
+        Arguments:
+            i {int} -- Index of the first spin
+            j {int} -- Index of the second spin
+            r {ndarray} -- Vector connecting the two spins (in Angstrom)
+
+        Raises:
+            ValueError -- Raised if i == j
+        """
 
         if i == j:
             raise ValueError('Can not set up dipolar coupling with itself')
@@ -368,6 +539,15 @@ class MuonHamiltonian(SpinHamiltonian):
         self.add_bilinear_term(i, j, D, 'Dipolar')
 
     def add_quadrupolar_term(self, i, EFG):
+        """Add a quadrupolar term
+
+        Add a quadrupolar term to a nucleus with I >= 1 from its Electric
+        Field Gradient tensor.
+
+        Arguments:
+            i {int} -- Index of the spin
+            EFG {ndarray} --  Electric Field Gradient tensor
+        """
 
         EFG = np.array(EFG)
         Q = self._spinsys.Q(i)
@@ -386,6 +566,13 @@ class MuonHamiltonian(SpinHamiltonian):
         return self._mu_i
 
     def remove_term(self, term):
+        """Remove the given term, if present
+
+        Remove a coupling term from the SpinHamiltonian
+
+        Arguments:
+            term {HamiltonianTerm} -- Term to remove. Must not be a Zeeman term
+        """
 
         if term in self._zeeman_terms:
             raise RuntimeError('Zeeman terms in a MuonHamiltonian can not be '
@@ -394,6 +581,25 @@ class MuonHamiltonian(SpinHamiltonian):
             super(MuonHamiltonian, self).remove_term(term)
 
     def reduced_hamiltonian(self, branch='up'):
+        """Return a reduced Hamiltonian
+
+        Return a reduced Hamiltonian from one containing an electron. This 
+        makes it possible to create a smaller Hamiltonian (speeding up 
+        calculations) by removing the electron, which is usually a good enough
+        approximation for high values of the magnetic field.
+
+        Keyword Arguments:
+            branch {str} -- Electron branch to use. Can be 'up' or 'down'.
+                            In the ideal limit (high field) should make no
+                            difference (default: {'up'})
+
+        Returns:
+            Hamiltonian -- The reduced Hamiltonian
+
+        Raises:
+            RuntimeError -- No electron present
+            ValueError -- Invalid branch name
+        """
 
         if self.e is None:
             raise RuntimeError('Can only reduce the Hamiltonian if it contains'
