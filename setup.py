@@ -23,8 +23,12 @@ setuptools.setup(
     install_requires=[
         'numpy',
         'scipy',
-        'ase',
         'soprano'
     ],
+    entry_points={
+        'console_scripts': [
+            'muspin = muspinsim.__main__:main'
+        ]
+    },
     python_requires='>=3.6',
 )

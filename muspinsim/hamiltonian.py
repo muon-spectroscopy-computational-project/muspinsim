@@ -399,11 +399,14 @@ class SpinHamiltonian(Hamiltonian):
             rotmat {ndarray} -- Rotation matrix
 
         Returns:
-            Hamiltonian -- Rotated Hamiltonian
+            SpinHamiltonian -- Rotated Hamiltonian
         """
 
-        rH = SpinHamiltonian(self._spinsys.spins)
-        R = rotmat
+        rH = SpinHamiltonian.__new__(SpinHamiltonian)
+        rH._spinsys = self._spinsys
+        rH._terms = []
+
+        R = np.array(rotmat)
 
         for t in self._terms:
             if isinstance(t, SingleTerm):
@@ -633,3 +636,44 @@ class MuonHamiltonian(SpinHamiltonian):
         Hred = (Hred+Hred.conj().T)/2.0
 
         return Hamiltonian(Hred)
+
+    def rotate(self, rotmat):
+        """Get a rotated version of the Hamiltonian
+
+        Get a copy of this Hamiltonian that is rotated in space,
+        aka, has the same terms but with matrices and vectors appropriately
+        transformed. Takes in a rotation matrix defining the three vectors
+        of the new axis system.
+
+        Arguments:
+            rotmat {ndarray} -- Rotation matrix
+
+        Returns:
+            MuonHamiltonian -- Rotated Hamiltonian
+        """
+
+        rH = MuonHamiltonian.__new__(MuonHamiltonian)
+        rH._spinsys = self._spinsys
+        rH._elec_i = self._elec_i
+        rH._mu_i = self._mu_i
+        rH._Bfield = self._Bfield
+
+        rH._terms = []
+        rH._zeeman_terms = []
+
+        R = np.array(rotmat)
+
+        for t in self._terms:
+            if t.label == 'Zeeman':
+                rH.add_linear_term(t.i, t.vector, t.label)
+                rH._zeeman_terms.append(rH._terms[-1])
+            elif isinstance(t, SingleTerm):
+                v = t.vector
+                v = np.dot(v, R.T)
+                rH.add_linear_term(t.i, v, t.label)
+            elif isinstance(t, DoubleTerm):
+                M = t.matrix
+                M = np.linalg.multi_dot([R, M, R.T])
+                rH.add_bilinear_term(t.i, t.j, M, t.label)
+
+        return rH

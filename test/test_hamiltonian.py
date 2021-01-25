@@ -72,6 +72,19 @@ class TestSpinHamiltonian(unittest.TestCase):
         self.assertTrue(np.all(rH.matrix == np.array([[0, 0.5],
                                                       [0.5, 0]])))
 
+        # MuonHamiltonian is special
+        H = MuonHamiltonian(['mu'])
+
+        H.set_B_field(1.0/constants.MU_GAMMA)
+        H.add_linear_term(0, [0, 0, 1])
+
+        rH = H.rotate([[0, 0, 1],
+                       [0, 1, 0],
+                       [-1, 0, 0]])
+
+        self.assertTrue(np.all(rH.matrix == np.array([[0.5, 0.5],
+                                                      [0.5, -0.5]])))
+
     def test_muonham(self):
 
         mH = MuonHamiltonian(['e', 'mu'])

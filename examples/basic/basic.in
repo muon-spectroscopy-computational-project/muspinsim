@@ -1,0 +1,10 @@
+spins
+    mu e
+hyperfine 1
+    1   0   0
+    0   1   0
+    0   0   1
+powder zcw
+    20
+save
+    integral
