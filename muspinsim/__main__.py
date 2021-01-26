@@ -1,7 +1,9 @@
 import os
 import numpy as np
 import argparse as ap
+
 from soprano.calculate.powder import ZCW, SHREWD
+from muspinsim.constants import MU_TAU
 from muspinsim.spinop import SpinOperator, DensityOperator
 from muspinsim.hamiltonian import MuonHamiltonian
 from muspinsim.input import MuSpinInput
@@ -34,6 +36,54 @@ def build_hamiltonian(params, logfile=None):
         logfile.write('\n' + '*'*20 + '\n\n')
 
     return H
+
+
+def make_rotmat(theta, phi):
+
+    ct = np.cos(theta)
+    st = np.sin(theta)
+    cp = np.cos(phi)
+    sp = np.sin(phi)
+
+    return np.array([
+        [cp*ct, -sp, cp*st],
+        [sp*ct,  cp, sp*st],
+        [-st,     0,    ct]])
+
+
+def run_branches(H, times, rho0, observable, params, logfile=None):
+
+    Hs = []
+
+    if params.branch is None or H.e is None:
+        Hs.append(H)
+    else:
+        if logfile is not None:
+            logfile.write('Using electronic branches: '
+                          '{0}\n'.format(params.branch))
+
+        for b in params.branch:
+            Hs.append(H.reduced_hamiltonian(branch=b))
+
+    evol = []
+    if 'evolution' in params.save:
+        if logfile is not None:
+            logfile.write('Computing time evolution\n')
+        for H in Hs:
+            evol.append(H.evolve(rho0, times, [observable])[:, 0])
+
+        evol = np.average(evol, axis=0)
+
+    intgr = []
+    if 'integral' in params.save:
+        if logfile is not None:
+            logfile.write('Computing integral\n')
+        for H in Hs:
+            intgr.append(H.integrate_decaying(rho0, MU_TAU,
+                                              [observable])[0]/MU_TAU)
+        intgr = np.average(intgr, axis=0)
+
+    return np.real(evol), np.real(intgr)
 
 
 def perform_experiment(H, params, logfile=None):
@@ -85,41 +135,70 @@ def perform_experiment(H, params, logfile=None):
             logfile.write(
                 '{0} orientations generated\n\n'.format(len(weights)))
 
+    reduced_H = (params.branch is not None) and (H.e is not None)
+
     Is = H.spin_system._Is
     vectors = [[1, 0, 0]]*len(Is)
 
     if params.polarization == 'longitudinal':
         vectors[H.mu] = [0, 0, 1]
-        observable = H.spin_system.operator({H.mu: 'z'})
+        muaxis = 'z'
     elif params.polarization == 'transverse':
         vectors[H.mu] = [1, 0, 0]
-        observable = H.spin_system.operator({H.mu: 'x'})
+        muaxis = 'x'
     else:
         raise RuntimeError(
             'Invalid polarization {0}'.format(params.polarization))
+
+    observable = H.spin_system.operator({H.mu: muaxis})
+    
+    if reduced_H:
+        axes = [muaxis if i == H.mu else '0' for i, s in enumerate(Is)]
+        Is = np.delete(Is, H.e)
+        vectors = np.delete(vectors, H.e, axis=0)
+        axes = np.delete(axes, H.e)
+        observable = SpinOperator.from_axes(Is, axes)
 
     rho0 = DensityOperator.from_vectors(Is,
                                         vectors,
                                         [0 if i == H.mu else 1
                                          for i in range(len(Is))])
 
-    results = {'fields': fields, 'field_scan': []}
+    results = {'fields': fields, 'times': times, 'field_scan': []}
+
+    if 'integral' in params.save:
+        integrated_values = []
+
     # First loop: fields
     for B in fields:
 
+        if logfile is not None:
+            logfile.write('Performing calculations for B = {0} T\n'.format(B))
+
         H.set_B_field(B)
 
-        for o, w in zip(orients, weights):
-            pass
-            
-        for s in params.save:
+        evol_results = []
+        intgr_results = []
 
-            if s == 'evolution':
-                pass
-            elif s == 'integral':
-                pass
-            else:
-                raise RuntimeError('Invalid save mode ' + s)
+        for o, w in zip(orients, weights):
+            R = make_rotmat(*o)
+            rH = H.rotate(R)
+            evol, intgr = run_branches(rH, times, rho0, observable, params,
+                                       logfile)
+            evol_results.append(evol*w)
+            intgr_results.append(intgr*w)
+
+        field_results = {
+            'evolution': np.sum(evol_results, axis=0),
+            'integral': np.sum(intgr_results, axis=0)
+        }
+
+        results['field_scan'].append(field_results)
+
+        if logfile is not None:
+            logfile.write('\n\n')
+
+    return results
 
 
 def main():
@@ -130,16 +209,46 @@ def main():
                         formatted file with input parameters.""")
     args = parser.parse_args()
 
-    seed = os.path.splitext(args.input_file)[0]
-
     fs = open(args.input_file)
     params = MuSpinInput(fs)
 
-    logfile = open(seed + '.log', 'w')
+    for s in params.save:
+        if not (s in ('evolution', 'integral')):
+            raise RuntimeError('Invalid save mode {0}'.format(s))
+
+    path = os.path.split(args.input_file)[0]
+
+    if params.name is None:
+        params.name = os.path.splitext(os.path.split(args.input_file)[1])[0]
+
+    logfile = open(params.name + '.log', 'w')
 
     H = build_hamiltonian(params, logfile)
 
     expdata = perform_experiment(H, params, logfile)
+
+    logfile.write('Simulation completed\n' + '*'*20 + '\n')
+
+    x = expdata['fields']
+    t = expdata['times']
+    y = expdata['field_scan']
+
+    if 'evolution' in params.save:
+        # Save evolution files
+        for B, scandata in zip(x, y):
+            fname = os.path.join(path, params.name +
+                                 '_B{0}_evol.dat'.format(B))
+            np.savetxt(fname, np.array([t, scandata['evolution']]).T,
+                       header="B field = {0} T".format(B))
+
+    if 'integral' in params.save:
+
+        fname = os.path.join(path, params.name +
+                             '_intgr.dat')
+
+        data = [sd['integral'] for sd in y]
+
+        np.savetxt(fname, np.array([x, data]).T)
 
     # # Start by creating the base Hamiltonian
     # H = MuonHamiltonian(params['spins'])

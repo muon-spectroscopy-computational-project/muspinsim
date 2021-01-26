@@ -73,6 +73,7 @@ class MuSpinInput(object):
                 raw_blocks[curr_block] = []
 
         # Defaults
+        self.name = None
         self.spins = ['mu', 'e']
         self.polarization = 'transverse'
         self.field = [0.0]
@@ -104,7 +105,7 @@ class MuSpinInput(object):
         spins = _read_list(data[0])
 
         # Find isotopes
-        isore = re.compile('([0-9]*)([A-Z][a-z]*)')
+        isore = re.compile('([0-9]+)([A-Z][a-z]*)')
         for s in spins:
             m = isore.match(s)
             if m is None:
@@ -113,6 +114,10 @@ class MuSpinInput(object):
                 A, el = m.groups()
                 A = int(A)
                 self.spins.append((el, A))
+
+    @_has_data_size(1)
+    def read_name(self, data):
+        self.name = data[0].strip().lower()
 
     @_has_data_size(1)
     def read_polarization(self, data):

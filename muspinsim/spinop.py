@@ -454,7 +454,7 @@ class DensityOperator(Operator):
         ans = DensityOperator.__new__(DensityOperator)
         ans._dim = tuple(d for i, d in enumerate(self._dim)
                          if not (i in tracedim))
-        ans._matrix = m
+        ans._matrix = m.reshape((np.prod(ans._dim), -1))
 
         return ans
 
