@@ -138,8 +138,9 @@ class MuSpinInput(object):
     def read_powder(self, method, data):
         self.powder = (method, int(data[0]))
 
-    def read_branch(self, data):
-        self.branch = set(sum([_read_list(d) for d in data], []))
+    # Temporarily commented out as it's not working properly
+    # def read_branch(self, data):
+    #     self.branch = set(sum([_read_list(d) for d in data], []))
 
     @_has_data_size(3)
     def read_hyperfine(self, i, data):

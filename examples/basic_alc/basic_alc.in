@@ -8,11 +8,9 @@ hyperfine 3
     150 3   4
     3   150 5
     4   5   150
-save
-    integral
+experiment
+    alc
 powder zcw
     20
 field
-    1   3
-branch
-    down
+    1.5   3

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import argparse as ap
+from datetime import datetime
 
 from soprano.calculate.powder import ZCW, SHREWD
 from muspinsim.constants import MU_TAU
@@ -67,8 +68,6 @@ def run_branches(H, times, rho0, observable, params, logfile=None):
 
     evol = []
     if 'evolution' in params.save:
-        if logfile is not None:
-            logfile.write('Computing time evolution\n')
         for H in Hs:
             evol.append(H.evolve(rho0, times, [observable])[:, 0])
 
@@ -76,8 +75,6 @@ def run_branches(H, times, rho0, observable, params, logfile=None):
 
     intgr = []
     if 'integral' in params.save:
-        if logfile is not None:
-            logfile.write('Computing integral\n')
         for H in Hs:
             intgr.append(H.integrate_decaying(rho0, MU_TAU,
                                               [observable])[0]/MU_TAU)
@@ -151,7 +148,7 @@ def perform_experiment(H, params, logfile=None):
             'Invalid polarization {0}'.format(params.polarization))
 
     observable = H.spin_system.operator({H.mu: muaxis})
-    
+
     if reduced_H:
         axes = [muaxis if i == H.mu else '0' for i, s in enumerate(Is)]
         Is = np.delete(Is, H.e)
@@ -223,11 +220,17 @@ def main():
 
     logfile = open(params.name + '.log', 'w')
 
+    tstart = datetime.now()
+
     H = build_hamiltonian(params, logfile)
 
     expdata = perform_experiment(H, params, logfile)
 
-    logfile.write('Simulation completed\n' + '*'*20 + '\n')
+    tend = datetime.now()
+
+    logfile.write('Simulation completed in '
+                  '{0:.3f} seconds\n'.format((tend-tstart).total_seconds()) +
+                  '*'*20 + '\n')
 
     x = expdata['fields']
     t = expdata['times']
