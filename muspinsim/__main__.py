@@ -23,7 +23,7 @@ def build_hamiltonian(params, logfile=None):
             logfile.write('Added hyperfine term to spin {0}\n'.format(i))
 
     for (i, j), r in params.dipolar.items():
-        H.add_dipolar_term((i-1, j-1), r)
+        H.add_dipolar_term(i-1, j-1, r)
         if logfile:
             logfile.write('Added dipolar term to spins '
                           '{0}, {1}\n'.format(i, j))

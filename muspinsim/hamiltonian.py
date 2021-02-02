@@ -530,6 +530,8 @@ class MuonHamiltonian(SpinHamiltonian):
         if i == j:
             raise ValueError('Can not set up dipolar coupling with itself')
 
+        r = np.array(r)
+
         g_i = self._spinsys.gamma(i)
         g_j = self._spinsys.gamma(j)
 
