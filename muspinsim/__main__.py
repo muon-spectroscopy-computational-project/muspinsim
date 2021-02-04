@@ -56,7 +56,7 @@ def run_branches(H, times, rho0, observable, params, logfile=None):
 
     Hs = []
 
-    if params.branch is None or H.e is None:
+    if params.branch is None or len(H.e) == 0:
         Hs.append(H)
     else:
         if logfile is not None:
@@ -132,7 +132,7 @@ def perform_experiment(H, params, logfile=None):
             logfile.write(
                 '{0} orientations generated\n\n'.format(len(weights)))
 
-    reduced_H = (params.branch is not None) and (H.e is not None)
+    reduced_H = (params.branch is not None) and (len(H.e) > 0)
 
     Is = H.spin_system._Is
     vectors = [[1, 0, 0]]*len(Is)
