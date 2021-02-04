@@ -22,6 +22,7 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(ssys.gamma(1), constants.ELEC_GAMMA)
 
         self.assertEqual(len(ssys), 2)
+        self.assertEqual(ssys.dimension, (2,2))
 
     def test_operator(self):
 
@@ -31,4 +32,4 @@ class TestSpinSystem(unittest.TestCase):
                          SpinOperator.from_axes([0.5, 0.5], 'x0'))
         self.assertEqual(ssys.operator({0: 'z', 1: 'y'}),
                          SpinOperator.from_axes([0.5, 0.5], 'zy'))
-        self.assertEqual(ssys.dim, (2, 2))
+        self.assertEqual(ssys.dimension, (2, 2))

@@ -98,7 +98,7 @@ class DoubleTerm(HamiltonianTerm):
 
 class Hamiltonian(Operator):
 
-    def __init__(self, matrix):
+    def __init__(self, matrix, dim=None):
         """Create an Hamiltonian
 
         Create an Hamiltonian from a hermitian complex matrix
@@ -110,17 +110,13 @@ class Hamiltonian(Operator):
             ValueError -- Matrix isn't square or hermitian
         """
 
-        M = np.array(matrix)
-        n = len(M)
+        matrix = np.array(matrix)
+        n = matrix.shape[0]
 
-        if M.shape != (n, n) or np.any(M.T.conj() != M):
+        if matrix.shape != (n, n) or np.any(matrix.T.conj() != matrix):
             raise ValueError('Matrix must be square and hermitian')
 
-        self._matrix = M
-
-    @property
-    def matrix(self):
-        return self._matrix.copy()
+        super(Hamiltonian, self).__init__(matrix, dim)
 
     def evolve(self, rho0, times, operators=[]):
         """Time evolution of a state under this Hamiltonian
@@ -275,6 +271,12 @@ class SpinHamiltonian(Hamiltonian):
         self._spinsys = SpinSystem(spins)
         self._terms = []
 
+        # Start with zero as a matrix
+        N = np.prod(self._spinsys.dimension)
+        H = np.zeros((N, N)) + .0j
+
+        super(SpinHamiltonian, self).__init__(H, self._spinsys.dimension)
+
     def add_linear_term(self, i, vector, label='Single'):
         """Add to the Hamiltonian a term linear in one spin
 
@@ -306,6 +308,7 @@ class SpinHamiltonian(Hamiltonian):
 
         term = SingleTerm(i, vector, label=label)
         self._terms.append(term)
+        self._matrix += term.compile(self._spinsys)
 
     def add_bilinear_term(self, i, j, matrix, label='Double'):
         """Add to the Hamiltonian a term bilinear in two spins
@@ -342,6 +345,7 @@ class SpinHamiltonian(Hamiltonian):
 
         term = DoubleTerm(i, j, matrix, label=label)
         self._terms.append(term)
+        self._matrix += term.compile(self._spinsys)
 
     def remove_term(self, term):
         """Remove the given term, if present
@@ -353,6 +357,15 @@ class SpinHamiltonian(Hamiltonian):
         """
 
         self._terms.remove(term)
+        self._matrix -= term.compile(self._spinsys)
+
+    def recalc(self):
+        """Recalculate matrix from terms"""
+
+        self._matrix *= 0
+
+        for term in self._terms:
+            self._matrix += term.compile(self._spinsys)
 
     @property
     def spin_system(self):
@@ -365,17 +378,6 @@ class SpinHamiltonian(Hamiltonian):
     @property
     def terms(self):
         return list(self._terms)
-
-    @property
-    def matrix(self):
-
-        # Compile the full Hamiltonian matrix
-        term_matrices = []
-
-        for t in self._terms:
-            term_matrices.append(t.compile(self._spinsys))
-
-        return np.sum(term_matrices, axis=0)
 
     def rotate(self, rotmat):
         """Get a rotated version of the Hamiltonian
@@ -396,22 +398,27 @@ class SpinHamiltonian(Hamiltonian):
         rH._spinsys = self._spinsys
         rH._terms = []
 
+        super(SpinHamiltonian, rH).__init__(self._matrix*0.0,
+                                            self._spinsys.dimension)
+
         R = np.array(rotmat)
 
         for t in self._terms:
             if isinstance(t, SingleTerm):
                 v = t.vector
                 v = np.dot(v, R.T)
-                rH.add_linear_term(t.i, v)
+                rH.add_linear_term(t.i, v, t.label)
             elif isinstance(t, DoubleTerm):
                 M = t.matrix
                 M = np.linalg.multi_dot([R, M, R.T])
-                rH.add_bilinear_term(t.i, t.j, M)
+                rH.add_bilinear_term(t.i, t.j, M, t.label)
 
         return rH
 
 
 class MuonHamiltonian(SpinHamiltonian):
+
+    STATIC_FIELD_LABEL = 'B field'
 
     def __init__(self, spins=['e', 'mu']):
         """Create a MuonHamiltonian
@@ -440,13 +447,7 @@ class MuonHamiltonian(SpinHamiltonian):
         else:
             self._mu_i = self._mu_i[0]
 
-        if len(self._elec_i) > 1:
-            raise ValueError('MuonHamiltonian can not contain more than one'
-                             ' electron')
-        elif len(self._elec_i) == 1:
-            self._elec_i = self._elec_i[0]
-        else:
-            self._elec_i = None
+        self._elec_i = set(self._elec_i)
 
         super(MuonHamiltonian, self).__init__(spins)
 
@@ -454,9 +455,9 @@ class MuonHamiltonian(SpinHamiltonian):
         self._Bfield = np.zeros(3)
 
         for i in range(len(spins)):
-            self.add_linear_term(i, self._Bfield, 'Zeeman')
+            self.add_linear_term(i, self._Bfield, self.STATIC_FIELD_LABEL)
 
-        self._zeeman_terms = self.terms
+        self._Bfield_terms = self.terms
 
     def set_B_field(self, B=[0, 0, 0]):
         """Set a magnetic field for the Hamiltonian
@@ -473,10 +474,27 @@ class MuonHamiltonian(SpinHamiltonian):
 
         B = np.array(B)
 
-        for i, t in enumerate(self._zeeman_terms):
+        for i, t in enumerate(self._Bfield_terms):
             t._v = B*self.spin_system.gamma(i)
 
-    def add_hyperfine_term(self, i, A):
+        # Recalculate
+        self.recalc()
+
+    def add_zeeman_term(self, i, B):
+        """Add a zeeman term
+
+        Add a single term coupling a given spin to a magnetic field, 
+        in addition to the global static one.
+
+        Arguments:
+            i {int} -- Index of the spin
+            B {ndarray} -- Magnetic field vector, in Tesla
+        """
+
+        B = np.array(B)
+        self.add_linear_term(i, B*self.spin_system.gamma(i), 'Zeeman')
+
+    def add_hyperfine_term(self, i, A, j=None):
         """Add a hyperfine term
 
         Add a hyperfine term for a given spin, provided that an electron is
@@ -485,19 +503,28 @@ class MuonHamiltonian(SpinHamiltonian):
         Arguments:
             i {int} -- Index of the spin (must be different from electron)
             A {[type]} -- Hyperfine tensor (in MHz)
+            j {int} -- Index of the electron spin. If not specified uses the
+                       one that is present, if there is one (default: None)
 
         Raises:
             ValueError -- Invalid index
         """
 
-        j = self.e
+        elec_i = self.e
 
         if j is None:
-            raise ValueError('Can not set up hyperfine term in system with'
-                             ' no electron')
-        elif j == i:
-            raise ValueError('Can not set up hyperfine coupling of electron'
-                             ' with itself')
+            if len(elec_i) > 1:
+                raise ValueError('Must specify an electron index in system '
+                                 'with multiple electrons')
+            else:
+                j = list(elec_i)[0]
+        else:
+            if j not in elec_i:
+                raise ValueError('Second index in hyperfine coupling must'
+                                 ' refer to an electron')
+        if i in elec_i:
+            raise ValueError('First index in hyperfine coupling must'
+                             ' not refer to an electron')
 
         self.add_bilinear_term(i, j, A, 'Hyperfine')
 
@@ -569,65 +596,65 @@ class MuonHamiltonian(SpinHamiltonian):
             term {HamiltonianTerm} -- Term to remove. Must not be a Zeeman term
         """
 
-        if term in self._zeeman_terms:
-            raise RuntimeError('Zeeman terms in a MuonHamiltonian can not be '
-                               'removed manually; please set B = 0')
+        if term in self._Bfield_terms:
+            raise RuntimeError('Static field terms in a MuonHamiltonian can'
+                               'not be removed manually; please set B = 0')
         else:
             super(MuonHamiltonian, self).remove_term(term)
 
-    def reduced_hamiltonian(self, branch='up'):
-        """Return a reduced Hamiltonian
+    # def reduced_hamiltonian(self, branch='up'):
+    #     """Return a reduced Hamiltonian
 
-        Return a reduced Hamiltonian from one containing an electron. This 
-        makes it possible to create a smaller Hamiltonian (speeding up 
-        calculations) by removing the electron, which is usually a good enough
-        approximation for high values of the magnetic field.
+    #     Return a reduced Hamiltonian from one containing an electron. This
+    #     makes it possible to create a smaller Hamiltonian (speeding up
+    #     calculations) by removing the electron, which is usually a good
+    #     enough approximation for high values of the magnetic field.
 
-        Keyword Arguments:
-            branch {str} -- Electron branch to use. Can be 'up' or 'down'.
-                            In the ideal limit (high field) should make no
-                            difference (default: {'up'})
+    #     Keyword Arguments:
+    #         branch {str} -- Electron branch to use. Can be 'up' or 'down'.
+    #                         In the ideal limit (high field) should make no
+    #                         difference (default: {'up'})
 
-        Returns:
-            Hamiltonian -- The reduced Hamiltonian
+    #     Returns:
+    #         Hamiltonian -- The reduced Hamiltonian
 
-        Raises:
-            RuntimeError -- No electron present
-            ValueError -- Invalid branch name
-        """
+    #     Raises:
+    #         RuntimeError -- No electron present
+    #         ValueError -- Invalid branch name
+    #     """
 
-        if self.e is None:
-            raise RuntimeError('Can only reduce the Hamiltonian if it contains'
-                               ' one electron')
+    #     if self.e is None:
+    #         raise RuntimeError('Can only reduce the Hamiltonian if it '
+    #                            'contains one electron')
 
-        if not (branch in ('up', 'down')):
-            raise ValueError('Branch must be either up or down')
+    #     if not (branch in ('up', 'down')):
+    #         raise ValueError('Branch must be either up or down')
 
-        # Reshape
-        e_i = self.e
-        b_i = ['up', 'down'].index(branch)
-        dim = self._spinsys.dim
-        H = self.matrix.reshape(dim+dim)
+    #     # Reshape
+    #     e_i = self.e
+    #     b_i = ['up', 'down'].index(branch)
+    #     dim = self._spinsys.dim
+    #     H = self.matrix.reshape(dim+dim)
 
-        # Energy
-        E = np.linalg.norm(self._zeeman_terms[e_i]._v)*(0.5-b_i)
+    #     # Energy
+    #     E = np.linalg.norm(self._zeeman_terms[e_i]._v)*(0.5-b_i)
 
-        dred = tuple([int(np.prod(dim)/2)]*2)
+    #     dred = tuple([int(np.prod(dim)/2)]*2)
 
-        Haa = np.take(np.take(H, b_i, e_i+len(dim)), b_i, e_i).reshape(dred)
-        Hab = np.take(np.take(H, 1-b_i, e_i+len(dim)), b_i, e_i).reshape(dred)
-        Hba = np.take(np.take(H, b_i, e_i+len(dim)), 1-b_i, e_i).reshape(dred)
-        Hbb = np.take(np.take(H, 1-b_i, e_i+len(dim)),
-                      1-b_i, e_i).reshape(dred)
+    #     Haa = np.take(np.take(H, b_i, e_i+len(dim)), b_i, e_i).reshape(dred)
+    #     Hab = np.take(np.take(H, 1-b_i, e_i+len(dim)), b_i, e_i).reshape(dred)
+    #     Hba = np.take(np.take(H, b_i, e_i+len(dim)), 1-b_i, e_i).reshape(dred)
+    #     Hbb = np.take(np.take(H, 1-b_i, e_i+len(dim)),
+    #                   1-b_i, e_i).reshape(dred)
 
-        invH = np.linalg.inv(Hbb-np.eye(dred[0]))
+    #     invH = np.linalg.inv(Hbb-np.eye(dred[0]))
 
-        Hred = Haa - np.linalg.multi_dot([Hab, invH, Hba])
+    #     Hred = Haa - np.linalg.multi_dot([Hab, invH, Hba])
 
-        # Fix any residual non-hermitianity due to numerical errors
-        Hred = (Hred+Hred.conj().T)/2.0
+    #     # Fix any residual non-hermitianity due to numerical errors
+    #     Hred = (Hred+Hred.conj().T)/2.0
 
-        return Hamiltonian(Hred)
+    #     return Hamiltonian(Hred)
 
     def rotate(self, rotmat):
         """Get a rotated version of the Hamiltonian
@@ -649,16 +676,18 @@ class MuonHamiltonian(SpinHamiltonian):
         rH._elec_i = self._elec_i
         rH._mu_i = self._mu_i
         rH._Bfield = self._Bfield
-
         rH._terms = []
-        rH._zeeman_terms = []
+        rH._Bfield_terms = []
+
+        super(SpinHamiltonian, rH).__init__(self._matrix*0.0,
+                                            self._spinsys.dimension)
 
         R = np.array(rotmat)
 
         for t in self._terms:
-            if t.label == 'Zeeman':
+            if t in self._Bfield_terms:
                 rH.add_linear_term(t.i, t.vector, t.label)
-                rH._zeeman_terms.append(rH._terms[-1])
+                rH._Bfield_terms.append(rH._terms[-1])
             elif isinstance(t, SingleTerm):
                 v = t.vector
                 v = np.dot(v, R.T)

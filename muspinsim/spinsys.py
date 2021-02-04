@@ -56,7 +56,7 @@ class SpinSystem(object):
         return list(self._spins)
 
     @property
-    def dim(self):
+    def dimension(self):
         return self._dim
 
     def gamma(self, i):
