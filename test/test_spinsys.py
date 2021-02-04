@@ -3,7 +3,7 @@ import numpy as np
 
 from muspinsim import constants
 from muspinsim.spinop import SpinOperator
-from muspinsim.spinsys import SpinSystem
+from muspinsim.spinsys import SpinSystem, InteractionTerm
 
 
 class TestSpinSystem(unittest.TestCase):
@@ -14,6 +14,18 @@ class TestSpinSystem(unittest.TestCase):
 
         ssys = SpinSystem(['mu', ('H', 2)])
 
+    def test_terms(self):
+
+        ssys = SpinSystem(['mu', 'e'])
+
+        # Linear term
+        term = InteractionTerm(ssys, [0], [0, 0, 1])
+        self.assertEqual(term.operator, ssys.operator({0: 'z'}))
+
+        # A scalar term?
+        term = InteractionTerm(ssys, [], 2.0)
+        self.assertEqual(term.operator, ssys.operator({})*2)
+
     def test_check(self):
 
         ssys = SpinSystem(['mu', 'e'])
@@ -22,7 +34,7 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(ssys.gamma(1), constants.ELEC_GAMMA)
 
         self.assertEqual(len(ssys), 2)
-        self.assertEqual(ssys.dimension, (2,2))
+        self.assertEqual(ssys.dimension, (2, 2))
 
     def test_operator(self):
 

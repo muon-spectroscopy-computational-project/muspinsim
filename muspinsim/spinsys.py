@@ -9,6 +9,94 @@ from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment
 from muspinsim.spinop import SpinOperator
 
 
+class InteractionTerm(object):
+
+    def __init__(self, spinsys, indices=[], tensor=0, label=None):
+
+        self._spinsys = spinsys
+        self._indices = np.array(indices)
+        self._tensor = np.array(tensor)
+        self._label = 'Term' if label is None else label
+
+        if np.any(np.array(self._tensor.shape) != 3):
+            raise ValueError('Tensor is not fully three-dimensional')
+
+        total_op = None
+        d = len(self._tensor.shape)
+
+        if d > 0:
+            index_tuples = np.indices(self._tensor.shape).reshape((d, -1)).T
+        else:
+            index_tuples = [[]]
+
+        for ii in index_tuples:
+            op = self._spinsys.operator({ind: 'xyz'[ii[i]]
+                                         for i, ind in
+                                         enumerate(self._indices)}
+                                        )*self._tensor[tuple(ii)]
+            if total_op is None:
+                total_op = op
+            else:
+                total_op += op
+
+        self._operator = total_op
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def indices(self):
+        return tuple(self._indices)
+
+    @property
+    def tensor(self):
+        return np.array(self._tensor)
+
+    @property
+    def operator(self):
+        return self._operator.clone()
+
+    def __repr__(self):
+        return self.label
+
+
+class SingleTerm(InteractionTerm):
+
+    def __init__(self, spinsys, i, vector, label='Single'):
+
+        super(SingleTerm, self).__init__(spinsys, [i], vector, label)
+
+    @property
+    def i(self):
+        return self._indices[0]
+
+    def __repr__(self):
+        return '{0} {{ S_{1} * {2} }}'.format(self._label, self.i,
+                                              self._tensor)
+
+
+class DoubleTerm(InteractionTerm):
+
+    def __init__(self, spinsys, i, j, matrix, label='Double'):
+
+        super(DoubleTerm, self).__init__(spinsys, [i, j], matrix, label)
+
+    @property
+    def i(self):
+        return self._indices[0]
+
+    @property
+    def j(self):
+        return self._indices[1]
+
+    def __repr__(self):
+        return '{0} {{ S_{1} * [{2} {3} {4}] * S_{5} }}'.format(self._label,
+                                                                self.i,
+                                                                *self._tensor,
+                                                                self.j)
+
+
 class SpinSystem(object):
 
     def __init__(self, spins=[]):
