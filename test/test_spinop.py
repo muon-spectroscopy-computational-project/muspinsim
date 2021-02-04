@@ -15,6 +15,7 @@ class TestSpinOperator(unittest.TestCase):
 
         s = SpinOperator(data, dim=(2, 2))
         self.assertEqual(s.dimension, (2, 2))
+        self.assertEqual(s.N, 4)
 
         with self.assertRaises(ValueError):
             SpinOperator([[1, 2]])  # Not square
@@ -87,6 +88,19 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(sx == SpinOperator.from_axes(0.5, 'x'))
         self.assertFalse(SpinOperator(np.eye(4)) == SpinOperator(np.eye(4),
                                                                  (2, 2)))
+
+        # Test Kronecker product
+        sxsz = sx.kron(sz)
+        self.assertEqual(sxsz.dimension, (2, 2))
+        self.assertTrue(np.all(4*sxsz.matrix == [[0, 0, 1, 0],
+                                                 [0, 0, 0, -1],
+                                                 [1, 0, 0, 0],
+                                                 [0, -1, 0, 0]]))
+
+        # Test Hilbert-Schmidt product
+        rho = DensityOperator.from_vectors(0.5, np.array([1, 1, 0])/2**0.5)
+        sx = SpinOperator.from_axes(0.5, 'x')
+        self.assertEqual(2*np.real(rho.hilbert_schmidt(sx)), 0.5**0.5)
 
     def test_multi(self):
 

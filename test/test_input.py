@@ -31,8 +31,6 @@ save
     integral
 powder zcw
     100
-branch
-    up
 hyperfine 1
     1   0   0
     0   1   0
@@ -53,7 +51,6 @@ quadrupolar 3
         self.assertEqual(f.time, [0.0, 5.0, 100.0])
         self.assertEqual(f.save, {'evolution', 'integral'})
         self.assertEqual(f.powder, ('zcw', 100))
-        self.assertEqual(f.branch, {'up'})
 
         # Couplings
         self.assertEqual(f.hyperfine[1], [[1.0, 0.0, 0.0],

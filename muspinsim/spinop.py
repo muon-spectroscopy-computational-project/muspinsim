@@ -78,6 +78,10 @@ class Operator(object):
         return self._dim
 
     @property
+    def N(self):
+        return np.prod(self._dim)
+
+    @property
     def matrix(self):
         return np.array(self._matrix)
 
@@ -98,6 +102,22 @@ class Operator(object):
         ans = MyClass.__new__(MyClass)
         ans._dim = tuple(self._dim)
         ans._matrix = self.matrix
+
+        return ans
+
+    def dagger(self):
+        """Return the transpose conjugate of this Operator
+
+        Return the transpose conjugate of this Operator
+
+        Returns:
+            Operator -- Transpose conjugate of this operator
+        """
+
+        MyClass = self.__class__
+        ans = MyClass.__new__(MyClass)
+        ans._dim = tuple(self._dim)
+        ans._matrix = self.matrix.conj().T
 
         return ans
 
@@ -217,6 +237,36 @@ class Operator(object):
         ans._matrix = np.kron(self._matrix, x._matrix)
 
         return ans
+
+    def hilbert_schmidt(self, x):
+        """Hilbert-Schmidt product between this and another Operator
+
+
+        Performs a Hilbert-Schmidt product between this and another Operator,
+        that acts as an inner product.
+
+        Arguments:
+            x {Operator} -- Other operator
+
+        Returns:
+            number -- Result
+
+        Raises:
+            ValueError -- Thrown if x is not the right type of object
+        """
+
+        if not isinstance(x, Operator):
+            raise ValueError('Can only perform Hilbert-Schmidt product with'
+                             ' another Operator')
+
+        if not x.dimension == self.dimension:
+            raise ValueError('Operators must have the same dimension to '
+                             'perform Hilbert-Schmidt product')
+
+        A = self.matrix
+        B = x.matrix
+
+        return np.trace(np.dot(A.conj().T, B))
 
     def diag(self):
         """Diagonalise the operator
@@ -454,7 +504,7 @@ class DensityOperator(Operator):
         ans = DensityOperator.__new__(DensityOperator)
         ans._dim = tuple(d for i, d in enumerate(self._dim)
                          if not (i in tracedim))
-        ans._matrix = m.reshape((np.prod(ans._dim), -1))
+        ans._matrix = m.reshape((ans.N, -1))
 
         return ans
 
