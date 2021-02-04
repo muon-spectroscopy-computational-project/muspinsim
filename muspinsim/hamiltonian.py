@@ -8,7 +8,7 @@ from numbers import Number
 import scipy.constants as cnst
 
 from muspinsim.constants import EFG_2_MHZ, MU_TAU
-from muspinsim.spinop import SpinOperator, DensityOperator
+from muspinsim.spinop import SpinOperator, DensityOperator, Operator
 from muspinsim.spinsys import SpinSystem
 
 
@@ -96,7 +96,7 @@ class DoubleTerm(HamiltonianTerm):
                                                                 self.j)
 
 
-class Hamiltonian(object):
+class Hamiltonian(Operator):
 
     def __init__(self, matrix):
         """Create an Hamiltonian
@@ -121,16 +121,6 @@ class Hamiltonian(object):
     @property
     def matrix(self):
         return self._matrix.copy()
-
-    def diag(self):
-        """Diagonalize this Hamiltonian
-
-        Return eigenvalues and eigenvectors of this Hamiltonian
-
-        Returns:
-            (ndarray, ndarray) -- Eigenvalues and eigenvectors
-        """
-        return np.linalg.eigh(self._matrix)
 
     def evolve(self, rho0, times, operators=[]):
         """Time evolution of a state under this Hamiltonian
