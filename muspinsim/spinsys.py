@@ -9,7 +9,8 @@ from copy import deepcopy
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
-from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment
+from muspinsim.constants import (gyromagnetic_ratio, spin, quadrupole_moment,
+                                 EFG_2_MHZ)
 
 
 class InteractionTerm(Clonable):
@@ -228,7 +229,7 @@ class SpinSystem(Clonable):
             label {str} -- A label to name the term (default: {'Single'})
 
         Returns:
-            term {SingleTerm} -- The term just created
+            SingleTerm -- The term just created
 
         Raises:
             ValueError -- Invalid index or vector
@@ -263,7 +264,7 @@ class SpinSystem(Clonable):
             label {str} -- A label to name the term (default: {'Double'})
 
         Returns:
-            term {DoubleTerm} -- The term just created
+            DoubleTerm -- The term just created
 
         Raises:
             ValueError -- Invalid index or vector
@@ -380,3 +381,136 @@ class SpinSystem(Clonable):
 
     def __len__(self):
         return len(self._gammas)
+
+
+class MuonSpinSystem(SpinSystem):
+
+    def __init__(self, spins=['mu', 'e']):
+
+        super(MuonSpinSystem, self).__init__(spins)
+
+        # Identify the muon index
+        if self._spins.count('mu') != 1:
+            raise ValueError('Spins passed to MuonSpinSystem must contain'
+                             ' exactly one muon')
+
+        self._mu_i = self._spins.index('mu')
+        self._e_i = set([i for i, s in enumerate(self.spins) if s == 'e'])
+
+    @property
+    def muon_index(self):
+        return self._mu_i
+
+    @property
+    def elec_indices(self):
+        return self._e_i
+
+    def add_zeeman_term(self, i, B):
+        """Add a zeeman term
+
+        Add a single term coupling a given spin to a magnetic field
+
+        Arguments:
+            i {int} -- Index of the spin
+            B {ndarray} -- Magnetic field vector, in Tesla
+
+        Returns:
+            SingleTerm -- The term just created
+        """
+
+        B = np.array(B)
+        return self.add_linear_term(i, B*self.gamma(i), 'Zeeman')
+
+    def add_hyperfine_term(self, i, A, j=None):
+        """Add a hyperfine term
+
+        Add a hyperfine term for a given spin, provided that an electron is
+        present.
+
+        Arguments:
+            i {int} -- Index of the spin (must be different from electron)
+            A {[type]} -- Hyperfine tensor (in MHz)
+            j {int} -- Index of the electron spin. If not specified uses the
+                       one that is present, if there is one (default: None)
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index
+        """
+
+        elec_i = self.elec_indices
+
+        if j is None:
+            if len(elec_i) > 1:
+                raise ValueError('Must specify an electron index in system '
+                                 'with multiple electrons')
+            else:
+                j = list(elec_i)[0]
+        else:
+            if j not in elec_i:
+                raise ValueError('Second index in hyperfine coupling must'
+                                 ' refer to an electron')
+        if i in elec_i:
+            raise ValueError('First index in hyperfine coupling must'
+                             ' not refer to an electron')
+
+        return self.add_bilinear_term(i, j, A, 'Hyperfine')
+
+    def add_dipolar_term(self, i, j, r):
+        """Add a dipolar term
+
+        Add a spin-spin dipolar coupling between two distinct spins. The 
+        coupling is calculated geometrically from the vector connecting them,
+        in Angstrom.
+
+        Arguments:
+            i {int} -- Index of the first spin
+            j {int} -- Index of the second spin
+            r {ndarray} -- Vector connecting the two spins (in Angstrom)
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Raised if i == j
+        """
+
+        if i == j:
+            raise ValueError('Can not set up dipolar coupling with itself')
+
+        r = np.array(r)
+
+        g_i = self.gamma(i)
+        g_j = self.gamma(j)
+
+        rnorm = np.linalg.norm(r)
+        D = -(np.eye(3) - 3.0/rnorm**2.0*r[:, None]*r[None, :])
+        dij = (- (cnst.mu_0*cnst.hbar*(g_i*g_j*1e6)) /
+               (2*(rnorm*1e-10)**3))  # MHz
+        D *= dij
+
+        return self.add_bilinear_term(i, j, D, 'Dipolar')
+
+    def add_quadrupolar_term(self, i, EFG):
+        """Add a quadrupolar term
+
+        Add a quadrupolar term to a nucleus with I >= 1 from its Electric
+        Field Gradient tensor.
+
+        Arguments:
+            i {int} -- Index of the spin
+            EFG {ndarray} --  Electric Field Gradient tensor
+
+        Returns:
+            DoubleTerm -- The term just created
+        """
+
+        EFG = np.array(EFG)
+        Q = self.Q(i)
+        I = self.I(i)
+
+        Qtens = EFG_2_MHZ*Q/(2*I*(2*I-1))*EFG
+
+        return self.add_bilinear_term(i, i, Qtens, 'Quadrupolar')
