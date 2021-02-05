@@ -9,7 +9,7 @@ import scipy.constants as cnst
 
 from muspinsim.constants import EFG_2_MHZ, MU_TAU
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator
-from muspinsim.spinsys import SpinSystem
+#from muspinsim.spinsys import SpinSystem
 
 
 class HamiltonianTerm(object):

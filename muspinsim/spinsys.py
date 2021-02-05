@@ -4,12 +4,15 @@ A class to hold a given spin system, defined by specific nuclei
 """
 
 import numpy as np
+from copy import deepcopy
 
-from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment
+from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
+from muspinsim.hamiltonian import Hamiltonian
+from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment
 
 
-class InteractionTerm(object):
+class InteractionTerm(Clonable):
 
     def __init__(self, spinsys, indices=[], tensor=0, label=None):
 
@@ -71,6 +74,17 @@ class SingleTerm(InteractionTerm):
     def i(self):
         return self._indices[0]
 
+    def rotate(self, rotmat):
+
+        R = np.array(rotmat)
+        v = self._tensor
+        v = np.dot(v, R.T)
+
+        rt = self.clone()
+        rt._tensor = v
+
+        return rt
+
     def __repr__(self):
         return '{0} {{ S_{1} * {2} }}'.format(self._label, self.i,
                                               self._tensor)
@@ -90,6 +104,17 @@ class DoubleTerm(InteractionTerm):
     def j(self):
         return self._indices[1]
 
+    def rotate(self, rotmat):
+
+        R = np.array(rotmat)
+        M = self._tensor
+        M = np.linalg.multi_dot([R, M, R.T])
+
+        rt = self.clone()
+        rt._tensor = M
+
+        return rt
+
     def __repr__(self):
         return '{0} {{ S_{1} * [{2} {3} {4}] * S_{5} }}'.format(self._label,
                                                                 self.i,
@@ -97,13 +122,13 @@ class DoubleTerm(InteractionTerm):
                                                                 self.j)
 
 
-class SpinSystem(object):
+class SpinSystem(Clonable):
 
     def __init__(self, spins=[]):
         """Create a SpinSystem object
 
         Create an object representing a system of particles with spins (muons,
-        electrons and atomic nuclei) and holding their operators.        
+        electrons and atomic nuclei) and holding their operators.
 
         Keyword Arguments:
             spins {list} -- List of symbols representing the various particles.
@@ -139,6 +164,8 @@ class SpinSystem(object):
 
         self._operators = operators
 
+        self._terms = []
+
     @property
     def spins(self):
         return list(self._spins)
@@ -146,6 +173,128 @@ class SpinSystem(object):
     @property
     def dimension(self):
         return self._dim
+
+    def add_term(self, indices, tensor, label='Term'):
+        """Add to the spin system a generic interaction term
+
+        Add a term of the form T*S_i*S_j*S_k*..., where S_i is the vector of 
+        the three spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            indices {[int]} -- Indices of spins appearing in the term
+            tensor {ndarray} -- Tensor with n dimensions (n = len(indices)), 
+                                each of length 3, describing the interaction.
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {'Term'})
+
+        Returns:
+            term {InteractionTerm} -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        """
+
+        for i in indices:
+            if i < 0 or i >= len(self._spins):
+                raise ValueError('Invalid index i')
+
+        tensor = np.array(tensor)
+
+        term = InteractionTerm(self, indices, tensor, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_linear_term(self, i, vector, label='Single'):
+        """Add to the spin system a term linear in one spin
+
+        Add a term of the form v*S_i, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            i {int} -- Index of the spin
+            vector {ndarray} -- Vector v
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {'Single'})
+
+        Returns:
+            term {SingleTerm} -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        """
+
+        if i < 0 or i >= len(self._spins):
+            raise ValueError('Invalid index i')
+
+        vector = np.array(vector)
+
+        term = SingleTerm(self, i, vector, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_bilinear_term(self, i, j, matrix, label='Double'):
+        """Add to the spin system a term bilinear in two spins
+
+        Add a term of the form S_i*M*S_j, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i, and same for S_j.
+
+        Arguments:
+            i {int} -- Index of first spin
+            j {int} -- Index of second spin
+            matrix {ndarray} -- Matrix M
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {'Double'})
+
+        Returns:
+            term {DoubleTerm} -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        """
+
+        if i < 0 or i >= len(self._spins):
+            raise ValueError('Invalid index i')
+
+        if j < 0 or j >= len(self._spins):
+            raise ValueError('Invalid index j')
+
+        matrix = np.array(matrix)
+
+        term = DoubleTerm(self, i, j, matrix, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def remove_term(self, term):
+        """Remove a term from the spin system
+
+        Remove an interaction term from this spin system.
+
+        Arguments:
+            term {InteractionTerm} -- Term to remove
+
+        Raises:
+            ValueError -- The term is not contained in this system
+        """
+
+        self._terms.remove(term)
 
     def gamma(self, i):
         """Returns the gyromagnetic ratio of a given particle
@@ -206,6 +355,28 @@ class SpinSystem(object):
             M = M.kron(ops[i])
 
         return M
+
+    def rotate(self, rotmat=np.eye(3)):
+
+        # Make a clone
+        rssys = self.clone()
+
+        # Edit the terms
+        try:
+            rssys._terms = [t.rotate(rotmat) for t in rssys._terms]
+        except AttributeError:
+            raise RuntimeError('Can only rotate SpinSystems containing Single'
+                               ' or Double terms')
+
+        return rssys
+
+    @property
+    def hamiltonian(self):
+
+        H = np.sum([t.operator.matrix for t in self._terms], axis=0)
+        H = Hamiltonian(H, dim=self.dimension)
+
+        return H
 
     def __len__(self):
         return len(self._gammas)
