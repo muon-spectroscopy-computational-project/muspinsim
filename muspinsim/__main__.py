@@ -89,7 +89,6 @@ def run_experiment(experiment, params, logfile=None):
         raise RuntimeError(
             'Invalid polarization {0}'.format(params.polarization))
 
-    experiment.set_starting_state(muon_axis=muaxis)
     ssys = experiment.spin_system
     observable = ssys.operator({ssys.muon_index: muaxis})
 
@@ -105,6 +104,7 @@ def run_experiment(experiment, params, logfile=None):
             logfile.write('Performing calculations for B = {0} T\n'.format(B))
 
         experiment.set_magnetic_field(B)
+        experiment.set_starting_state(muon_axis=muaxis, T=params.temperature)
 
         evol_results = []
         intgr_results = []

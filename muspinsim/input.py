@@ -4,6 +4,7 @@ Class to read in input files for the muspinsim script
 """
 
 import re
+import numpy as np
 
 
 def _read_list(raw, convert=str):
@@ -71,6 +72,7 @@ class MuSpinInput(object):
             else:
                 curr_block = l.strip()
                 raw_blocks[curr_block] = []
+                indent = None # Reset for each block
 
         # Defaults
         self.name = None
@@ -80,7 +82,7 @@ class MuSpinInput(object):
         self.time = [0.0, 10.0, 100]
         self.save = {'evolution'}
         self.powder = None
-        self.branch = None
+        self.temperature = np.inf
 
         # Couplings
         self.hyperfine = {}
@@ -138,9 +140,12 @@ class MuSpinInput(object):
     def read_powder(self, method, data):
         self.powder = (method, int(data[0]))
 
-    # Temporarily commented out as it's not working properly
-    # def read_branch(self, data):
-    #     self.branch = set(sum([_read_list(d) for d in data], []))
+    @_has_data_size(1)
+    def read_temperature(self, data):
+        if data[0].lower() in ('inf', 'infinity'):
+            self.temperature = np.inf
+        else:
+            self.temperature = float(data[0])
 
     @_has_data_size(3)
     def read_hyperfine(self, i, data):
