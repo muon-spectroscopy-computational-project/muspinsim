@@ -132,7 +132,7 @@ class MuonExperiment(object):
     def set_magnetic_field(self, B=0.0):
         self._B = B
 
-    def run_experiment(self, times=np.linspace(0, 10),
+    def run_experiment(self, times=[0],
                        operators=None,
                        acquire='e'):
 
@@ -147,7 +147,7 @@ class MuonExperiment(object):
         rotmats = [_make_rotmat(t, p) for (t, p) in orients]
         Hz = self._Hz*self.B
         rho0 = self.rho0
-        results = {'t': times, 'e': [], 'i': []}
+        results = {'e': [], 'i': []}
 
         for R in rotmats:
 
@@ -159,13 +159,13 @@ class MuonExperiment(object):
                 evol = H.evolve(rho0, times, operators)
                 results['e'].append(evol)
             if 'i' in acquire:
-                intg = H.integrate_decaying(rho0, MU_TAU, operators)
+                intg = H.integrate_decaying(rho0, MU_TAU, operators)/MU_TAU
                 results['i'].append(intg)
 
         # Averaging
         for k, data in results.items():
             if k == 't' or len(data) == 0:
                 continue
-            results[k] = np.average(data, axis=0, weights=weights)
+            results[k] = np.real(np.average(data, axis=0, weights=weights))
 
         return results

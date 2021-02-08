@@ -72,14 +72,15 @@ class TestExperiment(unittest.TestCase):
         # Empty system
         muexp = MuonExperiment(['e', 'mu'])
         muexp.set_starting_state()
+        times = np.linspace(0, 10)
 
-        results = muexp.run_experiment()
+        results = muexp.run_experiment(times)
 
         self.assertTrue(np.all(results['e'] == 0.5))
 
         # Simple system
         muexp.spin_system.add_linear_term(1, [0, 0, 1.0])
-        results = muexp.run_experiment(acquire='ei')
+        results = muexp.run_experiment(times, acquire='ei')
 
         tau = constants.MU_TAU
 
@@ -87,4 +88,4 @@ class TestExperiment(unittest.TestCase):
                                           0.5*np.cos(2*np.pi*results['t']))))
         self.assertAlmostEqual(results['i'][0],
                                0.5*tau/(1.0+4*np.pi**2*tau**2))
-        
+

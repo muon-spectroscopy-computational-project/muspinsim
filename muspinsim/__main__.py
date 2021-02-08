@@ -3,87 +3,40 @@ import numpy as np
 import argparse as ap
 from datetime import datetime
 
-from soprano.calculate.powder import ZCW, SHREWD
-from muspinsim.constants import MU_TAU
-from muspinsim.spinop import SpinOperator, DensityOperator
-from muspinsim.hamiltonian import MuonHamiltonian
 from muspinsim.input import MuSpinInput
+from muspinsim.experiment import MuonExperiment
 
 
-def build_hamiltonian(params, logfile=None):
+def build_experiment(params, logfile=None):
 
-    H = MuonHamiltonian(params.spins)
+    experiment = MuonExperiment(params.spins)
     if logfile:
         logfile.write('Hamiltonian created with spins:\n')
         logfile.write(', '.join(params.spins) + '\n\n')
 
     for i, A in params.hyperfine.items():
-        H.add_hyperfine_term(i-1, np.array(A))
+        experiment.spin_system.add_hyperfine_term(i-1, np.array(A))
         if logfile:
             logfile.write('Added hyperfine term to spin {0}\n'.format(i))
 
     for (i, j), r in params.dipolar.items():
-        H.add_dipolar_term(i-1, j-1, r)
+        experiment.spin_system.add_dipolar_term(i-1, j-1, r)
         if logfile:
             logfile.write('Added dipolar term to spins '
                           '{0}, {1}\n'.format(i, j))
 
     for i, EFG in params.quadrupolar.items():
-        H.add_quadrupolar_term(i-1, EFG)
+        experiment.spin_system.add_quadrupolar_term(i-1, EFG)
         if logfile:
             logfile.write('Added quadrupolar term to spin {0}\n'.format(i))
 
     if logfile:
         logfile.write('\n' + '*'*20 + '\n\n')
 
-    return H
+    return experiment
 
 
-def make_rotmat(theta, phi):
-
-    ct = np.cos(theta)
-    st = np.sin(theta)
-    cp = np.cos(phi)
-    sp = np.sin(phi)
-
-    return np.array([
-        [cp*ct, -sp, cp*st],
-        [sp*ct,  cp, sp*st],
-        [-st,     0,    ct]])
-
-
-def run_branches(H, times, rho0, observable, params, logfile=None):
-
-    Hs = []
-
-    if params.branch is None or len(H.e) == 0:
-        Hs.append(H)
-    else:
-        if logfile is not None:
-            logfile.write('Using electronic branches: '
-                          '{0}\n'.format(params.branch))
-
-        for b in params.branch:
-            Hs.append(H.reduced_hamiltonian(branch=b))
-
-    evol = []
-    if 'evolution' in params.save:
-        for H in Hs:
-            evol.append(H.evolve(rho0, times, [observable])[:, 0])
-
-        evol = np.average(evol, axis=0)
-
-    intgr = []
-    if 'integral' in params.save:
-        for H in Hs:
-            intgr.append(H.integrate_decaying(rho0, MU_TAU,
-                                              [observable])[0]/MU_TAU)
-        intgr = np.average(intgr, axis=0)
-
-    return np.real(evol), np.real(intgr)
-
-
-def perform_experiment(H, params, logfile=None):
+def run_experiment(experiment, params, logfile=None):
 
     trange = list(params.time)
     if len(trange) == 1:
@@ -115,51 +68,30 @@ def perform_experiment(H, params, logfile=None):
 
     # Powder averaging
     if params.powder is None:
-        orients, weights = np.array([[np.pi/2.0, 0]]), np.array([1.0])
+        experiment.set_single_crystal(0, 0)
     else:
-        try:
-            scheme = params.powder[0].lower()
-            pwd = {'zcw': ZCW, 'shrewd': SHREWD}[scheme]('sphere')
-        except KeyError:
-            raise RuntimeError('Invalid powder averaging scheme ' +
-                               params.powder[0])
+        scheme = params.powder[0]
         N = params.powder[1]
-        orients, weights = pwd.get_orient_angles(N)
+        experiment.set_powder_average(N, scheme)
 
         if logfile:
             logfile.write('Using powder averaging scheme '
                           '{0}\n'.format(scheme.upper()))
             logfile.write(
-                '{0} orientations generated\n\n'.format(len(weights)))
-
-    reduced_H = (params.branch is not None) and (len(H.e) > 0)
-
-    Is = H.spin_system._Is
-    vectors = [[1, 0, 0]]*len(Is)
+                '{0} orientations generated\n\n'.format(
+                    len(experiment.weights)))
 
     if params.polarization == 'longitudinal':
-        vectors[H.mu] = [0, 0, 1]
         muaxis = 'z'
     elif params.polarization == 'transverse':
-        vectors[H.mu] = [1, 0, 0]
         muaxis = 'x'
     else:
         raise RuntimeError(
             'Invalid polarization {0}'.format(params.polarization))
 
-    observable = H.spin_system.operator({H.mu: muaxis})
-
-    if reduced_H:
-        axes = [muaxis if i == H.mu else '0' for i, s in enumerate(Is)]
-        Is = np.delete(Is, H.e)
-        vectors = np.delete(vectors, H.e, axis=0)
-        axes = np.delete(axes, H.e)
-        observable = SpinOperator.from_axes(Is, axes)
-
-    rho0 = DensityOperator.from_vectors(Is,
-                                        vectors,
-                                        [0 if i == H.mu else 1
-                                         for i in range(len(Is))])
+    experiment.set_starting_state(muon_axis=muaxis)
+    ssys = experiment.spin_system
+    observable = ssys.operator({ssys.muon_index: muaxis})
 
     results = {'fields': fields, 'times': times, 'field_scan': []}
 
@@ -172,23 +104,16 @@ def perform_experiment(H, params, logfile=None):
         if logfile is not None:
             logfile.write('Performing calculations for B = {0} T\n'.format(B))
 
-        H.set_B_field(B)
+        experiment.set_magnetic_field(B)
 
         evol_results = []
         intgr_results = []
 
-        for o, w in zip(orients, weights):
-            R = make_rotmat(*o)
-            rH = H.rotate(R)
-            evol, intgr = run_branches(rH, times, rho0, observable, params,
-                                       logfile)
-            evol_results.append(evol*w)
-            intgr_results.append(intgr*w)
+        acquire = [p[0] for p in params.save]
 
-        field_results = {
-            'evolution': np.sum(evol_results, axis=0),
-            'integral': np.sum(intgr_results, axis=0)
-        }
+        field_results = experiment.run_experiment(times,
+                                                  operators=[observable],
+                                                  acquire=acquire)
 
         results['field_scan'].append(field_results)
 
@@ -222,9 +147,8 @@ def main():
 
     tstart = datetime.now()
 
-    H = build_hamiltonian(params, logfile)
-
-    expdata = perform_experiment(H, params, logfile)
+    experiment = build_experiment(params, logfile)
+    expdata = run_experiment(experiment, params, logfile)
 
     tend = datetime.now()
 
@@ -241,7 +165,8 @@ def main():
         for B, scandata in zip(x, y):
             fname = os.path.join(path, params.name +
                                  '_B{0}_evol.dat'.format(B))
-            np.savetxt(fname, np.array([t, scandata['evolution']]).T,
+            d = np.real(scandata['e'][:, 0])
+            np.savetxt(fname, np.array([t, d]).T,
                        header="B field = {0} T".format(B))
 
     if 'integral' in params.save:
@@ -249,7 +174,7 @@ def main():
         fname = os.path.join(path, params.name +
                              '_intgr.dat')
 
-        data = [sd['integral'] for sd in y]
+        data = [sd['i'][0] for sd in y]
 
         np.savetxt(fname, np.array([x, data]).T)
 
