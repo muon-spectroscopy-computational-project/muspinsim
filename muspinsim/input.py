@@ -24,7 +24,7 @@ def _has_data_size(l):
 
         def wrapper(self, *args):
 
-            if len(args[-1]) != l:
+            if len(args[0]) != l:
                 raise RuntimeError('Invalid block length for keyword ' + kw)
 
             return function(self, *args)
@@ -72,7 +72,7 @@ class MuSpinInput(object):
             else:
                 curr_block = l.strip()
                 raw_blocks[curr_block] = []
-                indent = None # Reset for each block
+                indent = None  # Reset for each block
 
         # Defaults
         self.name = None
@@ -85,6 +85,7 @@ class MuSpinInput(object):
         self.temperature = np.inf
 
         # Couplings
+        self.zeeman = {}
         self.hyperfine = {}
         self.dipolar = {}
         self.quadrupolar = {}
@@ -93,7 +94,7 @@ class MuSpinInput(object):
             key = line.split()[0]
             args = line.split()[1:]
             try:
-                getattr(self, 'read_{0}'.format(key))(*args, value)
+                getattr(self, 'read_{0}'.format(key))(value, *args)
             except AttributeError:
                 raise RuntimeError(
                     'Invalid keyword {0} in input file'.format(key))
@@ -137,7 +138,7 @@ class MuSpinInput(object):
         self.save = set(sum([_read_list(d) for d in data], []))
 
     @_has_data_size(1)
-    def read_powder(self, method, data):
+    def read_powder(self, data, method):
         self.powder = (method, int(data[0]))
 
     @_has_data_size(1)
@@ -147,17 +148,27 @@ class MuSpinInput(object):
         else:
             self.temperature = float(data[0])
 
+    @_has_data_size(1)
+    def read_zeeman(self, data, i):
+        i = int(i)-1
+        self.zeeman[i] = _read_list(data[0], float)
+
     @_has_data_size(3)
-    def read_hyperfine(self, i, data):
-        self.hyperfine[int(i)] = _read_tensor(data)
+    def read_hyperfine(self, data, i, j=None):
+        i = int(i)-1
+        j = int(j)-1 if j else None
+        self.hyperfine[(i, j)] = _read_tensor(data)
 
     @_has_data_size(1)
-    def read_dipolar(self, i, j, data):
-        self.dipolar[(int(i), int(j))] = _read_list(data[0], float)
+    def read_dipolar(self, data, i, j):
+        i = int(i)-1
+        j = int(j)-1
+        self.dipolar[(i, j)] = _read_list(data[0], float)
 
     @_has_data_size(3)
-    def read_quadrupolar(self, i, data):
-        self.quadrupolar[int(i)] = _read_tensor(data)
+    def read_quadrupolar(self, data, i):
+        i = int(i)-1
+        self.quadrupolar[i] = _read_tensor(data)
 
     @_has_data_size(1)
     def read_experiment(self, data):

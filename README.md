@@ -57,7 +57,7 @@ spins
     mu e 2H
 ```
 
-List the spins to be used in the system. This has to include a muon (`mu`) and can contain only one electron (`e`) at the moment. The electron, if present, will be the one all hyperfine couplings are with. Atomic species refer to the nuclei (so, for example, if you're trying to model the interaction of a muon with a paramagnetic electron on an iron atom, you want to use `e`, not `Fe`; the actual spin is that of an electron, not a nucleus!). The default isotope is the most common one that has a non-zero spin. Other isotopes may be specified by writing the atomic mass as an integer before the symbol. By default, this is a muon and an electron.
+List the spins to be used in the system. This has to include a muon (`mu`) and can contain one or more electrons (`e`). If only one electron is present, it will be the one all hyperfine couplings are with by default. Atomic species refer to the nuclei (so, for example, if you're trying to model the interaction of a muon with a paramagnetic electron on an iron atom, you want to use `e`, not `Fe`; the actual spin is that of an electron, not a nucleus!). The default isotope is the most common one that has a non-zero spin. Other isotopes may be specified by writing the atomic mass as an integer before the symbol. By default, this is a muon and an electron.
 
 **name**
 
@@ -120,6 +120,16 @@ powder zcw
 
 Specifies powder averaging to use. Powder averaging will attempt to simulate the effect of having a powdered or polycristalline sample by summing over the curves obtained from different orientations of the system. This keyword takes an argument indicating the method for the averaging; currently supported are `zcw` (Zaremba-Conroy-Wolfsberg, [here a reference paper](https://doi.org/10.1002/cmr.a.10065) ) and `shrewd` (Spherical Harmonics Reduction or Elimination by a Weighted Distribution, [reference](https://doi.org/10.1006/jmre.1998.1427)). The value indicates the target number of orientations. Higher numbers mean a finer and more accurate average, but also more calculations. Since the number of orientations isn't free in these schemes, it will be picked to be as close as possible to what the user asked for, but always higher.
 
+**zeeman**
+
+*Example:*
+```
+zeeman 1
+    2.0 2.0 0
+```
+
+Add a Zeeman coupling term specifying a local magnetic field, in Tesla, for a given spin. This coupling will be on top of the standard coupling with the external magnetic field from the laboratory, that always applies to all spins. The argument is the index of the coupled spin. Indices count from 1.
+
 **hyperfine**
 
 *Example:*
@@ -130,7 +140,7 @@ hyperfine 1
     10  10  100
 ```
 
-Specify a hyperfine tensor, in MHz, for a given spin. A hyperfine tensor couples the spin with the one electron in the system; if there is no electron, hyperfine couplings can't be given. The tensor must be written with three numbers per line. The argument (here `1`) represents the index of the coupled spin. Indices count from 1.
+Specify a hyperfine tensor, in MHz, for a given spin. A hyperfine tensor couples the spin with one electron in the system. If there is only one electron, then only one index can be indicated, and it's the index of the non-electron spin. If there is more than one electron in the system, more than one index must be indicated, and the second index must refer to an electron. The tensor must be written with three numbers per line. The argument (here `1`) represents the index of the coupled spin. A second argument specifying the index of the electron is only obligatory if the system has more than one electron. Indices count from 1.
 
 **dipolar**
 
@@ -140,7 +150,7 @@ dipolar 1 2
     0   1   1
 ```
 
-Specify a dipolar coupling between two spins. This is given by a vector connecting them, in Angstrom. The coupling tensor will be then calculated based on the known gyromagnetic ratios of those spins. The two arguments are the indices of the coupled spins.
+Specify a dipolar coupling between two spins. This is given by a vector connecting them, in Angstrom. The coupling tensor will be then calculated based on the known gyromagnetic ratios of those spins. The two arguments are the indices of the coupled spins. Indices count from 1.
 
 **quadrupolar**
 
@@ -152,7 +162,7 @@ quadrupolar 3
     10  10  -200
 ```
 
-Specify a quadrupolar coupling for a spin by using an Electric Field Gradient tensor in a.u. (as returned by for example the DFT software CASTEP). The argument is the index of the spin. The coupling will then be calculated by using the known values of angular momentum and quadrupole moment for each spin. Spins with zero quadrupole moment (like hydrogen) will have zero coupling regardless of what is specified in this term.
+Specify a quadrupolar coupling for a spin by using an Electric Field Gradient tensor in a.u. (as returned by for example the DFT software CASTEP). The argument is the index of the spin. The coupling will then be calculated by using the known values of angular momentum and quadrupole moment for each spin. Spins with zero quadrupole moment (like hydrogen) will have zero coupling regardless of what is specified in this term. Indices count from 1.
 
 **experiment**
 

@@ -14,19 +14,22 @@ def build_experiment(params, logfile=None):
         logfile.write('Hamiltonian created with spins:\n')
         logfile.write(', '.join(params.spins) + '\n\n')
 
-    for i, A in params.hyperfine.items():
-        experiment.spin_system.add_hyperfine_term(i-1, np.array(A))
+    for i, B in params.zeeman.items():
+        experiment.spin_system.add_zeeman_term(i, B)
+
+    for (i, j), A in params.hyperfine.items():
+        experiment.spin_system.add_hyperfine_term(i, np.array(A), j)
         if logfile:
             logfile.write('Added hyperfine term to spin {0}\n'.format(i))
 
     for (i, j), r in params.dipolar.items():
-        experiment.spin_system.add_dipolar_term(i-1, j-1, r)
+        experiment.spin_system.add_dipolar_term(i, j, r)
         if logfile:
             logfile.write('Added dipolar term to spins '
                           '{0}, {1}\n'.format(i, j))
 
     for i, EFG in params.quadrupolar.items():
-        experiment.spin_system.add_quadrupolar_term(i-1, EFG)
+        experiment.spin_system.add_quadrupolar_term(i, EFG)
         if logfile:
             logfile.write('Added quadrupolar term to spin {0}\n'.format(i))
 
