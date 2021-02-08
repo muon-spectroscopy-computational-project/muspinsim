@@ -5,6 +5,7 @@ A class to hold a given spin system, defined by specific nuclei
 
 import numpy as np
 from copy import deepcopy
+from numbers import Number
 
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
@@ -374,7 +375,10 @@ class SpinSystem(Clonable):
     @property
     def hamiltonian(self):
 
-        H = np.sum([t.operator.matrix for t in self._terms], axis=0)
+        if len(self._terms) == 0:
+            H = np.eye(np.prod(self.dimension))
+        else:
+            H = np.sum([t.operator.matrix for t in self._terms], axis=0)
         H = Hamiltonian(H, dim=self.dimension)
 
         return H
@@ -412,11 +416,15 @@ class MuonSpinSystem(SpinSystem):
 
         Arguments:
             i {int} -- Index of the spin
-            B {ndarray} -- Magnetic field vector, in Tesla
+            B {ndarray | number} -- Magnetic field vector, in Tesla. If just a
+                                    scalar is assumed to be along z
 
         Returns:
             SingleTerm -- The term just created
         """
+
+        if isinstance(B, Number):
+            B = [0, 0, B]  # Treat it as along z by default
 
         B = np.array(B)
         return self.add_linear_term(i, B*self.gamma(i), 'Zeeman')

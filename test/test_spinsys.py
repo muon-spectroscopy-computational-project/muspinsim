@@ -4,7 +4,7 @@ import numpy as np
 from muspinsim import constants
 from muspinsim.spinop import SpinOperator
 from muspinsim.spinsys import (SpinSystem, InteractionTerm, SingleTerm,
-                               DoubleTerm)
+                               DoubleTerm, MuonSpinSystem)
 
 
 class TestSpinSystem(unittest.TestCase):
@@ -87,3 +87,48 @@ class TestSpinSystem(unittest.TestCase):
                                                     [0, 0.25, 0.5, 0.5],
                                                     [0.5, 0.5, -0.75, 0],
                                                     [0.0, 0.5, 0, -0.25]]))))
+
+
+class TestMuonSpinSystem(unittest.TestCase):
+
+    def test_terms(self):
+
+        mSsys = MuonSpinSystem(['e', 'mu'])
+
+        self.assertEqual(mSsys.dimension, (2, 2))
+        self.assertEqual(mSsys.elec_indices, {0})
+        self.assertEqual(mSsys.muon_index, 1)
+
+        gmu = constants.MU_GAMMA
+        ge = constants.ELEC_GAMMA
+
+        z0 = mSsys.add_zeeman_term(0, 1.0)
+        z1 = mSsys.add_zeeman_term(1, 1.0)
+        h01 = mSsys.add_hyperfine_term(1, np.eye(3)*100)
+
+        H = mSsys.hamiltonian.matrix
+
+        self.assertTrue(np.all(np.isclose(np.diag(H),
+                                          [0.5*(ge+gmu)+25,
+                                           0.5*(ge-gmu)-25,
+                                           0.5*(-ge+gmu)-25,
+                                           0.5*(-ge-gmu)+25])))
+
+        mSsys.remove_term(h01)
+
+        H = mSsys.hamiltonian.matrix
+
+        self.assertTrue(np.all(np.isclose(np.diag(H),
+                                          [0.5*(ge+gmu),
+                                           0.5*(ge-gmu),
+                                           0.5*(-ge+gmu),
+                                           0.5*(-ge-gmu)])))
+
+        self.assertEqual(z0.label, 'Zeeman')
+        self.assertEqual(h01.label, 'Hyperfine')
+
+        mSsys = MuonSpinSystem(['e', 'e', 'mu'])
+
+        self.assertEqual(mSsys.elec_indices, {0, 1})
+        with self.assertRaises(ValueError):
+            mSsys.add_hyperfine_term(2, np.eye(3))  # Must specify electron
