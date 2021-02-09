@@ -29,6 +29,18 @@ def _make_rotmat(theta, phi):
 class MuonExperiment(object):
 
     def __init__(self, spins=['e', 'mu']):
+        """Create a MuonExperiment object
+
+        Create a "virtual spectrometer" that can be used to carry out any
+        number of experiments on a given SpinSystem.
+
+        Keyword Arguments:
+            spins {list} -- The spins in the system. See SpinSystem for
+                            details (default: {['e', 'mu']})
+
+        Raises:
+            ValueError -- If an empty spins list is passed
+        """
 
         if len(spins) == 0:
             raise ValueError('At least one spin must be included')
@@ -71,18 +83,39 @@ class MuonExperiment(object):
         return self._rho0
 
     def set_single_crystal(self, theta=0.0, phi=0.0):
+        """Set a single crystal orientation
+
+        Make the sample have a single specified crystallite orientation
+
+        Keyword Arguments:
+            theta {number} -- Polar angle (default: {0.0})
+            phi {number} -- Azimuthal angle (default: {0.0})
+        """
 
         self._orientations = np.array([[theta, phi]])
         self._weights = np.ones(1)
 
     def set_powder_average(self, N=20, scheme='zcw'):
+        """Set a powder average method
+
+        Set a scheme and a number of angles for a powder averaging algorithm,
+        representing a polycrystalline or powdered sample.
+
+        Keyword Arguments:
+            N {number} -- Minimum number of orientations to use (default: {20})
+            scheme {str} -- Powder averaging scheme, either 'zcw' or 'shrewd'
+                            (default: {'zcw'})
+
+        Raises:
+            ValueError -- Invalid powder averaging scheme
+        """
 
         try:
             scheme = scheme.lower()
             pwd = {'zcw': ZCW, 'shrewd': SHREWD}[scheme]('sphere')
         except KeyError:
-            raise RuntimeError('Invalid powder averaging scheme ' +
-                               scheme)
+            raise ValueError('Invalid powder averaging scheme ' +
+                             scheme)
 
         orients, weights = pwd.get_orient_angles(N)
 
@@ -90,7 +123,21 @@ class MuonExperiment(object):
         self._weights = weights
 
     def set_starting_state(self, muon_axis='x', T=np.inf):
-        # We assume a thermal starting state
+        """Set the starting quantum state for the system
+
+        Sets the starting quantum state for the system as a coherently 
+        polarized muon + a thermal density matrix (using only the Zeeman 
+        terms) for every other spin.
+
+        Keyword Arguments:
+            muon_axis {str|ndarray} -- String or vector defining a direction
+                                       for the starting muon polarization 
+                                       (default: {'x'})
+            T {number} -- Temperature in Kelvin of the state (default: {np.inf})
+
+        Raises:
+            ValueError -- Invalid muon axis
+        """
 
         if isinstance(muon_axis, str):
             try:
@@ -101,6 +148,9 @@ class MuonExperiment(object):
                 }[muon_axis]
             except KeyError:
                 raise ValueError('muon_axis must be a vector or x, y or z')
+        else:
+            muon_axis = np.array(muon_axis)
+            muon_axis /= np.linalg.norm(muon_axis)
 
         mu_i = self.spin_system.muon_index
         rhos = []
@@ -130,11 +180,37 @@ class MuonExperiment(object):
             self._rho0 = self._rho0.kron(r)
 
     def set_magnetic_field(self, B=0.0):
+        """Set the magnetic field
+        
+        Set the magnetic field applied to the sample, always pointing along
+        the Z axis in the laboratory frame.
+
+        Keyword Arguments:
+            B {number} -- Magnetic field in Tesla (default: {0.0})
+        """
         self._B = B
 
     def run_experiment(self, times=[0],
                        operators=None,
                        acquire='e'):
+        """Run an experiment
+        
+        Run an experiment by evolving or integrating the starting state under
+        the Hamiltonian of the system for the given times, and measuring the
+        given quantity.
+        
+        Keyword Arguments:
+            times {list} -- Times to sample evolution at (default: {[0]})
+            operators {list} -- List of operators to measure expectation values 
+                                of (default: {None})
+            acquire {str} -- Whether to record the evolution ('e') of the 
+                             expectation values, or their integral ('i') 
+                             convolved with the muon's exponential decay, 
+                             or both ('ei', 'ie') (default: {'e'})
+        
+        Returns:
+            dict -- Dictionary of results.
+        """
 
         if operators is None:
             operators = [self.spin_system.operator({
