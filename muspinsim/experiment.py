@@ -181,7 +181,7 @@ class MuonExperiment(object):
 
     def set_magnetic_field(self, B=0.0):
         """Set the magnetic field
-        
+
         Set the magnetic field applied to the sample, always pointing along
         the Z axis in the laboratory frame.
 
@@ -194,11 +194,11 @@ class MuonExperiment(object):
                        operators=None,
                        acquire='e'):
         """Run an experiment
-        
+
         Run an experiment by evolving or integrating the starting state under
         the Hamiltonian of the system for the given times, and measuring the
         given quantity.
-        
+
         Keyword Arguments:
             times {list} -- Times to sample evolution at (default: {[0]})
             operators {list} -- List of operators to measure expectation values 
@@ -207,7 +207,7 @@ class MuonExperiment(object):
                              expectation values, or their integral ('i') 
                              convolved with the muon's exponential decay, 
                              or both ('ei', 'ie') (default: {'e'})
-        
+
         Returns:
             dict -- Dictionary of results.
         """

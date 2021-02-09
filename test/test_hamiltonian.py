@@ -26,7 +26,7 @@ class TestHamiltonian(unittest.TestCase):
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
         rho0 = DensityOperator.from_vectors()  # Start along z
-        t = np.linspace(0, 2*np.pi, 100)
+        t = np.linspace(0, 1, 100)
 
         evol = H.evolve(rho0, t, ssys.operator({0: 'z'}))
 
