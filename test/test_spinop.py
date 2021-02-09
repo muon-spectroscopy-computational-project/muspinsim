@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
 
-from muspinsim.spinop import SpinOperator, DensityOperator, Operator
+from muspinsim.spinop import (SpinOperator, DensityOperator, Operator,
+                              SuperOperator)
 
 
 class TestSpinOperator(unittest.TestCase):
@@ -156,3 +157,20 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(rho.matrix,
                                           np.array([[0.5, -0.25j],
                                                     [0.25j, 0.5]]))))
+
+    def test_superoperator(self):
+
+        sx = SpinOperator.from_axes()
+        rho0 = DensityOperator.from_vectors()
+        lsx = SuperOperator.left_multiplier(sx)
+        rsx = SuperOperator.right_multiplier(sx)
+        csx = SuperOperator.commutator(sx)
+        acsx = SuperOperator.anticommutator(sx)
+        bksx = SuperOperator.bracket(sx)
+
+        self.assertTrue(np.all((sx*rho0).matrix == (lsx*rho0).matrix))
+        self.assertTrue(np.all((rho0*sx).matrix == (rsx*rho0).matrix))
+        self.assertTrue(np.all((sx*rho0-rho0*sx).matrix == (csx*rho0).matrix))
+        self.assertTrue(np.all((sx*rho0+rho0*sx).matrix == (acsx*rho0).matrix))
+        self.assertTrue(np.all((sx*rho0*sx.dagger()).matrix ==
+                               (bksx*rho0).matrix))

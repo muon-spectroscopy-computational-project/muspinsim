@@ -126,7 +126,7 @@ class Operator(object):
         if isinstance(x, Operator):
 
             if self.dimension != x.dimension:
-                raise ArithmeticError('Can not multiply to Operators'
+                raise ArithmeticError('Can not add to Operators'
                                       ' with different dimensions')
 
             ans = self.clone()
@@ -148,7 +148,7 @@ class Operator(object):
         if isinstance(x, Operator):
 
             if self.dimension != x.dimension:
-                raise ArithmeticError('Can not multiply to Operators'
+                raise ArithmeticError('Can not subtract to Operators'
                                       ' with different dimensions')
 
             ans = self.clone()
@@ -534,3 +534,176 @@ class DensityOperator(Operator):
                              ' compatible dimensions')
 
         return np.sum(operator.matrix*self.matrix.T)
+
+
+class SuperOperator(Operator):
+
+    def __init__(self, matrix, dim=None):
+
+        matrix = np.array(matrix)
+        n = matrix.shape[0]**0.5
+
+        if int(n) != n:
+            raise ValueError('Matrix rank should be a perfect square')
+
+        if dim is None:
+            dim = (n, n)
+
+        super(SuperOperator, self).__init__(matrix, dim)
+
+    @classmethod
+    def left_multiplier(self, operator):
+        """Create a SuperOperator that performs a left multiplication
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        """
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(m, np.eye(m.shape[0]))
+
+        return self(M, d+d)
+
+    @classmethod
+    def right_multiplier(self, operator):
+        """Create a SuperOperator that performs a right multiplication
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        """
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(np.eye(m.shape[0]), m.T)
+
+        return self(M, d+d)
+
+    @classmethod
+    def commutator(self, operator):
+        """Create a SuperOperator that performs a commutation
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho-rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        """
+
+        return self.left_multiplier(operator)-self.right_multiplier(operator)
+
+    @classmethod
+    def anticommutator(self, operator):
+        """Create a SuperOperator that performs an anticommutation
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho+rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        """
+
+        return self.left_multiplier(operator)+self.right_multiplier(operator)
+
+    @classmethod
+    def bracket(self, operator):
+        """Create a SuperOperator that performs a basis change
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho*O^
+
+        where O^ is the conjugate transpose of O.
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        """
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(m, m.conj())
+
+        return self(M, d+d)
+
+    def __add__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__add__(x)
+
+        raise TypeError('Unsupported operation for SuperOperator')
+
+    def __sub__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__sub__(x)
+
+        raise TypeError('Unsupported operation for SuperOperator')
+
+    def __mul__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__mul__(x)
+        elif isinstance(x, Operator):
+            # Vectorize x
+            m = x.matrix
+            s = m.shape
+            m = m.reshape((-1,))
+            m = np.dot(self.matrix, m).reshape(s)
+            return Operator(m, x.dimension)
+
+        raise TypeError('Unsupported operation for Operator')
+
+    def __rmul__(self, x):
+
+        if isinstance(x, Number):
+            return self.__mul__(x)
+        elif isinstance(x, SuperOperator):
+            return x*self
+
+        raise TypeError('Unsupported operation for Operator')
+
+    def __truediv__(self, x):
+
+        if isinstance(x, Number):
+            x = 1.0/x
+            return self*x
+
+        raise TypeError('Unsupported operation for Operator')
+
+    def __eq__(self, x):
+
+        if not isinstance(x, Operator):
+            return False
+
+        if self.dimension != x.dimension:
+            return False
+
+        return np.all(self._matrix == x._matrix)
