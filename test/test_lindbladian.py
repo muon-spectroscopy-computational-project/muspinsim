@@ -38,6 +38,8 @@ class TestLindbladian(unittest.TestCase):
 
         # Basic test
         sx = SpinOperator.from_axes()
+        sp = SpinOperator.from_axes(0.5, '+')
+        sm = SpinOperator.from_axes(0.5, '-')
         sz = SpinOperator.from_axes(0.5, 'z')
 
         H = Hamiltonian(sz.matrix)
@@ -60,9 +62,21 @@ class TestLindbladian(unittest.TestCase):
             A = ap*am/(am-ap)
 
             # Analytical solution for this case
-            sol = np.real(0.5*A*(np.exp(ap*t)/ap-np.exp(am*t)/am))
+            solx = np.real(0.5*A*(np.exp(ap*t)/ap-np.exp(am*t)/am))
 
-            self.assertTrue(np.all(np.isclose(evol[:, 0], sol)))
+            self.assertTrue(np.all(np.isclose(evol[:, 0], solx)))
+
+            gp = g*1.5
+            gm = g*0.5
+            L = Lindbladian.from_hamiltonian(H, [(sp, gp), (sm, gm)])
+
+            evol = L.evolve(rho0, t, [sx, sz])
+
+            solx = np.real(0.5*np.cos(2*np.pi*t)*np.exp(-2*np.pi*g*t))
+            solz = 0.25*(1-np.exp(-4*np.pi*g*t))
+
+            self.assertTrue(np.all(np.isclose(evol[:, 0], solx)))
+            self.assertTrue(np.all(np.isclose(evol[:, 1], solz)))
 
     def test_integrate(self):
 

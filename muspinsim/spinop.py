@@ -8,7 +8,7 @@ from numbers import Number
 
 
 def _Sp(mvals):
-    return np.diag(0.5*(np.cumsum(2*mvals)[:-1]**0.5), k=1)+.0j
+    return 2*np.diag(0.5*(np.cumsum(2*mvals)[:-1]**0.5), k=1)+.0j
 
 
 def _Sm(mvals):
@@ -17,12 +17,12 @@ def _Sm(mvals):
 
 def _Sx(mvals):
     o = _Sp(mvals)
-    return o + o.T
+    return 0.5*(o + o.T)
 
 
 def _Sy(mvals):
     o = _Sp(mvals)
-    return 1.0j*(o.T-o)
+    return 0.5j*(o.T-o)
 
 
 def _Sz(mvals):
