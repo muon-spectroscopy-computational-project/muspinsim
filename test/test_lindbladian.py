@@ -50,15 +50,47 @@ class TestLindbladian(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5*np.cos(2*np.pi*t))))
 
         # Same but with decay
-        g = 2.0
-        L.add_dissipative_term(sx, g)
-        evol = L.evolve(rho0, t, sx)
+        for g in [1.0, 2.0, 5.0, 10.0]:
 
-        ap = -0.5*np.pi*g+((0.5*np.pi*g)**2-4*np.pi**2)**0.5
-        am = -0.5*np.pi*g-((0.5*np.pi*g)**2-4*np.pi**2)**0.5
-        A = ap*am/(am-ap)
+            L = Lindbladian.from_hamiltonian(H, [(sx, g)])
+            evol = L.evolve(rho0, t, sx)
 
-        # Analytical solution for this case
-        sol = np.real(0.5*A*(np.exp(ap*t)/ap-np.exp(am*t)/am))
+            ap = -0.5*np.pi*g+((0.5*np.pi*g)**2-4*np.pi**2)**0.5
+            am = -0.5*np.pi*g-((0.5*np.pi*g)**2-4*np.pi**2)**0.5
+            A = ap*am/(am-ap)
 
-        self.assertTrue(np.all(np.isclose(evol[:, 0], sol)))
+            # Analytical solution for this case
+            sol = np.real(0.5*A*(np.exp(ap*t)/ap-np.exp(am*t)/am))
+
+            self.assertTrue(np.all(np.isclose(evol[:, 0], sol)))
+
+    def test_integrate(self):
+
+        # Basic test
+        sx = SpinOperator.from_axes()
+        sz = SpinOperator.from_axes(0.5, 'z')
+
+        H = Hamiltonian(sz.matrix)
+        L = Lindbladian.from_hamiltonian(H)
+        rho0 = DensityOperator.from_vectors(0.5, [1, 0, 0], 0)
+        t = np.linspace(0, 1, 100)
+
+        tau = 2.0
+        avg = L.integrate_decaying(rho0, tau, sx)
+
+        self.assertAlmostEqual(avg[0], 0.5*tau/(1+4*np.pi**2*tau**2))
+
+        # Same but with decay
+        for g in [1.0, 2.0, 5.0, 10.0]:
+
+            L = Lindbladian.from_hamiltonian(H, [(sx, g)])
+            avg = L.integrate_decaying(rho0, tau, sx)
+
+            ap = -0.5*np.pi*g+((0.5*np.pi*g)**2-4*np.pi**2)**0.5
+            am = -0.5*np.pi*g-((0.5*np.pi*g)**2-4*np.pi**2)**0.5
+            A = ap*am/(am-ap)
+
+            # Analytical solution for this case
+            sol = np.real(0.5*A*tau*(1/((1-ap*tau)*ap)-1/((1-am*tau)*am)))
+
+            self.assertAlmostEqual(avg[0], sol)
