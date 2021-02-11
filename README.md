@@ -120,6 +120,16 @@ powder zcw
 
 Specifies powder averaging to use. Powder averaging will attempt to simulate the effect of having a powdered or polycristalline sample by summing over the curves obtained from different orientations of the system. This keyword takes an argument indicating the method for the averaging; currently supported are `zcw` (Zaremba-Conroy-Wolfsberg, [here a reference paper](https://doi.org/10.1002/cmr.a.10065) ) and `shrewd` (Spherical Harmonics Reduction or Elimination by a Weighted Distribution, [reference](https://doi.org/10.1006/jmre.1998.1427)). The value indicates the target number of orientations. Higher numbers mean a finer and more accurate average, but also more calculations. Since the number of orientations isn't free in these schemes, it will be picked to be as close as possible to what the user asked for, but always higher.
 
+**temperature**
+
+*Example:*
+```
+temperature
+    20
+```
+
+Temperature of the system, in Kelvin. Controls the initial thermal density matrix for everything outside of the muon as well as the temperature of the heat bath in presence of dissipation.
+
 **zeeman**
 
 *Example:*
@@ -163,6 +173,16 @@ quadrupolar 3
 ```
 
 Specify a quadrupolar coupling for a spin by using an Electric Field Gradient tensor in a.u. (as returned by for example the DFT software CASTEP). The argument is the index of the spin. The coupling will then be calculated by using the known values of angular momentum and quadrupole moment for each spin. Spins with zero quadrupole moment (like hydrogen) will have zero coupling regardless of what is specified in this term. Indices count from 1.
+
+**dissipation**
+
+*Example:*
+```
+dissipation 1
+    0.5
+```
+
+Add a dissipation term for a given spin, which switches the system to using the [Lindblad master equation](https://en.wikipedia.org/wiki/Lindbladian) instead of regular unitary quantim evolution. The dissipative term will cause random spin flips that decohere the system and drive it towards a thermal equilibrium state (determined by the temperature). The dissipation term is given in MHz. Indices count from 1. CAUTION: Lindbladian matrices can be not diagonalizable. This function is new and still experimental, and it does not yet account for that, so it could fail in some cases.
 
 **experiment**
 
