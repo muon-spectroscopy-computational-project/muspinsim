@@ -11,6 +11,7 @@ from muspinsim.constants import MU_TAU
 from muspinsim.spinop import DensityOperator, SpinOperator, Operator
 from muspinsim.spinsys import MuonSpinSystem
 from muspinsim.hamiltonian import Hamiltonian
+from muspinsim.lindbladian import Lindbladian
 
 
 def _make_rotmat(theta, phi):
@@ -24,6 +25,25 @@ def _make_rotmat(theta, phi):
         [cp*ct, -sp, cp*st],
         [sp*ct,  cp, sp*st],
         [-st,     0,    ct]])
+
+
+def _make_lindbladian(ssys, B, T):
+
+    H = ssys.hamiltonian
+    g = ssys.gammas
+
+    if T > 0:
+        Zu = np.exp(-cnst.h*g*B*1e6/(cnst.k*T))
+    else:
+        Zu = g*0
+
+    dops = []
+    for i, d in enumerate(ssys.dissipation_factors):
+        if (d != 0):
+            dops.append((ssys.operator({i: '-'}), d/(1+Zu[i])))
+            dops.append((ssys.operator({i: '+'}), d*Zu[i]/(1+Zu[i])))
+
+    return Lindbladian.from_hamiltonian(H, dops)
 
 
 class MuonExperiment(object):
@@ -59,8 +79,9 @@ class MuonExperiment(object):
 
         self._Hz = Hamiltonian.from_spin_operator(self._Hz)
         self._B = 0
-
-        self.set_starting_state()
+        self._T = np.inf
+        self._mupol = [1, 0, 0]
+        self._rho0 = None
 
     @property
     def spin_system(self):
@@ -79,8 +100,12 @@ class MuonExperiment(object):
         return self._B
 
     @property
-    def rho0(self):
-        return self._rho0
+    def T(self):
+        return self._T
+
+    @property
+    def muon_polarization(self):
+        return np.array(self._mupol)
 
     def set_single_crystal(self, theta=0.0, phi=0.0):
         """Set a single crystal orientation
@@ -122,63 +147,6 @@ class MuonExperiment(object):
         self._orientations = orients
         self._weights = weights
 
-    def set_starting_state(self, muon_axis='x', T=np.inf):
-        """Set the starting quantum state for the system
-
-        Sets the starting quantum state for the system as a coherently 
-        polarized muon + a thermal density matrix (using only the Zeeman 
-        terms) for every other spin.
-
-        Keyword Arguments:
-            muon_axis {str|ndarray} -- String or vector defining a direction
-                                       for the starting muon polarization 
-                                       (default: {'x'})
-            T {number} -- Temperature in Kelvin of the state (default: {np.inf})
-
-        Raises:
-            ValueError -- Invalid muon axis
-        """
-
-        if isinstance(muon_axis, str):
-            try:
-                muon_axis = {
-                    'x': [1, 0, 0],
-                    'y': [0, 1, 0],
-                    'z': [0, 0, 1]
-                }[muon_axis]
-            except KeyError:
-                raise ValueError('muon_axis must be a vector or x, y or z')
-        else:
-            muon_axis = np.array(muon_axis)
-            muon_axis /= np.linalg.norm(muon_axis)
-
-        mu_i = self.spin_system.muon_index
-        rhos = []
-
-        for i, s in enumerate(self.spin_system.spins):
-            I = self.spin_system.I(i)
-            if i == mu_i:
-                r = DensityOperator.from_vectors(I, muon_axis, 0)
-            else:
-                # Get the Zeeman Hamiltonian for this field
-                Sz = SpinOperator.from_axes(I, 'z')
-                E = np.diag(Sz.matrix)*self.spin_system.gamma(i)*self.B*1e6
-                if T > 0:
-                    Z = np.exp(-cnst.h*E/(cnst.k*T))
-                else:
-                    Z = np.where(E == np.amin(E), 1.0, 0.0)
-                if np.sum(Z) > 0:
-                    Z /= np.sum(Z)
-                else:
-                    Z = np.ones(len(E))/len(E)
-                r = DensityOperator(np.diag(Z))
-
-            rhos.append(r)
-
-        self._rho0 = rhos[0]
-        for r in rhos[1:]:
-            self._rho0 = self._rho0.kron(r)
-
     def set_magnetic_field(self, B=0.0):
         """Set the magnetic field
 
@@ -188,7 +156,106 @@ class MuonExperiment(object):
         Keyword Arguments:
             B {number} -- Magnetic field in Tesla (default: {0.0})
         """
+
+        self._rho0 = None
         self._B = B
+
+    def set_muon_polarization(self, muon_axis='x'):
+        """Set muon initial polarization
+
+        Set the direction of the muon's initial polarization.
+
+        Keyword Arguments:
+            muon_axis {str|ndarray} -- String or vector defining a direction
+                                       for the starting muon polarization 
+                                       (default: {'x'})        
+        Raises:
+            ValueError -- Invalid muon_axis
+        """
+
+        if isinstance(muon_axis, str):
+            try:
+                muon_axis = {
+                    'x': [1, 0, 0],
+                    'y': [0, 1, 0],
+                    'z': [0, 0, 1],
+                    '-x': [-1, 0, 0],
+                    '-y': [0, -1, 0],
+                    '-z': [0, 0, -1]
+                }[muon_axis]
+            except KeyError:
+                raise ValueError('muon_axis must be a vector or x, y or z')
+        else:
+            muon_axis = np.array(muon_axis)
+            muon_axis /= np.linalg.norm(muon_axis)
+
+        self._rho0 = None
+        self._mupol = muon_axis
+
+    def set_temperature(self, T=np.inf):
+        """Sets the temperature of the experiment. 
+
+        Sets the temperature of the experiment in Kelvin. Determines the
+        initial thermal starting state and the temperature of the thermal bath
+        if the system contains dissipation terms.
+
+        Keyword Arguments:
+            T {Number} -- Temperature in Kelvin (default: {np.inf})
+
+        Raises:
+            ValueError -- Invalid temperature
+        """
+
+        if (T < 0):
+            raise ValueError('Can not set a negative temperature')
+
+        self._rho0 = None
+        self._T = T
+
+    def get_starting_state(self):
+        """Return the starting quantum state for the system
+
+        Build the starting quantum state for the system as a coherently 
+        polarized muon + a thermal density matrix (using only the Zeeman 
+        terms) for every other spin for the current magnetic field,
+        temperature, and muon polarization axis.
+
+        Returns:
+            DensityOperator -- The starting density matrix
+        """
+
+        if self._rho0 is None:
+            T = self._T
+            muon_axis = self._mupol
+
+            mu_i = self.spin_system.muon_index
+            rhos = []
+
+            for i, s in enumerate(self.spin_system.spins):
+                I = self.spin_system.I(i)
+                if i == mu_i:
+                    r = DensityOperator.from_vectors(I, muon_axis, 0)
+                else:
+                    # Get the Zeeman Hamiltonian for this field
+                    Sz = SpinOperator.from_axes(I, 'z')
+                    E = np.diag(Sz.matrix)*self.spin_system.gamma(i)*self.B*1e6
+                    if T > 0:
+                        Z = np.exp(-cnst.h*E/(cnst.k*T))
+                    else:
+                        Z = np.where(E == np.amin(E), 1.0, 0.0)
+                    if np.sum(Z) > 0:
+                        Z /= np.sum(Z)
+                    else:
+                        Z = np.ones(len(E))/len(E)
+                    r = DensityOperator(np.diag(Z))
+
+                rhos.append(r)
+
+            self._rho0 = rhos[0]
+            for r in rhos[1:]:
+                self._rho0 = self._rho0.kron(r)
+
+        return self._rho0
 
     def run_experiment(self, times=[0],
                        operators=None,
@@ -222,13 +289,25 @@ class MuonExperiment(object):
 
         rotmats = [_make_rotmat(t, p) for (t, p) in orients]
         Hz = self._Hz*self.B
-        rho0 = self.rho0
+        rho0 = self.get_starting_state()
+
         results = {'e': [], 'i': []}
+
+        use_dissipation = self.spin_system.is_dissipative
+
+        if use_dissipation:
+            Hz = Lindbladian.from_hamiltonian(Hz)
 
         for R in rotmats:
 
-            Hint = self.spin_system.rotate(R).hamiltonian
-            H = Hz + Hint  # Total Hamiltonian
+            rotsys = self.spin_system.rotate(R)
+
+            if use_dissipation:
+                Hint = _make_lindbladian(rotsys, self.B, self.T)
+            else:
+                Hint = rotsys.hamiltonian
+
+            H = Hz + Hint  # Total Hamiltonian/Lindbladian
 
             if 'e' in acquire:
                 # Evolution

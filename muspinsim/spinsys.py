@@ -6,6 +6,7 @@ A class to hold a given spin system, defined by specific nuclei
 import numpy as np
 from copy import deepcopy
 from numbers import Number
+import scipy.constants as cnst
 
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
@@ -167,14 +168,51 @@ class SpinSystem(Clonable):
         self._operators = operators
 
         self._terms = []
+        self._dissip = np.zeros(len(spins))
 
     @property
     def spins(self):
         return list(self._spins)
 
     @property
+    def gammas(self):
+        return self._gammas.copy()
+
+    @property
+    def Qs(self):
+        return self._Qs.copy()
+
+    @property
+    def Is(self):
+        return self._Is.copy()
+
+    @property
     def dimension(self):
         return self._dim
+
+    @property
+    def dissipation_factors(self):
+        return self._dissip.copy()
+
+    @property
+    def is_dissipative(self):
+        return np.any(self._dissip != 0)
+
+    def set_dissipation(self, i, d=0.0):
+        """Set a dissipation factor for a spin.
+
+        Set a dissipation factor for a given spin, representing its coupling
+        (in MHz) with an external heat bath to include in the Lindbladian of
+        the system. 
+
+        Arguments:
+            i {int} -- Index of the spin
+
+        Keyword Arguments:
+            d {number} -- Dissipation factor in MHz (default: {0.0})
+        """
+
+        self._dissip[i] = d
 
     def add_term(self, indices, tensor, label='Term'):
         """Add to the spin system a generic interaction term

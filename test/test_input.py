@@ -53,11 +53,11 @@ quadrupolar 3
         self.assertEqual(f.powder, ('zcw', 100))
 
         # Couplings
-        self.assertEqual(f.hyperfine[1], [[1.0, 0.0, 0.0],
-                                          [0.0, 1.0, 0.0],
-                                          [0.0, 0.0, 1.0]])
-        self.assertEqual(f.dipolar[(1, 3)], [0.0, 0.0, 1.0])
-        self.assertEqual(f.quadrupolar[3], [[1.0, 0.0, 0.0],
+        self.assertEqual(f.hyperfine[(0, None)], [[1.0, 0.0, 0.0],
+                                                  [0.0, 1.0, 0.0],
+                                                  [0.0, 0.0, 1.0]])
+        self.assertEqual(f.dipolar[(0, 2)], [0.0, 0.0, 1.0])
+        self.assertEqual(f.quadrupolar[2], [[1.0, 0.0, 0.0],
                                             [0.0, 1.0, 0.0],
                                             [0.0, 0.0, -2.0]])
 

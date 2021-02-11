@@ -89,6 +89,7 @@ class MuSpinInput(object):
         self.hyperfine = {}
         self.dipolar = {}
         self.quadrupolar = {}
+        self.dissipation = {}
 
         for line, value in raw_blocks.items():
             key = line.split()[0]
@@ -169,6 +170,11 @@ class MuSpinInput(object):
     def read_quadrupolar(self, data, i):
         i = int(i)-1
         self.quadrupolar[i] = _read_tensor(data)
+
+    @_has_data_size(1)
+    def read_dissipation(self, data, i):
+        i = int(i)-1
+        self.dissipation[i] = float(data[0])
 
     @_has_data_size(1)
     def read_experiment(self, data):

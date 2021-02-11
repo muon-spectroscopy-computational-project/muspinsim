@@ -46,9 +46,9 @@ class TestExperiment(unittest.TestCase):
     def test_rho0(self):
 
         muexp = MuonExperiment(['e', 'mu'])
-        muexp.set_starting_state()
+        rho0 = muexp.get_starting_state()
 
-        self.assertTrue(np.all(np.isclose(muexp.rho0.matrix,
+        self.assertTrue(np.all(np.isclose(rho0.matrix,
                                           [[0.25, 0.25, 0,    0],
                                            [0.25, 0.25, 0,    0],
                                               [0, 0,    0.25, 0.25],
@@ -59,19 +59,21 @@ class TestExperiment(unittest.TestCase):
 
         T = 100
         muexp.set_magnetic_field(2.0e-6*cnst.k*T/(ge*cnst.h))
-        muexp.set_starting_state('z', T=T)
+        muexp.set_temperature(T)
+        muexp.set_muon_polarization('z')
+
+        rho0 = muexp.get_starting_state()
 
         Z = np.exp([-1, 1])
         Z /= np.sum(Z)
 
-        self.assertTrue(np.all(np.isclose(np.diag(muexp.rho0.matrix),
+        self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix),
                                           [Z[0], 0, Z[1], 0])))
 
     def test_run(self):
 
         # Empty system
         muexp = MuonExperiment(['e', 'mu'])
-        muexp.set_starting_state()
         times = np.linspace(0, 10)
 
         results = muexp.run_experiment(times)
@@ -85,7 +87,35 @@ class TestExperiment(unittest.TestCase):
         tau = constants.MU_TAU
 
         self.assertTrue(np.all(np.isclose(results['e'][:, 0],
-                                          0.5*np.cos(2*np.pi*results['t']))))
+                                          0.5*np.cos(2*np.pi*times))))
         self.assertAlmostEqual(results['i'][0],
-                               0.5*tau/(1.0+4*np.pi**2*tau**2))
+                               0.5/(1.0+4*np.pi**2*tau**2))
 
+    def test_dissipation(self):
+
+        # Simple system
+        g = 1.0
+        muexp = MuonExperiment(['mu'])
+        muexp.spin_system.set_dissipation(0, g)
+
+        times = np.linspace(0, 10)
+
+        results = muexp.run_experiment(times)
+        evol = results['e']
+
+        solx = np.real(0.5*np.exp(-np.pi*g*times))
+        self.assertTrue(np.all(np.isclose(evol[:, 0], solx)))
+
+        # Check for temperature equilibrium
+        T = 0.1
+        muexp.set_magnetic_field(-1.0)
+        muexp.set_temperature(T)
+
+        beta = 1.0/(cnst.k*T)
+        Z = np.exp(-cnst.h*constants.MU_GAMMA*1e6*beta)
+
+        # Just let it evolve, see the result at long times
+        Sz = muexp.spin_system.operator({0: 'z'})
+        rhoinf = muexp.run_experiment([20], Sz)['e']
+
+        self.assertAlmostEqual(rhoinf[0, 0], 0.5*(1-Z)/(1+Z))

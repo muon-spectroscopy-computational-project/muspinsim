@@ -16,22 +16,30 @@ def build_experiment(params, logfile=None):
 
     for i, B in params.zeeman.items():
         experiment.spin_system.add_zeeman_term(i, B)
+        if logfile:
+            logfile.write('Added zeeman term to spin {0}\n'.format(i+1))
 
     for (i, j), A in params.hyperfine.items():
         experiment.spin_system.add_hyperfine_term(i, np.array(A), j)
         if logfile:
-            logfile.write('Added hyperfine term to spin {0}\n'.format(i))
+            logfile.write('Added hyperfine term to spin {0}\n'.format(i+1))
 
     for (i, j), r in params.dipolar.items():
         experiment.spin_system.add_dipolar_term(i, j, r)
         if logfile:
             logfile.write('Added dipolar term to spins '
-                          '{0}, {1}\n'.format(i, j))
+                          '{0}, {1}\n'.format(i+1, j+1))
 
     for i, EFG in params.quadrupolar.items():
         experiment.spin_system.add_quadrupolar_term(i, EFG)
         if logfile:
-            logfile.write('Added quadrupolar term to spin {0}\n'.format(i))
+            logfile.write('Added quadrupolar term to spin {0}\n'.format(i+1))
+
+    for i, d in params.dissipation.items():
+        experiment.spin_system.set_dissipation(i, d)
+        if logfile:
+            logfile.write('Set dissipation parameter for spin '
+                          '{0} to {1} MHz\n'.format(i+1, d))
 
     if logfile:
         logfile.write('\n' + '*'*20 + '\n\n')
@@ -107,7 +115,8 @@ def run_experiment(experiment, params, logfile=None):
             logfile.write('Performing calculations for B = {0} T\n'.format(B))
 
         experiment.set_magnetic_field(B)
-        experiment.set_starting_state(muon_axis=muaxis, T=params.temperature)
+        experiment.set_muon_polarization(muaxis)
+        experiment.set_temperature(params.temperature)
 
         evol_results = []
         intgr_results = []
