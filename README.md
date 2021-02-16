@@ -57,7 +57,7 @@ spins
     mu e 2H
 ```
 
-List the spins to be used in the system. This has to include a muon (`mu`) and can contain one or more electrons (`e`). If only one electron is present, it will be the one all hyperfine couplings are with by default. Atomic species refer to the nuclei (so, for example, if you're trying to model the interaction of a muon with a paramagnetic electron on an iron atom, you want to use `e`, not `Fe`; the actual spin is that of an electron, not a nucleus!). The default isotope is the most common one that has a non-zero spin. Other isotopes may be specified by writing the atomic mass as an integer before the symbol. By default, this is a muon and an electron.
+List the spins to be used in the system. This has to include a muon (`mu`) and can contain one or more electrons (`e`). If only one electron is present, it will be the one all hyperfine couplings are with by default. Atomic species refer to the nuclei; so, for example, if you're trying to model the interaction of a muon with a paramagnetic electron on an iron atom, you want to use `e`, not `Fe`; the actual spin is that of an electron, not a nucleus! In addition, in case of multiple strongly coupled electrons that can be treated as a single spin greater than 1/2, the isotope syntax can be used too, so for example `2e` represents two electrons in a triplet state, acting as a single particle with the same gyromagnetic ratio as the electron, but spin 1. The default isotope is the most common one that has a non-zero spin. Other isotopes may be specified by writing the atomic mass as an integer before the symbol. By default, this is a muon and an electron.
 
 **name**
 
