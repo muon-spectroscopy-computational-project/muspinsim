@@ -80,13 +80,20 @@ def spin(elem='mu', iso=None):
 
     Keyword Arguments:
         elem {str} -- Element ('e' for electron, 'mu' for muon) (default: {'mu'})
-        iso {int} -- Desired isotope. Ignored for 'e' and 'mu'. If not
-                     specified, the most naturally abundant isotope is used. 
+        iso {int} -- Desired isotope. Ignored for 'mu'. If used for 'e', this
+                     is interpreted as a number of strongly coupled electrons
+                     acting as a single spin > 1/2. If not specified, the most
+                     naturally abundant isotope is used. 
                      (default: {None})
     """
 
-    if elem in ('e', 'mu'):
+    if elem == 'mu':
         return 0.5
+    elif elem == 'e':
+        if iso < 1 or int(iso) != iso:
+            raise ValueError('Invalid multiplicity '
+                             '{0} for electron'.format(iso))
+        return 0.5*int(iso)
     else:
         try:
             val = _get_isotope_data([elem], 'I', isotope_list=[iso])[0]
