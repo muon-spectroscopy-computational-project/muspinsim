@@ -12,7 +12,7 @@ def build_experiment(params, logfile=None):
     experiment = MuonExperiment(params.spins)
     if logfile:
         logfile.write('Hamiltonian created with spins:\n')
-        logfile.write(', '.join(params.spins) + '\n\n')
+        logfile.write(', '.join(map(str, params.spins)) + '\n\n')
 
     for i, B in params.zeeman.items():
         experiment.spin_system.add_zeeman_term(i, B)

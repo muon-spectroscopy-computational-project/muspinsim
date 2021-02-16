@@ -109,7 +109,7 @@ class MuSpinInput(object):
         spins = _read_list(data[0])
 
         # Find isotopes
-        isore = re.compile('([0-9]+)([A-Z][a-z]*)')
+        isore = re.compile('([0-9]+)([A-Z][a-z]*|e)')
         for s in spins:
             m = isore.match(s)
             if m is None:
