@@ -90,6 +90,7 @@ def spin(elem='mu', iso=None):
     if elem == 'mu':
         return 0.5
     elif elem == 'e':
+        iso = iso or 1
         if iso < 1 or int(iso) != iso:
             raise ValueError('Invalid multiplicity '
                              '{0} for electron'.format(iso))
