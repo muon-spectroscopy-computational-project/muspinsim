@@ -101,6 +101,10 @@ def run_experiment(experiment, params, logfile=None):
             'Invalid polarization {0}'.format(params.polarization))
 
     ssys = experiment.spin_system
+
+    if ssys.is_dissipative:
+        logfile.write('Spin system is dissipative; using Lindbladian\n')
+
     observable = ssys.operator({ssys.muon_index: muaxis})
 
     results = {'fields': fields, 'times': times, 'field_scan': []}
