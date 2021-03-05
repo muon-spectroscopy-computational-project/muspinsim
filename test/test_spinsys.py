@@ -43,6 +43,19 @@ class TestSpinSystem(unittest.TestCase):
         self.assertTrue(isinstance(copy, SingleTerm))
         self.assertFalse(np.all(copy.tensor == term.tensor))
 
+        # Bilinear term
+        term = DoubleTerm(ssys, 0, 1, np.diag([1, 1, 2]))
+        self.assertEqual(term.operator, ssys.operator({0: 'x', 1: 'x'}) +
+                         ssys.operator({0: 'y', 1: 'y'}) +
+                         2*ssys.operator({0: 'z', 1: 'z'}))
+
+        # Rotation matrix
+        R = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
+        rotterm = term.rotate(R)
+        self.assertEqual(rotterm.operator, ssys.operator({0: 'x', 1: 'x'}) +
+                         2*ssys.operator({0: 'y', 1: 'y'}) +
+                         ssys.operator({0: 'z', 1: 'z'}))
+
     def test_check(self):
 
         ssys = SpinSystem(['mu', 'e'])

@@ -27,6 +27,10 @@ class InteractionTerm(Clonable):
         if np.any(np.array(self._tensor.shape) != 3):
             raise ValueError('Tensor is not fully three-dimensional')
 
+        self._recalc_operator()
+
+    def _recalc_operator(self):
+
         total_op = None
         d = len(self._tensor.shape)
 
@@ -85,6 +89,7 @@ class SingleTerm(InteractionTerm):
 
         rt = self.clone()
         rt._tensor = v
+        rt._recalc_operator()
 
         return rt
 
@@ -115,6 +120,7 @@ class DoubleTerm(InteractionTerm):
 
         rt = self.clone()
         rt._tensor = M
+        rt._recalc_operator()
 
         return rt
 

@@ -299,9 +299,9 @@ class MuonExperiment(object):
             Hz = Lindbladian.from_hamiltonian(Hz)
             Ls = []
 
-        for w, R in zip(weights, rotmats):
+        for R in rotmats:
 
-            rotsys = self.spin_system.rotate(R)
+            rotsys = self.spin_system.rotate(R.T)
 
             if use_dissipation:
                 Hint = _make_lindbladian(rotsys, self.B, self.T)
@@ -310,34 +310,19 @@ class MuonExperiment(object):
 
             H = Hz + Hint  # Total Hamiltonian/Lindbladian
 
-            if use_dissipation:
-                # Simply queue the Lindbladian for averaging
-                Ls.append(w*H)
-            else:
-                if 'e' in acquire:
-                    # Evolution
-                    evol = H.evolve(rho0, times, operators)
-                    results['e'].append(evol)
-                if 'i' in acquire:
-                    intg = H.integrate_decaying(rho0, MU_TAU,
-                                                operators)/MU_TAU
-                    results['i'].append(intg)
-
-        # Averaging
-        if use_dissipation:
-            avgL = sum(Ls[1:], Ls[0])
             if 'e' in acquire:
                 # Evolution
-                evol = avgL.evolve(rho0, times, operators)
-                results['e'] = np.real(evol)
+                evol = H.evolve(rho0, times, operators)
+                results['e'].append(evol)
             if 'i' in acquire:
-                intg = avgL.integrate_decaying(rho0, MU_TAU,
-                                               operators)/MU_TAU
-                results['i'] = np.real(intg)
-        else:
-            for k, data in results.items():
-                if len(data) == 0:
-                    continue
-                results[k] = np.real(np.average(data, axis=0, weights=weights))
+                intg = H.integrate_decaying(rho0, MU_TAU,
+                                            operators)/MU_TAU
+                results['i'].append(intg)
+
+        # Averaging
+        for k, data in results.items():
+            if len(data) == 0:
+                continue
+            results[k] = np.real(np.average(data, axis=0, weights=weights))
 
         return results
