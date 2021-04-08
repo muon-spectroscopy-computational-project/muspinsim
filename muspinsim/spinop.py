@@ -676,7 +676,7 @@ class SuperOperator(Operator):
             m = x.matrix
             s = m.shape
             m = m.reshape((-1,))
-            m = np.dot(self.matrix, m).reshape(s)
+            m = (np.dot(self.matrix, m)).reshape(s)
             return Operator(m, x.dimension)
 
         raise TypeError('Unsupported operation for Operator')
