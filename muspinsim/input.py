@@ -48,7 +48,6 @@ class MuSpinInput(object):
         lines = fs.readlines()
 
         # Split lines in blocks
-        i = 0
         raw_blocks = {}
         curr_block = None
 

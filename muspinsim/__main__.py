@@ -109,9 +109,6 @@ def run_experiment(experiment, params, logfile=None):
 
     results = {'fields': fields, 'times': times, 'field_scan': []}
 
-    if 'integral' in params.save:
-        integrated_values = []
-
     # First loop: fields
     for B in fields:
 
@@ -121,9 +118,6 @@ def run_experiment(experiment, params, logfile=None):
         experiment.set_magnetic_field(B)
         experiment.set_muon_polarization(muaxis)
         experiment.set_temperature(params.temperature)
-
-        evol_results = []
-        intgr_results = []
 
         acquire = [p[0] for p in params.save]
 
@@ -193,12 +187,6 @@ def main():
         data = [sd['i'][0] for sd in y]
 
         np.savetxt(fname, np.array([x, data]).T)
-
-    # # Start by creating the base Hamiltonian
-    # H = MuonHamiltonian(params['spins'])
-
-    # if params['experiment'] == 'transverse':
-    #     transverse_experiment(H, params)
 
     logfile.close()
 

@@ -157,7 +157,6 @@ class Hamiltonian(Operator):
         evals, evecs = np.linalg.eigh(H)
 
         # Turn the density matrix in the right basis
-        dim = rho0.dimension
         rho0 = rho0.basis_change(evecs).matrix
 
         ll = 2.0j*np.pi*(evals[:, None]-evals[None, :])

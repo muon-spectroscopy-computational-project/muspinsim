@@ -4,5 +4,7 @@ hyperfine 1
     10   0    0
     0    10   0
     0    0    10
+time
+    0    0.1
 save
     evolution
