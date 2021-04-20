@@ -9,9 +9,9 @@ from soprano.nmr.utils import _get_isotope_data
 
 # Values taken from CODATA on 18/01/2021
 # Electron gyromagnetic ratio (MHz/T)
-ELEC_GAMMA = 28024.9514242
-MU_GAMMA = (ELEC_GAMMA/206.7669883)         # Muon gyromagnetic ratio (MHz/T)
-MU_TAU = 2.196                              # Muon decay rate (10^-6 s)
+ELEC_GAMMA = -28024.9514242
+MU_GAMMA = -(ELEC_GAMMA/206.7669883)         # Muon gyromagnetic ratio (MHz/T)
+MU_TAU = 2.19703                             # Muon decay rate (10^-6 s)
 # EFG to MHz constant for Quadrupole couplings
 # (the total quadrupole coupling in MHz is QCONST*Q*Vzz)
 EFG_2_MHZ = cnst.physical_constants['atomic unit of electric field '
