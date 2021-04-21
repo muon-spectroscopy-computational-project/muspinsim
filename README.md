@@ -20,6 +20,25 @@ muspinsim input_file.in
 
 where the input file contains the parameters specifying the system and experiment details.
 
+## Usage as a library
+
+Muspinsim can also easily be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the `MuSpinInput` class, then use it to create a `MuonExperimentalSetup` that runs the actual experiment. The minimal script is:
+
+```python
+from muspinsim import MuonExperimentalSetup, MuSpinInput
+
+params = MuSpinInput(open('input_file.in'))
+setup = MuonExperimentalSetup(params)
+
+results = setup.run()
+
+for i, B in enumerate(setup.field_axis):
+    for j, t in enumerate(setup.time_axis):
+        print(t, B, results[i][j])
+```
+
+You can edit the `params` object by hand to change the input for the simulation as long as you recreate the `MuonExperimentalSetup` object afterwards. For example, `params.temperature = 200` will set the value of the temperature, which allows for a temperature scan with a simple script.
+
 ## Input
 
 The input file is a simple text file structured using keywords and values this way:

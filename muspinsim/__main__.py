@@ -23,7 +23,7 @@ def _make_range(rvals, default_n=100):
     return rvals
 
 
-class ExperimentalSetup(object):
+class MuonExperimentalSetup(object):
 
     def __init__(self, params, logfile=None):
 
@@ -166,7 +166,7 @@ def main():
 
     tstart = datetime.now()
 
-    setup = ExperimentalSetup(params, logfile)
+    setup = MuonExperimentalSetup(params, logfile)
     data = setup.run()
 
     tend = datetime.now()
