@@ -33,7 +33,6 @@ def _has_data_size(l):
 
     return decorator
 
-
 class MuSpinInput(object):
 
     def __init__(self, fs):
