@@ -14,7 +14,7 @@ def _read_list(raw, convert=str):
 def _read_tensor(raw, convert=float):
     data = []
     for l in raw:
-        data.append(list(map(float, l.strip().split())))
+        data.append(list(map(convert, l.strip().split())))
     return data
 
 
