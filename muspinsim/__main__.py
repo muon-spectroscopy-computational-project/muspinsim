@@ -82,7 +82,7 @@ class MuonExperimentalSetup(object):
                      '{0}\n'.format(scheme.upper()))
             self.log(
                 '{0} orientations generated\n'.format(
-                    len(experiment.weights)))
+                    len(self.experiment.weights)))
 
         if params.polarization == 'longitudinal':
             self.muon_axis = 'z'
