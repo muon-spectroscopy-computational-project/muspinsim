@@ -88,7 +88,7 @@ class TestExperiment(unittest.TestCase):
 
         self.assertTrue(np.all(np.isclose(results['e'][:, 0],
                                           0.5*np.cos(2*np.pi*times))))
-        self.assertAlmostEqual(results['i'][0],
+        self.assertAlmostEqual(results['i'][0, 0],
                                0.5/(1.0+4*np.pi**2*tau**2))
 
     def test_dissipation(self):
@@ -119,3 +119,29 @@ class TestExperiment(unittest.TestCase):
         rhoinf = muexp.run_experiment([20], Sz)['e']
 
         self.assertAlmostEqual(rhoinf[0, 0], 0.5*(1-Z)/(1+Z))
+
+    def test_slices(self):
+
+        gmu = constants.MU_GAMMA
+
+        muexp = MuonExperiment(['mu'])
+        muexp.spin_system.add_zeeman_term(0, 1.0/gmu)
+        muexp.set_powder_average(100)
+
+        times = np.linspace(0, 1.0)
+
+        cos = np.cos(2*np.pi*times)
+        signal = muexp.run_experiment(times)['e'][:, 0]
+
+        self.assertTrue(np.all(np.isclose(signal,
+                                          0.5*(2.0/3.0 +
+                                               1.0/3.0*cos),
+                                          atol=1e-3)))
+
+        # Now slice
+        signal_0 = muexp.run_experiment(times,
+                                        orient_slice=slice(0, 1))['e'][:, 0]
+
+        self.assertTrue(np.all(np.isclose(signal_0,
+                                          0.5*cos*muexp.weights[0],
+                                          atol=1e-3)))

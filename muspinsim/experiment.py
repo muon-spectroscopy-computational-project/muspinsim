@@ -259,7 +259,8 @@ class MuonExperiment(object):
 
     def run_experiment(self, times=[0],
                        operators=None,
-                       acquire='e'):
+                       acquire='e',
+                       orient_slice=None):
         """Run an experiment
 
         Run an experiment by evolving or integrating the starting state under
@@ -274,7 +275,9 @@ class MuonExperiment(object):
                              expectation values, or their integral ('i') 
                              convolved with the muon's exponential decay, 
                              or both ('ei', 'ie') (default: {'e'})
-
+            orient_slice {slice} -- Slice of orientations to run the
+                                    experiment on. Useful for parallelisation.
+                                    If None, use all of them (default: None)
         Returns:
             dict -- Dictionary of results.
         """
@@ -286,6 +289,11 @@ class MuonExperiment(object):
 
         # Generate all rotated Hamiltonians
         orients, weights = self._orientations, self._weights
+
+        if orient_slice is None:
+            orient_slice = slice(0, None)
+        orients = np.array(orients[orient_slice])
+        weights = np.array(weights[orient_slice])
 
         rotmats = [_make_rotmat(t, p) for (t, p) in orients]
         Hz = self._Hz*self.B
@@ -323,6 +331,7 @@ class MuonExperiment(object):
         for k, data in results.items():
             if len(data) == 0:
                 continue
-            results[k] = np.real(np.average(data, axis=0, weights=weights))
+            data = np.array(data)
+            results[k] = np.real(np.sum(data*weights[:,None,None], axis=0))
 
         return results
