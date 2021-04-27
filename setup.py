@@ -27,7 +27,8 @@ setuptools.setup(
     ],
     entry_points={
         'console_scripts': [
-            'muspinsim = muspinsim.__main__:main'
+            'muspinsim = muspinsim.__main__:main',
+            'muspinsim.mpi = muspinsim.__main__:main_mpi'
         ]
     },
     python_requires='>=3.6',

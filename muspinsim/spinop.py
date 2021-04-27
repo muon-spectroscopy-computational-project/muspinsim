@@ -5,6 +5,7 @@ Utility class to create and manipulate spin operators
 
 import numpy as np
 from numbers import Number
+from muspinsim.utils import Clonable
 
 
 def _Sp(mvals):
@@ -33,7 +34,7 @@ def _S0(mvals):
     return np.eye(len(mvals))+.0j
 
 
-class Operator(object):
+class Operator(Clonable):
 
     def __init__(self, matrix, dim=None):
         """Create a Operator object
@@ -88,22 +89,6 @@ class Operator(object):
     @property
     def is_hermitian(self):
         return np.all(self._matrix == self._matrix.conj().T)
-
-    def clone(self):
-        """Return a copy of this Operator
-
-        Return a copy of this Operator
-
-        Returns:
-            Operator -- Clone of this operator
-        """
-
-        MyClass = self.__class__
-        ans = MyClass.__new__(MyClass)
-        ans._dim = tuple(self._dim)
-        ans._matrix = self.matrix
-
-        return ans
 
     def dagger(self):
         """Return the transpose conjugate of this Operator

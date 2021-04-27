@@ -5,6 +5,7 @@ from datetime import datetime
 
 from muspinsim.input import MuSpinInput
 from muspinsim.experiment import MuonExperiment
+from muspinsim.mpi import this_mpi_thread, execute_on_root, broadcast_object
 
 
 def _make_range(rvals, default_n=100):
@@ -25,7 +26,11 @@ def _make_range(rvals, default_n=100):
 
 class MuonExperimentalSetup(object):
 
+    @execute_on_root
     def __init__(self, params, logfile=None):
+
+        if not this_mpi_thread.is_root:
+            return
 
         self._log = logfile
 
@@ -91,30 +96,47 @@ class MuonExperimentalSetup(object):
         else:
             raise RuntimeError(
                 'Invalid polarization {0}'.format(params.polarization))
+        self.experiment.set_muon_polarization(self.muon_axis)
         self.log('Muon beam polarized along axis {0}\n'.format(self.muon_axis))
 
         # Temperature
         self.temperature = params.temperature
+        self.experiment.set_temperature(self.temperature)
         self.log('Using temperature of {0} K\n'.format(self.temperature))
 
         # What to save
-        self.save = params.save
+        ssys = self.experiment.spin_system
+        self.observable = ssys.operator({ssys.muon_index: self.muon_axis})
+        self.save = [p[0] for p in params.save]
 
         self.log('*'*20 + '\n')
 
+    @execute_on_root
     def log(self, message):
         if self._log:
             self._log.write(message + '\n')
 
+    def broadcast(self):
+        # Broadcast the contents of this object to other MPI threads
+        broadcast_object(self, only=[
+            'experiment',
+            'field_axis',
+            'time_axis',
+            'muon_axis',
+            'temperature',
+            'observable',
+            'save'
+        ])
+
     def run(self):
+
+        self.broadcast()
 
         exp = self.experiment
         ssys = self.experiment.spin_system
 
         if ssys.is_dissipative:
             self.log('Spin system is dissipative; using Lindbladian')
-
-        observable = ssys.operator({ssys.muon_index: self.muon_axis})
 
         results = []
 
@@ -124,14 +146,10 @@ class MuonExperimentalSetup(object):
             self.log('Performing calculations for B = {0} T'.format(B))
 
             exp.set_magnetic_field(B)
-            exp.set_muon_polarization(self.muon_axis)
-            exp.set_temperature(self.temperature)
-
-            acquire = [p[0] for p in self.save]
 
             field_results = exp.run_experiment(self.time_axis,
-                                               operators=[observable],
-                                               acquire=acquire)
+                                               operators=[self.observable],
+                                               acquire=self.save)
 
             results.append(field_results)
 
@@ -142,62 +160,76 @@ class MuonExperimentalSetup(object):
         return results
 
 
-def main():
-    # Entry point for script
+def main(use_mpi=False):
 
-    parser = ap.ArgumentParser()
-    parser.add_argument('input_file', type=str, default=None, help="""YAML
-                        formatted file with input parameters.""")
-    args = parser.parse_args()
+    if use_mpi:
+        this_mpi_thread.connect()
 
-    fs = open(args.input_file)
-    params = MuSpinInput(fs)
+    if this_mpi_thread.is_root:
+        # Entry point for script
+        parser = ap.ArgumentParser()
+        parser.add_argument('input_file', type=str, default=None, help="""YAML
+                            formatted file with input parameters.""")
+        args = parser.parse_args()
 
-    for s in params.save:
-        if not (s in ('evolution', 'integral')):
-            raise RuntimeError('Invalid save mode {0}'.format(s))
+        fs = open(args.input_file)
+        params = MuSpinInput(fs)
 
-    path = os.path.split(args.input_file)[0]
+        for s in params.save:
+            if not (s in ('evolution', 'integral')):
+                raise RuntimeError('Invalid save mode {0}'.format(s))
 
-    if params.name is None:
-        params.name = os.path.splitext(os.path.split(args.input_file)[1])[0]
+        path = os.path.split(args.input_file)[0]
 
-    logfile = open(params.name + '.log', 'w')
+        if params.name is None:
+            params.name = os.path.splitext(
+                os.path.split(args.input_file)[1])[0]
 
-    tstart = datetime.now()
+        logfile = open(params.name + '.log', 'w')
+
+        tstart = datetime.now()
+    else:
+        params = MuSpinInput()
+        logfile = None
 
     setup = MuonExperimentalSetup(params, logfile)
     data = setup.run()
 
-    tend = datetime.now()
+    if this_mpi_thread.is_root:
+        tend = datetime.now()
 
-    logfile.write('Simulation completed in '
-                  '{0:.3f} seconds\n'.format((tend-tstart).total_seconds()) +
-                  '*'*20 + '\n')
+        simtime = (tend-tstart).total_seconds()
+        logfile.write('Simulation completed in '
+                      '{0:.3f} seconds\n'.format(simtime) +
+                      '*'*20 + '\n')
 
-    x = setup.field_axis
-    t = setup.time_axis
-    y = np.array(data)
+        x = setup.field_axis
+        t = setup.time_axis
+        y = np.array(data)
 
-    if 'evolution' in params.save:
-        # Save evolution files
-        for B, scandata in zip(x, y):
+        if 'evolution' in params.save:
+            # Save evolution files
+            for B, scandata in zip(x, y):
+                fname = os.path.join(path, params.name +
+                                     '_B{0}_evol.dat'.format(B))
+                d = np.real(scandata['e'][:, 0])
+                np.savetxt(fname, np.array([t, d]).T,
+                           header="B field = {0} T".format(B))
+
+        if 'integral' in params.save:
+
             fname = os.path.join(path, params.name +
-                                 '_B{0}_evol.dat'.format(B))
-            d = np.real(scandata['e'][:, 0])
-            np.savetxt(fname, np.array([t, d]).T,
-                       header="B field = {0} T".format(B))
+                                 '_intgr.dat')
 
-    if 'integral' in params.save:
+            data = [sd['i'][0] for sd in y]
 
-        fname = os.path.join(path, params.name +
-                             '_intgr.dat')
+            np.savetxt(fname, np.array([x, data]).T)
 
-        data = [sd['i'][0] for sd in y]
+        logfile.close()
 
-        np.savetxt(fname, np.array([x, data]).T)
 
-    logfile.close()
+def main_mpi():
+    main(use_mpi=True)
 
 
 if __name__ == '__main__':

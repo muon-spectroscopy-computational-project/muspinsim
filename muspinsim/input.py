@@ -35,7 +35,7 @@ def _has_data_size(l):
 
 class MuSpinInput(object):
 
-    def __init__(self, fs):
+    def __init__(self, fs=None):
         """Read in an input file
 
         Read in an input file from an opened file stream        
@@ -43,34 +43,6 @@ class MuSpinInput(object):
         Arguments:
             fs {TextIOBase} -- I/O stream (should be file, can be StringIO)
         """
-
-        lines = fs.readlines()
-
-        # Split lines in blocks
-        raw_blocks = {}
-        curr_block = None
-
-        indre = re.compile('(\\s+)[^\\s]')
-        indent = None
-
-        for l in lines:
-            if l.strip() == '' or l[0] == '#':
-                continue  # It's a comment
-            m = indre.match(l)
-            if m:
-                if indent is None:
-                    indent = m.groups()[0]
-                if m.groups()[0] != indent:
-                    raise RuntimeError('Invalid indent in input file')
-                else:
-                    try:
-                        raw_blocks[curr_block].append(l.strip())
-                    except KeyError:
-                        raise RuntimeError('Badly formatted input file')
-            else:
-                curr_block = l.strip()
-                raw_blocks[curr_block] = []
-                indent = None  # Reset for each block
 
         # Defaults
         self.name = None
@@ -89,17 +61,47 @@ class MuSpinInput(object):
         self.quadrupolar = {}
         self.dissipation = {}
 
-        for line, value in raw_blocks.items():
-            key = line.split()[0]
-            args = line.split()[1:]
-            try:
-                getattr(self, 'read_{0}'.format(key))(value, *args)
-            except AttributeError:
-                raise RuntimeError(
-                    'Invalid keyword {0} in input file'.format(key))
-            except TypeError:
-                raise RuntimeError('Invalid arguments for keyword '
-                                   '{0}'.format(key))
+        if fs is not None:
+
+            lines = fs.readlines()
+
+            # Split lines in blocks
+            raw_blocks = {}
+            curr_block = None
+
+            indre = re.compile('(\\s+)[^\\s]')
+            indent = None
+
+            for l in lines:
+                if l.strip() == '' or l[0] == '#':
+                    continue  # It's a comment
+                m = indre.match(l)
+                if m:
+                    if indent is None:
+                        indent = m.groups()[0]
+                    if m.groups()[0] != indent:
+                        raise RuntimeError('Invalid indent in input file')
+                    else:
+                        try:
+                            raw_blocks[curr_block].append(l.strip())
+                        except KeyError:
+                            raise RuntimeError('Badly formatted input file')
+                else:
+                    curr_block = l.strip()
+                    raw_blocks[curr_block] = []
+                    indent = None  # Reset for each block
+
+            for line, value in raw_blocks.items():
+                key = line.split()[0]
+                args = line.split()[1:]
+                try:
+                    getattr(self, 'read_{0}'.format(key))(value, *args)
+                except AttributeError:
+                    raise RuntimeError(
+                        'Invalid keyword {0} in input file'.format(key))
+                except TypeError:
+                    raise RuntimeError('Invalid arguments for keyword '
+                                       '{0}'.format(key))
 
     @_has_data_size(1)
     def read_spins(self, data):
