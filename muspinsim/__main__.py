@@ -5,7 +5,7 @@ from datetime import datetime
 
 from muspinsim.input import MuSpinInput
 from muspinsim.experiment import MuonExperiment
-from muspinsim.mpi import this_mpi_thread, execute_on_root, broadcast_object
+from muspinsim.mpi import mpi_controller as mpi
 
 
 def _make_range(rvals, default_n=100):
@@ -26,11 +26,8 @@ def _make_range(rvals, default_n=100):
 
 class MuonExperimentalSetup(object):
 
-    @execute_on_root
+    @mpi.execute_on_root
     def __init__(self, params, logfile=None):
-
-        if not this_mpi_thread.is_root:
-            return
 
         self._log = logfile
 
@@ -111,14 +108,14 @@ class MuonExperimentalSetup(object):
 
         self.log('*'*20 + '\n')
 
-    @execute_on_root
+    @mpi.execute_on_root
     def log(self, message):
         if self._log:
             self._log.write(message + '\n')
 
     def broadcast(self):
         # Broadcast the contents of this object to other MPI threads
-        broadcast_object(self, only=[
+        mpi.broadcast_object(self, only=[
             'experiment',
             'field_axis',
             'time_axis',
@@ -138,10 +135,27 @@ class MuonExperimentalSetup(object):
         if ssys.is_dissipative:
             self.log('Spin system is dissipative; using Lindbladian')
 
-        results = []
+        # Now slicing the values
+        N_f = len(self.field_axis)   # Fields
+        N_o = len(exp.weights)       # Orientations
+
+        results = {
+            'e': None,
+            'i': None
+        }
+        if 'e' in self.save:
+            results['e'] = np.zeros((N_f, len(self.time_axis)))
+        if 'i' in self.save:
+            results['i'] = np.zeros(N_f)
+
+        # Split the tasks
+        tasks = mpi.split_2D(range(N_f), range(N_o))
+
+        field_scan, orient_slice = tasks[mpi.rank]
 
         # Loop over fields
-        for B in self.field_axis:
+        for i in field_scan:
+            B = self.field_axis[i]
 
             self.log('Performing calculations for B = {0} T'.format(B))
 
@@ -149,11 +163,21 @@ class MuonExperimentalSetup(object):
 
             field_results = exp.run_experiment(self.time_axis,
                                                operators=[self.observable],
-                                               acquire=self.save)
+                                               acquire=self.save,
+                                               orient_slice=orient_slice)
 
-            results.append(field_results)
+            if 'e' in self.save:
+                results['e'][i] = field_results['e'][:, 0]
+            if 'i' in self.save:
+                results['i'][i] = field_results['i'][0]
 
             self.log('\n')
+
+        # Reduce results
+        for k, v in results.items():
+            if v is None:
+                continue
+            results[k] = mpi.sum_data(v)
 
         self.log('*'*20 + '\n')
 
@@ -163,9 +187,9 @@ class MuonExperimentalSetup(object):
 def main(use_mpi=False):
 
     if use_mpi:
-        this_mpi_thread.connect()
+        mpi.connect()
 
-    if this_mpi_thread.is_root:
+    if mpi.is_root:
         # Entry point for script
         parser = ap.ArgumentParser()
         parser.add_argument('input_file', type=str, default=None, help="""YAML
@@ -195,7 +219,7 @@ def main(use_mpi=False):
     setup = MuonExperimentalSetup(params, logfile)
     data = setup.run()
 
-    if this_mpi_thread.is_root:
+    if mpi.is_root:
         tend = datetime.now()
 
         simtime = (tend-tstart).total_seconds()
@@ -205,25 +229,22 @@ def main(use_mpi=False):
 
         x = setup.field_axis
         t = setup.time_axis
-        y = np.array(data)
-
         if 'evolution' in params.save:
+            y = data['e']
             # Save evolution files
-            for B, scandata in zip(x, y):
+            for B, d in zip(x, y):
                 fname = os.path.join(path, params.name +
                                      '_B{0}_evol.dat'.format(B))
-                d = np.real(scandata['e'][:, 0])
+                d = np.real(d)
                 np.savetxt(fname, np.array([t, d]).T,
                            header="B field = {0} T".format(B))
 
         if 'integral' in params.save:
-
+            y = data['i']
             fname = os.path.join(path, params.name +
                                  '_intgr.dat')
 
-            data = [sd['i'][0] for sd in y]
-
-            np.savetxt(fname, np.array([x, data]).T)
+            np.savetxt(fname, np.array([x, y]).T)
 
         logfile.close()
 
