@@ -150,7 +150,6 @@ class MuonExperimentalSetup(object):
 
         # Split the tasks
         tasks = mpi.split_2D(range(N_f), range(N_o))
-
         field_scan, orient_slice = tasks[mpi.rank]
 
         # Loop over fields

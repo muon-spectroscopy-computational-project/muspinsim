@@ -68,6 +68,9 @@ class MuonExperiment(object):
         self._spin_system = MuonSpinSystem(spins)
         self._orientations = [[0.0, 0.0]]
         self._weights = [1.0]
+        self._default_operators = [self.spin_system.operator({
+            self.spin_system.muon_index: 'x'
+        })]
 
         # Zeeman Hamiltonian?
         zops = [self._spin_system.operator({i: 'z'})*self._spin_system.gamma(i)
@@ -78,6 +81,7 @@ class MuonExperiment(object):
             self._Hz += o
 
         self._Hz = Hamiltonian.from_spin_operator(self._Hz)
+        self._Lz = Lindbladian.from_hamiltonian(self._Hz)
         self._B = 0
         self._T = np.inf
         self._mupol = [1, 0, 0]
@@ -283,9 +287,7 @@ class MuonExperiment(object):
         """
 
         if operators is None:
-            operators = [self.spin_system.operator({
-                self.spin_system.muon_index: 'x'
-            })]
+            operators = self._default_operators
 
         # Generate all rotated Hamiltonians
         orients, weights = self._orientations, self._weights
@@ -296,6 +298,7 @@ class MuonExperiment(object):
         weights = np.array(weights[orient_slice])
 
         rotmats = [_make_rotmat(t, p) for (t, p) in orients]
+        
         Hz = self._Hz*self.B
         rho0 = self.get_starting_state()
 
@@ -304,7 +307,7 @@ class MuonExperiment(object):
         use_dissipation = self.spin_system.is_dissipative
 
         if use_dissipation:
-            Hz = Lindbladian.from_hamiltonian(Hz)
+            Hz = self._Lz*self.B
             Ls = []
 
         for R in rotmats:
@@ -332,6 +335,6 @@ class MuonExperiment(object):
             if len(data) == 0:
                 continue
             data = np.array(data)
-            results[k] = np.real(np.sum(data*weights[:,None,None], axis=0))
+            results[k] = np.real(np.sum(data*weights[:, None, None], axis=0))
 
         return results
