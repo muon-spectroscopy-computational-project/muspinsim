@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="muspinsim",
-    version="0.3.5",
+    version="0.4.0",
     author="Simone Sturniolo",
     author_email="simonesturniolo@gmail.com",
     description="Full quantum simulation of muon experiments",
