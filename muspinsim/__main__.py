@@ -152,6 +152,11 @@ class MuonExperimentalSetup(object):
         tasks = mpi.split_2D(range(N_f), range(N_o))
         field_scan, orient_slice = tasks[mpi.rank]
 
+        if len(tasks) > 1:
+            tsizes = [len(t[0])*len(t[1]) for t in tasks]
+            self.log('Splitting jobs over {0} cores'.format(mpi.size))
+            self.log('Job sizes:\n\t' + ' '.join(map(str, tsizes)) + '\n')
+
         # Loop over fields
         for i in field_scan:
             B = self.field_axis[i]
@@ -170,15 +175,13 @@ class MuonExperimentalSetup(object):
             if 'i' in self.save:
                 results['i'][i] = field_results['i'][0]
 
-            self.log('\n')
-
         # Reduce results
         for k, v in results.items():
             if v is None:
                 continue
             results[k] = mpi.sum_data(v)
 
-        self.log('*'*20 + '\n')
+        self.log('\n' + '*'*20 + '\n')
 
         return results
 
@@ -223,7 +226,7 @@ def main(use_mpi=False):
 
         simtime = (tend-tstart).total_seconds()
         logfile.write('Simulation completed in '
-                      '{0:.3f} seconds\n'.format(simtime) +
+                      '{0:.3f} seconds\n\n'.format(simtime) +
                       '*'*20 + '\n')
 
         x = setup.field_axis
