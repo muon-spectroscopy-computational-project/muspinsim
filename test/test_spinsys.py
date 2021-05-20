@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from muspinsim import constants
-from muspinsim.spinop import SpinOperator
+from muspinsim.spinop import SpinOperator, SuperOperator
 from muspinsim.spinsys import (SpinSystem, InteractionTerm, SingleTerm,
                                DoubleTerm, MuonSpinSystem)
 
@@ -101,9 +101,29 @@ class TestSpinSystem(unittest.TestCase):
                                                     [0.5, 0.5, -0.75, 0],
                                                     [0.0, 0.5, 0, -0.25]]))))
 
-        ssys.set_dissipation(0, 1.0)
-
+        ssys.add_dissipative_term(ssys.operator({0: 'x'}), 1.0)
         self.assertTrue(ssys.is_dissipative)
+
+    def test_lindbladian(self):
+
+        ssys = SpinSystem(['mu'])
+        ssys.add_linear_term(0, [0, 0, 1])
+
+        H = ssys.hamiltonian
+        L = ssys.lindbladian
+        L0 = -1.0j*SuperOperator.commutator(ssys.operator({0: 'z'}))
+
+        self.assertTrue(np.all(np.isclose(L.matrix, L0.matrix)))
+
+        sx = ssys.operator({0: 'x'})
+        d = 2.0
+        ssys.add_dissipative_term(sx, d)
+
+        L1 = L0 + d*(SuperOperator.bracket(sx) - 
+                     0.5*SuperOperator.anticommutator(sx*sx))
+
+        L = ssys.lindbladian
+        self.assertTrue(np.all(np.isclose(L.matrix, L1.matrix)))
 
 
 class TestMuonSpinSystem(unittest.TestCase):

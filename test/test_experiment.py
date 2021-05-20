@@ -96,7 +96,7 @@ class TestExperiment(unittest.TestCase):
         # Simple system
         g = 1.0
         muexp = MuonExperiment(['mu'])
-        muexp.spin_system.set_dissipation(0, g)
+        muexp.set_dissipation_coupling(0, g)
 
         times = np.linspace(0, 10)
 

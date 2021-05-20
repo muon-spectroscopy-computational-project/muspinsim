@@ -1,8 +1,7 @@
 import unittest
 import numpy as np
 
-from muspinsim.mpi import split_1D, split_2D
-
+from muspinsim.mpi import mpi_controller
 
 class TestMuSpinMPI(unittest.TestCase):
 
@@ -11,19 +10,19 @@ class TestMuSpinMPI(unittest.TestCase):
         a = list(range(20))
         b = list(range(17))
 
-        split7 = split_1D(a, 7)
+        split7 = mpi_controller.split_1D(a, 7)
 
         self.assertTrue(np.all(split7[0] == [0, 1, 2]))
         self.assertTrue(np.all([len(s) for s in split7] ==
                                np.array([3, 3, 3, 3, 3, 3, 2])))
 
-        split8 = split_1D(a, 8)
+        split8 = mpi_controller.split_1D(a, 8)
 
         self.assertTrue(np.all(split8[0] == [0, 1, 2]))
         self.assertTrue(np.all([len(s) for s in split8] ==
                                np.array([3, 3, 3, 3, 2, 2, 2, 2])))
 
-        split30 = split_2D(a, b, 30)
+        split30 = mpi_controller.split_2D(a, b, 30)
 
         self.assertTrue(np.all(split30[0][0] == [0, 1]))
         self.assertTrue(np.all(split30[0][1] == [0, 1, 2, 3, 4, 5]))

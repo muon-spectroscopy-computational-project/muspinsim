@@ -55,7 +55,7 @@ class MuonExperimentalSetup(object):
             self.log('\tAdded quadrupolar term to spin {0}'.format(i+1))
 
         for i, d in params.dissipation.items():
-            self.experiment.spin_system.set_dissipation(i, d)
+            self.experiment.set_dissipation_coupling(i, d)
             self.log('\tSet dissipation parameter for spin '
                      '{0} to {1} MHz'.format(i+1, d))
         self.log('')

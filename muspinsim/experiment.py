@@ -27,25 +27,6 @@ def _make_rotmat(theta, phi):
         [-st,     0,    ct]])
 
 
-def _make_lindbladian(ssys, B, T):
-
-    H = ssys.hamiltonian
-    g = ssys.gammas
-
-    if T > 0:
-        Zu = np.exp(-cnst.h*g*B*1e6/(cnst.k*T))
-    else:
-        Zu = g*0
-
-    dops = []
-    for i, d in enumerate(ssys.dissipation_factors):
-        if (d != 0):
-            dops.append((ssys.operator({i: '-'}), d/(1+Zu[i])))
-            dops.append((ssys.operator({i: '+'}), d*Zu[i]/(1+Zu[i])))
-
-    return Lindbladian.from_hamiltonian(H, dops)
-
-
 class MuonExperiment(object):
 
     def __init__(self, spins=['e', 'mu']):
@@ -71,6 +52,7 @@ class MuonExperiment(object):
         self._default_operators = [self.spin_system.operator({
             self.spin_system.muon_index: 'x'
         })]
+        self._dissip_alphas = {}
 
         # Zeeman Hamiltonian?
         zops = [self._spin_system.operator({i: 'z'})*self._spin_system.gamma(i)
@@ -110,6 +92,10 @@ class MuonExperiment(object):
     @property
     def muon_polarization(self):
         return np.array(self._mupol)
+
+    @property
+    def is_dissipative(self):
+        return len(self._dissip_alphas) > 0
 
     def set_single_crystal(self, theta=0.0, phi=0.0):
         """Set a single crystal orientation
@@ -216,6 +202,25 @@ class MuonExperiment(object):
         self._rho0 = None
         self._T = T
 
+    def set_dissipation_coupling(self, i, alpha=0.0):
+        """Sets the dissipative coupling for thermalisation of a spin.
+
+        Sets the dissipative coupling of a spin to the heat bath. The coupling
+        will then be set based on the bath's temperature and the Zeeman energy
+        of the spin's state (interaction terms will be ignored).
+
+        Arguments:
+            i {int} -- Index of the spin
+
+        Keyword Arguments:
+            alpha {Number} -- Coupling to set, in MHz (default: {0.0})
+        """
+
+        if (alpha < 0):
+            raise ValueError('Can not set a negative dissipation coupling')
+
+        self._dissip_alphas[i] = alpha
+
     def get_starting_state(self):
         """Return the starting quantum state for the system
 
@@ -298,24 +303,37 @@ class MuonExperiment(object):
         weights = np.array(weights[orient_slice])
 
         rotmats = [_make_rotmat(t, p) for (t, p) in orients]
-        
+
         Hz = self._Hz*self.B
         rho0 = self.get_starting_state()
 
         results = {'e': [], 'i': []}
 
-        use_dissipation = self.spin_system.is_dissipative
+        use_dissipation = self.is_dissipative
+        spinsys = self.spin_system.clone()
 
         if use_dissipation:
             Hz = self._Lz*self.B
-            Ls = []
+            # Add couplings to system
+            g = spinsys.gammas
+
+            if self.T > 0:
+                Zu = np.exp(-cnst.h*g*self.B*1e6/(cnst.k*self.T))
+            else:
+                Zu = g*0
+
+            for i, a in self._dissip_alphas.items():
+                spinsys.add_dissipative_term(spinsys.operator({i: '+'}),
+                                             a*Zu[i]/(1+Zu[i]))
+                spinsys.add_dissipative_term(spinsys.operator({i: '-'}),
+                                             a/(1+Zu[i]))
 
         for R in rotmats:
 
-            rotsys = self.spin_system.rotate(R.T)
+            rotsys = spinsys.rotate(R.T)
 
             if use_dissipation:
-                Hint = _make_lindbladian(rotsys, self.B, self.T)
+                Hint = rotsys.lindbladian
             else:
                 Hint = rotsys.hamiltonian
 

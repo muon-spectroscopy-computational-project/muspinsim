@@ -11,6 +11,7 @@ import scipy.constants as cnst
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
+from muspinsim.lindbladian import Lindbladian
 from muspinsim.constants import (gyromagnetic_ratio, spin, quadrupole_moment,
                                  EFG_2_MHZ)
 
@@ -131,6 +132,26 @@ class DoubleTerm(InteractionTerm):
                                                                 self.j)
 
 
+class DissipationTerm(Clonable):
+
+    def __init__(self, operator, gamma=0.0):
+
+        self._op = operator
+        self._g = gamma
+
+    @property
+    def operator(self):
+        return self._op
+
+    @property
+    def gamma(self):
+        return self._g
+
+    @property
+    def tuple(self):
+        return (self._op, self._g)
+
+
 class SpinSystem(Clonable):
 
     def __init__(self, spins=[]):
@@ -174,7 +195,7 @@ class SpinSystem(Clonable):
         self._operators = operators
 
         self._terms = []
-        self._dissip = np.zeros(len(spins))
+        self._dissip_terms = []
 
     @property
     def spins(self):
@@ -197,28 +218,8 @@ class SpinSystem(Clonable):
         return self._dim
 
     @property
-    def dissipation_factors(self):
-        return self._dissip.copy()
-
-    @property
     def is_dissipative(self):
-        return np.any(self._dissip != 0)
-
-    def set_dissipation(self, i, d=0.0):
-        """Set a dissipation factor for a spin.
-
-        Set a dissipation factor for a given spin, representing its coupling
-        (in MHz) with an external heat bath to include in the Lindbladian of
-        the system. 
-
-        Arguments:
-            i {int} -- Index of the spin
-
-        Keyword Arguments:
-            d {number} -- Dissipation factor in MHz (default: {0.0})
-        """
-
-        self._dissip[i] = d
+        return len(self._dissip_terms)
 
     def add_term(self, indices, tensor, label='Term'):
         """Add to the spin system a generic interaction term
@@ -419,6 +420,28 @@ class SpinSystem(Clonable):
 
         self._terms.remove(term)
 
+    def add_dissipative_term(self, op, d=0.0):
+        """Set a dissipation operator for the system.
+
+        Set a dissipation operator for this system, representing its coupling
+        (in MHz) with an external heat bath to include in the Lindbladian of
+        the system. 
+
+        Arguments:
+            op {SpinOperator} -- Operator for the dissipation term
+
+        Keyword Arguments:
+            d {number} -- Dissipation coupling in MHz (default: {0.0})
+        """
+
+        term = DissipationTerm(op, d)
+        self._dissip_terms.append(term)
+
+        return term
+
+    def remove_dissipative_term(self, term):
+        self._terms.remove(term)
+
     def gamma(self, i):
         """Returns the gyromagnetic ratio of a given particle
 
@@ -503,6 +526,15 @@ class SpinSystem(Clonable):
         H = Hamiltonian(H, dim=self.dimension)
 
         return H
+
+    @property
+    def lindbladian(self):
+
+        H = self.hamiltonian
+        dops = [t.tuple for t in self._dissip_terms]
+        L = Lindbladian.from_hamiltonian(H, dops)
+
+        return L
 
     def __len__(self):
         return len(self._gammas)
