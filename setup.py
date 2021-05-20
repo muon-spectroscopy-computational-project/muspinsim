@@ -25,6 +25,12 @@ setuptools.setup(
         'scipy',
         'soprano'
     ],
+    extras_require={
+        'docs': [
+            'mkdocs',
+            'pymdown-extensions'
+        ]
+    },
     entry_points={
         'console_scripts': [
             'muspinsim = muspinsim.__main__:main',
