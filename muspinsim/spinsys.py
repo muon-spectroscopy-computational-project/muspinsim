@@ -504,12 +504,17 @@ class SpinSystem(Clonable):
 
     def rotate(self, rotmat=np.eye(3)):
 
+        # Trying to avoid pointlessly cloning the terms
+        terms = self._terms
+        self._terms = []
+
         # Make a clone
         rssys = self.clone()
+        self._terms = terms
 
         # Edit the terms
         try:
-            rssys._terms = [t.rotate(rotmat) for t in rssys._terms]
+            rssys._terms = [t.rotate(rotmat) for t in terms]
         except AttributeError:
             raise RuntimeError('Can only rotate SpinSystems containing Single'
                                ' or Double terms')

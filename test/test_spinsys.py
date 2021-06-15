@@ -119,7 +119,7 @@ class TestSpinSystem(unittest.TestCase):
         d = 2.0
         ssys.add_dissipative_term(sx, d)
 
-        L1 = L0 + d*(SuperOperator.bracket(sx) - 
+        L1 = L0 + d*(SuperOperator.bracket(sx) -
                      0.5*SuperOperator.anticommutator(sx*sx))
 
         L = ssys.lindbladian
