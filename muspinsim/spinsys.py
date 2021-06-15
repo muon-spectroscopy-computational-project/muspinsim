@@ -68,6 +68,10 @@ class InteractionTerm(Clonable):
     def operator(self):
         return self._operator.clone()
 
+    @property
+    def matrix(self):
+        return self._operator.matrix
+
     def __repr__(self):
         return self.label
 
@@ -527,7 +531,7 @@ class SpinSystem(Clonable):
         if len(self._terms) == 0:
             H = np.eye(np.prod(self.dimension))
         else:
-            H = np.sum([t.operator.matrix for t in self._terms], axis=0)
+            H = np.sum([t.matrix for t in self._terms], axis=0)
         H = Hamiltonian(H, dim=self.dimension)
 
         return H
