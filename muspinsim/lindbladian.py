@@ -91,12 +91,10 @@ class Lindbladian(SuperOperator):
 
         # Diagonalize it
         evals, revecs = np.linalg.eig(L)
-        # Left eigenvectors (transposed)
-        levecs = np.linalg.inv(revecs)
 
         # Vec-ing the density matrix
         rho0 = rho0.matrix.reshape((-1,))
-        rho0 = np.dot(levecs, rho0)
+        rho0 = np.linalg.solve(revecs, rho0)
         # And the operators
         operatorsT = np.array([np.dot(o.matrix.T.reshape((-1,)), revecs)
                                for o in operators])
@@ -154,12 +152,11 @@ class Lindbladian(SuperOperator):
 
         # Diagonalize it
         evals, revecs = np.linalg.eig(L)
-        # Left eigenvectors (transposed)
-        levecs = np.linalg.inv(revecs)
 
         # Vec-ing the density matrix
         rho0 = rho0.matrix.reshape((-1,))
-        rho0 = np.dot(levecs, rho0)
+        rho0 = np.linalg.solve(revecs, rho0)
+
         # And the operators
         intops = np.array([np.dot(o.matrix.T.reshape((-1,)), revecs) /
                            (1.0/tau-2.0*np.pi*evals)

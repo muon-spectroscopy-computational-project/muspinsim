@@ -13,4 +13,4 @@ exp.set_muon_polarization('z')
 times = np.linspace(0, 1, 1000)
 op = exp.spin_system.operator({1: 'z'})
 
-cProfile.run('exp.run_experiment(times, [op], "i")', sort='tottime')
+cProfile.run('exp.run_experiment(times, [op], "i")', sort='cumulative')

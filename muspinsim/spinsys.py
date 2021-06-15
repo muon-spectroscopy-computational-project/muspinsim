@@ -92,9 +92,7 @@ class SingleTerm(InteractionTerm):
         v = self._tensor
         v = np.dot(v, R.T)
 
-        rt = self.clone()
-        rt._tensor = v
-        rt._recalc_operator()
+        rt = SingleTerm(self._spinsys, self.i, v, self._label)
 
         return rt
 
@@ -123,9 +121,7 @@ class DoubleTerm(InteractionTerm):
         M = self._tensor
         M = np.linalg.multi_dot([R, M, R.T])
 
-        rt = self.clone()
-        rt._tensor = M
-        rt._recalc_operator()
+        rt = DoubleTerm(self._spinsys, self.i, self.j, M, self._label)
 
         return rt
 
