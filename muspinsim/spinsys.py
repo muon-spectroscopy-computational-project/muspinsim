@@ -68,6 +68,10 @@ class InteractionTerm(Clonable):
     def operator(self):
         return self._operator.clone()
 
+    @property
+    def matrix(self):
+        return self._operator.matrix
+
     def __repr__(self):
         return self.label
 
@@ -504,12 +508,17 @@ class SpinSystem(Clonable):
 
     def rotate(self, rotmat=np.eye(3)):
 
+        # Trying to avoid pointlessly cloning the terms
+        terms = self._terms
+        self._terms = []
+
         # Make a clone
         rssys = self.clone()
+        self._terms = terms
 
         # Edit the terms
         try:
-            rssys._terms = [t.rotate(rotmat) for t in rssys._terms]
+            rssys._terms = [t.rotate(rotmat) for t in terms]
         except AttributeError:
             raise RuntimeError('Can only rotate SpinSystems containing Single'
                                ' or Double terms')
@@ -522,7 +531,7 @@ class SpinSystem(Clonable):
         if len(self._terms) == 0:
             H = np.eye(np.prod(self.dimension))
         else:
-            H = np.sum([t.operator.matrix for t in self._terms], axis=0)
+            H = np.sum([t.matrix for t in self._terms], axis=0)
         H = Hamiltonian(H, dim=self.dimension)
 
         return H

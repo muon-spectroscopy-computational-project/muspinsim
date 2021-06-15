@@ -149,7 +149,7 @@ class Lindbladian(SuperOperator):
             raise ValueError('operators must be a SpinOperator or a list'
                              ' of SpinOperator objects')
 
-            # Start by building the matrix
+        # Start by building the matrix
         L = self.matrix
 
         # Diagonalize it
