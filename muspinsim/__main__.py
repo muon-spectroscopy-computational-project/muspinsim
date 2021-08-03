@@ -1,4 +1,5 @@
 import os
+import logging
 import numpy as np
 import argparse as ap
 from datetime import datetime
@@ -28,14 +29,18 @@ class MuonExperimentalSetup(object):
 
     @mpi.execute_on_root
     def __init__(self, params, logfile=None):
-
         self._log = logfile
+        if logfile:
+            logging.basicConfig(filename=logfile,
+                    level=logging.INFO,
+                    format='[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
         # Create
         self.experiment = MuonExperiment(params.spins)
 
         self.log('Hamiltonian created with spins:')
-        self.log(', '.join(map(str, params.spins)) + '\n')
+        self.log(', '.join(map(str, params.spins)))
 
         self.log('Adding Hamiltonian terms:')
         for i, B in params.zeeman.items():
@@ -63,12 +68,12 @@ class MuonExperimentalSetup(object):
         # Ranges
         trange = _make_range(params.time)
         self.log('Using time range: '
-                 '{0} to {1} μs in {2} steps\n'.format(*trange))
+                 '{0} to {1} us in {2} steps'.format(*trange))
         self.time_axis = np.linspace(*trange)
 
         brange = _make_range(params.field)
         self.log('Using field range: '
-                 '{0} to {1} T in {2} steps\n'.format(*brange))
+                 '{0} to {1} T in {2} steps'.format(*brange))
         self.field_axis = np.linspace(*brange)
 
         # Powder averaging
@@ -81,9 +86,9 @@ class MuonExperimentalSetup(object):
             self.experiment.set_powder_average(N, scheme)
 
             self.log('Using powder averaging scheme '
-                     '{0}\n'.format(scheme.upper()))
+                     '{0}'.format(scheme.upper()))
             self.log(
-                '{0} orientations generated\n'.format(
+                '{0} orientations generated'.format(
                     len(self.experiment.weights)))
 
         if params.polarization == 'longitudinal':
@@ -94,12 +99,12 @@ class MuonExperimentalSetup(object):
             raise RuntimeError(
                 'Invalid polarization {0}'.format(params.polarization))
         self.experiment.set_muon_polarization(self.muon_axis)
-        self.log('Muon beam polarized along axis {0}\n'.format(self.muon_axis))
+        self.log('Muon beam polarized along axis {0}'.format(self.muon_axis))
 
         # Temperature
         self.temperature = params.temperature
         self.experiment.set_temperature(self.temperature)
-        self.log('Using temperature of {0} K\n'.format(self.temperature))
+        self.log('Using temperature of {0} K'.format(self.temperature))
 
         # What to save
         ssys = self.experiment.spin_system
@@ -111,7 +116,7 @@ class MuonExperimentalSetup(object):
     @mpi.execute_on_root
     def log(self, message):
         if self._log:
-            self._log.write(message + '\n')
+            logging.info(message)
 
     def broadcast(self):
         # Broadcast the contents of this object to other MPI threads
@@ -151,17 +156,18 @@ class MuonExperimentalSetup(object):
         # Split the tasks
         tasks = mpi.split_2D(range(N_f), range(N_o))
         field_scan, orient_slice = tasks[mpi.rank]
-
+        self.log(f"MPI: {mpi.rank} will run fields: {field_scan}")
         if len(tasks) > 1:
             tsizes = [len(t[0])*len(t[1]) for t in tasks]
             self.log('Splitting jobs over {0} cores'.format(mpi.size))
-            self.log('Job sizes:\n\t' + ' '.join(map(str, tsizes)) + '\n')
+            self.log('Job sizes:\n\t' + ' '.join(map(str, tsizes)))
 
         # Loop over fields
         for i in field_scan:
             B = self.field_axis[i]
 
-            self.log('Performing calculations for B = {0} T'.format(B))
+            if i%10 == 0:  # Reduces logfile spam
+                self.log('Performing calculations for B = {0} T'.format(B))
 
             exp.set_magnetic_field(B)
 
@@ -181,7 +187,7 @@ class MuonExperimentalSetup(object):
                 continue
             results[k] = mpi.sum_data(v)
 
-        self.log('\n' + '*'*20 + '\n')
+        self.log('*'*20)
 
         return results
 
@@ -211,7 +217,7 @@ def main(use_mpi=False):
             params.name = os.path.splitext(
                 os.path.split(args.input_file)[1])[0]
 
-        logfile = open(params.name + '.log', 'w')
+        logfile = f'{params.name}.log'
 
         tstart = datetime.now()
     else:
@@ -225,8 +231,8 @@ def main(use_mpi=False):
         tend = datetime.now()
 
         simtime = (tend-tstart).total_seconds()
-        logfile.write('Simulation completed in '
-                      '{0:.3f} seconds\n\n'.format(simtime) +
+        setup.log('Simulation completed in '
+                      '{0:.3f} seconds\n'.format(simtime) +
                       '*'*20 + '\n')
 
         x = setup.field_axis
@@ -247,8 +253,6 @@ def main(use_mpi=False):
                                  '_intgr.dat')
 
             np.savetxt(fname, np.array([x, y]).T)
-
-        logfile.close()
 
 
 def main_mpi():
