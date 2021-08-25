@@ -26,10 +26,7 @@ class Hamiltonian(Operator, Hermitian):
         """
 
         super(Hamiltonian, self).__init__(matrix, dim)
-
-        if not self.is_hermitian:
-            raise ValueError('Hamiltonian must be hermitian')
-
+        
     @classmethod
     def from_spin_operator(self, spinop):
         return self(spinop.matrix, spinop.dimension)

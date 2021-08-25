@@ -119,21 +119,6 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(np.all((16*SxSx*SySy).matrix ==
                                np.diag([-1, 1, 1, -1])))
 
-    def test_diag(self):
-
-        Sx = SpinOperator.from_axes()
-
-        evals, evecs = Sx.diag()
-        evecsT = np.array([[1.0, 1.0], [-1.0, 1.0]])/2**0.5
-
-        self.assertTrue(np.all(evals == [-0.5, 0.5]))
-        self.assertTrue(np.all(np.isclose(abs(np.dot(evecs, evecsT)),
-                                          np.eye(2))))
-
-        Sxrot = Sx.basis_change(evecs)
-
-        self.assertTrue(np.all(np.isclose(Sxrot.matrix, np.diag(evals))))
-
     def test_density(self):
 
         rho = DensityOperator(np.eye(6)/6.0, (2, 3))

@@ -20,6 +20,22 @@ class TestHamiltonian(unittest.TestCase):
         with self.assertRaises(ValueError):
             Hamiltonian([[1, 1], [0, 1]])
 
+    def test_diag(self):
+
+        Sx = SpinOperator.from_axes()
+        H = Hamiltonian(Sx.matrix)
+
+        evals, evecs = H.diag()
+        evecsT = np.array([[1.0, 1.0], [-1.0, 1.0]])/2**0.5
+
+        self.assertTrue(np.all(evals == [-0.5, 0.5]))
+        self.assertTrue(np.all(np.isclose(abs(np.dot(evecs, evecsT)),
+                                          np.eye(2))))
+
+        Hrot = H.basis_change(evecs)
+
+        self.assertTrue(np.all(np.isclose(Hrot.matrix, np.diag(evals))))
+
     def test_evolve(self):
 
         ssys = SpinSystem(['e'])
