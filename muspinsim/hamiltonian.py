@@ -8,10 +8,10 @@ from numbers import Number
 import scipy.constants as cnst
 
 from muspinsim.constants import EFG_2_MHZ, MU_TAU
-from muspinsim.spinop import SpinOperator, DensityOperator, Operator
+from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
-class Hamiltonian(Operator):
+class Hamiltonian(Operator, Hermitian):
 
     def __init__(self, matrix, dim=None):
         """Create an Hamiltonian
@@ -76,15 +76,8 @@ class Hamiltonian(Operator):
             raise ValueError('operators must be a SpinOperator or a list'
                              ' of SpinOperator objects')
 
-        # Start by building the matrix
-        H = self.matrix
-
-        # Sanity check - should never happen
-        if not np.all(H == H.T.conj()):
-            raise RuntimeError('Hamiltonian is not hermitian')
-
-        # Diagonalize it
-        evals, evecs = np.linalg.eigh(H)
+        # Diagonalize self
+        evals, evecs = self.diag()
 
         # Turn the density matrix in the right basis
         dim = rho0.dimension
@@ -147,14 +140,8 @@ class Hamiltonian(Operator):
             raise ValueError('operators must be a SpinOperator or a list'
                              ' of SpinOperator objects')
 
-        H = self.matrix
-
-        # Sanity check - should never happen
-        if not np.all(H == H.T.conj()):
-            raise RuntimeError('Hamiltonian is not hermitian')
-
-        # Diagonalize it
-        evals, evecs = np.linalg.eigh(H)
+        # Diagonalize self
+        evals, evecs = self.diag()
 
         # Turn the density matrix in the right basis
         rho0 = rho0.basis_change(evecs).matrix

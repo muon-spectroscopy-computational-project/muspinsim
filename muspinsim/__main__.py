@@ -232,8 +232,8 @@ def main(use_mpi=False):
 
         simtime = (tend-tstart).total_seconds()
         setup.log('Simulation completed in '
-                      '{0:.3f} seconds\n'.format(simtime) +
-                      '*'*20 + '\n')
+                      '{0:.3f} seconds'.format(simtime))
+        setup.log('*'*20)
 
         x = setup.field_axis
         t = setup.time_axis

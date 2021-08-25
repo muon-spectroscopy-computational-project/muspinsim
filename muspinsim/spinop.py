@@ -34,6 +34,42 @@ def _S0(mvals):
     return np.eye(len(mvals))+.0j
 
 
+class Hermitian(object):
+    """A helper mixin for operators that are also Hermitian
+    """
+
+    def __init__(self):
+
+        if not self.is_hermitian:
+            raise ValueError('Operator must be hermitian')
+
+    def diag(self):
+        """Diagonalise the operator
+
+        Return eigenvalues and corresponding eigenvectors for this operator.
+
+        Returns:
+            (ndarray, ndarray) -- Eigenvalues and eigenvector matrix, as
+                                  returned by numpy.linalg.eigh
+        """
+
+        try:
+            dd = self._diagdata
+            if np.all(dd['matrix'] == self._matrix):
+                return dd['eigh']
+        except AttributeError:
+            pass
+
+        eigh = np.linalg.eigh(self._matrix)
+
+        self._diagdata = {
+            'matrix': self._matrix.copy(),
+            'eigh': eigh
+        }
+
+        return eigh
+
+
 class Operator(Clonable):
 
     def __init__(self, matrix, dim=None):
@@ -69,6 +105,8 @@ class Operator(Clonable):
 
         self._dim = dim
         self._matrix = matrix
+
+        super(Operator, self).__init__()
 
     @property
     def Is(self):
@@ -252,18 +290,6 @@ class Operator(Clonable):
         B = x.matrix
 
         return np.trace(np.dot(A.conj().T, B))
-
-    def diag(self):
-        """Diagonalise the operator
-
-        Return eigenvalues and corresponding eigenvectors for this operator.
-
-        Returns:
-            (ndarray, ndarray) -- Eigenvalues and eigenvector matrix, as
-                                  returned by numpy.linalg.eigh
-        """
-
-        return np.linalg.eigh(self._matrix)
 
     def basis_change(self, basis):
         """Return a version of this Operator with different basis
