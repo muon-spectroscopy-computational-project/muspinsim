@@ -511,16 +511,18 @@ class DensityOperator(Operator):
             DensityOperator -- Operator with partial trace
         """
 
-        axsum = tuple(tracedim) + tuple(np.array(tracedim) + len(self._dim))
-        m = self._matrix.reshape(self._dim+self._dim)
-        m = np.sum(m, axis=axsum)
+        dim = list(self._dim)
+        tdim = list(sorted(tracedim))
 
-        ans = DensityOperator.__new__(DensityOperator)
-        ans._dim = tuple(d for i, d in enumerate(self._dim)
-                         if not (i in tracedim))
-        ans._matrix = m.reshape((ans.N, -1))
+        m = self._matrix.reshape(dim+dim)
 
-        return ans
+        while len(tdim) > 0:
+            td = tdim.pop(-1)            
+            # Trace along tdim
+            m = np.trace(m, axis1=td, axis2=td+len(dim))
+            dim.pop(td) # Reduce dimension accordingly
+
+        return DensityOperator(m, dim)
 
     def expectation(self, operator):
         """Compute expectation value of one operator
