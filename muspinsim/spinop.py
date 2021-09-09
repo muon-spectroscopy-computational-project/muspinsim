@@ -72,7 +72,7 @@ class Hermitian(object):
 
 class Operator(Clonable):
 
-    def __init__(self, matrix, dim=None):
+    def __init__(self, matrix, dim=None, hermtol=1e-6):
         """Create a Operator object
 
         Create an object representing a spin operator. These can
@@ -88,6 +88,8 @@ class Operator(Clonable):
                                (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
                                If not specified, it's taken from the size of
                                the matrix (default: {None})
+            hermtol {float} -- Tolerance used to check for hermitianity of the
+                               matrix (default: {1e-6})
 
         Raises:
             ValueError -- Any of the passed values are invalid
@@ -105,6 +107,7 @@ class Operator(Clonable):
 
         self._dim = dim
         self._matrix = matrix
+        self._htol = hermtol
 
         super(Operator, self).__init__()
 
@@ -126,7 +129,7 @@ class Operator(Clonable):
 
     @property
     def is_hermitian(self):
-        return np.all(self._matrix == self._matrix.conj().T)
+        return np.all(np.abs(self._matrix - self._matrix.conj().T) < self._htol)
 
     def dagger(self):
         """Return the transpose conjugate of this Operator
