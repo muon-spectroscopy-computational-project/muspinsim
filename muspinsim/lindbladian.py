@@ -106,7 +106,9 @@ class Lindbladian(SuperOperator):
             result = np.sum(operatorsT[None, :, :]*rho[:, None, :], axis=-1)
         else:
             # Density matrices
-            result = [DensityOperator(np.dot(revecs, r), dim) for r in rho]
+            n = np.prod(dim)
+            result = [DensityOperator(np.dot(revecs, r).reshape(n, n), dim) 
+                      for r in rho]
 
         return result
 
