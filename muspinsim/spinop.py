@@ -105,7 +105,7 @@ class Operator(Clonable):
         elif np.prod(dim) != matrix.shape[0]:
             raise ValueError('Dimensions are not compatible with matrix')
 
-        self._dim = dim
+        self._dim = tuple(dim)
         self._matrix = matrix
         self._htol = hermtol
 
