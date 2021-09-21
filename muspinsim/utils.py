@@ -3,6 +3,7 @@
 Utility functions and classes"""
 
 from copy import deepcopy
+from collections.abc import Iterable
 
 
 class Clonable(object):
@@ -16,3 +17,12 @@ class Clonable(object):
         copy.__dict__ = deepcopy(self.__dict__)
 
         return copy
+
+def deepmap(func, obj):
+    """Deep traverse obj, and apply func to each of its non-Iterable 
+    elements"""
+
+    if isinstance(obj, Iterable):
+        return [deepmap(func, x) for x in obj]
+    else:
+        return func(obj)
