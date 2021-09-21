@@ -9,7 +9,7 @@ class TestUtils(unittest.TestCase):
 
         class TestClass(Clonable):
             def __init__(self):
-                self.data = {'x': [1,2,3]}
+                self.data = {'x': [1, 2, 3]}
 
         tc = TestClass()
         # Clone it
@@ -21,16 +21,14 @@ class TestUtils(unittest.TestCase):
 
     def test_deepmap(self):
 
-        data = [[1,2,3],[4,5],[6,[7,8]]]
+        data = [[1, 2, 3], [4, 5], [6, [7, 8]]]
 
         def square(x):
             return x**2
 
         data2 = deepmap(square, data)
 
-        self.assertEqual(data2[0], [1,4,9])
+        self.assertEqual(data2[0], [1, 4, 9])
         self.assertEqual(data2[1], [16, 25])
         self.assertEqual(data2[2][0], 36)
         self.assertEqual(data2[2][1], [49, 64])
-
-
