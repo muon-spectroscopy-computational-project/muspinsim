@@ -1,73 +1,40 @@
 import unittest
-import numpy as np
-from io import StringIO
 
-from muspinsim.input import MuSpinInput, _read_tensor, _read_list
+from muspinsim.input.asteval import ASTExpression, ASTExpressionError
+from muspinsim.input.keyword import MuSpinKeyword
 
 
-class TestMuSpinInput(unittest.TestCase):
+class TestInput(unittest.TestCase):
 
-    def test_parseblock(self):
+    def test_astexpr(self):
+        
+        # Start by testing simple expressions
+        def double(x):
+            return 2*x
 
-        l = _read_list(' mu e H\n')
-        self.assertEqual(l, ['mu', 'e', 'H'])
+        e1 = ASTExpression('x+y+1', variables='xy')
 
-        T = _read_tensor(['  0 1\n', '1 0'])
-        self.assertEqual(T, [[0, 1], [1, 0]])
+        self.assertEqual(e1.variables, {'x', 'y'})
+        self.assertEqual(e1.evaluate(x=2, y=5), 8)
 
-    def test_read_io(self):
+        # Try using a function
+        e2 = ASTExpression('double(x)', variables='x', 
+                           functions={'double': double})
 
-        stream = StringIO("""
-spins
-    mu e 2H
-polarization 
-    longitudinal
-field 
-    3   5   100
-time 
-    0   5   100
-save
-    evolution
-    integral
-powder zcw
-    100
-hyperfine 1
-    1   0   0
-    0   1   0
-    0   0   1
-dipolar 1 3
-    0   0   1
-quadrupolar 3
-    1   0   0
-    0   1   0
-    0   0  -2
-""")
+        self.assertEqual(e2.variables, {'x'})
+        self.assertEqual(e2.functions, {'double'})
+        self.assertEqual(e2.evaluate(x=2), 4)
 
-        f = MuSpinInput(stream)
+        # Check that it evaluates when possible
+        e3 = ASTExpression('double(4)', functions={'double': double})
+        self.assertEqual(e3._store_eval, 8)
 
-        self.assertEqual(f.spins, ['mu', 'e', ('H', 2)])
-        self.assertEqual(f.polarization, 'longitudinal')
-        self.assertEqual(f.field, [3.0, 5.0, 100.0])
-        self.assertEqual(f.time, [0.0, 5.0, 100.0])
-        self.assertEqual(f.save, {'evolution', 'integral'})
-        self.assertEqual(f.powder, ('zcw', 100))
+        # Errors
+        with self.assertRaises(ASTExpressionError):
+            e4 = ASTExpression('print(666)')
 
-        # Couplings
-        self.assertEqual(f.hyperfine[(0, None)], [[1.0, 0.0, 0.0],
-                                                  [0.0, 1.0, 0.0],
-                                                  [0.0, 0.0, 1.0]])
-        self.assertEqual(f.dipolar[(0, 2)], [0.0, 0.0, 1.0])
-        self.assertEqual(f.quadrupolar[2], [[1.0, 0.0, 0.0],
-                                            [0.0, 1.0, 0.0],
-                                            [0.0, 0.0, -2.0]])
+        with self.assertRaises(ASTExpressionError):
+            e5 = ASTExpression('x+1', variables='y')
 
-    def test_experiment(self):
-
-        stream = StringIO("""
-experiment
-    ALC
-""")
-        f = MuSpinInput(stream)
-
-        self.assertEqual(f.polarization, 'longitudinal')
-        self.assertEqual(f.save, {'integral'})
+        with self.assertRaises(ASTExpressionError):
+            e1.evaluate()

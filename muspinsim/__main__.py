@@ -4,7 +4,7 @@ import numpy as np
 import argparse as ap
 from datetime import datetime
 
-from muspinsim.input import MuSpinInput
+from muspinsim.input_old import MuSpinInput
 from muspinsim.experiment import MuonExperiment
 from muspinsim.mpi import mpi_controller as mpi
 
