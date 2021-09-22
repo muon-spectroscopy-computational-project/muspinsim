@@ -5,6 +5,27 @@ Evaluation functions and classes based off Abstract Syntax Trees"""
 import ast
 
 
+def ast_tokenize(line):
+    """Splint a line of space-separated valid expressions."""
+    ls = line.split()
+    tokens = []
+    while len(ls) > 0:
+        tk = ls.pop(0)
+        valid = False
+        while not valid:
+            try:
+                ast.parse(tk, mode='eval')
+                valid = True
+            except SyntaxError:
+                if len(ls) == 0:
+                    raise RuntimeError('Line can not be tokenized into valid '
+                                       'expressions')
+                tk = tk + ls.pop(0)
+        tokens.append(tk)
+
+    return tokens
+
+
 class ASTExpressionError(Exception):
     pass
 

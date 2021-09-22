@@ -1,9 +1,10 @@
 import unittest
 import numpy as np
 
-from muspinsim.input.asteval import ASTExpression, ASTExpressionError
-from muspinsim.input.keyword import (MuSpinKeyword, MuSpinNumericalKeyword,
-                                     MuSpinTensorKeyword)
+from muspinsim.input.asteval import (ASTExpression, ASTExpressionError,
+                                     ast_tokenize)
+from muspinsim.input.keyword import (MuSpinKeyword, MuSpinEvaluateKeyword,
+                                     MuSpinExpandKeyword, MuSpinTensorKeyword)
 
 
 class TestInput(unittest.TestCase):
@@ -41,6 +42,9 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(ASTExpressionError):
             e1.evaluate()
 
+        # Test tokenization
+        ast_tokenize('3.4 2.3 sin(x) atan2(3, 4)')
+
     def test_keyword(self):
 
         # Basic keyword
@@ -52,9 +56,13 @@ class TestInput(unittest.TestCase):
         self.assertEqual(len(kw), 2)
 
         # Let's try a numerical one
-        nkw = MuSpinNumericalKeyword(['exp(0) 1+1 2**2'])
+        nkw = MuSpinEvaluateKeyword(['exp(0) 1+1 2**2'])
 
         self.assertTrue((nkw.evaluate()[0] == [1, 2, 4]).all())
+
+        exkw = MuSpinExpandKeyword(['range(0, 1)', '5.0 2.0'])
+
+        self.assertTrue(len(exkw.evaluate()) == 101)
 
         # Now a tensor
         tkw = MuSpinTensorKeyword(['1 0 0',
