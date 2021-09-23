@@ -7,7 +7,9 @@ import re
 import sys
 import inspect
 import numpy as np
+from soprano.calculate.powder import ZCW
 
+from muspinsim.constants import MU_GAMMA
 from muspinsim.input.asteval import ASTExpression, ast_tokenize
 from muspinsim.utils import deepmap
 
@@ -27,7 +29,20 @@ _math_functions = {
 # And math constants
 _math_constants = {
     'pi': np.pi,
-    'e': np.exp(1)
+    'e': np.exp(1),
+    'inf': np.inf
+}
+
+# Functions for powder orientation
+
+
+def _zcw(N, mode='sphere'):
+    pwd = ZCW(mode)
+    return pwd.get_orient_angles(N)[0]
+
+
+_pwd_functions = {
+    'zcw': _zcw
 }
 
 # Expansion functions
@@ -43,9 +58,10 @@ class MuSpinKeyword(object):
     name = 'keyword'
     block_size = 1
     block_size_bounds = (1, np.inf)
-    args_signature = []
     accept_range = True
+    accept_as_x = False
     default = None
+    _validators = {}
 
     def __init__(self, block=[], args=[]):
         """Create an instance of a given keyword, passing the raw block of 
@@ -77,22 +93,25 @@ class MuSpinKeyword(object):
                                'keyword {0}'.format(self.name))
 
         if len(block) == 0:
-            block = np.array([[self.default]])
+            block = np.array([self.default.split('\n')])
 
         self._store_values(block)
 
+        self._validate_values()
+
+    def _default_args(self):
+        # Dummy function, used for type signature and processing of arguments
+        return {}
+
     def _store_args(self, args):
-        # Check that the arguments are correct
-        self._args = []
-        for i, a in enumerate(args):
-            try:
-                self._args.append(self.args_signature[i](a))
-            except IndexError:
-                raise RuntimeError('Too many arguments passed to '
-                                   'keyword {0}'.format(self.name))
-            except ValueError:
-                raise RuntimeError('Invalid argument type passed to '
-                                   'keyword {0}'.format(self.name))
+        try:
+            self._args = self._default_args(*args)
+        except TypeError:
+            raise RuntimeError('Wrong number of arguments passed to '
+                               'keyword {0}'.format(self.name))
+        except ValueError:
+            raise RuntimeError('Invalid argument type passed to '
+                               'keyword {0}'.format(self.name))
 
     def _store_values(self, block):
         # Parse and store each value separately
@@ -103,6 +122,15 @@ class MuSpinKeyword(object):
                 b = b[0]
             self._values.append(b)
         self._values = np.array(self._values)
+
+    def _validate_values(self):
+
+        for rule, vfunc in self._validators.items():
+            ans = all([vfunc(b) for b in self._values])
+
+            if not ans:
+                raise ValueError('Invalid block for '
+                                 'keyword {0}: {1}'.format(self.name, rule))
 
     @property
     def arguments(self):
@@ -187,17 +215,36 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
             elif len(eval_line.shape) == 1:
                 eval_values += [eval_line]
             else:
-                raise RuntimeError('Invalid line for '
+                raise RuntimeError('Unable to evaluate expression for '
                                    'keyword {0}'.format(self.name))
 
         return eval_values
 
 
-class MuSpinTensorKeyword(MuSpinEvaluateKeyword):
+class MuSpinCoupling(MuSpinEvaluateKeyword):
 
-    name = 'tensor_keyword'
-    block_size = 3
-    block_size_bounds = (3, 3)
+    name = 'coupling_keyword'
+    block_size = 1
+    accept_range = True
+    default = '0 0 0'
+
+    def _default_args(self, i=None, j=None):
+        args = {
+            'i': int(i) if (i is not None) else None,
+            'j': int(j) if (j is not None) else None
+        }
+        return args
+
+    @property
+    def id(self):
+        id_str = ''
+        i = self._args.get('i')
+        j = self._args.get('j')
+        if i is not None:
+            id_str += '_{0}'.format(i)
+            if j is not None:
+                id_str += '_{0}'.format(j)
+        return '{0}{1}'.format(self.name, id_str)
 
 
 # Now on to defining the actual keywords that are admitted in input files
@@ -227,6 +274,156 @@ class KWPolarization(MuSpinExpandKeyword):
                   'transverse':   np.array([1, 0, 0])
                   }
     _functions = {**_math_functions}
+
+
+class KWField(MuSpinExpandKeyword):
+
+    name = 'field'
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = '0.0'
+    _constants = {**_math_constants,
+                  'muon_gyr': MU_GAMMA,
+                  'MHz': 1.0/(2*MU_GAMMA)
+                  }
+
+
+class KWTime(MuSpinExpandKeyword):
+
+    name = 'time'
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = 'range(0, 10, 100)'
+
+
+class KWXAxis(MuSpinKeyword):
+
+    name = 'x_axis'
+    block_size = 1
+    accept_range = False
+    default = 'time'
+
+
+class KWYAxis(MuSpinKeyword):
+
+    name = 'y_axis'
+    block_size = 1
+    accept_range = True
+    default = 'asymmetry'
+    _validators = {
+        'Invalid value': lambda s: s in ('asymmetry', 'integral')
+    }
+
+
+class KWOrientation(MuSpinExpandKeyword):
+
+    name = 'orientation'
+    block_size = 1
+    accept_range = True
+    default = '0 0 0'
+    _functions = {
+        **_math_functions,
+        **_pwd_functions
+    }
+
+
+class KWTemperature(MuSpinExpandKeyword):
+
+    name = 'temperature'
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = 'inf'
+
+
+# Couplings
+class KWZeeman(MuSpinCoupling):
+
+    name = 'zeeman'
+    block_size = 1
+    accept_range = True
+    default = '0 0 0'
+
+    def _default_args(self, i):
+        args = {
+            'i': int(i)
+        }
+        return args
+
+
+class KWDipolar(MuSpinCoupling):
+
+    name = 'dipolar'
+    block_size = 1
+    accept_range = True
+    default = '0 0 1'
+
+    def _default_args(self, i, j):
+        args = {
+            'i': int(i),
+            'j': int(j)
+        }
+        return args
+
+
+class KWHyperfine(MuSpinCoupling):
+
+    name = 'hyperfine'
+    block_size = 3
+    accept_range = True
+    default = """0 0 0
+0 0 0
+0 0 0"""
+
+    def _default_args(self, i, j=None):
+        args = {
+            'i': int(i),
+            'j': int(j) if j is not None else None
+        }
+        return args
+
+
+class KWQuadrupolar(MuSpinCoupling):
+
+    name = 'quadrupolar'
+    block_size = 3
+    accept_range = True
+    default = """0 0 0
+0 0 0
+0 0 0"""
+
+    def _default_args(self, i, j):
+        args = {
+            'i': int(i),
+            'j': int(j)
+        }
+        return args
+
+
+class KWDissipation(MuSpinCoupling):
+
+    name = 'dissipation'
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = '0.0'
+
+    def _default_args(self, i):
+        args = {
+            'i': int(i)
+        }
+        return args
+
+
+# Fitting variables
+class KWFittingVariables(MuSpinKeyword):
+
+    name = 'fitting_variables'
+    block_size = 1
+    accept_range = False
+    default = ''
 
 
 # Compile all KW classes into a single dictionary automatically

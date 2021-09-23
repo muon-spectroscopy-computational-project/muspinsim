@@ -4,8 +4,7 @@ import numpy as np
 from muspinsim.input.asteval import (ASTExpression, ASTExpressionError,
                                      ast_tokenize)
 from muspinsim.input.keyword import (MuSpinKeyword, MuSpinEvaluateKeyword,
-                                     MuSpinExpandKeyword, MuSpinTensorKeyword,
-                                     InputKeywords)
+                                     MuSpinExpandKeyword, InputKeywords)
 
 
 class TestInput(unittest.TestCase):
@@ -88,12 +87,9 @@ class TestInput(unittest.TestCase):
 
         self.assertTrue((rkw.evaluate()[0] == [1, 1, 1]).all())
 
-        # Now a tensor
-        tkw = MuSpinTensorKeyword(['1 0 0',
-                                   '0 1 0',
-                                   '0 0  cos(1)**2+sin(1)**2'])
-
-        self.assertTrue((tkw.evaluate()[0] == np.eye(3)).all())
+        # Some failure cases
+        with self.assertRaises(RuntimeError):
+            MuSpinKeyword([], args=['a'])  # One argument too much
 
     def test_input_keywords(self):
 
@@ -108,3 +104,53 @@ class TestInput(unittest.TestCase):
         pkw = InputKeywords['polarization']()
 
         self.assertTrue((pkw.evaluate()[0] == [1, 0, 0]).all())
+
+        fkw = InputKeywords['field'](['500*MHz'])
+
+        self.assertTrue(np.isclose(fkw.evaluate()[0][0], 1.84449))
+
+        # Test a range of fields
+        fkw = InputKeywords['field'](['range(0, 20, 21)'])
+
+        self.assertTrue((np.array([b[0] for b in fkw.evaluate()]) ==
+                         np.arange(21)).all())
+
+        tkw = InputKeywords['time']()
+
+        self.assertEqual(len(tkw.evaluate()), 100)
+        self.assertEqual(tkw.evaluate()[-1][0], 10.0)
+
+        with self.assertRaises(ValueError):
+            ykw = InputKeywords['y_axis'](['something'])
+
+        ykw = InputKeywords['y_axis'](['asymmetry', 'integral'])
+
+        self.assertEqual(ykw.evaluate()[0][0], 'asymmetry')
+        self.assertEqual(ykw.evaluate()[1][0], 'integral')
+
+        okw = InputKeywords['orientation'](['zcw(20)'])
+
+        self.assertTrue(len(okw.evaluate()) >= 20)
+
+        zkw = InputKeywords['zeeman'](['0 0 1'], args=['1'])
+
+        self.assertEqual(zkw.id, 'zeeman_1')
+
+        dkw = InputKeywords['dipolar'](['0 0 1'], args=['1', '2'])
+
+        self.assertEqual(dkw.id, 'dipolar_1_2')
+
+        hkw = InputKeywords['hyperfine']([], args=['1'])
+
+        self.assertTrue((hkw.evaluate()[0] == np.zeros((3, 3))).all())
+
+        qkw = InputKeywords['quadrupolar'](['1 0 0',
+                                            '0 1 0',
+                                            '0 0 cos(1)**2+sin(1)**2'],
+                                           args=['1', '2'])
+
+        self.assertTrue((qkw.evaluate()[0] == np.eye(3)).all())
+
+        # Failure case (wrong argument type)
+        with self.assertRaises(RuntimeError):
+            InputKeywords['zeeman']([], args=['wrong'])
