@@ -4,7 +4,8 @@ import numpy as np
 from muspinsim.input.asteval import (ASTExpression, ASTExpressionError,
                                      ast_tokenize)
 from muspinsim.input.keyword import (MuSpinKeyword, MuSpinEvaluateKeyword,
-                                     MuSpinExpandKeyword, MuSpinTensorKeyword)
+                                     MuSpinExpandKeyword, MuSpinTensorKeyword,
+                                     InputKeywords)
 
 
 class TestInput(unittest.TestCase):
@@ -55,6 +56,15 @@ class TestInput(unittest.TestCase):
                          ).all())
         self.assertEqual(len(kw), 2)
 
+        # Test that the default works
+
+        class DefKeyword(MuSpinKeyword):
+            default = '1'
+
+        dkw = DefKeyword()
+
+        self.assertEqual(dkw.evaluate()[0][0], '1')
+
         # Let's try a numerical one
         nkw = MuSpinEvaluateKeyword(['exp(0) 1+1 2**2'])
 
@@ -64,9 +74,37 @@ class TestInput(unittest.TestCase):
 
         self.assertTrue(len(exkw.evaluate()) == 101)
 
+        # Test expansion of line in longer line
+
+        def _repeat3(x):
+            return [x, x, x]
+
+        class RepeatKW(MuSpinExpandKeyword):
+            _functions = {
+                'repeat3': _repeat3
+            }
+
+        rkw = RepeatKW(['repeat3(1)'])
+
+        self.assertTrue((rkw.evaluate()[0] == [1, 1, 1]).all())
+
         # Now a tensor
         tkw = MuSpinTensorKeyword(['1 0 0',
                                    '0 1 0',
                                    '0 0  cos(1)**2+sin(1)**2'])
 
         self.assertTrue((tkw.evaluate()[0] == np.eye(3)).all())
+
+    def test_input_keywords(self):
+
+        nkw = InputKeywords['name']()
+
+        self.assertEqual(len(nkw.evaluate()[0]), 0)
+
+        skw = InputKeywords['spins']()
+
+        self.assertTrue((skw.evaluate()[0] == ['mu', 'e']).all())
+
+        pkw = InputKeywords['polarization']()
+
+        self.assertTrue((pkw.evaluate()[0] == [1, 0, 0]).all())
