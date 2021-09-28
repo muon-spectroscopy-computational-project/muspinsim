@@ -1,10 +1,12 @@
 import unittest
 import numpy as np
+from io import StringIO
 
 from muspinsim.input.asteval import (ASTExpression, ASTExpressionError,
                                      ast_tokenize)
 from muspinsim.input.keyword import (MuSpinKeyword, MuSpinEvaluateKeyword,
                                      MuSpinExpandKeyword, InputKeywords)
+from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):
@@ -54,6 +56,7 @@ class TestInput(unittest.TestCase):
                                            ['d', 'e', 'f']]
                          ).all())
         self.assertEqual(len(kw), 2)
+
 
         # Test that the default works
 
@@ -154,3 +157,39 @@ class TestInput(unittest.TestCase):
         # Failure case (wrong argument type)
         with self.assertRaises(RuntimeError):
             InputKeywords['zeeman']([], args=['wrong'])
+
+    def test_input(self):
+
+        s1 = StringIO("""
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+""")
+
+        i1 = MuSpinInput(s1)
+        e1 = i1.evaluate()
+
+        self.assertEqual(e1['name'].value[0], 'test_1')
+        self.assertTrue((e1['spins'].value[0] == ['mu', 'H']).all())
+        self.assertTrue((e1['couplings']['zeeman_1'].value[0] == [1, 0, 0]).all())
+
+        # Let's try with some variables
+        s2 = StringIO("""
+fitting_variables
+    x y
+field
+    2*x
+zeeman 1
+    x y 0
+""")
+
+        i2 = MuSpinInput(s2)        
+        e2 = i2.evaluate(x=2.0, y=5.0)
+
+        self.assertEqual(e2['field'].value[0][0], 4.0)
+        self.assertTrue((e2['couplings']['zeeman_1'].value[0] == [2, 5, 0]).all())
+
+        

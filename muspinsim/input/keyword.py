@@ -92,7 +92,7 @@ class MuSpinKeyword(object):
             raise RuntimeError('Can not accept range of values for '
                                'keyword {0}'.format(self.name))
 
-        if len(block) == 0:
+        if len(block) == 0 and self.has_default:
             block = np.array([self.default.split('\n')])
 
         self._store_values(block)
@@ -134,7 +134,15 @@ class MuSpinKeyword(object):
 
     @property
     def arguments(self):
-        return tuple(self._args)
+        return {**self._args}
+
+    @property
+    def id(self):
+        return self.name 
+
+    @property
+    def has_default(self):
+        return (self.default is not None)
 
     def evaluate(self):
         return self._values.copy()
@@ -221,11 +229,10 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
         return eval_values
 
 
-class MuSpinCoupling(MuSpinEvaluateKeyword):
+class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
 
     name = 'coupling_keyword'
     block_size = 1
-    accept_range = True
     default = '0 0 0'
 
     def _default_args(self, i=None, j=None):
@@ -234,6 +241,10 @@ class MuSpinCoupling(MuSpinEvaluateKeyword):
             'j': int(j) if (j is not None) else None
         }
         return args
+
+    @property
+    def accept_range(self):
+        return False # Never ranges! These keywords define the system!
 
     @property
     def id(self):
@@ -253,7 +264,7 @@ class KWName(MuSpinKeyword):
     name = 'name'
     block_size = 1
     accept_range = False
-    default = ''
+    default = 'muspinsim'
 
 
 class KWSpins(MuSpinKeyword):
@@ -270,8 +281,8 @@ class KWPolarization(MuSpinExpandKeyword):
     block_size = 1
     default = 'transverse'
     _constants = {**_math_constants,
-                  'longitudinal': np.array([0, 0, 1]),
-                  'transverse':   np.array([1, 0, 0])
+                  'longitudinal': np.array([0, 0, 1.0]),
+                  'transverse':   np.array([1.0, 0, 0])
                   }
     _functions = {**_math_functions}
 
@@ -339,12 +350,10 @@ class KWTemperature(MuSpinExpandKeyword):
 
 
 # Couplings
-class KWZeeman(MuSpinCoupling):
+class KWZeeman(MuSpinCouplingKeyword):
 
     name = 'zeeman'
     block_size = 1
-    accept_range = True
-    default = '0 0 0'
 
     def _default_args(self, i):
         args = {
@@ -353,12 +362,10 @@ class KWZeeman(MuSpinCoupling):
         return args
 
 
-class KWDipolar(MuSpinCoupling):
+class KWDipolar(MuSpinCouplingKeyword):
 
     name = 'dipolar'
     block_size = 1
-    accept_range = True
-    default = '0 0 1'
 
     def _default_args(self, i, j):
         args = {
@@ -368,14 +375,10 @@ class KWDipolar(MuSpinCoupling):
         return args
 
 
-class KWHyperfine(MuSpinCoupling):
+class KWHyperfine(MuSpinCouplingKeyword):
 
     name = 'hyperfine'
     block_size = 3
-    accept_range = True
-    default = """0 0 0
-0 0 0
-0 0 0"""
 
     def _default_args(self, i, j=None):
         args = {
@@ -385,14 +388,10 @@ class KWHyperfine(MuSpinCoupling):
         return args
 
 
-class KWQuadrupolar(MuSpinCoupling):
+class KWQuadrupolar(MuSpinCouplingKeyword):
 
     name = 'quadrupolar'
     block_size = 3
-    accept_range = True
-    default = """0 0 0
-0 0 0
-0 0 0"""
 
     def _default_args(self, i, j):
         args = {
@@ -402,13 +401,10 @@ class KWQuadrupolar(MuSpinCoupling):
         return args
 
 
-class KWDissipation(MuSpinCoupling):
+class KWDissipation(MuSpinCouplingKeyword):
 
     name = 'dissipation'
     block_size = 1
-    accept_range = True
-    accept_as_x = True
-    default = '0.0'
 
     def _default_args(self, i):
         args = {
