@@ -402,6 +402,10 @@ class SpinSystem(Clonable):
         Q = self.Q(i)
         I = self.I(i)
 
+        if I == 0.5:
+            raise ValueError('Can not set up quadrupolar coupling for '
+                'spin 1/2 particle')
+
         Qtens = EFG_2_MHZ*Q/(2*I*(2*I-1))*EFG
 
         return self.add_bilinear_term(i, i, Qtens, 'Quadrupolar')

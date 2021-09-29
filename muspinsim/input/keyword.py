@@ -393,10 +393,9 @@ class KWQuadrupolar(MuSpinCouplingKeyword):
     name = 'quadrupolar'
     block_size = 3
 
-    def _default_args(self, i, j):
+    def _default_args(self, i):
         args = {
             'i': int(i),
-            'j': int(j)
         }
         return args
 

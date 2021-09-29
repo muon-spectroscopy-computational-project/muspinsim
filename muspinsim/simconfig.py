@@ -9,6 +9,7 @@ from numbers import Real
 import numpy as np
 
 from muspinsim.input.keyword import InputKeywords
+from muspinsim.spinsys import MuonSpinSystem
 
 
 # A dictionary of correspondence between keyword names and config parameters
@@ -23,6 +24,44 @@ _CDICT = {
     'orientation': 'orient',
     'temperature': 'T'
 }
+
+# Same but specifically for coupling types
+_CSDICT = {
+    'zeeman': 'zmn',
+    'dipolar': 'dip',
+    'quadrupolar': 'quad',
+    'hyperfine': 'hfc',
+    'dissipation': 'dsp'
+}
+
+# A useful decorator
+
+
+def _validate_coupling_args(fun):
+    def decorated(self, value, args={}):
+        ij = np.array(list(args.values()))
+        if (ij < 1).any() or (ij > len(self.system)).any():
+            raise MuSpinConfigError('Out of range indices for coupling')
+
+        return fun(self, value, args)
+
+    return decorated
+
+
+def _validate_vector(v, name='vector'):
+    v = np.array(v)
+    if v.shape != (3,):
+        raise MuSpinConfigError('Invalid shape for '
+                                '{0} coupling term'.format(name))
+    return v
+
+
+def _validate_tensor(v, name='tensor'):
+    v = np.array(v)
+    if v.shape != (3, 3):
+        raise MuSpinConfigError('Invalid shape for '
+                                '{0} coupling term'.format(name))
+    return v
 
 
 class MuSpinConfigError(Exception):
@@ -50,39 +89,90 @@ class MuSpinConfig(object):
     def __init__(self, params={}):
         """Initialise a MuSpinConfig object
 
-        Initialise a MuSpinConfig object from values produced by the 
+        Initialise a MuSpinConfig object from values produced by the
         .evaluate method of a MuSpinInput object.
 
         Arguments:
-            params {dict} -- Dictionary of parameters as returned by 
+            params {dict} -- Dictionary of parameters as returned by
                              MuSpinInput.evaluate
 
         """
 
         self._parameters = {}
+        self._arguments = {}
 
         for iname, cname in _CDICT.items():
-            self.set(cname, params[iname].value)
+            try:
+                p = params[iname]
+                self.set(cname, p.value, p.args)
+            except KeyError:
+                raise MuSpinConfigError('Invalid params object passed to '
+                                        'MuSpinConfig: '
+                                        'missing {0}'.format(iname))
 
-        # Systems
+        # Now make a spin system
+        self._system = MuonSpinSystem(self.get('spins'))
+        self._dissip_terms = {}
 
-    def set(self, name, value):
-        """Set the value of a configuration parameter
+        for iid, idata in params['couplings'].items():
+            iname = idata.name
+            try:
+                cname = _CSDICT[iname]
+            except KeyError:
+                raise MuSpinConfigError('Invalid params object passed to '
+                                        'MuSpinConfig: '
+                                        'unknown {0} coupling'.format(iname))
 
-        Set the value of a configuration parameter, with preliminary use of 
-        validation and conversion to MuSpinConfigRange if applicable.
+            cval = self.validate(cname, idata.value, idata.args)[0]
 
-        Arguments:
-            name {str} -- Name of the parameter to set
-            value {any} -- Parameter value
+            i = idata.args.get('i')
+            j = idata.args.get('j')
 
-        """
+            # Move back from 1-based to 0-based indexing
+            i = i-1 if i is not None else None
+            j = j-1 if j is not None else None
+
+            if cname == 'zmn':
+                # Zeeman coupling
+                self._system.add_zeeman_term(i, cval)
+            elif cname == 'dip':
+                # Dipolar coupling
+                self._system.add_dipolar_term(i, j, cval)
+            elif cname == 'hfc':
+                # Hyperfine coupling
+                self._system.add_hyperfine_term(i, cval, j)
+            elif cname == 'quad':
+                # Quadrupolar coupling
+                self._system.add_quadrupolar_term(i, cval)
+            elif cname == 'dsp':
+                # Dissipation. Special case, this is temperature dependent and
+                # must be set individually
+                self._dissip_terms[i] = cval
+
+    def validate(self, name, value, args={}):
 
         vname = '_validate_{0}'.format(name)
 
         if hasattr(self, vname):
             vfun = getattr(self, vname)
-            value = list(map(vfun, value))
+            value = [vfun(v, args) for v in value]
+
+        return value
+
+    def set(self, name, value, args={}):
+        """Set the value of a configuration parameter
+
+        Set the value of a configuration parameter, with preliminary use of
+        validation and conversion to MuSpinConfigRange if applicable.
+
+        Arguments:
+            name {str} -- Name of the parameter to set
+            value {any} -- Parameter value
+            args {dict} -- Dictionary of arguments
+
+        """
+
+        value = self.validate(name, value, args)
 
         if len(value) > 1:
             value = MuSpinConfigRange(value)
@@ -90,11 +180,12 @@ class MuSpinConfig(object):
             value = value[0]
 
         self._parameters[name] = value
+        self._arguments[name] = args
 
     def get(self, name):
         """Get the value of a configuration parameter
 
-        Get the value of a configuration parameter, given its name.
+        Get the value of a configuration parameter, given its name
 
         Arguments:
             name {str} -- Name of the parameter to get
@@ -105,28 +196,70 @@ class MuSpinConfig(object):
 
         return self._parameters.get(name)
 
-    def _validate_name(self, x):
-        return x[0]
+    def get_args(self, name):
+        """Get the arguments of a configuration parameter
 
-    def _validate_B(self, x):
+        Get the arguments of a configuration parameter, given its name
 
-        if len(x) == 1:
-            x = np.array([0, 0, x[0]]) # The default direction is Z
-        elif len(x) != 3:
+        Arguments:
+            name {str} -- Name of the parameter to get
+
+        Returns:
+            args {dict} -- Parameter arguments
+        """
+
+        return self._arguments.get(name)
+
+    @property
+    def params(self):
+        return {**self._parameters}
+
+    @property
+    def args(self):
+        return {**self._arguments}
+
+    @property
+    def system(self):
+        return self._system
+
+    def _validate_name(self, v, a={}):
+        return v[0]
+
+    def _validate_B(self, v, a={}):
+
+        if len(v) == 1:
+            v = np.array([0, 0, v[0]])  # The default direction is Z
+        elif len(v) != 3:
             raise MuSpinConfigError('Invalid magnetic field value')
 
-        return x
+        return v
 
-    def _validate_x(self, x):
+    def _validate_x(self, v, a={}):
         # Check that it's valid
         try:
-            kw = InputKeywords[x[0]]
+            kw = InputKeywords[v[0]]
             if not kw.accept_as_x:
                 raise KeyError()
         except KeyError:
             raise MuSpinConfigError('Invalid choice of X axis for simulation')
 
-        return _CDICT[x[0]]
+        return _CDICT[v[0]]
 
-    def _validate_T(self, x):
-        return x[0]
+    def _validate_T(self, v, a={}):
+        return v[0]
+
+    @_validate_coupling_args
+    def _validate_zmn(self, v, a={}):
+        return _validate_vector(v, 'Zeeman')
+
+    @_validate_coupling_args
+    def _validate_dip(self, v, a={}):
+        return _validate_vector(v, 'dipolar')
+
+    @_validate_coupling_args
+    def _validate_hfc(self, v, a={}):
+        return _validate_tensor(v, 'hyperfine')
+
+    @_validate_coupling_args
+    def _validate_quad(self, v, a={}):
+        return _validate_tensor(v, 'quadrupolar')
