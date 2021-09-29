@@ -28,3 +28,24 @@ class TestMuSpinMPI(unittest.TestCase):
         self.assertTrue(np.all(split30[0][1] == [0, 1, 2, 3, 4, 5]))
         self.assertTrue(np.all(split30[2][0] == [0, 1]))
         self.assertTrue(np.all(split30[2][1] == [12, 13, 14, 15, 16]))
+
+    def test_broadcast(self):
+
+        class A(object):
+            def __init__(self, x):
+                self.x = x
+
+        class B(object):
+            def __init__(self, x):
+                self.a = A(x)
+
+        b = B(mpi_controller.rank)
+        mpi_controller.broadcast_object(b)
+
+        self.assertEqual(b.a.x, 0)
+
+        d = np.array([b.a.x])
+        d = mpi_controller.sum_data(d)
+
+        if mpi_controller.is_root:
+            self.assertEqual(d[0], 0)
