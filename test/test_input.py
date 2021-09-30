@@ -98,7 +98,7 @@ class TestInput(unittest.TestCase):
 
         nkw = InputKeywords['name']()
 
-        self.assertEqual(len(nkw.evaluate()[0]), 0)
+        self.assertEqual(nkw.evaluate()[0], 'muspinsim')
 
         skw = InputKeywords['spins']()
 
@@ -126,10 +126,9 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(ValueError):
             ykw = InputKeywords['y_axis'](['something'])
 
-        ykw = InputKeywords['y_axis'](['asymmetry', 'integral'])
+        ykw = InputKeywords['y_axis'](['asymmetry'])
 
         self.assertEqual(ykw.evaluate()[0][0], 'asymmetry')
-        self.assertEqual(ykw.evaluate()[1][0], 'integral')
 
         okw = InputKeywords['orientation'](['zcw(20)'])
 
@@ -150,7 +149,7 @@ class TestInput(unittest.TestCase):
         qkw = InputKeywords['quadrupolar'](['1 0 0',
                                             '0 1 0',
                                             '0 0 cos(1)**2+sin(1)**2'],
-                                           args=['1', '2'])
+                                           args=['1'])
 
         self.assertTrue((qkw.evaluate()[0] == np.eye(3)).all())
 

@@ -3,7 +3,8 @@ import numpy as np
 from io import StringIO
 
 from muspinsim.input import MuSpinInput
-from muspinsim.simconfig import MuSpinConfig, MuSpinConfigRange, MuSpinConfigError
+from muspinsim.simconfig import (MuSpinConfig, MuSpinConfigRange,
+                                 MuSpinConfigError, MuSpinFileSim)
 
 
 class TestConfig(unittest.TestCase):
@@ -15,6 +16,10 @@ spins
     mu N e
 field
     1.0
+temperature
+    range(0, 10, 10)
+orientation
+    zcw(20)
 zeeman 1 
     1 0 0
 dipolar 1 2
@@ -40,6 +45,14 @@ dissipation 2
         self.assertEqual(len(cfg.system._terms), 4)
         self.assertEqual(cfg._dissip_terms[1], 0.1)
 
+        self.assertEqual(cfg._range_axes, ('T', 'orient', 't'))
+        self.assertEqual(cfg._avg_axes, ('orient',))
+        self.assertEqual(cfg._file_axes, ('T',))
+
+        self.assertEqual(cfg.constants['name'], 'muspinsim')
+
+        mfsim = MuSpinFileSim(cfg, [0])
+
         # Now try a few errors
 
         stest = StringIO("""
@@ -59,6 +72,16 @@ spins
     mu e
 zeeman 1
     2 0
+""")
+
+        itest = MuSpinInput(stest)
+
+        with self.assertRaises(MuSpinConfigError):
+            cfg = MuSpinConfig(itest.evaluate())
+
+        stest = StringIO("""
+y_axis
+    integral
 """)
 
         itest = MuSpinInput(stest)

@@ -404,7 +404,7 @@ class SpinSystem(Clonable):
 
         if I == 0.5:
             raise ValueError('Can not set up quadrupolar coupling for '
-                'spin 1/2 particle')
+                             'spin 1/2 particle')
 
         Qtens = EFG_2_MHZ*Q/(2*I*(2*I-1))*EFG
 

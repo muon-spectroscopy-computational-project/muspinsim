@@ -3,6 +3,7 @@ import numpy as np
 
 from muspinsim.mpi import mpi_controller
 
+
 class TestMuSpinMPI(unittest.TestCase):
 
     def test_split(self):

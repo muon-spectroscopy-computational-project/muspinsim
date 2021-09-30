@@ -19,8 +19,6 @@ _CDICT = {
     'polarization': 'mupol',
     'field': 'B',
     'time': 't',
-    'x_axis': 'x',
-    'y_axis': 'y',
     'orientation': 'orient',
     'temperature': 'T'
 }
@@ -81,6 +79,12 @@ class MuSpinConfigRange(object):
     def values(self):
         return self._values
 
+    def __len__(self):
+        return len(self._values)
+
+    def __getitem__(self, i):
+        return self._values[i]
+
 
 class MuSpinConfig(object):
     """A class to store a configuration for a MuSpinSim simulation, including
@@ -109,6 +113,23 @@ class MuSpinConfig(object):
                 raise MuSpinConfigError('Invalid params object passed to '
                                         'MuSpinConfig: '
                                         'missing {0}'.format(iname))
+
+        # A bit of a special treatment for axes stuff
+        self._x_axis = _CDICT[params['x_axis'].value[0][0]]
+        if not isinstance(self.get(self._x_axis), MuSpinConfigRange):
+            raise MuSpinConfigError('Designated x axis does not have a range '
+                                    'of values')
+        self._y_axis = params['y_axis'].value[0][0]
+        self._avg_axes = map(
+            _CDICT.get, params['average_axes'].value.reshape((-1,)))
+
+        # A special case for the Y-axis
+        if self._y_axis == 'integral':
+            # Then time doesn't matter
+            self._parameters['t'] = None
+            if self._x_axis == 't':
+                raise MuSpinConfigError('Can not use time as x axis for '
+                                        'integrated asymmetry')
 
         # Now make a spin system
         self._system = MuonSpinSystem(self.get('spins'))
@@ -148,6 +169,19 @@ class MuSpinConfig(object):
                 # Dissipation. Special case, this is temperature dependent and
                 # must be set individually
                 self._dissip_terms[i] = cval
+
+        # Compile which specific words have ranges
+        self._range_axes = {k for k, p in self._parameters.items()
+                            if isinstance(p, MuSpinConfigRange)}
+
+        self._avg_axes = set(self._avg_axes).intersection(self._range_axes)
+        self._file_axes = self._range_axes.difference(self._avg_axes)
+        self._file_axes = self._file_axes.difference({self._x_axis})
+
+        # Turn them into tuples to preserve a fixed order
+        self._range_axes = tuple(sorted(self._range_axes))
+        self._avg_axes = tuple(sorted(self._avg_axes))
+        self._file_axes = tuple(sorted(self._file_axes))
 
     def validate(self, name, value, args={}):
 
@@ -210,6 +244,20 @@ class MuSpinConfig(object):
 
         return self._arguments.get(name)
 
+    def get_frange_params(self, indices=[]):
+
+        if len(indices) != len(self._file_axes):
+            raise MuSpinConfigError('Indices must match file axes when '
+                                    'fetching file parameters')
+
+        fpars = {}
+
+        for i, fi in enumerate(indices):
+            key = self._file_axes[i]
+            fpars[key] = self._parameters[key][fi]
+
+        return fpars
+
     @property
     def params(self):
         return {**self._parameters}
@@ -222,7 +270,22 @@ class MuSpinConfig(object):
     def system(self):
         return self._system
 
+    @property
+    def constants(self):
+        # All parameters that are not in a range
+        cnst = {}
+        for k, v in self._parameters.items():
+            if not (k in self._range_axes):
+                cnst[k] = v
+
+        return cnst
+
     def _validate_name(self, v, a={}):
+        return v[0]
+
+    def _validate_t(self, v, a={}):
+        if len(v) != 1:
+            raise MuSpinConfigError('Invalid line in time range')
         return v[0]
 
     def _validate_B(self, v, a={}):
@@ -233,17 +296,6 @@ class MuSpinConfig(object):
             raise MuSpinConfigError('Invalid magnetic field value')
 
         return v
-
-    def _validate_x(self, v, a={}):
-        # Check that it's valid
-        try:
-            kw = InputKeywords[v[0]]
-            if not kw.accept_as_x:
-                raise KeyError()
-        except KeyError:
-            raise MuSpinConfigError('Invalid choice of X axis for simulation')
-
-        return _CDICT[v[0]]
 
     def _validate_T(self, v, a={}):
         return v[0]
@@ -263,3 +315,14 @@ class MuSpinConfig(object):
     @_validate_coupling_args
     def _validate_quad(self, v, a={}):
         return _validate_tensor(v, 'quadrupolar')
+
+
+class MuSpinFileSim(object):
+
+    def __init__(self, config, file_indices):
+
+        self._cfg = config
+        self._cnst = config.constants
+        self._fvals = config.get_frange_params(file_indices)
+
+        print(self._fvals)

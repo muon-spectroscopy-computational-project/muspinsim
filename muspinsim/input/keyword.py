@@ -138,7 +138,7 @@ class MuSpinKeyword(object):
 
     @property
     def id(self):
-        return self.name 
+        return self.name
 
     @property
     def has_default(self):
@@ -244,7 +244,7 @@ class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
 
     @property
     def accept_range(self):
-        return False # Never ranges! These keywords define the system!
+        return False  # Never ranges! These keywords define the system!
 
     @property
     def id(self):
@@ -306,7 +306,7 @@ class KWTime(MuSpinExpandKeyword):
     block_size = 1
     accept_range = True
     accept_as_x = True
-    default = 'range(0, 10, 100)'
+    default = 'range(0, 10, 101)'
 
 
 class KWXAxis(MuSpinKeyword):
@@ -315,16 +315,31 @@ class KWXAxis(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = 'time'
+    _validators = {
+        'Invalid value': lambda s: (s[0] in InputKeywords and
+                                    InputKeywords[s[0]].accept_as_x)
+    }
 
 
 class KWYAxis(MuSpinKeyword):
 
     name = 'y_axis'
     block_size = 1
-    accept_range = True
+    accept_range = False
     default = 'asymmetry'
     _validators = {
         'Invalid value': lambda s: s in ('asymmetry', 'integral')
+    }
+
+
+class KWAverageAxes(MuSpinKeyword):
+
+    name = 'average_axes'
+    block_size = 1
+    accept_range = True
+    default = 'orientation'
+    _validators = {
+        'Invalid value': lambda s: (s[0] in InputKeywords)
     }
 
 
@@ -411,8 +426,9 @@ class KWDissipation(MuSpinCouplingKeyword):
         }
         return args
 
-
 # Fitting variables
+
+
 class KWFittingVariables(MuSpinKeyword):
 
     name = 'fitting_variables'
