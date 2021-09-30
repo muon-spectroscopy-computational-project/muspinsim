@@ -7,11 +7,10 @@ import re
 import sys
 import inspect
 import numpy as np
-from soprano.calculate.powder import ZCW
 
 from muspinsim.constants import MU_GAMMA
 from muspinsim.input.asteval import ASTExpression, ast_tokenize
-from muspinsim.utils import deepmap
+from muspinsim.utils import deepmap, zcw_gen
 
 # Supported math functions
 _math_functions = {
@@ -29,20 +28,15 @@ _math_functions = {
 # And math constants
 _math_constants = {
     'pi': np.pi,
+    'deg': np.pi/180.0,
     'e': np.exp(1),
     'inf': np.inf
 }
 
 # Functions for powder orientation
 
-
-def _zcw(N, mode='sphere'):
-    pwd = ZCW(mode)
-    return pwd.get_orient_angles(N)[0]
-
-
 _pwd_functions = {
-    'zcw': _zcw
+    'zcw': zcw_gen
 }
 
 # Expansion functions
@@ -353,6 +347,12 @@ class KWOrientation(MuSpinExpandKeyword):
         **_math_functions,
         **_pwd_functions
     }
+
+    def _default_args(self, mode='zyz'):
+        args = {
+            'mode': mode
+        }
+        return args
 
 
 class KWTemperature(MuSpinExpandKeyword):

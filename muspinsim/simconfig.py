@@ -10,9 +10,11 @@ from itertools import product
 from numbers import Real
 
 import numpy as np
+from ase.quaternions import Quaternion
 
 from muspinsim.input.keyword import InputKeywords
 from muspinsim.spinsys import MuonSpinSystem
+from muspinsim.utils import quat_from_polar
 
 
 # A dictionary of correspondence between keyword names and config parameters
@@ -37,12 +39,12 @@ _CSDICT = {
 
 
 def _validate_coupling_args(fun):
-    def decorated(self, value, args={}):
+    def decorated(self, value, **args):
         ij = np.array(list(args.values()))
         if (ij < 1).any() or (ij > len(self.system)).any():
             raise MuSpinConfigError('Out of range indices for coupling')
 
-        return fun(self, value, args)
+        return fun(self, value, **args)
 
     return decorated
 
@@ -120,6 +122,7 @@ class MuSpinConfig(object):
 
             v = self.validate(cname, p.value, p.args)
 
+            # Some additional special case treatment
             if cname == 't':
                 if self._y_axis == 'integral':
                     # Time is useless, might as well remove it
@@ -127,6 +130,10 @@ class MuSpinConfig(object):
                     v = [np.inf]
 
                 self._time_N = len(v)
+            elif cname == 'orient':
+                # We need to normalize the weights so that they sum to N
+                norm = len(v)/np.sum(np.array([w for (q, w) in v]))
+                v = np.array([(q, w*norm) for (q, w) in v])
 
             if len(v) > 1:
                 # It's a range
@@ -144,7 +151,7 @@ class MuSpinConfig(object):
         if self._y_axis == 'integral':
             if 't' in self._x_range:
                 raise MuSpinConfigError('Can not use time as X axis when '
-                                        'evaluating integral of signal')            
+                                        'evaluating integral of signal')
 
         # Check that a X axis was found
         if None in self._x_range.values():
@@ -233,7 +240,7 @@ class MuSpinConfig(object):
 
         if hasattr(self, vname):
             vfun = getattr(self, vname)
-            value = [vfun(v, args) for v in value]
+            value = [vfun(v, **args) for v in value]
 
         return value
 
@@ -297,17 +304,17 @@ class MuSpinConfig(object):
 
         return ans
 
-    def _validate_name(self, v, a={}):
+    def _validate_name(self, v):
         if len(v) > 1:
             raise MuSpinConfigError('Name must be a word without spaces')
         return v[0]
 
-    def _validate_t(self, v, a={}):
+    def _validate_t(self, v):
         if len(v) != 1:
             raise MuSpinConfigError('Invalid line in time range')
         return v[0]
 
-    def _validate_B(self, v, a={}):
+    def _validate_B(self, v):
 
         if len(v) == 1:
             v = np.array([0, 0, v[0]])  # The default direction is Z
@@ -316,25 +323,40 @@ class MuSpinConfig(object):
 
         return v
 
-    def _validate_T(self, v, a={}):
+    def _validate_orient(self, v, mode):
+
+        q = None
+        w = 1.0  # Weight
+        if len(v) == 2:
+            # Interpret them as polar angles
+            q = quat_from_polar(*v)
+        elif len(v) == 3:
+            q = Quaternion.from_euler_angles(*v, mode=mode)
+        elif len(v) == 4:
+            q = Quaternion.from_euler_angles(*v[:3], mode=mode)
+            w = v[3]
+
+        return (q, w)
+
+    def _validate_T(self, v):
         return v[0]
 
     @_validate_coupling_args
-    def _validate_zmn(self, v, a={}):
+    def _validate_zmn(self, v, i):
         return _validate_shape(v, (3,), 'Zeeman')
 
     @_validate_coupling_args
-    def _validate_dip(self, v, a={}):
+    def _validate_dip(self, v, i, j):
         return _validate_shape(v, (3,), 'dipolar')
 
     @_validate_coupling_args
-    def _validate_hfc(self, v, a={}):
+    def _validate_hfc(self, v, i, j=None):
         return _validate_shape(v, (3, 3), 'hyperfine')
 
     @_validate_coupling_args
-    def _validate_quad(self, v, a={}):
+    def _validate_quad(self, v, i):
         return _validate_shape(v, (3, 3), 'quadrupolar')
 
     @_validate_coupling_args
-    def _validate_dsp(self, v, a={}):
+    def _validate_dsp(self, v, i):
         return _validate_shape(v, (1,), 'dissipation')

@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from io import StringIO
+from ase.quaternions import Quaternion
 
 from muspinsim.input import MuSpinInput
 from muspinsim.simconfig import (MuSpinConfig, MuSpinConfigError)
@@ -49,7 +50,7 @@ dissipation 2
         # Try getting one configuration snapshot
         cfg0 = cfg[0]
 
-        self.assertTrue((cfg0.B == [0,0,1]).all())
+        self.assertTrue((cfg0.B == [0, 0, 1]).all())
         self.assertEqual(cfg0.T, 0)
         self.assertTrue((cfg0.t == np.linspace(0, 10, 21)).all())
 
@@ -104,3 +105,70 @@ y_axis
 
         with self.assertRaises(MuSpinConfigError):
             cfg = MuSpinConfig(itest.evaluate())
+
+    def test_orient(self):
+        # Some special tests to check how orientations are dealt with
+
+        stest = StringIO("""
+orientation
+    0  0  0  1.0
+    0.5*pi 0 0 2.0
+""")
+
+        itest = MuSpinInput(stest)
+
+        cfg = MuSpinConfig(itest.evaluate())
+
+        orange = cfg._avg_ranges['orient']
+
+        self.assertEqual(sum([w for (q, w) in orange]), 2.0)
+        self.assertTrue(np.isclose(orange[1][0].q, [
+                        2**(-0.5), 0, 0, 2**(-0.5)]).all())
+
+        # Some more complex euler angles combinations
+        rng = np.linspace(0, np.pi, 4)
+        angles = np.array(np.meshgrid(*[rng, rng, rng])).reshape((3, -1)).T
+        ablock = '\n'.join(map(lambda x: '\t{0} {1} {2}'.format(*x), angles))
+
+        stest = StringIO('orientation\n'+ablock)
+
+        itest = MuSpinInput(stest)
+
+        cfg = MuSpinConfig(itest.evaluate())
+
+        for ((a, b, c), (q1, w)) in zip(angles, cfg._avg_ranges['orient']):
+            q2 = Quaternion.from_axis_angle([0, 0, 1], c)
+            q2 *= Quaternion.from_axis_angle([0, 1, 0], b)
+            q2 *= Quaternion.from_axis_angle([0, 0, 1], a)
+
+            self.assertTrue(np.isclose(q1.q, q2.q).all())
+
+        # Same, but for mode zxz
+        stest = StringIO('orientation zxz\n'+ablock)
+
+        itest = MuSpinInput(stest)
+
+        cfg = MuSpinConfig(itest.evaluate())
+
+        for ((a, b, c), (q1, w)) in zip(angles, cfg._avg_ranges['orient']):
+            q2 = Quaternion.from_axis_angle([0, 0, 1], c)
+            q2 *= Quaternion.from_axis_angle([1, 0, 0], b)
+            q2 *= Quaternion.from_axis_angle([0, 0, 1], a)
+
+            self.assertTrue(np.isclose(q1.q, q2.q).all())
+
+        # Same, but for theta and phi angles alone
+        angles = np.array(np.meshgrid(*[rng, rng])).reshape((2, -1)).T
+        ablock = '\n'.join(map(lambda x: '\t{0} {1}'.format(*x), angles))
+
+        stest = StringIO('orientation\n'+ablock)
+
+        itest = MuSpinInput(stest)
+
+        cfg = MuSpinConfig(itest.evaluate())
+
+        for ((theta, phi), (q1, w)) in zip(angles, cfg._avg_ranges['orient']):
+            q2 = Quaternion.from_axis_angle([0, 0, 1], phi)
+            q2 *= Quaternion.from_axis_angle([0, 1, 0], theta)
+
+            self.assertTrue(np.isclose(q1.q, q2.q).all())

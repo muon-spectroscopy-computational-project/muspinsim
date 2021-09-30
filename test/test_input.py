@@ -120,7 +120,7 @@ class TestInput(unittest.TestCase):
 
         tkw = InputKeywords['time']()
 
-        self.assertEqual(len(tkw.evaluate()), 100)
+        self.assertEqual(len(tkw.evaluate()), 101)
         self.assertEqual(tkw.evaluate()[-1][0], 10.0)
 
         with self.assertRaises(ValueError):
