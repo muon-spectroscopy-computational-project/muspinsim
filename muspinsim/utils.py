@@ -37,7 +37,6 @@ def zcw_gen(N, mode='sphere'):
     return pwd.get_orient_angles(N)[0]
 
 
-
 def quat_from_polar(theta, phi):
     """Make a Quaternion from two polar angles
 
@@ -49,6 +48,6 @@ def quat_from_polar(theta, phi):
 
     Returns:
         q {ase.Quaternion} -- Quaternion
-    """ 
+    """
 
     return Quaternion.from_euler_angles(0.0, theta, phi, 'zyz')
