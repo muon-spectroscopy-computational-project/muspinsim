@@ -3,7 +3,10 @@
 Classes to generate and distribute configurations for simulations
 """
 
+import logging
+from collections import OrderedDict, namedtuple
 from collections.abc import Iterable
+from itertools import product
 from numbers import Real
 
 import numpy as np
@@ -14,8 +17,6 @@ from muspinsim.spinsys import MuonSpinSystem
 
 # A dictionary of correspondence between keyword names and config parameters
 _CDICT = {
-    'name': 'name',
-    'spins': 'spins',
     'polarization': 'mupol',
     'field': 'B',
     'time': 't',
@@ -46,44 +47,22 @@ def _validate_coupling_args(fun):
     return decorated
 
 
-def _validate_vector(v, name='vector'):
+def _validate_shape(v, target_shape=(3,), name='vector'):
     v = np.array(v)
-    if v.shape != (3,):
+    if v.shape != target_shape:
         raise MuSpinConfigError('Invalid shape for '
                                 '{0} coupling term'.format(name))
     return v
 
 
-def _validate_tensor(v, name='tensor'):
-    v = np.array(v)
-    if v.shape != (3, 3):
-        raise MuSpinConfigError('Invalid shape for '
-                                '{0} coupling term'.format(name))
-    return v
+# Another utility function
+
+def _elems_from_arrayodict(inds, odict):
+    return {k: v[inds[i]] for i, (k, v) in enumerate(odict.items())}
 
 
 class MuSpinConfigError(Exception):
     pass
-
-
-class MuSpinConfigRange(object):
-
-    def __init__(self, values):
-
-        if not isinstance(values, Iterable):
-            raise ValueError('MuSpinConfigRange needs an iterable argument')
-
-        self._values = values
-
-    @property
-    def values(self):
-        return self._values
-
-    def __len__(self):
-        return len(self._values)
-
-    def __getitem__(self, i):
-        return self._values[i]
 
 
 class MuSpinConfig(object):
@@ -102,37 +81,82 @@ class MuSpinConfig(object):
 
         """
 
-        self._parameters = {}
-        self._arguments = {}
+        self._constants = {}
+        self._file_ranges = OrderedDict()
+        self._avg_ranges = OrderedDict()
+        self._x_range = OrderedDict()
 
+        # Basic parameters
+        self._name = self.validate('name', params['name'].value)[0]
+        self._spins = self.validate('spins', params['spins'].value[0])
+        self._y_axis = self.validate('y', params['y_axis'].value[0])[0]
+
+        # Identify ranges
+        try:
+            x = _CDICT[params['x_axis'].value[0][0]]
+        except KeyError:
+            raise MuSpinConfigError('Invalid x axis name in input file')
+        self._x_range[x] = None
+
+        for a in params['average_axes'].value.reshape((-1,)):
+            try:
+                self._avg_ranges[_CDICT[a]] = None
+            except KeyError:
+                raise MuSpinConfigError('Invalid average axis name in '
+                                        'input file')
+
+        self._time_N = 0  # Number of time points. This is special
+        self._time_isavg = ('t' in self._avg_ranges)  # Is time averaged over?
+
+        # Now inspect all parameters
         for iname, cname in _CDICT.items():
+
             try:
                 p = params[iname]
-                self.set(cname, p.value, p.args)
             except KeyError:
                 raise MuSpinConfigError('Invalid params object passed to '
                                         'MuSpinConfig: '
                                         'missing {0}'.format(iname))
 
-        # A bit of a special treatment for axes stuff
-        self._x_axis = _CDICT[params['x_axis'].value[0][0]]
-        if not isinstance(self.get(self._x_axis), MuSpinConfigRange):
-            raise MuSpinConfigError('Designated x axis does not have a range '
-                                    'of values')
-        self._y_axis = params['y_axis'].value[0][0]
-        self._avg_axes = map(
-            _CDICT.get, params['average_axes'].value.reshape((-1,)))
+            v = self.validate(cname, p.value, p.args)
 
-        # A special case for the Y-axis
+            if cname == 't':
+                if self._y_axis == 'integral':
+                    # Time is useless, might as well remove it
+                    logging.warning('Ignoring time axis since Y = integral')
+                    v = [np.inf]
+
+                self._time_N = len(v)
+
+            if len(v) > 1:
+                # It's a range
+                if cname in self._x_range:
+                    self._x_range[cname] = v
+                elif cname in self._avg_ranges:
+                    self._avg_ranges[cname] = v
+                else:
+                    self._file_ranges[cname] = v
+            else:
+                # It's a constant
+                self._constants[cname] = v[0]
+
+        # Check that the Y axis and time are consistent
         if self._y_axis == 'integral':
-            # Then time doesn't matter
-            self._parameters['t'] = None
-            if self._x_axis == 't':
-                raise MuSpinConfigError('Can not use time as x axis for '
-                                        'integrated asymmetry')
+            if 't' in self._x_range:
+                raise MuSpinConfigError('Can not use time as X axis when '
+                                        'evaluating integral of signal')            
 
-        # Now make a spin system
-        self._system = MuonSpinSystem(self.get('spins'))
+        # Check that a X axis was found
+        if None in self._x_range.values():
+            raise MuSpinConfigError('Specified x axis is not a range')
+
+        # Remove anything that is not a range in averages
+        self._avg_ranges = OrderedDict(**{k: v
+                                          for k, v in self._avg_ranges.items()
+                                          if v is not None})
+
+        # Now make the spin system
+        self._system = MuonSpinSystem(self._spins)
         self._dissip_terms = {}
 
         for iid, idata in params['couplings'].items():
@@ -170,18 +194,38 @@ class MuSpinConfig(object):
                 # must be set individually
                 self._dissip_terms[i] = cval
 
-        # Compile which specific words have ranges
-        self._range_axes = {k for k, p in self._parameters.items()
-                            if isinstance(p, MuSpinConfigRange)}
+        # Now for results, use the shapes of only file and x ranges
+        res_shape = [len(v) for v in self._file_ranges.values()]
+        res_shape += [len(v) for v in self._x_range.values()]
 
-        self._avg_axes = set(self._avg_axes).intersection(self._range_axes)
-        self._file_axes = self._range_axes.difference(self._avg_axes)
-        self._file_axes = self._file_axes.difference({self._x_axis})
+        self._results = np.zeros(res_shape)
 
-        # Turn them into tuples to preserve a fixed order
-        self._range_axes = tuple(sorted(self._range_axes))
-        self._avg_axes = tuple(sorted(self._avg_axes))
-        self._file_axes = tuple(sorted(self._file_axes))
+        # And define the configurations, individually and collectively
+        def make_configs(od):
+            cfg = []
+            for k, v in od.items():
+                if k == 't':
+                    cfg.append([slice(None)])
+                else:
+                    cfg.append(np.arange(len(v)))
+            return list(product(*cfg))
+
+        fconfigs = make_configs(self._file_ranges)
+        aconfigs = make_configs(self._avg_ranges)
+        xconfigs = make_configs(self._x_range)
+
+        # Total configurations
+        self._configurations = list(product(*[fconfigs, aconfigs, xconfigs]))
+        # Size of the average
+        self._avg_N = len(aconfigs)
+
+        # Define a namedtuple for configurations
+        cfg_keys = list(self._constants.keys())
+        cfg_keys += list(self._file_ranges.keys())
+        cfg_keys += list(self._avg_ranges.keys())
+        cfg_keys += list(self._x_range.keys())
+
+        self._cfg_tuple = namedtuple('ConfigSnapshot', ['id'] + cfg_keys)
 
     def validate(self, name, value, args={}):
 
@@ -193,94 +237,69 @@ class MuSpinConfig(object):
 
         return value
 
-    def set(self, name, value, args={}):
-        """Set the value of a configuration parameter
+    def store_time_slice(self, config_id, tslice):
+        # Check the shape
+        if len(tslice) != self._time_N:
+            raise ValueError('Time slice has invalid length')
 
-        Set the value of a configuration parameter, with preliminary use of
-        validation and conversion to MuSpinConfigRange if applicable.
+        if self._time_isavg:
+            tslice = np.average(tslice)
 
-        Arguments:
-            name {str} -- Name of the parameter to set
-            value {any} -- Parameter value
-            args {dict} -- Dictionary of arguments
-
-        """
-
-        value = self.validate(name, value, args)
-
-        if len(value) > 1:
-            value = MuSpinConfigRange(value)
-        elif len(value) == 1:
-            value = value[0]
-
-        self._parameters[name] = value
-        self._arguments[name] = args
-
-    def get(self, name):
-        """Get the value of a configuration parameter
-
-        Get the value of a configuration parameter, given its name
-
-        Arguments:
-            name {str} -- Name of the parameter to get
-
-        Returns:
-            value {any} -- Parameter value
-        """
-
-        return self._parameters.get(name)
-
-    def get_args(self, name):
-        """Get the arguments of a configuration parameter
-
-        Get the arguments of a configuration parameter, given its name
-
-        Arguments:
-            name {str} -- Name of the parameter to get
-
-        Returns:
-            args {dict} -- Parameter arguments
-        """
-
-        return self._arguments.get(name)
-
-    def get_frange_params(self, indices=[]):
-
-        if len(indices) != len(self._file_axes):
-            raise MuSpinConfigError('Indices must match file axes when '
-                                    'fetching file parameters')
-
-        fpars = {}
-
-        for i, fi in enumerate(indices):
-            key = self._file_axes[i]
-            fpars[key] = self._parameters[key][fi]
-
-        return fpars
+        ii = tuple(list(config_id[0]) + list(config_id[2]))
+        self._results[ii] += tslice/self._avg_N
 
     @property
-    def params(self):
-        return {**self._parameters}
+    def name(self):
+        return self._name
 
     @property
-    def args(self):
-        return {**self._arguments}
+    def spins(self):
+        return list(self._spins)
 
     @property
     def system(self):
-        return self._system
+        return self._system.clone()
 
     @property
     def constants(self):
-        # All parameters that are not in a range
-        cnst = {}
-        for k, v in self._parameters.items():
-            if not (k in self._range_axes):
-                cnst[k] = v
+        return {**self._constants}
 
-        return cnst
+    @property
+    def results(self):
+        return np.array(self._results)
+
+    def __len__(self):
+        return len(self._configurations)
+
+    def __getitem__(self, i):
+
+        isint = type(i) == int
+        if isint:
+            i = slice(i, i+1)
+        elif type(i) != slice:
+            raise TypeError('Indices must be integer or slices, '
+                            'not {0}'.format(type(i)))
+
+        ans = []
+
+        for (fc, ac, xc) in self._configurations[i]:
+
+            fd = _elems_from_arrayodict(fc, self._file_ranges)
+            ad = _elems_from_arrayodict(ac, self._avg_ranges)
+            xd = _elems_from_arrayodict(xc, self._x_range)
+
+            tp = self._cfg_tuple(id=(fc, ac, xc),
+                                 **self._constants, **fd, **ad, **xd)
+            ans.append(tp)
+
+        if isint:
+            ans = ans[0]
+
+        return ans
 
     def _validate_name(self, v, a={}):
+        if len(v) > 1:
+            raise MuSpinConfigError('Name must be a word without spaces')
         return v[0]
 
     def _validate_t(self, v, a={}):
@@ -302,27 +321,20 @@ class MuSpinConfig(object):
 
     @_validate_coupling_args
     def _validate_zmn(self, v, a={}):
-        return _validate_vector(v, 'Zeeman')
+        return _validate_shape(v, (3,), 'Zeeman')
 
     @_validate_coupling_args
     def _validate_dip(self, v, a={}):
-        return _validate_vector(v, 'dipolar')
+        return _validate_shape(v, (3,), 'dipolar')
 
     @_validate_coupling_args
     def _validate_hfc(self, v, a={}):
-        return _validate_tensor(v, 'hyperfine')
+        return _validate_shape(v, (3, 3), 'hyperfine')
 
     @_validate_coupling_args
     def _validate_quad(self, v, a={}):
-        return _validate_tensor(v, 'quadrupolar')
+        return _validate_shape(v, (3, 3), 'quadrupolar')
 
-
-class MuSpinFileSim(object):
-
-    def __init__(self, config, file_indices):
-
-        self._cfg = config
-        self._cnst = config.constants
-        self._fvals = config.get_frange_params(file_indices)
-
-        print(self._fvals)
+    @_validate_coupling_args
+    def _validate_dsp(self, v, a={}):
+        return _validate_shape(v, (1,), 'dissipation')

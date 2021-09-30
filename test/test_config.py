@@ -3,8 +3,7 @@ import numpy as np
 from io import StringIO
 
 from muspinsim.input import MuSpinInput
-from muspinsim.simconfig import (MuSpinConfig, MuSpinConfigRange,
-                                 MuSpinConfigError, MuSpinFileSim)
+from muspinsim.simconfig import (MuSpinConfig, MuSpinConfigError)
 
 
 class TestConfig(unittest.TestCase):
@@ -15,11 +14,14 @@ class TestConfig(unittest.TestCase):
 spins
     mu N e
 field
-    1.0
+    range(1, 11, 2)
 temperature
-    range(0, 10, 10)
+    range(0, 10, 2)
+time 
+    range(0, 10, 21)
 orientation
-    zcw(20)
+    0 0
+    0 180
 zeeman 1 
     1 0 0
 dipolar 1 2
@@ -40,18 +42,32 @@ dissipation 2
 
         cfg = MuSpinConfig(itest.evaluate())
 
-        self.assertTrue((cfg.get('B') == [0, 0, 1]).all())
+        self.assertEqual(cfg.name, 'muspinsim')
+        self.assertEqual(len(cfg), 8)
+        self.assertEqual(cfg.results.shape, (2, 2, 21))
+
+        # Try getting one configuration snapshot
+        cfg0 = cfg[0]
+
+        self.assertTrue((cfg0.B == [0,0,1]).all())
+        self.assertEqual(cfg0.T, 0)
+        self.assertTrue((cfg0.t == np.linspace(0, 10, 21)).all())
+
+        # Now try recording results
+        for c in cfg:
+            res = np.ones(len(c.t))
+            cfg.store_time_slice(c.id, res)
+        self.assertTrue((cfg.results == 1).all())
+
+        # System checks
         self.assertTrue((np.array(cfg.system.spins) == ['mu', 'N', 'e']).all())
         self.assertEqual(len(cfg.system._terms), 4)
         self.assertEqual(cfg._dissip_terms[1], 0.1)
 
-        self.assertEqual(cfg._range_axes, ('T', 'orient', 't'))
-        self.assertEqual(cfg._avg_axes, ('orient',))
-        self.assertEqual(cfg._file_axes, ('T',))
-
-        self.assertEqual(cfg.constants['name'], 'muspinsim')
-
-        mfsim = MuSpinFileSim(cfg, [0])
+        self.assertIn('B', cfg._file_ranges)
+        self.assertIn('T', cfg._file_ranges)
+        self.assertIn('t', cfg._x_range)
+        self.assertIn('orient', cfg._avg_ranges)
 
         # Now try a few errors
 

@@ -219,7 +219,7 @@ class SpinSystem(Clonable):
 
     @property
     def is_dissipative(self):
-        return len(self._dissip_terms)
+        return len(self._dissip_terms) > 0
 
     def add_term(self, indices, tensor, label='Term'):
         """Add to the spin system a generic interaction term
@@ -444,7 +444,7 @@ class SpinSystem(Clonable):
         return term
 
     def remove_dissipative_term(self, term):
-        self._terms.remove(term)
+        self._dissip_terms.remove(term)
 
     def gamma(self, i):
         """Returns the gyromagnetic ratio of a given particle
