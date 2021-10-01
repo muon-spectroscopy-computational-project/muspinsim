@@ -424,6 +424,16 @@ class SpinSystem(Clonable):
 
         self._terms.remove(term)
 
+    def clear_terms(self):
+        """Remove all terms
+
+        Remove all interaction terms from this spin system.
+        """
+
+        terms = list(self._terms)
+        for t in terms:
+            self.remove_term(t)
+
     def add_dissipative_term(self, op, d=0.0):
         """Set a dissipation operator for the system.
 
@@ -444,7 +454,28 @@ class SpinSystem(Clonable):
         return term
 
     def remove_dissipative_term(self, term):
+        """Remove a dissipation term from the system.
+
+        Remove a dissipation term from this spin system.
+
+        Arguments:
+            term {DissipationTerm} -- Term to remove
+
+        Raises:
+            ValueError -- The term is not contained in this system
+        """
+
         self._dissip_terms.remove(term)
+
+    def clear_dissipative_terms(self):
+        """Remove all terms
+
+        Remove all dissipative terms from this spin system.
+        """
+
+        dterms = list(self._dissip_terms)
+        for t in dterms:
+            self.remove_dissipative_term(t)
 
     def gamma(self, i):
         """Returns the gyromagnetic ratio of a given particle
@@ -529,7 +560,8 @@ class SpinSystem(Clonable):
     def hamiltonian(self):
 
         if len(self._terms) == 0:
-            H = np.eye(np.prod(self.dimension))
+            n = np.prod(self.dimension)
+            H = np.zeros((n, n))
         else:
             H = np.sum([t.matrix for t in self._terms], axis=0)
         H = Hamiltonian(H, dim=self.dimension)
@@ -562,6 +594,9 @@ class MuonSpinSystem(SpinSystem):
 
         self._mu_i = self._spins.index('mu')
         self._e_i = set([i for i, s in enumerate(self.spins) if s == 'e'])
+
+        # For convenience, store the operators for the muon
+        self._mu_ops = [self.operator({self._mu_i: e}) for e in 'xyz']
 
     @property
     def muon_index(self):
@@ -607,3 +642,29 @@ class MuonSpinSystem(SpinSystem):
                              ' not refer to an electron')
 
         return self.add_bilinear_term(i, j, A, 'Hyperfine')
+
+    def muon_operator(self, v):
+        """Get a muon operator
+
+        Get a single operator for the muon, given a vector representing its
+        direction. Uses precalculated operators for speed.
+
+        Arguments:
+            v {[float]} -- 3-dimensional vector representing the directions of
+                           the desired operator
+
+        Returns:
+            mu_op {SpinOperator} -- Requested operator
+
+        Raises:
+            ValueError -- Invalid length of v
+        """
+
+        if len(v) != 3:
+            raise ValueError('Vector passed to muon_operator must be three'
+                             ' dimensional')
+
+        op = [x*self._mu_ops[i] for i, x in enumerate(v)]
+        op = sum(op[1:], op[0])
+
+        return op

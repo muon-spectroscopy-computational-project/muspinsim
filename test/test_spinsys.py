@@ -104,6 +104,13 @@ class TestSpinSystem(unittest.TestCase):
         ssys.add_dissipative_term(ssys.operator({0: 'x'}), 1.0)
         self.assertTrue(ssys.is_dissipative)
 
+        # Now test clearing them
+        ssys.clear_terms()
+
+        H = ssys.hamiltonian
+
+        self.assertTrue(np.all(np.isclose(H.matrix, np.zeros((4,4)))))
+
     def test_lindbladian(self):
 
         ssys = SpinSystem(['mu'])

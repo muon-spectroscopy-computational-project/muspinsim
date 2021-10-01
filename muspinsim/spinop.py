@@ -7,6 +7,8 @@ import numpy as np
 from numbers import Number
 from muspinsim.utils import Clonable
 
+def _mvals(I):
+    return np.linspace(I, -I, int(2*I+1))
 
 def _Sp(mvals):
     return 2*np.diag(0.5*(np.cumsum(2*mvals)[:-1]**0.5), k=1)+.0j
@@ -356,7 +358,7 @@ class SpinOperator(Operator):
             if not (axis in 'xyz+-0'):
                 raise ValueError('{0} is not a valid spin axis'.format(axis))
 
-            mvals = np.linspace(I, -I, int(2*I+1))
+            mvals = _mvals(I)
 
             o = {
                 'x': _Sx,
@@ -467,8 +469,8 @@ class DensityOperator(Operator):
                 raise ValueError(
                     '{0} is not a valid gamma value'.format(gamma))
 
-            mvals = np.linspace(I, -I, int(2*I+1))
-
+            mvals = _mvals(I)
+            
             S = [_Sx(mvals), _Sy(mvals), _Sz(mvals)]
 
             o = sum([S[i]*vec[i] for i in range(3)])

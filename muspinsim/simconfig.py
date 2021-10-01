@@ -331,6 +331,15 @@ class MuSpinConfig(object):
 
         return v
 
+    def _validate_mupol(self, v):
+        v = np.array(v, dtype=float)
+        if len(v) != 3:
+            raise MuSpinConfigError('Invalid muon polarization direction')
+
+        v /= np.linalg.norm(v)
+
+        return v
+
     def _validate_orient(self, v, mode):
 
         q = None
@@ -344,7 +353,12 @@ class MuSpinConfig(object):
             q = Quaternion.from_euler_angles(*v[:3], mode=mode)
             w = v[3]
 
-        return (q, w)
+        # After computing the rotation, we store the conjugate because it's a
+        # lot cheaper, instead of rotating the whole system by q, to rotate
+        # only the magnetic field and the polarization (lab frame) by the 
+        # inverse of q
+        
+        return (q.conjugate(), w)
 
     def _validate_T(self, v):
         return v[0]

@@ -23,6 +23,8 @@ time
 orientation
     0 0
     0 180
+polarization
+    0 1 1
 zeeman 1 
     1 0 0
 dipolar 1 2
@@ -53,6 +55,7 @@ dissipation 2
         self.assertTrue((cfg0.B == [0, 0, 1]).all())
         self.assertEqual(cfg0.T, 0)
         self.assertTrue((cfg0.t == np.linspace(0, 10, 21)).all())
+        self.assertTrue(np.isclose(np.linalg.norm(cfg0.mupol), 1.0))
 
         # Now try recording results
         for c in cfg:
@@ -123,7 +126,7 @@ orientation
 
         self.assertEqual(sum([w for (q, w) in orange]), 2.0)
         self.assertTrue(np.isclose(orange[1][0].q, [
-                        2**(-0.5), 0, 0, 2**(-0.5)]).all())
+                        2**(-0.5), 0, 0, -2**(-0.5)]).all())
 
         # Some more complex euler angles combinations
         rng = np.linspace(0, np.pi, 4)
@@ -140,6 +143,7 @@ orientation
             q2 = Quaternion.from_axis_angle([0, 0, 1], c)
             q2 *= Quaternion.from_axis_angle([0, 1, 0], b)
             q2 *= Quaternion.from_axis_angle([0, 0, 1], a)
+            q2 = q2.conjugate()
 
             self.assertTrue(np.isclose(q1.q, q2.q).all())
 
@@ -154,6 +158,7 @@ orientation
             q2 = Quaternion.from_axis_angle([0, 0, 1], c)
             q2 *= Quaternion.from_axis_angle([1, 0, 0], b)
             q2 *= Quaternion.from_axis_angle([0, 0, 1], a)
+            q2 = q2.conjugate()
 
             self.assertTrue(np.isclose(q1.q, q2.q).all())
 
@@ -170,5 +175,6 @@ orientation
         for ((theta, phi), (q1, w)) in zip(angles, cfg._avg_ranges['orient']):
             q2 = Quaternion.from_axis_angle([0, 0, 1], phi)
             q2 *= Quaternion.from_axis_angle([0, 1, 0], theta)
+            q2 = q2.conjugate()
 
             self.assertTrue(np.isclose(q1.q, q2.q).all())
