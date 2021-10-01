@@ -35,9 +35,12 @@ _CSDICT = {
     'dissipation': 'dsp'
 }
 
+# Named tuple for snapshots
+ConfigSnapshot = namedtuple('ConfigSnapshot', ['id', 'y'] +
+                            list(_CDICT.values()))
+
+
 # A useful decorator
-
-
 def _validate_coupling_args(fun):
     def decorated(self, value, **args):
         ij = np.array(list(args.values()))
@@ -87,6 +90,9 @@ class MuSpinConfig(object):
         self._file_ranges = OrderedDict()
         self._avg_ranges = OrderedDict()
         self._x_range = OrderedDict()
+
+        if len(params) == 0:
+            return
 
         # Basic parameters
         self._name = self.validate('name', params['name'].value)[0]
@@ -232,8 +238,6 @@ class MuSpinConfig(object):
         cfg_keys += list(self._avg_ranges.keys())
         cfg_keys += list(self._x_range.keys())
 
-        self._cfg_tuple = namedtuple('ConfigSnapshot', ['id'] + cfg_keys)
-
     def validate(self, name, value, args={}):
 
         vname = '_validate_{0}'.format(name)
@@ -275,6 +279,10 @@ class MuSpinConfig(object):
     def results(self):
         return np.array(self._results)
 
+    @property
+    def y_axis(self):
+        return self._y_axis
+
     def __len__(self):
         return len(self._configurations)
 
@@ -295,8 +303,8 @@ class MuSpinConfig(object):
             ad = _elems_from_arrayodict(ac, self._avg_ranges)
             xd = _elems_from_arrayodict(xc, self._x_range)
 
-            tp = self._cfg_tuple(id=(fc, ac, xc),
-                                 **self._constants, **fd, **ad, **xd)
+            tp = ConfigSnapshot(id=(fc, ac, xc), y = self._y_axis,
+                                **self._constants, **fd, **ad, **xd)
             ans.append(tp)
 
         if isint:

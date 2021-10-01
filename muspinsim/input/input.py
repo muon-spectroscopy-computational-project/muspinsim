@@ -30,6 +30,7 @@ class MuSpinInput(object):
         """
 
         self._keywords = {}
+        self._variables = []
 
         if fs is not None:
 
@@ -63,7 +64,6 @@ class MuSpinInput(object):
 
             # A special case: if there are fitting variables, we need to know
             # right away
-            self._variables = []
             try:
                 block = raw_blocks.pop('fitting_variables')
                 kw = InputKeywords['fitting_variables'](block)
