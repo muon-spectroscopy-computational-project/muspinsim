@@ -333,7 +333,7 @@ class KWAverageAxes(MuSpinKeyword):
     accept_range = True
     default = 'orientation'
     _validators = {
-        'Invalid value': lambda s: all((w in InputKeywords or 
+        'Invalid value': lambda s: all((w in InputKeywords or
                                         w.lower() == 'none')
                                        for w in s)
     }
@@ -428,9 +428,8 @@ class KWDissipation(MuSpinCouplingKeyword):
         }
         return args
 
+
 # Fitting variables
-
-
 class KWFittingVariables(MuSpinKeyword):
 
     name = 'fitting_variables'
@@ -438,6 +437,14 @@ class KWFittingVariables(MuSpinKeyword):
     accept_range = False
     default = ''
 
+
+# Special configuration keyword
+class KWExperiment(MuSpinKeyword):
+
+    name = 'experiment'
+    block_size = 1
+    accept_range = False
+    default = ''
 
 # Compile all KW classes into a single dictionary automatically
 InputKeywords = {
