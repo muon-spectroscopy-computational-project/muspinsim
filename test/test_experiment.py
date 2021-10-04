@@ -10,10 +10,11 @@ from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.experiment import ExperimentRunner
 from muspinsim.input import MuSpinInput
 
+
 class TestExperiment(unittest.TestCase):
 
     def test_create(self):
-        
+
         gmu = constants.MU_GAMMA
         ge = constants.ELEC_GAMMA
 
@@ -27,83 +28,73 @@ zeeman 1
 """)
         itest = MuSpinInput(stest)
         ertest = ExperimentRunner(itest)
+        ertest.B = np.array([0, 0, 1.0])
 
-        self.assertTrue((ertest._Hsys == np.diag([0.5*gmu, -0.5*gmu])).all())
+        self.assertTrue((ertest.Hsys.matrix ==
+                         np.diag([0.5*gmu, -0.5*gmu])).all())
+        self.assertTrue(ertest.Hsys == ertest.Hz)
 
-#         stest = StringIO("""
-# name
-#     test
-# spins
-#     mu e
-# zeeman 1
-#     0 0 1    
-# """)
-#         itest = MuSpinInput(stest)
-#         ertest = ExperimentRunner(itest)
+        stest = StringIO("""
+name
+    test
+spins
+    e mu
+""")
 
-#         ertest.B = [0,1,1]
-#         ertest.p = [1,0,0]
-#         ertest.T = 10.0
-#         print(ertest.rho0.expectation(ertest._system.operator({0: 'x'})))
-#         print(ertest.rho0.expectation(ertest._system.operator({1: 'z'})))
+        ertest.B = [0, 0, 1.0]
 
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    # def test_create(self):
+        ertest.B = np.array([0, 0, 1.0])
 
-    #     muexp = MuonExperiment(['e', 'mu'])
-    #     self.assertEqual(muexp.spin_system.elec_indices, {0})
-    #     self.assertEqual(muexp.spin_system.muon_index, 1)
+        self.assertEqual(ertest._system.elec_indices, {0})
+        self.assertEqual(ertest._system.muon_index, 1)
 
+        self.assertTrue(np.all(ertest.Hz.matrix == np.diag([0.5*(ge+gmu),
+                                                            0.5*(ge-gmu),
+                                                            0.5*(-ge+gmu),
+                                                            0.5*(-ge-gmu)])))
+        self.assertTrue(isinstance(ertest.Hz, Hamiltonian))
 
-    #     self.assertTrue(np.all(muexp._Hz.matrix == np.diag([0.5*(ge+gmu),
-    #                                                         0.5*(ge-gmu),
-    #                                                         0.5*(-ge+gmu),
-    #                                                         0.5*(-ge-gmu)])))
-    #     self.assertTrue(isinstance(muexp._Hz, Hamiltonian))
+        Sx_mu = ertest._system.operator({1: 'x'})
+        Sz_e = ertest._system.operator({0: 'z'})
 
-    # def test_powder(self):
+        self.assertAlmostEqual(ertest.rho0.expectation(Sx_mu), 0.5)
+        self.assertAlmostEqual(ertest.rho0.expectation(Sz_e), 0.0)
 
-    #     muexp = MuonExperiment()
+    def test_rho0(self):
 
-    #     N = 20
-    #     muexp.set_powder_average(N)
-    #     self.assertTrue(muexp.orientations.shape[0] == muexp.weights.shape[0])
-    #     self.assertTrue(muexp.weights.shape[0] >= N)
+        stest = StringIO("""
+spins
+    e mu
+""")
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    #     # Are these correct? Basic test
-    #     muexp.set_powder_average(1000)
-    #     o = muexp.orientations
-    #     w = muexp.weights
+        rho0 = ertest.rho0
 
-    #     f = 3*np.cos(o[:, 0])**2-1
-    #     self.assertAlmostEqual(np.sum(f*w), 0.0, 5)
+        self.assertTrue(np.all(np.isclose(rho0.matrix,
+                                          [[0.25, 0.25, 0,    0],
+                                           [0.25, 0.25, 0,    0],
+                                              [0, 0,    0.25, 0.25],
+                                              [0, 0,    0.25, 0.25]])))
 
-    # def test_rho0(self):
+        gmu = constants.MU_GAMMA
+        ge = constants.ELEC_GAMMA
 
-    #     muexp = MuonExperiment(['e', 'mu'])
-    #     rho0 = muexp.get_starting_state()
+        T = 100
+        ertest.B = [0, 0, 2.0e-6*cnst.k*T/(ge*cnst.h)]
+        ertest.T = T
+        ertest.p = [0, 0, 1.0]
 
-    #     self.assertTrue(np.all(np.isclose(rho0.matrix,
-    #                                       [[0.25, 0.25, 0,    0],
-    #                                        [0.25, 0.25, 0,    0],
-    #                                           [0, 0,    0.25, 0.25],
-    #                                           [0, 0,    0.25, 0.25]])))
+        rho0 = ertest.rho0
 
-    #     gmu = constants.MU_GAMMA
-    #     ge = constants.ELEC_GAMMA
+        Z = np.exp([-1, 1])
+        Z /= np.sum(Z)
 
-    #     T = 100
-    #     muexp.set_magnetic_field(2.0e-6*cnst.k*T/(ge*cnst.h))
-    #     muexp.set_temperature(T)
-    #     muexp.set_muon_polarization('z')
-
-    #     rho0 = muexp.get_starting_state()
-
-    #     Z = np.exp([-1, 1])
-    #     Z /= np.sum(Z)
-
-    #     self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix),
-    #                                       [Z[0], 0, Z[1], 0])))
+        self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix),
+                                          [Z[0], 0, Z[1], 0])))
 
     # def test_run(self):
 

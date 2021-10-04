@@ -50,6 +50,14 @@ class MPIController(object):
             return func(*args, **kwargs)
         return decfunc
 
+    def broadcast(self, var):
+        # A function to broadcast a single variable
+
+        if not (self.comm is None):
+            self.comm.bcast(var, root=0)
+
+        return var
+
     def broadcast_object(self, obj, only=None):
         # A function to broadcast an object's members
 

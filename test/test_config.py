@@ -109,6 +109,23 @@ y_axis
         with self.assertRaises(MuSpinConfigError):
             cfg = MuSpinConfig(itest.evaluate())
 
+    def test_headers(self):
+        # Tests for output file header generation
+        
+        stest = StringIO("""
+field
+    range(0, 1, 10)
+average_axes
+    none
+orientation
+    zcw(20)
+""")
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+
+        # for csnp in cfg:
+        #     cfg.get_config_header(csnp)
+
     def test_orient(self):
         # Some special tests to check how orientations are dealt with
 

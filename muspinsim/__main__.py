@@ -7,7 +7,7 @@ from datetime import datetime
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.input import MuSpinInput
 from muspinsim.simconfig import MuSpinConfig
-from muspinsim.experiment import run_configuration
+from muspinsim.experiment import ExperimentRunner
 
 def main(use_mpi=False):
 
@@ -28,15 +28,16 @@ def main(use_mpi=False):
         infile = MuSpinInput()
         is_fitting = False
 
-    is_fitting = mpi.comm.bcast(is_fitting)
+    is_fitting = mpi.broadcast(is_fitting)
 
     if not is_fitting:
         # No fitting
-        results = run_configuration(infile, {})
+        runner = ExperimentRunner(infile, {})
+        results = runner.run_all()
 
         if mpi.is_root:
             # Output
-            print(results)
+            runner.config.save_output()
 
     else:
         raise NotImplementedError('Fitting still not implemented')

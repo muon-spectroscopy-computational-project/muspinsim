@@ -219,7 +219,7 @@ class SpinSystem(Clonable):
 
     @property
     def is_dissipative(self):
-        return len(self._dissip_terms) > 0
+        return np.any([g != 0 for g in self._dissip_terms.values()])
 
     def add_term(self, indices, tensor, label='Term'):
         """Add to the spin system a generic interaction term

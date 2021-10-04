@@ -3,7 +3,9 @@
 Classes to generate and distribute configurations for simulations
 """
 
+import os
 import logging
+import datetime
 from collections import OrderedDict, namedtuple
 from collections.abc import Iterable
 from itertools import product
@@ -107,6 +109,9 @@ class MuSpinConfig(object):
         self._x_range[x] = None
 
         for a in params['average_axes'].value.reshape((-1,)):
+            if a.lower() == 'none':
+                # Special case
+                continue
             try:
                 self._avg_ranges[_CDICT[a]] = None
             except KeyError:
@@ -239,6 +244,18 @@ class MuSpinConfig(object):
         cfg_keys += list(self._x_range.keys())
 
     def validate(self, name, value, args={}):
+        """Validate an input parameter with a custom method, if present.
+
+        Arguments:
+            name {str} -- Name of the input parameter
+            value {any} -- Value to validate
+
+        Keyword arguments:
+            args {dict} -- Arguments, if present
+
+        Returns:
+            value -- Validated and normalised value
+        """
 
         vname = '_validate_{0}'.format(name)
 
@@ -249,8 +266,20 @@ class MuSpinConfig(object):
         return value
 
     def store_time_slice(self, config_id, tslice):
+        """Store a time slice of data in this configuration's results.
+
+        Store a time slice of data, given the configuration snapshot ID, and
+        sum it to pre-existing data according to averaging rules.
+
+
+        Arguments:
+            config_id {tuple} -- ID of the ConfigurationSnapshot with which 
+                                 the data was calculated
+            tslice {np.ndarray} -- Time slice of data
+        """
+
         # Check the shape
-        if len(tslice) != self._time_N:
+        if isinstance(tslice, Iterable) and len(tslice) != self._time_N:
             raise ValueError('Time slice has invalid length')
 
         if self._time_isavg:
@@ -258,6 +287,64 @@ class MuSpinConfig(object):
 
         ii = tuple(list(config_id[0]) + list(config_id[2]))
         self._results[ii] += tslice/self._avg_N
+
+    def save_output(self, name=None, path='.', extension='.dat'):
+        """Save all output files for the gathered results
+
+        Save all output files for the gathered results, using an appropriate
+        output path and seed name.
+
+        Keyword arguments:
+            name {str} -- Root name to use for the files
+            path {str} -- Folder path to save the files in
+            extension {str} -- Extension to save the files with
+        """
+
+        from muspinsim import __version__
+
+        if name is None:
+            name = self.name
+
+        # Header format
+        file_header = """# MUSPINSIM v.{version}
+# Output file written on {date}
+# Parameters used: 
+""".format(version=__version__, date=datetime.datetime.now().ctime())
+
+        for fn in self._file_ranges:
+            file_header = file_header + '# {0:<20} = {{{0}}}\n'.format(fn)
+
+        indices = [range(len(rng)) for rng in self._file_ranges.values()]
+        indices = product(*indices)
+
+        # File name
+        fid_pattern = '_{}'*len(self._file_ranges)
+        fname_pattern = '{name}{id}{ext}'
+
+        x = list(self._x_range.values())[0]
+
+        # Actually save the files
+        for inds in indices:
+            fid = fid_pattern.format(*inds)
+            fname = fname_pattern.format(name=name, id=fid, ext=extension)
+            fname = os.path.join(path, fname)
+
+            vdict = {}
+            for i, (key, val) in enumerate(self._file_ranges.items()):
+                pname = '_print_{0}'.format(key)
+                v = val[inds[i]]
+                if hasattr(self, pname):
+                    v = getattr(self, pname)(v)
+
+                vdict[key] = v
+
+            header = file_header.format(**vdict)
+
+            data = np.zeros((len(x), 2))
+            data[:,0] = x
+            data[:,1] = self._results[inds]
+
+            np.savetxt(fname, data, header=header)
 
     @property
     def name(self):
@@ -276,8 +363,19 @@ class MuSpinConfig(object):
         return {**self._constants}
 
     @property
+    def dissipation_terms(self):
+        return {**self._dissip_terms}
+
+    @property
     def results(self):
         return np.array(self._results)
+
+    @results.setter
+    def results(self, r):
+        r = np.array(r)
+        if r.shape != self._results.shape:
+            raise ValueError('Trying to set an invalid results array')
+        self._results = r
 
     @property
     def y_axis(self):
@@ -303,7 +401,7 @@ class MuSpinConfig(object):
             ad = _elems_from_arrayodict(ac, self._avg_ranges)
             xd = _elems_from_arrayodict(xc, self._x_range)
 
-            tp = ConfigSnapshot(id=(fc, ac, xc), y = self._y_axis,
+            tp = ConfigSnapshot(id=(fc, ac, xc), y=self._y_axis,
                                 **self._constants, **fd, **ad, **xd)
             ans.append(tp)
 
@@ -355,9 +453,9 @@ class MuSpinConfig(object):
 
         # After computing the rotation, we store the conjugate because it's a
         # lot cheaper, instead of rotating the whole system by q, to rotate
-        # only the magnetic field and the polarization (lab frame) by the 
+        # only the magnetic field and the polarization (lab frame) by the
         # inverse of q
-        
+
         return (q.conjugate(), w)
 
     def _validate_T(self, v):
@@ -382,3 +480,13 @@ class MuSpinConfig(object):
     @_validate_coupling_args
     def _validate_dsp(self, v, i):
         return _validate_shape(v, (1,), 'dissipation')
+
+    def _print_B(self, v):
+        return '{0} T'.format(v)
+
+    def _print_orient(self, v):
+        o, w = v
+        abc = o.euler_angles('zyz')*180/np.pi
+        ostr = ('[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, '
+                'c = {2:.1f} deg, weight = {3}').format(*abc, w)
+        return ostr

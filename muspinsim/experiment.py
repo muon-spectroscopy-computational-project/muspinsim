@@ -5,11 +5,14 @@ Classes and functions to perform actual experiments"""
 import numpy as np
 import scipy.constants as cnst
 
+from muspinsim.constants import MU_TAU
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
 from muspinsim.input import MuSpinInput
 from muspinsim.spinsys import MuonSpinSystem
 from muspinsim.spinop import DensityOperator, SpinOperator
+from muspinsim.hamiltonian import Hamiltonian
+from muspinsim.lindbladian import Lindbladian
 
 """Calculate a thermal density matrix in which the system is prepared
 
@@ -30,7 +33,7 @@ Returns:
 
 class ExperimentRunner(object):
     """A class meant to run experiments. Its main purpose as an object is to
-    provide caching for any quantities that might not need to be recalculated 
+    provide caching for any quantities that might not need to be recalculated
     between successive snapshots."""
 
     def __init__(self, infile: MuSpinInput, variables: dict = {}):
@@ -41,7 +44,7 @@ class ExperimentRunner(object):
         care of parallelism, splitting calculations across nodes etc.
 
         Arguments:
-            infile {MuSpinInput} -- The input file object defining the 
+            infile {MuSpinInput} -- The input file object defining the
                                     calculations we need to perform.
             variables {dict} -- The values of any variables appearing in the input
                                 file
@@ -60,19 +63,31 @@ class ExperimentRunner(object):
 
         self._config = config
         self._system = config.system
+        # Store single spin operators
+        self._single_spinops = np.array([[self._system.operator({i: a}).matrix
+                                          for a in 'xyz']
+                                         for i in range(len(self._system))])
 
         # Parameters
-        self._B = None
-        self._p = None
-        self._T = None
+        self._B = np.zeros(3)
+        self._p = np.array([1.0, 0, 0])
+        self._T = np.inf
 
         # Basic Hamiltonian
-        self._Hsys = self._system.hamiltonian.matrix
+        self._Hsys = self._system.hamiltonian
 
         # Derived quantities
         self._rho0 = None
         self._Hz = None
-        self._Ld = None
+        self._dops = None
+
+    @property
+    def config(self):
+        return self._config
+
+    @property
+    def system(self):
+        return self._system
 
     @property
     def B(self):
@@ -80,10 +95,12 @@ class ExperimentRunner(object):
 
     @B.setter
     def B(self, x):
-        self._B = x
-        self._rho0 = None
-        self._Hz = None
-        self._Ld = None
+        x = np.array(x)
+        if (x != self._B).any():
+            self._B = x
+            self._rho0 = None
+            self._Hz = None
+            self._dops = None
 
     @property
     def p(self):
@@ -91,8 +108,10 @@ class ExperimentRunner(object):
 
     @p.setter
     def p(self, x):
-        self._p = x
-        self._rho0 = None
+        x = np.array(x)
+        if (x != self._p).any():
+            self._p = x
+            self._rho0 = None
 
     @property
     def T(self):
@@ -100,9 +119,10 @@ class ExperimentRunner(object):
 
     @T.setter
     def T(self, x):
-        self._T = x
-        self._rho0 = None
-        self._Ld = None
+        if x != self._T:
+            self._T = x
+            self._rho0 = None
+            self._dops = None
 
     @property
     def rho0(self):
@@ -154,16 +174,46 @@ class ExperimentRunner(object):
 
     @property
     def Hz(self):
+
         if self._Hz is None:
-            # Recalculate
-            pass
+            B = self._B
+            g = self._system.gammas
+            Hz = np.sum(B[None, :, None, None] * g[:, None, None, None] *
+                        self._single_spinops, axis=(0, 1))
+            self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+
         return self._Hz
 
     @property
-    def Ld(self):
-        if self._Ld is None:
-            pass
-        return self._Ld
+    def dissipation_operators(self):
+        if self._dops is None:
+
+            # Create a copy of the system
+            sys = self._system.clone()
+
+            # Clean it up of all terms
+            sys.clear_terms()
+            sys.clear_dissipative_terms()
+
+            T = self._T
+            # We only go by the intensity of the field
+            B = np.linalg.norm(self._B)
+            g = sys.gammas
+            if T > 0:
+                Zu = np.exp(-cnst.h*g*B*1e6/(cnst.k*T))
+            else:
+                Zu = g*0.0
+
+            self._dops = []
+            for i, a in self._config.dissipation_terms.items():
+                self._dops.append((sys.operator({i: '+'}), a*Zu[i]/(1+Zu[i])))
+                self._dops.append((sys.operator({i: '-'}), a/(1+Zu[i])))
+
+        return self._dops
+
+    @property
+    def Hsys(self):
+        return self._Hsys
 
     def run_all(self):
         """Run the experiment
@@ -177,85 +227,54 @@ class ExperimentRunner(object):
         """
 
         for cfg in self._config[mpi.rank::mpi.size]:
-            dataslice = run_experiment(cfg, self._config.system)
-            config.store_time_slice(cfg.id, dataslice)
+            dataslice = self.run_single(cfg)
+            self._config.store_time_slice(cfg.id, dataslice)
 
-        results = mpi.sum_data(config.results)
+        self._config.results = mpi.sum_data(self._config.results)
 
-        return results
+        return self._config.results
 
     def run_single(self, cfg_snap: ConfigSnapshot):
-        pass
+        """Run a muon experiment from a configuration snapshot
 
+        Run a muon experiment using the specific parameters and time axis given in
+        a configuration snapshot.
 
-def run_configuration(infile: MuSpinInput, variables: dict = {}):
-    """Run a whole set of calculations as defined by a MuSpinInput object
+        Arguments:
+            cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                         parameters to be used in this calculation.
 
-    Run a set of calculations (for multiple files and averages) as defined by
-    a MuSpinInput object and a set of variable values. Takes care of 
-    parallelism, splitting calculations across nodes etc.
+        Returns:
+            result {np.ndarray} -- A 1D array containing the time series of
+                                   required results, or a single value.
+        """
 
-    Arguments:
-        infile {MuSpinInput} -- The input file object defining the 
-                                calculations we need to perform.
-        variables {dict} -- The values of any variables appearing in the input
-                            file
+        # Let's gather the important stuff
+        B = cfg_snap.B         # Magnetic field
+        p = cfg_snap.mupol     # Muon polarization
+        T = cfg_snap.T         # Temperature
+        q, w = cfg_snap.orient      # Quaternion and Weight for orientation
 
-    Returns:
-        results (np.ndarray) -- An array of results, gathered on the root node.
-    """
+        # Let's start by rotating things
+        self.B = q.rotate(B)
+        self.p = q.rotate(p)
+        self.T = T
 
-    if mpi.is_root:
-        # On root, we run the evaluation that gives us the actual possible
-        # values for simulation configurations. These are then broadcast
-        # across all nodes, each of which runs its own slice of them, and
-        # finally gathered back together
-        config = MuSpinConfig(infile.evaluate(**variables))
-    else:
-        config = MuSpinConfig()
+        # Measurement operator?
+        S = self._system.muon_operator(self.p)
 
-    mpi.broadcast_object(config)
+        # Build the total Hamiltonian
+        H = self.Hsys + self.Hz
 
-    for cfg in config[mpi.rank::mpi.size]:
-        dataslice = run_experiment(cfg, config.system)
-        config.store_time_slice(cfg.id, dataslice)
+        # Do we have dissipation?
+        if len(self._config.dissipation_terms) > 0:
+            # Actually use a Lindbladian
+            H = Lindbladian.from_hamiltonian(H, self.dissipation_operators)
 
-    results = mpi.sum_data(config.results)
+        if cfg_snap.y == 'asymmetry':
+            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+        elif cfg_snap.y == 'integral':
+            data = H.integrate_decaying(self.rho0, MU_TAU,
+                                        operators=[S])[0]/MU_TAU
 
-    return results
-
-
-def run_experiment(cfg_snap: ConfigSnapshot, system: MuonSpinSystem):
-    """Run a muon experiment from a configuration snapshot
-
-    Run a muon experiment using the specific parameters and time axis given in
-    a configuration snapshot.
-
-    Arguments: 
-        cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
-                                     parameters to be used in this calculation.
-        system {MuonSpinSystem} -- The spin system on which to perform the
-                                   calculation
-
-    Returns:
-        result {np.ndarray} -- A 1D array containing the time series of 
-                               required results, or a single value.
-    """
-
-    # Let's gather the important stuff
-    B = cfg_snap.B          # Magnetic field
-    p = cfg_snap.mupol      # Muon polarization
-    q, w = cfg_snap.orient  # Quaternion and Weight for orientation
-    T = cfg_snap.T          # Temperature
-
-    # Let's start by rotating things
-    B = q.rotate(B)
-    p = q.rotate(p)
-
-    # Measurement operator?
-    S = system.muon_operator(p)
-
-    # Base Hamiltonian
-    H = system.hamiltonian
-
-    return np.array(cfg_snap.t)*0+mpi.rank
+        return np.real(data)*w
