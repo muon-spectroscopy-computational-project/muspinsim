@@ -4,6 +4,8 @@ Class to read in input files for the muspinsim script
 """
 
 import re
+from io import StringIO
+
 import numpy as np
 from collections import namedtuple
 
@@ -16,6 +18,36 @@ class MuSpinInputError(Exception):
 
 
 MuSpinInputValue = namedtuple('MuSpinInputValue', ['name', 'args', 'value'])
+
+# Experiment defaults as .in files
+_exp_defaults = {
+    'alc': """
+polarization
+    longitudinal
+y_axis
+    integral
+x_axis
+    field
+""",
+    'zero_field': """
+field
+    0.0
+polarization
+    transverse
+x_axis
+    time
+y_axis
+    asymmetry
+""",
+    'longitudinal': """
+polarization
+    longitudinal
+x_axis
+    time
+y_axis
+    asymmetry
+"""
+}
 
 
 class MuSpinInput(object):
@@ -68,6 +100,21 @@ class MuSpinInput(object):
                 block = raw_blocks.pop('fitting_variables')
                 kw = InputKeywords['fitting_variables'](block)
                 self._variables = kw.evaluate()[0]
+            except KeyError:
+                pass
+
+            # Another special case: if the "experiment" keyword is present,
+            # use it to set some defaults
+            try:
+                block = raw_blocks.pop('experiment')
+                kw = InputKeywords['experiment'](block)
+                exptype = kw.evaluate()[0]
+                if len(exptype) > 1:
+                    raise MuSpinConfigError('Can not define more than one'
+                                            ' experiment type')
+                elif len(exptype) == 1:
+                    mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
+                    self._keywords.update(mock_i._keywords)
             except KeyError:
                 pass
 

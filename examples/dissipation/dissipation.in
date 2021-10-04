@@ -1,6 +1,8 @@
 # This is basically the same system as basic_powder.in,
 # with added dissipation on the electron. Try simulating both
 # and comparing them to see the effect of the dissipative term.
+name
+    dissipation
 spins
     mu e
 hyperfine 1
@@ -10,10 +12,8 @@ hyperfine 1
 field
     0.01
 time
-    0   1
-powder zcw
-    50
+    range(0, 1.0)
+orientation
+    zcw(50)
 dissipation 2
     0.5
-save
-    evolution

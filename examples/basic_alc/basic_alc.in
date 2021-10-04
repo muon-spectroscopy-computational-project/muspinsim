@@ -10,13 +10,9 @@ hyperfine 3
     150 3   4
     3   150 5
     4   5   150
-polarization
-    longitudinal
 orientation
     zcw(20)
 field
-    range(1.5, 3)
-x_axis
-    field
-y_axis
-    integral
+    range(1.5, 3, 100)
+experiment
+    alc

@@ -223,7 +223,7 @@ class MuSpinConfig(object):
             elif cname == 'dsp':
                 # Dissipation. Special case, this is temperature dependent and
                 # must be set individually
-                self._dissip_terms[i] = cval
+                self._dissip_terms[i] = cval[0]
 
         # Now for results, use the shapes of only file and x ranges
         res_shape = [len(v) for v in self._file_ranges.values()]

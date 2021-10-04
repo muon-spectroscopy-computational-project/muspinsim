@@ -1,13 +1,13 @@
+name
+    high_T
 spins
     mu e
 hyperfine 1
     10   0    0
     0    10   0
     0    0    10
-save
-    evolution
 time
-    0   1  1000
+    range(0, 1, 1000)
 field
     0.1
 temperature
