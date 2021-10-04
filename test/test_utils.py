@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from muspinsim.utils import Clonable, deepmap, quat_from_polar
+from muspinsim.utils import Clonable, deepmap, quat_from_polar, zcw_gen
 
 
 class TestUtils(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestUtils(unittest.TestCase):
     def test_quat(self):
 
         q1 = quat_from_polar(np.pi/4.0, 0)
-        z1 = q1.rotate([0,0,1])
+        z1 = q1.rotate([0, 0, 1])
 
         self.assertTrue(np.isclose(z1, [2**(-0.5), 0, 2**(-0.5)]).all())
 
@@ -49,6 +49,15 @@ class TestUtils(unittest.TestCase):
         sp = np.sin(phi)
 
         q2 = quat_from_polar(theta, phi)
-        z2 = q2.rotate([0,0,1])
+        z2 = q2.rotate([0, 0, 1])
 
         self.assertTrue(np.isclose(z2, [st*cp, st*sp, ct]).all())
+
+    def test_zcw(self):
+
+        N = 1000
+        orients = zcw_gen(N)
+
+        # Are these correct? Basic test
+        f = 3.0*np.cos(orients[:, 0])**2-1.0
+        self.assertAlmostEqual(np.average(f), 0.0, 5)
