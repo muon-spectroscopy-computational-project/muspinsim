@@ -3,6 +3,8 @@
 A class to hold a given spin system, defined by specific nuclei
 """
 
+import logging
+
 import numpy as np
 from copy import deepcopy
 from numbers import Number
@@ -197,6 +199,9 @@ class SpinSystem(Clonable):
         self._terms = []
         self._dissip_terms = []
 
+        logging.info('Created spin system with spins:')
+        logging.info('\t\t{0}'.format(' '.join(self.spins)))
+
     @property
     def spins(self):
         return list(self._spins)
@@ -347,6 +352,9 @@ class SpinSystem(Clonable):
             B = [0, 0, B]  # Treat it as along z by default
 
         B = np.array(B)
+
+        logging.info('Adding Zeeman term to spin {0}'.format(i+1))
+
         return self.add_linear_term(i, B*self.gamma(i), 'Zeeman')
 
     def add_dipolar_term(self, i, j, r):
@@ -382,6 +390,8 @@ class SpinSystem(Clonable):
                (2*(rnorm*1e-10)**3))  # MHz
         D *= dij
 
+        logging.info('Adding dipolar term to spins {0}-{1}'.format(i+1, j+1))
+
         return self.add_bilinear_term(i, j, D, 'Dipolar')
 
     def add_quadrupolar_term(self, i, EFG):
@@ -407,6 +417,8 @@ class SpinSystem(Clonable):
                              'spin 1/2 particle')
 
         Qtens = EFG_2_MHZ*Q/(2*I*(2*I-1))*EFG
+
+        logging.info('Adding quadrupolar term to spin {0}'.format(i+1))
 
         return self.add_bilinear_term(i, i, Qtens, 'Quadrupolar')
 
@@ -640,6 +652,8 @@ class MuonSpinSystem(SpinSystem):
         if i in elec_i:
             raise ValueError('First index in hyperfine coupling must'
                              ' not refer to an electron')
+
+        logging.info('Adding hyperfine term to spins {0}-{1}'.format(i+1, j+1))
 
         return self.add_bilinear_term(i, j, A, 'Hyperfine')
 

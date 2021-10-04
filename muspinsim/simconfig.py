@@ -67,6 +67,10 @@ def _validate_shape(v, target_shape=(3,), name='vector'):
 def _elems_from_arrayodict(inds, odict):
     return {k: v[inds[i]] for i, (k, v) in enumerate(odict.items())}
 
+def _log_dictranges(rdict):
+
+    for k, r in rdict.items():
+        logging.info('\t\t{k} => {n} points'.format(k=k, n=len(r)))
 
 class MuSpinConfigError(Exception):
     pass
@@ -173,6 +177,15 @@ class MuSpinConfig(object):
                                           for k, v in self._avg_ranges.items()
                                           if v is not None})
 
+        logging.info('Using X axis:')
+        _log_dictranges(self._x_range)
+        if len(self._avg_ranges) > 0:
+            logging.info('Averaging over:')
+            _log_dictranges(self._avg_ranges)
+        if len(self._file_ranges) > 0:
+            logging.info('Scanning over:')
+            _log_dictranges(self._file_ranges)
+
         # Now make the spin system
         self._system = MuonSpinSystem(self._spins)
         self._dissip_terms = {}
@@ -236,6 +249,11 @@ class MuSpinConfig(object):
         self._configurations = list(product(*[fconfigs, aconfigs, xconfigs]))
         # Size of the average
         self._avg_N = len(aconfigs)
+
+        logging.info('Total number of configurations to simulate: '
+                     '{0}'.format(len(self._configurations)))
+        logging.info('Total number of configurations to average: '
+                     '{0}'.format(self._avg_N))
 
         # Define a namedtuple for configurations
         cfg_keys = list(self._constants.keys())
@@ -341,8 +359,8 @@ class MuSpinConfig(object):
             header = file_header.format(**vdict)
 
             data = np.zeros((len(x), 2))
-            data[:,0] = x
-            data[:,1] = self._results[inds]
+            data[:, 0] = x
+            data[:, 1] = self._results[inds]
 
             np.savetxt(fname, data, header=header)
 

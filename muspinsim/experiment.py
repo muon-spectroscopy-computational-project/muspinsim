@@ -2,6 +2,7 @@
 
 Classes and functions to perform actual experiments"""
 
+import logging
 import numpy as np
 import scipy.constants as cnst
 

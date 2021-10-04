@@ -334,7 +334,7 @@ class KWAverageAxes(MuSpinKeyword):
     default = 'orientation'
     _validators = {
         'Invalid value': lambda s: all((w in InputKeywords or 
-            w.lower() == 'none')
+                                        w.lower() == 'none')
                                        for w in s)
     }
 
