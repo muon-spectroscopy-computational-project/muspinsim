@@ -1,3 +1,5 @@
+name
+    basic
 spins
     mu e
 hyperfine 1
@@ -5,6 +7,6 @@ hyperfine 1
     0    10   0
     0    0    10
 time
-    0    0.1
-save
-    evolution
+    range(0, 0.1)
+y_axis
+    asymmetry

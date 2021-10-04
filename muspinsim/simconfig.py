@@ -45,7 +45,7 @@ ConfigSnapshot = namedtuple('ConfigSnapshot', ['id', 'y'] +
 # A useful decorator
 def _validate_coupling_args(fun):
     def decorated(self, value, **args):
-        ij = np.array(list(args.values()))
+        ij = np.array([v for v in args.values() if v is not None])        
         if (ij < 1).any() or (ij > len(self.system)).any():
             raise MuSpinConfigError('Out of range indices for coupling')
 
@@ -324,13 +324,13 @@ class MuSpinConfig(object):
             name = self.name
 
         # Header format
-        file_header = """# MUSPINSIM v.{version}
-# Output file written on {date}
-# Parameters used: 
+        file_header = """MUSPINSIM v.{version}
+Output file written on {date}
+Parameters used: 
 """.format(version=__version__, date=datetime.datetime.now().ctime())
 
         for fn in self._file_ranges:
-            file_header = file_header + '# {0:<20} = {{{0}}}\n'.format(fn)
+            file_header = file_header + '\t{0:<20} = {{{0}}}\n'.format(fn)
 
         indices = [range(len(rng)) for rng in self._file_ranges.values()]
         indices = product(*indices)
@@ -339,7 +339,9 @@ class MuSpinConfig(object):
         fid_pattern = '_{}'*len(self._file_ranges)
         fname_pattern = '{name}{id}{ext}'
 
-        x = list(self._x_range.values())[0]
+        x = np.array(list(self._x_range.values())[0])
+        if 'B' in self._x_range.keys():
+            x = np.linalg.norm(x, axis=-1)
 
         # Actually save the files
         for inds in indices:

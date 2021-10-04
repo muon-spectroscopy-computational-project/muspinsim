@@ -1,3 +1,5 @@
+name 
+    basic_alc
 spins
     e mu H
 hyperfine 2
@@ -8,9 +10,13 @@ hyperfine 3
     150 3   4
     3   150 5
     4   5   150
-experiment
-    alc
-powder zcw
-    20
+polarization
+    longitudinal
+orientation
+    zcw(20)
 field
-    1.5   3
+    range(1.5, 3)
+x_axis
+    field
+y_axis
+    integral
