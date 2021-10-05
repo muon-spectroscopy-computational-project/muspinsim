@@ -7,6 +7,7 @@ import numpy as np
 import scipy.constants as cnst
 
 from muspinsim.constants import MU_TAU
+from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
 from muspinsim.input import MuSpinInput
@@ -133,6 +134,11 @@ class ExperimentRunner(object):
             muon_axis = self._p
             B = self._B
 
+            if np.isclose(np.linalg.norm(B), 0.0) and T < np.inf:
+                logging.warning('WARNING: initial density matrix is computed'
+                                ' with an approximation that can fail'
+                                ' at low fields and finite temperature')
+
             mu_i = self._system.muon_index
             rhos = []
 
@@ -202,19 +208,54 @@ class ExperimentRunner(object):
             g = sys.gammas
             if T > 0:
                 Zu = np.exp(-cnst.h*g*B*1e6/(cnst.k*T))
+                if np.isclose(B, 0.0) and T < np.inf:
+                    logging.warning('WARNING: dissipation effects are computed'
+                                    ' with an approximation that can fail'
+                                    ' at low fields and finite temperature')
             else:
                 Zu = g*0.0
 
+            H = self.Hsys+self.Hz
+            if B == 0:
+                x, y = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
+            else:
+                z = self._B/B
+                x, y = get_xy(z)
+
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
-                self._dops.append((sys.operator({i: '+'}), a*Zu[i]/(1+Zu[i])))
-                self._dops.append((sys.operator({i: '-'}), a/(1+Zu[i])))
+
+                op_x = np.sum(
+                    self._single_spinops[i, :]*x[:, None, None], axis=0)
+                op_y = np.sum(
+                    self._single_spinops[i, :]*y[:, None, None], axis=0)
+                op_p = SpinOperator(op_x+1.0j*op_y, dim=self.system.dimension)
+                op_m = SpinOperator(op_x-1.0j*op_y, dim=self.system.dimension)
+
+                self._dops.append((op_p, a*Zu[i]/(1+Zu[i])))
+                self._dops.append((op_m, a/(1+Zu[i])))
 
         return self._dops
 
     @property
     def Hsys(self):
         return self._Hsys
+
+    @property
+    def Htot(self):
+        # Build the total Hamiltonian
+        H = self.Hsys + self.Hz
+
+        # Do we have dissipation?
+        if len(self._config.dissipation_terms) > 0:
+            # Actually use a Lindbladian
+            H = Lindbladian.from_hamiltonian(H, self.dissipation_operators)
+
+        return H
+
+    @property
+    def p_operator(self):
+        return self._system.muon_operator(self.p)
 
     def run_all(self):
         """Run the experiment
@@ -235,6 +276,33 @@ class ExperimentRunner(object):
 
         return self._config.results
 
+    def load_config(self, cfg_snap: ConfigSnapshot):
+        """Load a configuration snapshot in this ExperimentRunner
+
+        Load a configuration snapshot in the ExperimentRunner, assigning field,
+        polarisation and temperature.
+
+        Arguments:
+            cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                         parameters to be used in this calculation.
+
+        Returns:
+            weight {float} -- The weight to assign to this specific simulation
+        """
+
+        # Let's gather the important stuff
+        B = cfg_snap.B         # Magnetic field
+        p = cfg_snap.mupol     # Muon polarization
+        T = cfg_snap.T         # Temperature
+        q, w = cfg_snap.orient      # Quaternion and Weight for orientation
+
+        # Let's start by rotating things
+        self.B = q.rotate(B)
+        self.p = q.rotate(p)
+        self.T = T
+
+        return w
+
     def run_single(self, cfg_snap: ConfigSnapshot):
         """Run a muon experiment from a configuration snapshot
 
@@ -250,27 +318,12 @@ class ExperimentRunner(object):
                                    required results, or a single value.
         """
 
-        # Let's gather the important stuff
-        B = cfg_snap.B         # Magnetic field
-        p = cfg_snap.mupol     # Muon polarization
-        T = cfg_snap.T         # Temperature
-        q, w = cfg_snap.orient      # Quaternion and Weight for orientation
-
-        # Let's start by rotating things
-        self.B = q.rotate(B)
-        self.p = q.rotate(p)
-        self.T = T
+        w = self.load_config(cfg_snap)
 
         # Measurement operator?
-        S = self._system.muon_operator(self.p)
+        S = self.p_operator
 
-        # Build the total Hamiltonian
-        H = self.Hsys + self.Hz
-
-        # Do we have dissipation?
-        if len(self._config.dissipation_terms) > 0:
-            # Actually use a Lindbladian
-            H = Lindbladian.from_hamiltonian(H, self.dissipation_operators)
+        H = self.Htot
 
         if cfg_snap.y == 'asymmetry':
             data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]

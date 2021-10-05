@@ -96,78 +96,115 @@ spins
         self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix),
                                           [Z[0], 0, Z[1], 0])))
 
-    # def test_run(self):
+    def test_run(self):
 
-    #     # Empty system
-    #     muexp = MuonExperiment(['e', 'mu'])
-    #     times = np.linspace(0, 10)
+        # Empty system
+        stest = StringIO("""
+spins
+    e mu
+time
+    range(0, 10)
+""")
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    #     results = muexp.run_experiment(times)
+        results = ertest.run_all()
 
-    #     self.assertTrue(np.all(results['e'] == 0.5))
+        self.assertTrue(np.all(results == 0.5))
 
-    #     # Simple system
-    #     muexp.spin_system.add_linear_term(1, [0, 0, 1.0])
-    #     results = muexp.run_experiment(times, acquire='ei')
+        # Simple system
+        stest = StringIO("""
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+""")
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    #     tau = constants.MU_TAU
+        results = ertest.run_all()
+        times = ertest.config.x_axis_values
 
-    #     self.assertTrue(np.all(np.isclose(results['e'][:, 0],
-    #                                       0.5*np.cos(2*np.pi*times))))
-    #     self.assertAlmostEqual(results['i'][0, 0],
-    #                            0.5/(1.0+4*np.pi**2*tau**2))
+        self.assertTrue(np.all(np.isclose(results,
+                                          0.5*np.cos(2*np.pi*times))))
 
-    # def test_dissipation(self):
+        tau = constants.MU_TAU
 
-    #     # Simple system
-    #     g = 1.0
-    #     muexp = MuonExperiment(['mu'])
-    #     muexp.set_dissipation_coupling(0, g)
+        stest = StringIO("""
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+y_axis
+    integral
+x_axis
+    field
+field
+    0
+    1
+""")
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    #     times = np.linspace(0, 10)
+        results = ertest.run_all()
 
-    #     results = muexp.run_experiment(times)
-    #     evol = results['e']
+        self.assertAlmostEqual(results[0],
+                               0.5/(1.0+4*np.pi**2*tau**2))
 
-    #     solx = np.real(0.5*np.exp(-np.pi*g*times))
-    #     self.assertTrue(np.all(np.isclose(evol[:, 0], solx)))
+    def test_dissipation(self):
 
-    #     # Check for temperature equilibrium
-    #     T = 0.1
-    #     muexp.set_magnetic_field(-1.0)
-    #     muexp.set_temperature(T)
+        # Simple system
+        g = 1.0
+        stest = StringIO("""
+spins
+    mu
+dissipation 1
+    {g}
+""".format(g=g))
+        
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    #     beta = 1.0/(cnst.k*T)
-    #     Z = np.exp(-cnst.h*constants.MU_GAMMA*1e6*beta)
+        times = ertest.config.x_axis_values
 
-    #     # Just let it evolve, see the result at long times
-    #     Sz = muexp.spin_system.operator({0: 'z'})
-    #     rhoinf = muexp.run_experiment([20], Sz)['e']
+        results = ertest.run_all()
 
-    #     self.assertAlmostEqual(rhoinf[0, 0], 0.5*(1-Z)/(1+Z))
+        solx = np.real(0.5*np.exp(-np.pi*g*times))
+        self.assertTrue(np.all(np.isclose(results, solx)))
 
-    # def test_slices(self):
+        # Check for temperature equilibrium
+        T = 0.1
+        stest = StringIO("""
+spins
+    mu
+dissipation 1
+    {g}
+temperature
+    {T}
+field
+    -1.0
+time
+    0
+    20
+""".format(g=g, T=T))
 
-    #     gmu = constants.MU_GAMMA
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
 
-    #     muexp = MuonExperiment(['mu'])
-    #     muexp.spin_system.add_zeeman_term(0, 1.0/gmu)
-    #     muexp.set_powder_average(100)
+        times = ertest.config.x_axis_values
 
-    #     times = np.linspace(0, 1.0)
+        beta = 1.0/(cnst.k*T)
+        Z = np.exp(-cnst.h*constants.MU_GAMMA*1e6*beta)
 
-    #     cos = np.cos(2*np.pi*times)
-    #     signal = muexp.run_experiment(times)['e'][:, 0]
+        # Just let it evolve, see the result at long times
+        Sz = ertest.system.operator({0: 'z'})
 
-    #     self.assertTrue(np.all(np.isclose(signal,
-    #                                       0.5*(2.0/3.0 +
-    #                                            1.0/3.0*cos),
-    #                                       atol=1e-3)))
+        # Ready the first config
+        ertest.load_config(ertest.config[0])
+        results = ertest.Htot.evolve(ertest.rho0, times, operators=[Sz])
 
-    #     # Now slice
-    #     signal_0 = muexp.run_experiment(times,
-    #                                     orient_slice=slice(0, 1))['e'][:, 0]
-
-    #     self.assertTrue(np.all(np.isclose(signal_0,
-    #                                       0.5*cos*muexp.weights[0],
-    #                                       atol=1e-3)))
+        self.assertAlmostEqual(np.real(results[-1,0]), 0.5*(1-Z)/(1+Z))

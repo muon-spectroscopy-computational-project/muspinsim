@@ -371,6 +371,10 @@ class KWZeeman(MuSpinCouplingKeyword):
 
     name = 'zeeman'
     block_size = 1
+    _constants = {**_math_constants,
+                  'muon_gyr': MU_GAMMA,
+                  'MHz': 1.0/(2*MU_GAMMA)
+                  }
 
     def _default_args(self, i):
         args = {
@@ -445,6 +449,7 @@ class KWExperiment(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = ''
+
 
 # Compile all KW classes into a single dictionary automatically
 InputKeywords = {

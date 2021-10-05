@@ -339,7 +339,7 @@ Parameters used:
         fid_pattern = '_{}'*len(self._file_ranges)
         fname_pattern = '{name}{id}{ext}'
 
-        x = np.array(list(self._x_range.values())[0])
+        x = self.x_axis_values
         if 'B' in self._x_range.keys():
             x = np.linalg.norm(x, axis=-1)
 
@@ -396,6 +396,14 @@ Parameters used:
         if r.shape != self._results.shape:
             raise ValueError('Trying to set an invalid results array')
         self._results = r
+
+    @property
+    def x_axis(self):
+        return [*self._x_range.keys()][0]
+
+    @property
+    def x_axis_values(self):
+        return np.array([*self._x_range.values()][0])
 
     @property
     def y_axis(self):

@@ -1,7 +1,8 @@
 import unittest
 
 import numpy as np
-from muspinsim.utils import Clonable, deepmap, quat_from_polar, zcw_gen
+from muspinsim.utils import (Clonable, deepmap, quat_from_polar, zcw_gen,
+                             get_xy)
 
 
 class TestUtils(unittest.TestCase):
@@ -61,3 +62,19 @@ class TestUtils(unittest.TestCase):
         # Are these correct? Basic test
         f = 3.0*np.cos(orients[:, 0])**2-1.0
         self.assertAlmostEqual(np.average(f), 0.0, 5)
+
+    def test_xy(self):
+
+        z = np.array([0, 0, 1])
+        x, y = get_xy(z)
+
+        self.assertTrue(np.isclose(x, [1, 0, 0]).all())
+
+        z = np.array([1, 1, 2.0])
+        x, y = get_xy(z)
+        z /= np.linalg.norm(z)
+
+        self.assertTrue(np.isclose(np.cross(x, y), z).all())
+
+        with self.assertRaises(ValueError):
+            get_xy([0, 0, 0])
