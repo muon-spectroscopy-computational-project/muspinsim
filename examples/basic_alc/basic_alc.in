@@ -13,6 +13,6 @@ hyperfine 3
 orientation
     zcw(20)
 field
-    range(1.5, 3, 100)
+    range(1.8, 2.6, 100)
 experiment
     alc

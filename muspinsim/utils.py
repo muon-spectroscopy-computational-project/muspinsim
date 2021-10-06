@@ -37,11 +37,23 @@ def zcw_gen(N, mode='sphere'):
     pwd = ZCW(mode)
     return pwd.get_orient_angles(N)[0]
 
+def eulrange_gen(N):
+    # Generate a range of Euler angles and related weights
+    a = np.linspace(0, 2*np.pi, N)
+    b = np.linspace(0, np.pi, N+2)[1:-1]
+    c = np.linspace(0, 2*np.pi, N)
+
+    a, b, c = np.array(np.meshgrid(a, b, c)).reshape((3,-1))
+    w = np.sin(b)
+
+    return np.array([a, b, c, w]).T
 
 def quat_from_polar(theta, phi):
     """Make a Quaternion from two polar angles
 
-    Make a Quaternion from only two polar angles.
+    Make a Quaternion from only two polar angles. This only makes the new Z'
+    axis have polar angles theta and phi w.r.t. the old system, but does not
+    care or guarantee anything about the other two angles.
 
     Arguments:
         theta {float} -- Zenithal angle
@@ -51,7 +63,7 @@ def quat_from_polar(theta, phi):
         q {ase.Quaternion} -- Quaternion
     """
 
-    return Quaternion.from_euler_angles(0.0, theta, phi, 'zyz')
+    return Quaternion.from_euler_angles(phi, theta, phi, 'zyz')
 
 def get_xy(z):
     """Make two axes x and y orthogonal and correctly oriented with respect

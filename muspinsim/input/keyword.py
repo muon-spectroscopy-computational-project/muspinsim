@@ -10,7 +10,7 @@ import numpy as np
 
 from muspinsim.constants import MU_GAMMA
 from muspinsim.input.asteval import ASTExpression, ast_tokenize
-from muspinsim.utils import deepmap, zcw_gen
+from muspinsim.utils import deepmap, zcw_gen, eulrange_gen
 
 # Supported math functions
 _math_functions = {
@@ -36,7 +36,8 @@ _math_constants = {
 # Functions for powder orientation
 
 _pwd_functions = {
-    'zcw': zcw_gen
+    'zcw': zcw_gen,
+    'eulrange': eulrange_gen
 }
 
 # Expansion functions

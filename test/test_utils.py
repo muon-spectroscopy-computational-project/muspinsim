@@ -1,8 +1,11 @@
 import unittest
 
 import numpy as np
+from ase.quaternions import Quaternion
+
 from muspinsim.utils import (Clonable, deepmap, quat_from_polar, zcw_gen,
-                             get_xy)
+                             eulrange_gen, get_xy)
+
 
 
 class TestUtils(unittest.TestCase):
@@ -54,6 +57,12 @@ class TestUtils(unittest.TestCase):
 
         self.assertTrue(np.isclose(z2, [st*cp, st*sp, ct]).all())
 
+        # Let's check that the inverse works as planned too
+        q3 = q2.conjugate()
+        z3 = q3.rotate([0, 0, 1])
+
+        self.assertTrue(np.isclose(z3, [-st*cp, st*sp, ct]).all())
+
     def test_zcw(self):
 
         N = 1000
@@ -62,6 +71,30 @@ class TestUtils(unittest.TestCase):
         # Are these correct? Basic test
         f = 3.0*np.cos(orients[:, 0])**2-1.0
         self.assertAlmostEqual(np.average(f), 0.0, 5)
+
+    def test_eulrange(self):
+
+        N = 10
+        ow = eulrange_gen(N)
+
+        A = np.array([[1, 2, 3], [2, 4, 4], [3, 4, -3]])
+
+        Asum = np.zeros((3,3))
+        quats = [Quaternion.from_euler_angles(a, b, c).q for (a, b, c, w) in ow]
+        print(np.average(quats, axis=0))
+
+        for (a,b,c,w) in ow:
+            q = Quaternion.from_euler_angles(a, b, c)
+            R = q.rotation_matrix()
+            Asum += (R@A@R.T)*w
+
+        Asum /= np.sum(ow[:,-1])
+
+        err = np.sum(np.abs(Asum-np.eye(3)*np.trace(A)/3))
+            
+        # Yeah, it's really crude for now, sadly
+        self.assertLess(err, 1.0)
+
 
     def test_xy(self):
 
