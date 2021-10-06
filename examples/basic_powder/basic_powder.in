@@ -11,4 +11,4 @@ field
 time
     range(0, 1.0)
 orientation
-    zcw(50)
+    eulrange(10)
