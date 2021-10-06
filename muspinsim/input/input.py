@@ -99,7 +99,7 @@ class MuSpinInput(object):
             try:
                 block = raw_blocks.pop('fitting_variables')
                 kw = InputKeywords['fitting_variables'](block)
-                self._variables = kw.evaluate()[0]
+                self._variables = [v.name for v in kw.evaluate()]
             except KeyError:
                 pass
 

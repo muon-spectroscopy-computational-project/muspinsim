@@ -10,6 +10,7 @@ import numpy as np
 
 from muspinsim.constants import MU_GAMMA
 from muspinsim.input.asteval import ASTExpression, ast_tokenize
+from muspinsim.input.variables import FittingVariable
 from muspinsim.utils import deepmap, zcw_gen, eulrange_gen
 
 # Supported math functions
@@ -31,6 +32,11 @@ _math_constants = {
     'deg': np.pi/180.0,
     'e': np.exp(1),
     'inf': np.inf
+}
+
+_phys_constants = {
+    'muon_gyr': MU_GAMMA,
+    'MHz': 1.0/(2*MU_GAMMA)
 }
 
 # Functions for powder orientation
@@ -290,9 +296,7 @@ class KWField(MuSpinExpandKeyword):
     accept_as_x = True
     default = '0.0'
     _constants = {**_math_constants,
-                  'muon_gyr': MU_GAMMA,
-                  'MHz': 1.0/(2*MU_GAMMA)
-                  }
+                  **_phys_constants}
 
 
 class KWTime(MuSpinExpandKeyword):
@@ -373,9 +377,7 @@ class KWZeeman(MuSpinCouplingKeyword):
     name = 'zeeman'
     block_size = 1
     _constants = {**_math_constants,
-                  'muon_gyr': MU_GAMMA,
-                  'MHz': 1.0/(2*MU_GAMMA)
-                  }
+                  **_phys_constants}
 
     def _default_args(self, i):
         args = {
@@ -434,14 +436,29 @@ class KWDissipation(MuSpinCouplingKeyword):
         return args
 
 
-# Fitting variables
+# Fitting variables. This is a special case
 class KWFittingVariables(MuSpinKeyword):
 
     name = 'fitting_variables'
     block_size = 1
-    accept_range = False
+    accept_range = True
     default = ''
+    _constants = {**_math_constants,
+                  **_phys_constants}
 
+    def _store_values(self, block):
+
+        variables = list(self._constants.keys())
+
+        self._values = []
+        for v in block:
+            b = [v[0]] + [[ASTExpression(tk,
+                                variables=variables)
+                  for tk in ast_tokenize(l)] for l in v[1:]]
+            b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
+            b = FittingVariable(*b)
+            
+            self._values.append(b)
 
 # Special configuration keyword
 class KWExperiment(MuSpinKeyword):

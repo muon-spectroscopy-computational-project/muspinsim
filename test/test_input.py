@@ -192,7 +192,8 @@ zeeman 1
         # Let's try with some variables
         s2 = StringIO("""
 fitting_variables
-    x y
+    x
+    y
 field
     2*x
 zeeman 1
