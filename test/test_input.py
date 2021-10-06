@@ -45,7 +45,21 @@ class TestInput(unittest.TestCase):
             e1.evaluate()
 
         # Test tokenization
-        ast_tokenize('3.4 2.3 sin(x) atan2(3, 4)')
+        tokens = ast_tokenize('3.4 2.3 sin(x) atan2(3, 4)')
+        ast_tokens = [ASTExpression(tk, variables='x',
+                                    functions={'sin': np.sin,
+                                               'atan2': np.arctan2})
+                      for tk in tokens]
+
+        self.assertEqual(len(tokens), 4)
+        self.assertEqual(ast_tokens[0].evaluate(), 3.4)
+        self.assertEqual(ast_tokens[1].evaluate(), 2.3)
+        self.assertAlmostEqual(ast_tokens[2].evaluate(x=np.pi/2.0), 1.0)
+        self.assertAlmostEqual(ast_tokens[3].evaluate(), np.arctan2(3.0, 4.0))
+
+        # Make sure for safety reasons:
+        with self.assertRaises(ASTExpressionError):
+            ASTExpression('__builtins__')
 
     def test_keyword(self):
 
@@ -56,7 +70,6 @@ class TestInput(unittest.TestCase):
                                            ['d', 'e', 'f']]
                          ).all())
         self.assertEqual(len(kw), 2)
-
 
         # Test that the default works
 
@@ -173,7 +186,8 @@ zeeman 1
 
         self.assertEqual(e1['name'].value[0], 'test_1')
         self.assertTrue((e1['spins'].value[0] == ['mu', 'H']).all())
-        self.assertTrue((e1['couplings']['zeeman_1'].value[0] == [1, 0, 0]).all())
+        self.assertTrue(
+            (e1['couplings']['zeeman_1'].value[0] == [1, 0, 0]).all())
 
         # Let's try with some variables
         s2 = StringIO("""
@@ -185,10 +199,9 @@ zeeman 1
     x y 0
 """)
 
-        i2 = MuSpinInput(s2)        
+        i2 = MuSpinInput(s2)
         e2 = i2.evaluate(x=2.0, y=5.0)
 
         self.assertEqual(e2['field'].value[0][0], 4.0)
-        self.assertTrue((e2['couplings']['zeeman_1'].value[0] == [2, 5, 0]).all())
-
-        
+        self.assertTrue(
+            (e2['couplings']['zeeman_1'].value[0] == [2, 5, 0]).all())
