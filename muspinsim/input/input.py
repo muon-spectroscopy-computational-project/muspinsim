@@ -96,12 +96,7 @@ class MuSpinInput(object):
 
             # A special case: if there are fitting variables, we need to know
             # right away
-            try:
-                block = raw_blocks.pop('fitting_variables')
-                kw = InputKeywords['fitting_variables'](block)
-                self._variables = [v.name for v in kw.evaluate()]
-            except KeyError:
-                pass
+            self._load_fitting_kw(raw_blocks)
 
             # Another special case: if the "experiment" keyword is present,
             # use it to set some defaults
@@ -147,7 +142,11 @@ class MuSpinInput(object):
 
     @property
     def variables(self):
-        return set(self._variables)
+        return {**self._variables}
+
+    @property
+    def fitting_info(self):
+        return {**self._fitting_info}
 
     def evaluate(self, **variables):
         """Produce a full dictionary with a value for every input keyword,
@@ -181,3 +180,34 @@ class MuSpinInput(object):
                     result[name] = MuSpinInputValue(name, kw.arguments, val)
 
         return result
+
+    def _load_fitting_kw(self, raw_blocks):
+        """Special case: handling of all the fitting related keywords and 
+        information."""
+
+        self._fitting_info = {
+            'fit': False,
+            'data': None,
+            'method': None,
+            'rtol': None
+        }
+
+        try:
+            block = raw_blocks.pop('fitting_variables')
+            kw = InputKeywords['fitting_variables'](block)
+            self._variables = {v.name: v for v in kw.evaluate()}
+        except KeyError:
+            pass
+
+        if len(self._variables) == 0:
+            return
+
+        self._fitting_info['fit'] = True
+
+        try:
+            block = raw_blocks.pop('fitting_data')
+            kw = InputKeywords['fitting_data'](block)
+            self._fitting_info['data'] = np.array(kw.evaluate())
+        except KeyError:
+            raise MuSpinInputError('Fitting variables defined without defining'
+                                   ' a set of data to fit')

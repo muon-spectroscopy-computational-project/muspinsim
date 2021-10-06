@@ -46,9 +46,8 @@ _pwd_functions = {
     'eulrange': eulrange_gen
 }
 
+
 # Expansion functions
-
-
 def _range(x1, x2, n=100):
     return np.linspace(x1, x2, n)[:, None]
 
@@ -451,14 +450,35 @@ class KWFittingVariables(MuSpinKeyword):
         variables = list(self._constants.keys())
 
         self._values = []
+
         for v in block:
-            b = [v[0]] + [[ASTExpression(tk,
-                                variables=variables)
-                  for tk in ast_tokenize(l)] for l in v[1:]]
-            b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
+            v = v[0].split(maxsplit=1)
+            if len(v) == 0:
+                return
+            b = [v[0]]
+
+            if len(v) == 2:
+                b += [ASTExpression(tk, variables=variables)
+                      for tk in ast_tokenize(v[1])]
+                b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
+
             b = FittingVariable(*b)
-            
+
             self._values.append(b)
+
+
+# Other fitting-related keywords
+class KWFittingData(MuSpinEvaluateKeyword):
+
+    name = 'fitting_data'
+    block_size = 1
+    accept_range = True
+    default = ''
+    _constants = {}
+    _functions = {
+        'load': np.loadtxt
+    }
+
 
 # Special configuration keyword
 class KWExperiment(MuSpinKeyword):

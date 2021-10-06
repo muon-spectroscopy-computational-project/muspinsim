@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from io import StringIO
+from tempfile import NamedTemporaryFile
 
 from muspinsim.input.asteval import (ASTExpression, ASTExpressionError,
                                      ast_tokenize)
@@ -189,20 +190,69 @@ zeeman 1
         self.assertTrue(
             (e1['couplings']['zeeman_1'].value[0] == [1, 0, 0]).all())
 
-        # Let's try with some variables
-        s2 = StringIO("""
+    def test_fitting(self):
+        # Test input focused around fitting
+
+        s1 = StringIO("""
 fitting_variables
-    x
-    y
+    x 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
 field
     2*x
 zeeman 1
-    x y 0
+    x x 0
+""")
+        i1 = MuSpinInput(s1)
+
+        self.assertTrue(i1.fitting_info['fit'])
+
+        data = i1.fitting_info['data']
+        self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
+
+        e1 = i1.evaluate(x=2.0)
+        self.assertEqual(e1['field'].value[0][0], 4.0)
+        self.assertTrue((e1['couplings']['zeeman_1'].value[0] ==
+                         [2, 2, 0]).all())
+
+        variables = i1.variables
+
+        self.assertEqual(variables['x'].value, 1.0)
+        self.assertEqual(variables['x'].bounds, (0.0, 2.0))
+
+        # Invalid variable range
+        s2 = StringIO("""
+fitting_variables
+    x 1.0 0.0 -5.0
 """)
 
-        i2 = MuSpinInput(s2)
-        e2 = i2.evaluate(x=2.0, y=5.0)
+        with self.assertRaises(ValueError):
+            MuSpinInput(s2)
 
-        self.assertEqual(e2['field'].value[0][0], 4.0)
-        self.assertTrue(
-            (e2['couplings']['zeeman_1'].value[0] == [2, 5, 0]).all())
+        # Let's test loading from a file
+        tdata = np.zeros((10, 2))
+        tdata[:, 0] = np.linspace(0, 1, 10)
+        tdata[:, 1] = tdata[:, 0]**2
+
+        tfile = NamedTemporaryFile(mode='w')
+
+        for d in tdata:
+            tfile.write('{0} {1}\n'.format(*d))
+        tfile.flush()
+
+        s3 = StringIO("""
+fitting_variables
+    x
+fitting_data
+    load('{fname}')
+""".format(fname=tfile.name))
+
+        i3 = MuSpinInput(s3)
+
+        data = i3.fitting_info['data']
+        self.assertTrue((data == tdata).all())
+
+        tfile.close()
