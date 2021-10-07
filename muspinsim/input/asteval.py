@@ -14,12 +14,13 @@ def ast_tokenize(line):
         valid = False
         while not valid:
             try:
-                ast.parse(tk, mode='eval')
+                ast.parse(tk, mode="eval")
                 valid = True
             except SyntaxError:
                 if len(ls) == 0:
-                    raise RuntimeError('Line can not be tokenized into valid '
-                                       'expressions')
+                    raise RuntimeError(
+                        "Line can not be tokenized into valid " "expressions"
+                    )
                 tk = tk + ls.pop(0)
         tokens.append(tk)
 
@@ -31,10 +32,9 @@ class ASTExpressionError(Exception):
 
 
 class ASTExpression(object):
-
     def __init__(self, source, variables=[], functions={}):
         """Create an expression to check with Abstract Syntax Trees before
-        evaluating. Variables and functions will be accepted only if included 
+        evaluating. Variables and functions will be accepted only if included
         in the admissible ones.
 
         Arguments:
@@ -42,13 +42,13 @@ class ASTExpression(object):
 
         Keyword Arguments
             variables {[str]} -- Names of acceptable variables
-            functions {{str: callable}} -- Names and bodies of acceptable 
+            functions {{str: callable}} -- Names and bodies of acceptable
                                            functions
         """
 
         # Start by parsing the expression
         self._source = source
-        self._ast = ast.parse(source, mode='eval')
+        self._ast = ast.parse(source, mode="eval")
 
         # Find the variables and the function calls
         found_names = []
@@ -69,10 +69,10 @@ class ASTExpression(object):
 
         # Check if they are valid
         if len(self.variables - self._all_variables) > 0:
-            raise ASTExpressionError('Invalid variable used in ASTExpression')
+            raise ASTExpressionError("Invalid variable used in ASTExpression")
 
         if len(self.functions - set(functions.keys())) > 0:
-            raise ASTExpressionError('Invalid function used in ASTExpression')
+            raise ASTExpressionError("Invalid function used in ASTExpression")
 
         self._function_bodies = {fn: functions[fn] for fn in self._functions}
 
@@ -100,12 +100,16 @@ class ASTExpression(object):
         """
 
         vset = set(variables.keys())
-        if len(self.variables-vset) > 0:
-            raise ASTExpressionError('Some necessary variables have not been '
-                                     'defined when evaluating ASTExpression')
-        elif len(vset-self._all_variables) > 0:
-            raise ASTExpressionError('Some invalid variables have been '
-                                     'defined when evaluating ASTExpression')
+        if len(self.variables - vset) > 0:
+            raise ASTExpressionError(
+                "Some necessary variables have not been "
+                "defined when evaluating ASTExpression"
+            )
+        elif len(vset - self._all_variables) > 0:
+            raise ASTExpressionError(
+                "Some invalid variables have been "
+                "defined when evaluating ASTExpression"
+            )
 
         if self._store_eval is not None:
             return self._store_eval

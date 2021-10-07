@@ -5,14 +5,11 @@ A class describing a spin Hamiltonian with various terms
 
 import numpy as np
 from numbers import Number
-import scipy.constants as cnst
 
-from muspinsim.constants import EFG_2_MHZ, MU_TAU
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
 class Hamiltonian(Operator, Hermitian):
-
     def __init__(self, matrix, dim=None):
         """Create an Hamiltonian
 
@@ -26,7 +23,7 @@ class Hamiltonian(Operator, Hermitian):
         """
 
         super(Hamiltonian, self).__init__(matrix, dim)
-        
+
     @classmethod
     def from_spin_operator(self, spinop):
         return self(spinop.matrix, spinop.dimension)
@@ -45,7 +42,7 @@ class Hamiltonian(Operator, Hermitian):
         Keyword Arguments:
             operators {[SpinOperator]} -- List of SpinOperators to compute the
                                           expectation values of at each step.
-                                          If omitted, the states' density 
+                                          If omitted, the states' density
                                           matrices will be returned instead
                                            (default: {[]})
 
@@ -59,19 +56,19 @@ class Hamiltonian(Operator, Hermitian):
         """
 
         if not isinstance(rho0, DensityOperator):
-            raise TypeError('rho0 must be a valid DensityOperator')
+            raise TypeError("rho0 must be a valid DensityOperator")
 
         times = np.array(times)
 
         if len(times.shape) != 1:
-            raise ValueError(
-                'times must be an array of values in microseconds')
+            raise ValueError("times must be an array of values in microseconds")
 
         if isinstance(operators, SpinOperator):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError('operators must be a SpinOperator or a list'
-                             ' of SpinOperator objects')
+            raise ValueError(
+                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+            )
 
         # Diagonalize self
         evals, evecs = self.diag()
@@ -81,18 +78,16 @@ class Hamiltonian(Operator, Hermitian):
         rho0 = rho0.basis_change(evecs).matrix
 
         # Same for operators
-        operatorsT = np.array([o.basis_change(evecs).matrix.T
-                               for o in operators])
+        operatorsT = np.array([o.basis_change(evecs).matrix.T for o in operators])
 
         # Matrix of evolution operators
-        ll = -2.0j*np.pi*(evals[:, None]-evals[None, :])
-        rho = np.exp(ll[None, :, :]*times[:, None, None])*rho0[None, :, :]
+        ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
+        rho = np.exp(ll[None, :, :] * times[:, None, None]) * rho0[None, :, :]
 
         # Now, return values
         if len(operators) > 0:
             # Actually compute expectation values
-            result = np.sum(rho[:, None, :, :]*operatorsT[None, :, :, :],
-                            axis=(2, 3))
+            result = np.sum(rho[:, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3))
         else:
             # Just return density matrices
             sceve = evecs.T.conj()
@@ -113,7 +108,7 @@ class Hamiltonian(Operator, Hermitian):
             tau {float} -- Decay time, in microseconds
 
         Keyword Arguments:
-            operators {list} -- Operators to compute the expectation values 
+            operators {list} -- Operators to compute the expectation values
                                 of (default: {[]})
 
         Returns:
@@ -126,16 +121,17 @@ class Hamiltonian(Operator, Hermitian):
         """
 
         if not isinstance(rho0, DensityOperator):
-            raise TypeError('rho0 must be a valid DensityOperator')
+            raise TypeError("rho0 must be a valid DensityOperator")
 
         if not (isinstance(tau, Number) and np.isreal(tau) and tau > 0):
-            raise ValueError('tau must be a real number > 0')
+            raise ValueError("tau must be a real number > 0")
 
         if isinstance(operators, SpinOperator):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError('operators must be a SpinOperator or a list'
-                             ' of SpinOperator objects')
+            raise ValueError(
+                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+            )
 
         # Diagonalize self
         evals, evecs = self.diag()
@@ -143,13 +139,13 @@ class Hamiltonian(Operator, Hermitian):
         # Turn the density matrix in the right basis
         rho0 = rho0.basis_change(evecs).matrix
 
-        ll = 2.0j*np.pi*(evals[:, None]-evals[None, :])
+        ll = 2.0j * np.pi * (evals[:, None] - evals[None, :])
 
         # Integral operators
-        intops = np.array([(-o.basis_change(evecs).matrix/(ll-1.0/tau)).T
-                           for o in operators])
+        intops = np.array(
+            [(-o.basis_change(evecs).matrix / (ll - 1.0 / tau)).T for o in operators]
+        )
 
-        result = np.sum(rho0[None, :, :]*intops[:, :, :],
-                        axis=(1, 2))
+        result = np.sum(rho0[None, :, :] * intops[:, :, :], axis=(1, 2))
 
         return result

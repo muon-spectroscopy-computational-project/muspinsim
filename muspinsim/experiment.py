@@ -11,26 +11,9 @@ from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
 from muspinsim.input import MuSpinInput
-from muspinsim.spinsys import MuonSpinSystem
 from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.lindbladian import Lindbladian
-
-"""Calculate a thermal density matrix in which the system is prepared
-
-Calculate an approximate thermal density matrix to prepare the system in,
-with the muon polarised along a given direction and every other spin in a
-thermal equilibrium decohered state.
-
-Arguments:
-    B {np.ndarray} -- Applied magnetic field in T
-    p {np.ndarray} -- Muon polarization direction
-    T {float} -- Temperature in K
-    system {MuonSpinSystem} -- System for which to prepare the matrix
-
-Returns:
-    rho0 {DensityOperator} -- Density matrix at t=0
-"""
 
 
 class ExperimentRunner(object):
@@ -66,9 +49,12 @@ class ExperimentRunner(object):
         self._config = config
         self._system = config.system
         # Store single spin operators
-        self._single_spinops = np.array([[self._system.operator({i: a}).matrix
-                                          for a in 'xyz']
-                                         for i in range(len(self._system))])
+        self._single_spinops = np.array(
+            [
+                [self._system.operator({i: a}).matrix for a in "xyz"]
+                for i in range(len(self._system))
+            ]
+        )
 
         # Parameters
         self._B = np.zeros(3)
@@ -128,6 +114,15 @@ class ExperimentRunner(object):
 
     @property
     def rho0(self):
+        """Calculate a thermal density matrix in which the system is prepared
+
+        Calculate an approximate thermal density matrix to prepare the system in,
+        with the muon polarised along a given direction and every other spin in a
+        thermal equilibrium decohered state.
+
+        Returns:
+            rho0 {DensityOperator} -- Density matrix at t=0
+        """
 
         if self._rho0 is None:
             T = self._T
@@ -135,9 +130,11 @@ class ExperimentRunner(object):
             B = self._B
 
             if np.isclose(np.linalg.norm(B), 0.0) and T < np.inf:
-                logging.warning('WARNING: initial density matrix is computed'
-                                ' with an approximation that can fail'
-                                ' at low fields and finite temperature')
+                logging.warning(
+                    "WARNING: initial density matrix is computed"
+                    " with an approximation that can fail"
+                    " at low fields and finite temperature"
+                )
 
             mu_i = self._system.muon_index
             rhos = []
@@ -148,26 +145,30 @@ class ExperimentRunner(object):
                     r = DensityOperator.from_vectors(I, muon_axis, 0)
                 else:
                     # Get the Zeeman Hamiltonian for this field
-                    Hz = np.sum([B[j]*SpinOperator.from_axes(I, e).matrix
-                                 for j, e in enumerate('xyz')],
-                                axis=0)
+                    Hz = np.sum(
+                        [
+                            B[j] * SpinOperator.from_axes(I, e).matrix
+                            for j, e in enumerate("xyz")
+                        ],
+                        axis=0,
+                    )
 
                     evals, evecs = np.linalg.eigh(Hz)
-                    E = evals*1e6*self._system.gamma(i)
+                    E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
-                        Z = np.exp(-cnst.h*E/(cnst.k*T))
+                        Z = np.exp(-cnst.h * E / (cnst.k * T))
                     else:
                         Z = np.where(E == np.amin(E), 1.0, 0.0)
                     if np.sum(Z) > 0:
                         Z /= np.sum(Z)
                     else:
-                        Z = np.ones(len(E))/len(E)
+                        Z = np.ones(len(E)) / len(E)
 
-                    rhoI = np.sum(evecs[:, None, :] *
-                                  evecs[None, :, :].conj() *
-                                  Z[None, None, :],
-                                  axis=-1)
+                    rhoI = np.sum(
+                        evecs[:, None, :] * evecs[None, :, :].conj() * Z[None, None, :],
+                        axis=-1,
+                    )
 
                     r = DensityOperator(rhoI)
 
@@ -185,8 +186,10 @@ class ExperimentRunner(object):
         if self._Hz is None:
             B = self._B
             g = self._system.gammas
-            Hz = np.sum(B[None, :, None, None] * g[:, None, None, None] *
-                        self._single_spinops, axis=(0, 1))
+            Hz = np.sum(
+                B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
+                axis=(0, 1),
+            )
             self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
 
         return self._Hz
@@ -207,33 +210,32 @@ class ExperimentRunner(object):
             B = np.linalg.norm(self._B)
             g = sys.gammas
             if T > 0:
-                Zu = np.exp(-cnst.h*g*B*1e6/(cnst.k*T))
+                Zu = np.exp(-cnst.h * g * B * 1e6 / (cnst.k * T))
                 if np.isclose(B, 0.0) and T < np.inf:
-                    logging.warning('WARNING: dissipation effects are computed'
-                                    ' with an approximation that can fail'
-                                    ' at low fields and finite temperature')
+                    logging.warning(
+                        "WARNING: dissipation effects are computed"
+                        " with an approximation that can fail"
+                        " at low fields and finite temperature"
+                    )
             else:
-                Zu = g*0.0
+                Zu = g * 0.0
 
-            H = self.Hsys+self.Hz
             if B == 0:
                 x, y = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
             else:
-                z = self._B/B
+                z = self._B / B
                 x, y = get_xy(z)
 
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
 
-                op_x = np.sum(
-                    self._single_spinops[i, :]*x[:, None, None], axis=0)
-                op_y = np.sum(
-                    self._single_spinops[i, :]*y[:, None, None], axis=0)
-                op_p = SpinOperator(op_x+1.0j*op_y, dim=self.system.dimension)
-                op_m = SpinOperator(op_x-1.0j*op_y, dim=self.system.dimension)
+                op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
+                op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+                op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
+                op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
 
-                self._dops.append((op_p, a*Zu[i]/(1+Zu[i])))
-                self._dops.append((op_m, a/(1+Zu[i])))
+                self._dops.append((op_p, a * Zu[i] / (1 + Zu[i])))
+                self._dops.append((op_m, a / (1 + Zu[i])))
 
         return self._dops
 
@@ -268,7 +270,7 @@ class ExperimentRunner(object):
                                     node.
         """
 
-        for cfg in self._config[mpi.rank::mpi.size]:
+        for cfg in self._config[mpi.rank :: mpi.size]:
             dataslice = self.run_single(cfg)
             self._config.store_time_slice(cfg.id, dataslice)
 
@@ -291,10 +293,10 @@ class ExperimentRunner(object):
         """
 
         # Let's gather the important stuff
-        B = cfg_snap.B         # Magnetic field
-        p = cfg_snap.mupol     # Muon polarization
-        T = cfg_snap.T         # Temperature
-        q, w = cfg_snap.orient      # Quaternion and Weight for orientation
+        B = cfg_snap.B  # Magnetic field
+        p = cfg_snap.mupol  # Muon polarization
+        T = cfg_snap.T  # Temperature
+        q, w = cfg_snap.orient  # Quaternion and Weight for orientation
 
         # Let's start by rotating things
         self.B = q.rotate(B)
@@ -325,10 +327,9 @@ class ExperimentRunner(object):
 
         H = self.Htot
 
-        if cfg_snap.y == 'asymmetry':
+        if cfg_snap.y == "asymmetry":
             data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
-        elif cfg_snap.y == 'integral':
-            data = H.integrate_decaying(self.rho0, MU_TAU,
-                                        operators=[S])[0]/MU_TAU
+        elif cfg_snap.y == "integral":
+            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 
-        return np.real(data)*w
+        return np.real(data) * w

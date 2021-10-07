@@ -15,36 +15,25 @@ from muspinsim.utils import deepmap, zcw_gen, eulrange_gen
 
 # Supported math functions
 _math_functions = {
-    'sin': np.sin,
-    'cos': np.cos,
-    'tan': np.tan,
-    'arcsin': np.arcsin,
-    'arccos': np.arccos,
-    'arctan': np.arctan,
-    'arctan2': np.arctan2,
-    'exp': np.exp,
-    'sqrt': np.sqrt
+    "sin": np.sin,
+    "cos": np.cos,
+    "tan": np.tan,
+    "arcsin": np.arcsin,
+    "arccos": np.arccos,
+    "arctan": np.arctan,
+    "arctan2": np.arctan2,
+    "exp": np.exp,
+    "sqrt": np.sqrt,
 }
 
 # And math constants
-_math_constants = {
-    'pi': np.pi,
-    'deg': np.pi/180.0,
-    'e': np.exp(1),
-    'inf': np.inf
-}
+_math_constants = {"pi": np.pi, "deg": np.pi / 180.0, "e": np.exp(1), "inf": np.inf}
 
-_phys_constants = {
-    'muon_gyr': MU_GAMMA,
-    'MHz': 1.0/(2*MU_GAMMA)
-}
+_phys_constants = {"muon_gyr": MU_GAMMA, "MHz": 1.0 / (2 * MU_GAMMA)}
 
 # Functions for powder orientation
 
-_pwd_functions = {
-    'zcw': zcw_gen,
-    'eulrange': eulrange_gen
-}
+_pwd_functions = {"zcw": zcw_gen, "eulrange": eulrange_gen}
 
 
 # Expansion functions
@@ -55,7 +44,7 @@ def _range(x1, x2, n=100):
 class MuSpinKeyword(object):
     """Generic class used to parse a keyword from a MuSpinSim input file"""
 
-    name = 'keyword'
+    name = "keyword"
     block_size = 1
     block_size_bounds = (1, np.inf)
     accept_range = True
@@ -64,7 +53,7 @@ class MuSpinKeyword(object):
     _validators = {}
 
     def __init__(self, block=[], args=[]):
-        """Create an instance of a given keyword, passing the raw block of 
+        """Create an instance of a given keyword, passing the raw block of
         text as well as the arguments.
 
         Arguments:
@@ -74,10 +63,11 @@ class MuSpinKeyword(object):
         """
 
         # Sanity check
-        if (self.block_size < self.block_size_bounds[0] or
-                self.block_size > self.block_size_bounds[1]):
-            raise RuntimeError(
-                'Invalid block_size for keyword {0}'.format(self.name))
+        if (
+            self.block_size < self.block_size_bounds[0]
+            or self.block_size > self.block_size_bounds[1]
+        ):
+            raise RuntimeError("Invalid block_size for keyword {0}".format(self.name))
 
         self._store_args(args)
 
@@ -86,14 +76,16 @@ class MuSpinKeyword(object):
         try:
             block = block.reshape((-1, self.block_size))
         except ValueError:
-            raise RuntimeError('Invalid block length for '
-                               'keyword {0}'.format(self.name))
+            raise RuntimeError(
+                "Invalid block length for " "keyword {0}".format(self.name)
+            )
         if not self.accept_range and len(block) > 1:
-            raise RuntimeError('Can not accept range of values for '
-                               'keyword {0}'.format(self.name))
+            raise RuntimeError(
+                "Can not accept range of values for " "keyword {0}".format(self.name)
+            )
 
         if len(block) == 0 and self.has_default:
-            block = np.array([self.default.split('\n')])
+            block = np.array([self.default.split("\n")])
 
         self._store_values(block)
 
@@ -107,11 +99,13 @@ class MuSpinKeyword(object):
         try:
             self._args = self._default_args(*args)
         except TypeError:
-            raise RuntimeError('Wrong number of arguments passed to '
-                               'keyword {0}'.format(self.name))
+            raise RuntimeError(
+                "Wrong number of arguments passed to " "keyword {0}".format(self.name)
+            )
         except ValueError:
-            raise RuntimeError('Invalid argument type passed to '
-                               'keyword {0}'.format(self.name))
+            raise RuntimeError(
+                "Invalid argument type passed to " "keyword {0}".format(self.name)
+            )
 
     def _store_values(self, block):
         # Parse and store each value separately
@@ -129,8 +123,9 @@ class MuSpinKeyword(object):
             ans = all([vfunc(b) for b in self._values])
 
             if not ans:
-                raise ValueError('Invalid block for '
-                                 'keyword {0}: {1}'.format(self.name, rule))
+                raise ValueError(
+                    "Invalid block for " "keyword {0}: {1}".format(self.name, rule)
+                )
 
     @property
     def arguments(self):
@@ -142,7 +137,7 @@ class MuSpinKeyword(object):
 
     @property
     def has_default(self):
-        return (self.default is not None)
+        return self.default is not None
 
     def evaluate(self):
         return self._values.copy()
@@ -154,7 +149,7 @@ class MuSpinKeyword(object):
 class MuSpinEvaluateKeyword(MuSpinKeyword):
     """Specialised class for keywords with values that need evaluating"""
 
-    name = 'evaluate_keyword'
+    name = "evaluate_keyword"
     _functions = {**_math_functions}
     _constants = {**_math_constants}
 
@@ -165,8 +160,10 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
 
         conflicts = cnames.intersection(vnames)
         if len(conflicts) > 0:
-            raise ValueError('Variable names {0}'.format(conflicts) +
-                             ' conflict with existing constants')
+            raise ValueError(
+                "Variable names {0}".format(conflicts)
+                + " conflict with existing constants"
+            )
 
         self._variables = list(cnames.union(vnames))
         super(MuSpinEvaluateKeyword, self).__init__(block, args)
@@ -174,10 +171,15 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
     def _store_values(self, block):
         self._values = []
         for v in block:
-            b = [[ASTExpression(tk,
-                                variables=self._variables,
-                                functions=self._functions)
-                  for tk in ast_tokenize(l)] for l in v]
+            b = [
+                [
+                    ASTExpression(
+                        tk, variables=self._variables, functions=self._functions
+                    )
+                    for tk in ast_tokenize(l)
+                ]
+                for l in v
+            ]
             if len(b) == 1:
                 b = b[0]
             self._values.append(b)
@@ -196,18 +198,16 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
     """Specialised class for keywords whose lines can be expanded with
     particular functions"""
 
-    name = 'expand_keyword'
+    name = "expand_keyword"
     block_size_bounds = (1, 1)
-    _functions = {**_math_functions,
-                  'range': _range}
+    _functions = {**_math_functions, "range": _range}
 
     def evaluate(self, **variables):
 
         allvars = {**variables, **self._constants}
 
         if self.block_size != 1:
-            raise RuntimeError(
-                'MuSpinExpandKeyword can not have block_size > 1')
+            raise RuntimeError("MuSpinExpandKeyword can not have block_size > 1")
 
         def expreval(expr):
             return expr.evaluate(**allvars)
@@ -223,22 +223,23 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
             elif len(eval_line.shape) == 1:
                 eval_values += [eval_line]
             else:
-                raise RuntimeError('Unable to evaluate expression for '
-                                   'keyword {0}'.format(self.name))
+                raise RuntimeError(
+                    "Unable to evaluate expression for " "keyword {0}".format(self.name)
+                )
 
         return eval_values
 
 
 class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
 
-    name = 'coupling_keyword'
+    name = "coupling_keyword"
     block_size = 1
-    default = '0 0 0'
+    default = "0 0 0"
 
     def _default_args(self, i=None, j=None):
         args = {
-            'i': int(i) if (i is not None) else None,
-            'j': int(j) if (j is not None) else None
+            "i": int(i) if (i is not None) else None,
+            "j": int(j) if (j is not None) else None,
         }
         return args
 
@@ -248,202 +249,184 @@ class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
 
     @property
     def id(self):
-        id_str = ''
-        i = self._args.get('i')
-        j = self._args.get('j')
+        id_str = ""
+        i = self._args.get("i")
+        j = self._args.get("j")
         if i is not None:
-            id_str += '_{0}'.format(i)
+            id_str += "_{0}".format(i)
             if j is not None:
-                id_str += '_{0}'.format(j)
-        return '{0}{1}'.format(self.name, id_str)
+                id_str += "_{0}".format(j)
+        return "{0}{1}".format(self.name, id_str)
 
 
 # Now on to defining the actual keywords that are admitted in input files
 class KWName(MuSpinKeyword):
 
-    name = 'name'
+    name = "name"
     block_size = 1
     accept_range = False
-    default = 'muspinsim'
+    default = "muspinsim"
 
 
 class KWSpins(MuSpinKeyword):
 
-    name = 'spins'
+    name = "spins"
     block_size = 1
     accept_range = False
-    default = 'mu e'
+    default = "mu e"
 
 
 class KWPolarization(MuSpinExpandKeyword):
 
-    name = 'polarization'
+    name = "polarization"
     block_size = 1
-    default = 'transverse'
-    _constants = {**_math_constants,
-                  'longitudinal': np.array([0, 0, 1.0]),
-                  'transverse':   np.array([1.0, 0, 0])
-                  }
+    default = "transverse"
+    _constants = {
+        **_math_constants,
+        "longitudinal": np.array([0, 0, 1.0]),
+        "transverse": np.array([1.0, 0, 0]),
+    }
     _functions = {**_math_functions}
 
 
 class KWField(MuSpinExpandKeyword):
 
-    name = 'field'
+    name = "field"
     block_size = 1
     accept_range = True
     accept_as_x = True
-    default = '0.0'
-    _constants = {**_math_constants,
-                  **_phys_constants}
+    default = "0.0"
+    _constants = {**_math_constants, **_phys_constants}
 
 
 class KWTime(MuSpinExpandKeyword):
 
-    name = 'time'
+    name = "time"
     block_size = 1
     accept_range = True
     accept_as_x = True
-    default = 'range(0, 10, 101)'
+    default = "range(0, 10, 101)"
 
 
 class KWXAxis(MuSpinKeyword):
 
-    name = 'x_axis'
+    name = "x_axis"
     block_size = 1
     accept_range = False
-    default = 'time'
+    default = "time"
     _validators = {
-        'Invalid value': lambda s: (s[0] in InputKeywords and
-                                    InputKeywords[s[0]].accept_as_x)
+        "Invalid value": lambda s: (
+            s[0] in InputKeywords and InputKeywords[s[0]].accept_as_x
+        )
     }
 
 
 class KWYAxis(MuSpinKeyword):
 
-    name = 'y_axis'
+    name = "y_axis"
     block_size = 1
     accept_range = False
-    default = 'asymmetry'
-    _validators = {
-        'Invalid value': lambda s: s in ('asymmetry', 'integral')
-    }
+    default = "asymmetry"
+    _validators = {"Invalid value": lambda s: s in ("asymmetry", "integral")}
 
 
 class KWAverageAxes(MuSpinKeyword):
 
-    name = 'average_axes'
+    name = "average_axes"
     block_size = 1
     accept_range = True
-    default = 'orientation'
+    default = "orientation"
     _validators = {
-        'Invalid value': lambda s: all((w in InputKeywords or
-                                        w.lower() == 'none')
-                                       for w in s)
+        "Invalid value": lambda s: all(
+            (w in InputKeywords or w.lower() == "none") for w in s
+        )
     }
 
 
 class KWOrientation(MuSpinExpandKeyword):
 
-    name = 'orientation'
+    name = "orientation"
     block_size = 1
     accept_range = True
-    default = '0 0 0'
-    _functions = {
-        **_math_functions,
-        **_pwd_functions
-    }
+    default = "0 0 0"
+    _functions = {**_math_functions, **_pwd_functions}
 
-    def _default_args(self, mode='zyz'):
-        args = {
-            'mode': mode
-        }
+    def _default_args(self, mode="zyz"):
+        args = {"mode": mode}
         return args
 
 
 class KWTemperature(MuSpinExpandKeyword):
 
-    name = 'temperature'
+    name = "temperature"
     block_size = 1
     accept_range = True
     accept_as_x = True
-    default = 'inf'
+    default = "inf"
 
 
 # Couplings
 class KWZeeman(MuSpinCouplingKeyword):
 
-    name = 'zeeman'
+    name = "zeeman"
     block_size = 1
-    _constants = {**_math_constants,
-                  **_phys_constants}
+    _constants = {**_math_constants, **_phys_constants}
 
     def _default_args(self, i):
-        args = {
-            'i': int(i)
-        }
+        args = {"i": int(i)}
         return args
 
 
 class KWDipolar(MuSpinCouplingKeyword):
 
-    name = 'dipolar'
+    name = "dipolar"
     block_size = 1
 
     def _default_args(self, i, j):
-        args = {
-            'i': int(i),
-            'j': int(j)
-        }
+        args = {"i": int(i), "j": int(j)}
         return args
 
 
 class KWHyperfine(MuSpinCouplingKeyword):
 
-    name = 'hyperfine'
+    name = "hyperfine"
     block_size = 3
 
     def _default_args(self, i, j=None):
-        args = {
-            'i': int(i),
-            'j': int(j) if j is not None else None
-        }
+        args = {"i": int(i), "j": int(j) if j is not None else None}
         return args
 
 
 class KWQuadrupolar(MuSpinCouplingKeyword):
 
-    name = 'quadrupolar'
+    name = "quadrupolar"
     block_size = 3
 
     def _default_args(self, i):
         args = {
-            'i': int(i),
+            "i": int(i),
         }
         return args
 
 
 class KWDissipation(MuSpinCouplingKeyword):
 
-    name = 'dissipation'
+    name = "dissipation"
     block_size = 1
 
     def _default_args(self, i):
-        args = {
-            'i': int(i)
-        }
+        args = {"i": int(i)}
         return args
 
 
 # Fitting variables. This is a special case
 class KWFittingVariables(MuSpinKeyword):
 
-    name = 'fitting_variables'
+    name = "fitting_variables"
     block_size = 1
     accept_range = True
-    default = ''
-    _constants = {**_math_constants,
-                  **_phys_constants}
+    default = ""
+    _constants = {**_math_constants, **_phys_constants}
 
     def _store_values(self, block):
 
@@ -458,8 +441,9 @@ class KWFittingVariables(MuSpinKeyword):
             b = [v[0]]
 
             if len(v) == 2:
-                b += [ASTExpression(tk, variables=variables)
-                      for tk in ast_tokenize(v[1])]
+                b += [
+                    ASTExpression(tk, variables=variables) for tk in ast_tokenize(v[1])
+                ]
                 b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
 
             b = FittingVariable(*b)
@@ -470,52 +454,48 @@ class KWFittingVariables(MuSpinKeyword):
 # Other fitting-related keywords
 class KWFittingData(MuSpinExpandKeyword):
 
-    name = 'fitting_data'
+    name = "fitting_data"
     block_size = 1
     accept_range = True
-    default = ''
+    default = ""
     _constants = {}
-    _functions = {
-        'load': np.loadtxt
-    }
+    _functions = {"load": np.loadtxt}
 
 
 class KWFittingMethod(MuSpinKeyword):
 
-    name = 'fitting_method'
+    name = "fitting_method"
     block_size = 1
     accept_range = False
-    default = 'nelder-mead'
+    default = "nelder-mead"
     _validators = {
-        'Invalid value': lambda s: ((s[0].lower() in ('nelder-mead',
-                                                      'lbfgs'))
-                                    and len(s) == 1)
+        "Invalid value": lambda s: (
+            (s[0].lower() in ("nelder-mead", "lbfgs")) and len(s) == 1
+        )
     }
 
 
 class KWFittingTolerance(MuSpinKeyword):
 
-    name = 'fitting_tolerance'
+    name = "fitting_tolerance"
     block_size = 1
     accept_range = False
-    default = '1e-3'
-    _validators = {
-        'Invalid value': lambda s: (float(s[0]) and len(s) == 1)
-    }
+    default = "1e-3"
+    _validators = {"Invalid value": lambda s: (float(s[0]) and len(s) == 1)}
 
 
 # Special configuration keyword
 class KWExperiment(MuSpinKeyword):
 
-    name = 'experiment'
+    name = "experiment"
     block_size = 1
     accept_range = False
-    default = ''
+    default = ""
 
 
 # Compile all KW classes into a single dictionary automatically
 InputKeywords = {
     obj.name: obj
     for name, obj in inspect.getmembers(sys.modules[__name__])
-    if (inspect.isclass(obj) and re.match('KW[0-9a-zA-Z]+', name))
+    if (inspect.isclass(obj) and re.match("KW[0-9a-zA-Z]+", name))
 }

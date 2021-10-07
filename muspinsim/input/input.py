@@ -9,19 +9,22 @@ from io import StringIO
 import numpy as np
 from collections import namedtuple
 
-from muspinsim.input.keyword import (InputKeywords, MuSpinEvaluateKeyword,
-                                     MuSpinCouplingKeyword)
+from muspinsim.input.keyword import (
+    InputKeywords,
+    MuSpinEvaluateKeyword,
+    MuSpinCouplingKeyword,
+)
 
 
 class MuSpinInputError(Exception):
     pass
 
 
-MuSpinInputValue = namedtuple('MuSpinInputValue', ['name', 'args', 'value'])
+MuSpinInputValue = namedtuple("MuSpinInputValue", ["name", "args", "value"])
 
 # Experiment defaults as .in files
 _exp_defaults = {
-    'alc': """
+    "alc": """
 polarization
     longitudinal
 y_axis
@@ -29,7 +32,7 @@ y_axis
 x_axis
     field
 """,
-    'zero_field': """
+    "zero_field": """
 field
     0.0
 polarization
@@ -39,23 +42,22 @@ x_axis
 y_axis
     asymmetry
 """,
-    'longitudinal': """
+    "longitudinal": """
 polarization
     longitudinal
 x_axis
     time
 y_axis
     asymmetry
-"""
+""",
 }
 
 
 class MuSpinInput(object):
-
     def __init__(self, fs=None):
         """Read in an input file
 
-        Read in an input file from an opened file stream        
+        Read in an input file from an opened file stream
 
         Arguments:
             fs {TextIOBase} -- I/O stream (should be file, can be StringIO)
@@ -63,12 +65,7 @@ class MuSpinInput(object):
 
         self._keywords = {}
         self._variables = {}
-        self._fitting_info = {
-            'fit': False,
-            'data': None,
-            'method': None,
-            'rtol': None
-        }
+        self._fitting_info = {"fit": False, "data": None, "method": None, "rtol": None}
 
         if fs is not None:
 
@@ -78,23 +75,23 @@ class MuSpinInput(object):
             raw_blocks = {}
             curr_block = None
 
-            indre = re.compile('(\\s+)[^\\s]')
+            indre = re.compile("(\\s+)[^\\s]")
             indent = None
 
             for l in lines:
-                if l.strip() == '' or l[0] == '#':
+                if l.strip() == "" or l[0] == "#":
                     continue  # It's a comment
                 m = indre.match(l)
                 if m:
                     if indent is None:
                         indent = m.groups()[0]
                     if m.groups()[0] != indent:
-                        raise RuntimeError('Invalid indent in input file')
+                        raise RuntimeError("Invalid indent in input file")
                     else:
                         try:
                             raw_blocks[curr_block].append(l.strip())
                         except KeyError:
-                            raise RuntimeError('Badly formatted input file')
+                            raise RuntimeError("Badly formatted input file")
                 else:
                     curr_block = l.strip()
                     raw_blocks[curr_block] = []
@@ -107,12 +104,13 @@ class MuSpinInput(object):
             # Another special case: if the "experiment" keyword is present,
             # use it to set some defaults
             try:
-                block = raw_blocks.pop('experiment')
-                kw = InputKeywords['experiment'](block)
+                block = raw_blocks.pop("experiment")
+                kw = InputKeywords["experiment"](block)
                 exptype = kw.evaluate()[0]
                 if len(exptype) > 1:
-                    raise MuSpinConfigError('Can not define more than one'
-                                            ' experiment type')
+                    raise MuSpinInputError(
+                        "Can not define more than one experiment type"
+                    )
                 elif len(exptype) == 1:
                     mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
                     self._keywords.update(mock_i._keywords)
@@ -129,9 +127,9 @@ class MuSpinInput(object):
                 try:
                     KWClass = InputKeywords[name]
                 except KeyError:
-                    raise MuSpinInputError('Invalid keyword '
-                                           '{0} '.format(name) +
-                                           'found in input file')
+                    raise MuSpinInputError(
+                        "Invalid keyword " "{0} ".format(name) + "found in input file"
+                    )
 
                 if issubclass(KWClass, MuSpinEvaluateKeyword):
                     kw = KWClass(block, args=args, variables=self._variables)
@@ -158,24 +156,21 @@ class MuSpinInput(object):
         """Produce a full dictionary with a value for every input keyword,
         interpreted given the variable values that have been passed."""
 
-        result = {
-            'couplings': {},
-            'fitting_info': self.fitting_info
-        }
+        result = {"couplings": {}, "fitting_info": self.fitting_info}
 
         for name, KWClass in InputKeywords.items():
 
             if issubclass(KWClass, MuSpinCouplingKeyword):
                 if name in self._keywords:
                     for kwid, kw in self._keywords[name].items():
-                        val = MuSpinInputValue(name, kw.arguments,
-                                               kw.evaluate(**variables))
-                        result['couplings'][kwid] = val
+                        val = MuSpinInputValue(
+                            name, kw.arguments, kw.evaluate(**variables)
+                        )
+                        result["couplings"][kwid] = val
             else:
                 if name in self._keywords:
                     kw = self._keywords[name]
-                    v = (variables if issubclass(
-                        KWClass, MuSpinEvaluateKeyword) else {})
+                    v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}
                     val = kw.evaluate(**v)
 
                     result[name] = MuSpinInputValue(name, kw.arguments, val)
@@ -189,12 +184,12 @@ class MuSpinInput(object):
         return result
 
     def _load_fitting_kw(self, raw_blocks):
-        """Special case: handling of all the fitting related keywords and 
+        """Special case: handling of all the fitting related keywords and
         information."""
 
         try:
-            block = raw_blocks.pop('fitting_variables')
-            kw = InputKeywords['fitting_variables'](block)
+            block = raw_blocks.pop("fitting_variables")
+            kw = InputKeywords["fitting_variables"](block)
             self._variables = {v.name: v for v in kw.evaluate()}
         except KeyError:
             pass
@@ -202,20 +197,21 @@ class MuSpinInput(object):
         if len(self._variables) == 0:
             return
 
-        self._fitting_info['fit'] = True
+        self._fitting_info["fit"] = True
 
         try:
-            block = raw_blocks.pop('fitting_data')
-            kw = InputKeywords['fitting_data'](block)
-            self._fitting_info['data'] = np.array(kw.evaluate())
+            block = raw_blocks.pop("fitting_data")
+            kw = InputKeywords["fitting_data"](block)
+            self._fitting_info["data"] = np.array(kw.evaluate())
         except KeyError:
-            raise MuSpinInputError('Fitting variables defined without defining'
-                                   ' a set of data to fit')
+            raise MuSpinInputError(
+                "Fitting variables defined without defining" " a set of data to fit"
+            )
 
-        block = raw_blocks.pop('fitting_tolerance', [])
-        kw = InputKeywords['fitting_tolerance'](block)
-        self._fitting_info['rtol'] = float(kw.evaluate()[0][0])
+        block = raw_blocks.pop("fitting_tolerance", [])
+        kw = InputKeywords["fitting_tolerance"](block)
+        self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
 
-        block = raw_blocks.pop('fitting_method', [])
-        kw = InputKeywords['fitting_method'](block)
-        self._fitting_info['method'] = kw.evaluate()[0][0]
+        block = raw_blocks.pop("fitting_method", [])
+        kw = InputKeywords["fitting_method"](block)
+        self._fitting_info["method"] = kw.evaluate()[0][0]

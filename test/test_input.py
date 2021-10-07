@@ -3,90 +3,91 @@ import numpy as np
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
-from muspinsim.input.asteval import (ASTExpression, ASTExpressionError,
-                                     ast_tokenize)
-from muspinsim.input.keyword import (MuSpinKeyword, MuSpinEvaluateKeyword,
-                                     MuSpinExpandKeyword, InputKeywords)
+from muspinsim.input.asteval import ASTExpression, ASTExpressionError, ast_tokenize
+from muspinsim.input.keyword import (
+    MuSpinKeyword,
+    MuSpinEvaluateKeyword,
+    MuSpinExpandKeyword,
+    InputKeywords,
+)
 from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):
-
     def test_astexpr(self):
 
         # Start by testing simple expressions
         def double(x):
-            return 2*x
+            return 2 * x
 
-        e1 = ASTExpression('x+y+1', variables='xy')
+        e1 = ASTExpression("x+y+1", variables="xy")
 
-        self.assertEqual(e1.variables, {'x', 'y'})
+        self.assertEqual(e1.variables, {"x", "y"})
         self.assertEqual(e1.evaluate(x=2, y=5), 8)
 
         # Try using a function
-        e2 = ASTExpression('double(x)', variables='x',
-                           functions={'double': double})
+        e2 = ASTExpression("double(x)", variables="x", functions={"double": double})
 
-        self.assertEqual(e2.variables, {'x'})
-        self.assertEqual(e2.functions, {'double'})
+        self.assertEqual(e2.variables, {"x"})
+        self.assertEqual(e2.functions, {"double"})
         self.assertEqual(e2.evaluate(x=2), 4)
 
         # Check that it evaluates when possible
-        e3 = ASTExpression('double(4)', functions={'double': double})
+        e3 = ASTExpression("double(4)", functions={"double": double})
         self.assertEqual(e3._store_eval, 8)
 
         # Errors
         with self.assertRaises(ASTExpressionError):
-            e4 = ASTExpression('print(666)')
+            e4 = ASTExpression("print(666)")
 
         with self.assertRaises(ASTExpressionError):
-            e5 = ASTExpression('x+1', variables='y')
+            e5 = ASTExpression("x+1", variables="y")
 
         with self.assertRaises(ASTExpressionError):
             e1.evaluate()
 
         # Test tokenization
-        tokens = ast_tokenize('3.4 2.3 sin(x) atan2(3, 4)')
-        ast_tokens = [ASTExpression(tk, variables='x',
-                                    functions={'sin': np.sin,
-                                               'atan2': np.arctan2})
-                      for tk in tokens]
+        tokens = ast_tokenize("3.4 2.3 sin(x) atan2(3, 4)")
+        ast_tokens = [
+            ASTExpression(
+                tk, variables="x", functions={"sin": np.sin, "atan2": np.arctan2}
+            )
+            for tk in tokens
+        ]
 
         self.assertEqual(len(tokens), 4)
         self.assertEqual(ast_tokens[0].evaluate(), 3.4)
         self.assertEqual(ast_tokens[1].evaluate(), 2.3)
-        self.assertAlmostEqual(ast_tokens[2].evaluate(x=np.pi/2.0), 1.0)
+        self.assertAlmostEqual(ast_tokens[2].evaluate(x=np.pi / 2.0), 1.0)
         self.assertAlmostEqual(ast_tokens[3].evaluate(), np.arctan2(3.0, 4.0))
 
         # Make sure for safety reasons:
         with self.assertRaises(ASTExpressionError):
-            ASTExpression('__builtins__')
+            ASTExpression("__builtins__")
 
     def test_keyword(self):
 
         # Basic keyword
-        kw = MuSpinKeyword(['a b c', 'd e f'])
+        kw = MuSpinKeyword(["a b c", "d e f"])
 
-        self.assertTrue((kw.evaluate() == [['a', 'b', 'c'],
-                                           ['d', 'e', 'f']]
-                         ).all())
+        self.assertTrue((kw.evaluate() == [["a", "b", "c"], ["d", "e", "f"]]).all())
         self.assertEqual(len(kw), 2)
 
         # Test that the default works
 
         class DefKeyword(MuSpinKeyword):
-            default = '1'
+            default = "1"
 
         dkw = DefKeyword()
 
-        self.assertEqual(dkw.evaluate()[0][0], '1')
+        self.assertEqual(dkw.evaluate()[0][0], "1")
 
         # Let's try a numerical one
-        nkw = MuSpinEvaluateKeyword(['exp(0) 1+1 2**2'])
+        nkw = MuSpinEvaluateKeyword(["exp(0) 1+1 2**2"])
 
         self.assertTrue((nkw.evaluate()[0] == [1, 2, 4]).all())
 
-        exkw = MuSpinExpandKeyword(['range(0, 1)', '5.0 2.0'])
+        exkw = MuSpinExpandKeyword(["range(0, 1)", "5.0 2.0"])
 
         self.assertTrue(len(exkw.evaluate()) == 101)
 
@@ -96,104 +97,104 @@ class TestInput(unittest.TestCase):
             return [x, x, x]
 
         class RepeatKW(MuSpinExpandKeyword):
-            _functions = {
-                'repeat3': _repeat3
-            }
+            _functions = {"repeat3": _repeat3}
 
-        rkw = RepeatKW(['repeat3(1)'])
+        rkw = RepeatKW(["repeat3(1)"])
 
         self.assertTrue((rkw.evaluate()[0] == [1, 1, 1]).all())
 
         # Some failure cases
         with self.assertRaises(RuntimeError):
-            MuSpinKeyword([], args=['a'])  # One argument too much
+            MuSpinKeyword([], args=["a"])  # One argument too much
 
     def test_input_keywords(self):
 
-        nkw = InputKeywords['name']()
+        nkw = InputKeywords["name"]()
 
-        self.assertEqual(nkw.evaluate()[0], 'muspinsim')
+        self.assertEqual(nkw.evaluate()[0], "muspinsim")
 
-        skw = InputKeywords['spins']()
+        skw = InputKeywords["spins"]()
 
-        self.assertTrue((skw.evaluate()[0] == ['mu', 'e']).all())
+        self.assertTrue((skw.evaluate()[0] == ["mu", "e"]).all())
 
-        pkw = InputKeywords['polarization']()
+        pkw = InputKeywords["polarization"]()
 
         self.assertTrue((pkw.evaluate()[0] == [1, 0, 0]).all())
 
-        fkw = InputKeywords['field'](['500*MHz'])
+        fkw = InputKeywords["field"](["500*MHz"])
 
         self.assertTrue(np.isclose(fkw.evaluate()[0][0], 1.84449))
 
         # Test a range of fields
-        fkw = InputKeywords['field'](['range(0, 20, 21)'])
+        fkw = InputKeywords["field"](["range(0, 20, 21)"])
 
-        self.assertTrue((np.array([b[0] for b in fkw.evaluate()]) ==
-                         np.arange(21)).all())
+        self.assertTrue(
+            (np.array([b[0] for b in fkw.evaluate()]) == np.arange(21)).all()
+        )
 
-        tkw = InputKeywords['time']()
+        tkw = InputKeywords["time"]()
 
         self.assertEqual(len(tkw.evaluate()), 101)
         self.assertEqual(tkw.evaluate()[-1][0], 10.0)
 
         with self.assertRaises(ValueError):
-            ykw = InputKeywords['y_axis'](['something'])
+            ykw = InputKeywords["y_axis"](["something"])
 
-        ykw = InputKeywords['y_axis'](['asymmetry'])
+        ykw = InputKeywords["y_axis"](["asymmetry"])
 
-        self.assertEqual(ykw.evaluate()[0][0], 'asymmetry')
+        self.assertEqual(ykw.evaluate()[0][0], "asymmetry")
 
-        okw = InputKeywords['orientation'](['zcw(20)'])
+        okw = InputKeywords["orientation"](["zcw(20)"])
 
         self.assertTrue(len(okw.evaluate()) >= 20)
 
-        zkw = InputKeywords['zeeman'](['0 0 1'], args=['1'])
+        zkw = InputKeywords["zeeman"](["0 0 1"], args=["1"])
 
-        self.assertEqual(zkw.id, 'zeeman_1')
+        self.assertEqual(zkw.id, "zeeman_1")
 
-        dkw = InputKeywords['dipolar'](['0 0 1'], args=['1', '2'])
+        dkw = InputKeywords["dipolar"](["0 0 1"], args=["1", "2"])
 
-        self.assertEqual(dkw.id, 'dipolar_1_2')
+        self.assertEqual(dkw.id, "dipolar_1_2")
 
-        hkw = InputKeywords['hyperfine']([], args=['1'])
+        hkw = InputKeywords["hyperfine"]([], args=["1"])
 
         self.assertTrue((hkw.evaluate()[0] == np.zeros((3, 3))).all())
 
-        qkw = InputKeywords['quadrupolar'](['1 0 0',
-                                            '0 1 0',
-                                            '0 0 cos(1)**2+sin(1)**2'],
-                                           args=['1'])
+        qkw = InputKeywords["quadrupolar"](
+            ["1 0 0", "0 1 0", "0 0 cos(1)**2+sin(1)**2"], args=["1"]
+        )
 
         self.assertTrue((qkw.evaluate()[0] == np.eye(3)).all())
 
         # Failure case (wrong argument type)
         with self.assertRaises(RuntimeError):
-            InputKeywords['zeeman']([], args=['wrong'])
+            InputKeywords["zeeman"]([], args=["wrong"])
 
     def test_input(self):
 
-        s1 = StringIO("""
+        s1 = StringIO(
+            """
 name
     test_1
 spins
     mu H
 zeeman 1
     1 0 0
-""")
+"""
+        )
 
         i1 = MuSpinInput(s1)
         e1 = i1.evaluate()
 
-        self.assertEqual(e1['name'].value[0], 'test_1')
-        self.assertTrue((e1['spins'].value[0] == ['mu', 'H']).all())
-        self.assertTrue(
-            (e1['couplings']['zeeman_1'].value[0] == [1, 0, 0]).all())
+        self.assertEqual(e1["name"].value[0], "test_1")
+        self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
 
     def test_fitting(self):
         # Test input focused around fitting
 
-        s1 = StringIO("""
+        s1 = StringIO(
+            """
 fitting_variables
     x 1.0 0.0 2.0
 fitting_data
@@ -205,29 +206,31 @@ field
     2*x
 zeeman 1
     x x 0
-""")
+"""
+        )
         i1 = MuSpinInput(s1)
 
-        self.assertTrue(i1.fitting_info['fit'])
+        self.assertTrue(i1.fitting_info["fit"])
 
-        data = i1.fitting_info['data']
+        data = i1.fitting_info["data"]
         self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
 
         e1 = i1.evaluate(x=2.0)
-        self.assertEqual(e1['field'].value[0][0], 4.0)
-        self.assertTrue((e1['couplings']['zeeman_1'].value[0] ==
-                         [2, 2, 0]).all())
+        self.assertEqual(e1["field"].value[0][0], 4.0)
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [2, 2, 0]).all())
 
         variables = i1.variables
 
-        self.assertEqual(variables['x'].value, 1.0)
-        self.assertEqual(variables['x'].bounds, (0.0, 2.0))
+        self.assertEqual(variables["x"].value, 1.0)
+        self.assertEqual(variables["x"].bounds, (0.0, 2.0))
 
         # Invalid variable range
-        s2 = StringIO("""
+        s2 = StringIO(
+            """
 fitting_variables
     x 1.0 0.0 -5.0
-""")
+"""
+        )
 
         with self.assertRaises(ValueError):
             MuSpinInput(s2)
@@ -235,31 +238,34 @@ fitting_variables
         # Let's test loading from a file
         tdata = np.zeros((10, 2))
         tdata[:, 0] = np.linspace(0, 1, 10)
-        tdata[:, 1] = tdata[:, 0]**2
+        tdata[:, 1] = tdata[:, 0] ** 2
 
-        tfile = NamedTemporaryFile(mode='w')
+        tfile = NamedTemporaryFile(mode="w")
 
         for d in tdata:
-            tfile.write('{0} {1}\n'.format(*d))
+            tfile.write("{0} {1}\n".format(*d))
         tfile.flush()
 
-        s3 = StringIO("""
+        s3 = StringIO(
+            """
 fitting_variables
     x
 fitting_data
     load('{fname}')
 fitting_method
     nelder-mead
-""".format(fname=tfile.name))
+""".format(
+                fname=tfile.name
+            )
+        )
 
         i3 = MuSpinInput(s3)
         tfile.close()
 
         finfo = i3.fitting_info
 
-        data = finfo['data']
-        self.assertTrue(finfo['fit'])
+        data = finfo["data"]
+        self.assertTrue(finfo["fit"])
         self.assertTrue((data == tdata).all())
-        self.assertEqual(finfo['method'], 'nelder-mead')
-        self.assertAlmostEqual(finfo['rtol'], 1e-3)
-
+        self.assertEqual(finfo["method"], "nelder-mead")
+        self.assertAlmostEqual(finfo["rtol"], 1e-3)

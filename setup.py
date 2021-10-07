@@ -21,22 +21,13 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=[
-        'numpy',
-        'scipy',
-        'soprano'
-    ],
-    extras_require={
-        'docs': [
-            'mkdocs',
-            'pymdown-extensions'
-        ]
-    },
+    install_requires=["numpy", "scipy", "soprano"],
+    extras_require={"docs": ["mkdocs", "pymdown-extensions"]},
     entry_points={
-        'console_scripts': [
-            'muspinsim = muspinsim.__main__:main',
-            'muspinsim.mpi = muspinsim.__main__:main_mpi'
+        "console_scripts": [
+            "muspinsim = muspinsim.__main__:main",
+            "muspinsim.mpi = muspinsim.__main__:main_mpi",
         ]
     },
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )

@@ -5,7 +5,6 @@ from muspinsim.mpi import mpi_controller
 
 
 class TestMuSpinMPI(unittest.TestCase):
-
     def test_split(self):
         # Test efficient splitting of processes
         a = list(range(20))
@@ -14,14 +13,16 @@ class TestMuSpinMPI(unittest.TestCase):
         split7 = mpi_controller.split_1D(a, 7)
 
         self.assertTrue(np.all(split7[0] == [0, 1, 2]))
-        self.assertTrue(np.all([len(s) for s in split7] ==
-                               np.array([3, 3, 3, 3, 3, 3, 2])))
+        self.assertTrue(
+            np.all([len(s) for s in split7] == np.array([3, 3, 3, 3, 3, 3, 2]))
+        )
 
         split8 = mpi_controller.split_1D(a, 8)
 
         self.assertTrue(np.all(split8[0] == [0, 1, 2]))
-        self.assertTrue(np.all([len(s) for s in split8] ==
-                               np.array([3, 3, 3, 3, 2, 2, 2, 2])))
+        self.assertTrue(
+            np.all([len(s) for s in split8] == np.array([3, 3, 3, 3, 2, 2, 2, 2]))
+        )
 
         split30 = mpi_controller.split_2D(a, b, 30)
 
@@ -31,7 +32,6 @@ class TestMuSpinMPI(unittest.TestCase):
         self.assertTrue(np.all(split30[2][1] == [12, 13, 14, 15, 16]))
 
     def test_broadcast(self):
-
         class A(object):
             def __init__(self, x):
                 self.x = x

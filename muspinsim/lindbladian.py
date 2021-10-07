@@ -11,14 +11,13 @@ from muspinsim.spinop import SuperOperator, SpinOperator, DensityOperator
 
 
 class Lindbladian(SuperOperator):
-
     @classmethod
     def from_hamiltonian(self, H, dissipators=[]):
 
         if not isinstance(H, Hamiltonian):
-            raise ValueError('Must use Hamiltonian to create Lindbladian')
+            raise ValueError("Must use Hamiltonian to create Lindbladian")
 
-        L = -1.0j*SuperOperator.commutator(H)
+        L = -1.0j * SuperOperator.commutator(H)
         L = self(L.matrix, L.dimension)
 
         for (A, gamma) in dissipators:
@@ -28,12 +27,10 @@ class Lindbladian(SuperOperator):
 
     def add_dissipative_term(self, A, gamma=1.0):
 
-        AA = A.dagger()*A
-        Ld = gamma*(SuperOperator.bracket(A) -
-                    0.5*SuperOperator.anticommutator(AA))
+        AA = A.dagger() * A
+        Ld = gamma * (SuperOperator.bracket(A) - 0.5 * SuperOperator.anticommutator(AA))
         if Ld.dimension != self.dimension:
-            raise ValueError('Invalid dissipation operator for this '
-                             'Lindbladian')
+            raise ValueError("Invalid dissipation operator for this " "Lindbladian")
 
         self._matrix += Ld.matrix
 
@@ -51,7 +48,7 @@ class Lindbladian(SuperOperator):
         Keyword Arguments:
             operators {[SpinOperator]} -- List of SpinOperators to compute the
                                           expectation values of at each step.
-                                          If omitted, the states' density 
+                                          If omitted, the states' density
                                           matrices will be returned instead
                                            (default: {[]})
 
@@ -65,26 +62,26 @@ class Lindbladian(SuperOperator):
         """
 
         if not isinstance(rho0, DensityOperator):
-            raise TypeError('rho0 must be a valid DensityOperator')
+            raise TypeError("rho0 must be a valid DensityOperator")
 
         times = np.array(times)
 
         if len(times.shape) != 1:
-            raise ValueError(
-                'times must be an array of values in microseconds')
+            raise ValueError("times must be an array of values in microseconds")
 
         if isinstance(operators, SpinOperator):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError('operators must be a SpinOperator or a list'
-                             ' of SpinOperator objects')
+            raise ValueError(
+                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+            )
 
         dim = rho0.dimension
-        if self.dimension != dim*2:
-            raise ValueError('Incompatible rho0 dimension')
+        if self.dimension != dim * 2:
+            raise ValueError("Incompatible rho0 dimension")
 
-        if any([self.dimension != o.dimension*2 for o in operators]):
-            raise ValueError('Incompatible measure operator dimension')
+        if any([self.dimension != o.dimension * 2 for o in operators]):
+            raise ValueError("Incompatible measure operator dimension")
 
         # Start by building the matrix
         L = self.matrix
@@ -96,19 +93,21 @@ class Lindbladian(SuperOperator):
         rho0 = rho0.matrix.reshape((-1,))
         rho0 = np.linalg.solve(revecs, rho0)
         # And the operators
-        operatorsT = np.array([np.dot(o.matrix.T.reshape((-1,)), revecs)
-                               for o in operators])
+        operatorsT = np.array(
+            [np.dot(o.matrix.T.reshape((-1,)), revecs) for o in operators]
+        )
 
-        rho = np.exp(2.0*np.pi*evals[None, :]*times[:, None])*rho0[None, :]
+        rho = np.exp(2.0 * np.pi * evals[None, :] * times[:, None]) * rho0[None, :]
 
         if len(operators) > 0:
             # Expectation values
-            result = np.sum(operatorsT[None, :, :]*rho[:, None, :], axis=-1)
+            result = np.sum(operatorsT[None, :, :] * rho[:, None, :], axis=-1)
         else:
             # Density matrices
             n = np.prod(dim)
-            result = [DensityOperator(np.dot(revecs, r).reshape(n, n), dim) 
-                      for r in rho]
+            result = [
+                DensityOperator(np.dot(revecs, r).reshape(n, n), dim) for r in rho
+            ]
 
         return result
 
@@ -125,7 +124,7 @@ class Lindbladian(SuperOperator):
             tau {float} -- Decay time, in microseconds
 
         Keyword Arguments:
-            operators {list} -- Operators to compute the expectation values 
+            operators {list} -- Operators to compute the expectation values
                                 of (default: {[]})
 
         Returns:
@@ -138,16 +137,17 @@ class Lindbladian(SuperOperator):
         """
 
         if not isinstance(rho0, DensityOperator):
-            raise TypeError('rho0 must be a valid DensityOperator')
+            raise TypeError("rho0 must be a valid DensityOperator")
 
         if not (isinstance(tau, Number) and np.isreal(tau) and tau > 0):
-            raise ValueError('tau must be a real number > 0')
+            raise ValueError("tau must be a real number > 0")
 
         if isinstance(operators, SpinOperator):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError('operators must be a SpinOperator or a list'
-                             ' of SpinOperator objects')
+            raise ValueError(
+                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+            )
 
         # Start by building the matrix
         L = self.matrix
@@ -160,11 +160,14 @@ class Lindbladian(SuperOperator):
         rho0 = np.linalg.solve(revecs, rho0)
 
         # And the operators
-        intops = np.array([np.dot(o.matrix.T.reshape((-1,)), revecs) /
-                           (1.0/tau-2.0*np.pi*evals)
-                           for o in operators])
+        intops = np.array(
+            [
+                np.dot(o.matrix.T.reshape((-1,)), revecs)
+                / (1.0 / tau - 2.0 * np.pi * evals)
+                for o in operators
+            ]
+        )
 
-        result = np.sum(rho0[None, :]*intops[:, :],
-                        axis=1)
+        result = np.sum(rho0[None, :] * intops[:, :], axis=1)
 
         return result

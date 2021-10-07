@@ -1,16 +1,15 @@
 import os
 import logging
-import numpy as np
 import argparse as ap
 from datetime import datetime
 
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.input import MuSpinInput
-from muspinsim.simconfig import MuSpinConfig
 from muspinsim.experiment import ExperimentRunner
 from muspinsim.fitting import FittingRunner
 
-LOGFORMAT = '[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s'
+LOGFORMAT = "[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s"
+
 
 def main(use_mpi=False):
 
@@ -20,8 +19,13 @@ def main(use_mpi=False):
     if mpi.is_root:
         # Entry point for script
         parser = ap.ArgumentParser()
-        parser.add_argument('input_file', type=str, default=None, help="""YAML
-                            formatted file with input parameters.""")
+        parser.add_argument(
+            "input_file",
+            type=str,
+            default=None,
+            help="""YAML
+                            formatted file with input parameters.""",
+        )
         args = parser.parse_args()
 
         fs = open(args.input_file)
@@ -29,19 +33,24 @@ def main(use_mpi=False):
         is_fitting = len(infile.variables) > 0
 
         # Open logfile
-        logfile = '{0}.log'.format(os.path.splitext(args.input_file)[0])
-        logging.basicConfig(filename=logfile,
-                            filemode='w',
-                            level=logging.INFO,
-                            format=LOGFORMAT,
-                            datefmt='%Y-%m-%d %H:%M:%S')
+        logfile = "{0}.log".format(os.path.splitext(args.input_file)[0])
+        logging.basicConfig(
+            filename=logfile,
+            filemode="w",
+            level=logging.INFO,
+            format=LOGFORMAT,
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
 
-        logging.info('Launching MuSpinSim calculation '
-                     'from file: {0}'.format(args.input_file))
+        logging.info(
+            "Launching MuSpinSim calculation " "from file: {0}".format(args.input_file)
+        )
 
         if is_fitting:
-            logging.info('Performing fitting in variables: '
-                         '{0}'.format(', '.join(infile.variables)))
+            logging.info(
+                "Performing fitting in variables: "
+                "{0}".format(", ".join(infile.variables))
+            )
 
         tstart = datetime.now()
     else:
@@ -53,28 +62,27 @@ def main(use_mpi=False):
     if not is_fitting:
         # No fitting
         runner = ExperimentRunner(infile, {})
-        results = runner.run_all()
+        runner.run_all()
 
         if mpi.is_root:
             # Output
             runner.config.save_output()
     else:
         fitter = FittingRunner(infile)
-        sol = fitter.run()
+        fitter.run()
         if mpi.is_root:
-            
+
             fitter.write_report()
 
     if mpi.is_root:
         tend = datetime.now()
-        simtime = (tend-tstart).total_seconds()
-        logging.info('Simulation completed in '
-                     '{0:.3f} seconds'.format(simtime))
+        simtime = (tend - tstart).total_seconds()
+        logging.info("Simulation completed in " "{0:.3f} seconds".format(simtime))
 
 
 def main_mpi():
     main(use_mpi=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

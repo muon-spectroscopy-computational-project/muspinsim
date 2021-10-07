@@ -6,7 +6,6 @@ A class to hold a given spin system, defined by specific nuclei
 import logging
 
 import numpy as np
-from copy import deepcopy
 from numbers import Number
 import scipy.constants as cnst
 
@@ -14,21 +13,19 @@ from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.lindbladian import Lindbladian
-from muspinsim.constants import (gyromagnetic_ratio, spin, quadrupole_moment,
-                                 EFG_2_MHZ)
+from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment, EFG_2_MHZ
 
 
 class InteractionTerm(Clonable):
-
     def __init__(self, spinsys, indices=[], tensor=0, label=None):
 
         self._spinsys = spinsys
         self._indices = np.array(indices)
         self._tensor = np.array(tensor)
-        self._label = 'Term' if label is None else label
+        self._label = "Term" if label is None else label
 
         if np.any(np.array(self._tensor.shape) != 3):
-            raise ValueError('Tensor is not fully three-dimensional')
+            raise ValueError("Tensor is not fully three-dimensional")
 
         self._recalc_operator()
 
@@ -43,10 +40,12 @@ class InteractionTerm(Clonable):
             index_tuples = [[]]
 
         for ii in index_tuples:
-            op = self._spinsys.operator({ind: 'xyz'[ii[i]]
-                                         for i, ind in
-                                         enumerate(self._indices)}
-                                        )*self._tensor[tuple(ii)]
+            op = (
+                self._spinsys.operator(
+                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)}
+                )
+                * self._tensor[tuple(ii)]
+            )
             if total_op is None:
                 total_op = op
             else:
@@ -79,8 +78,7 @@ class InteractionTerm(Clonable):
 
 
 class SingleTerm(InteractionTerm):
-
-    def __init__(self, spinsys, i, vector, label='Single'):
+    def __init__(self, spinsys, i, vector, label="Single"):
 
         super(SingleTerm, self).__init__(spinsys, [i], vector, label)
 
@@ -99,13 +97,11 @@ class SingleTerm(InteractionTerm):
         return rt
 
     def __repr__(self):
-        return '{0} {{ S_{1} * {2} }}'.format(self._label, self.i,
-                                              self._tensor)
+        return "{0} {{ S_{1} * {2} }}".format(self._label, self.i, self._tensor)
 
 
 class DoubleTerm(InteractionTerm):
-
-    def __init__(self, spinsys, i, j, matrix, label='Double'):
+    def __init__(self, spinsys, i, j, matrix, label="Double"):
 
         super(DoubleTerm, self).__init__(spinsys, [i, j], matrix, label)
 
@@ -128,14 +124,12 @@ class DoubleTerm(InteractionTerm):
         return rt
 
     def __repr__(self):
-        return '{0} {{ S_{1} * [{2} {3} {4}] * S_{5} }}'.format(self._label,
-                                                                self.i,
-                                                                *self._tensor,
-                                                                self.j)
+        return "{0} {{ S_{1} * [{2} {3} {4}] * S_{5} }}".format(
+            self._label, self.i, *self._tensor, self.j
+        )
 
 
 class DissipationTerm(Clonable):
-
     def __init__(self, operator, gamma=0.0):
 
         self._op = operator
@@ -155,7 +149,6 @@ class DissipationTerm(Clonable):
 
 
 class SpinSystem(Clonable):
-
     def __init__(self, spins=[]):
         """Create a SpinSystem object
 
@@ -184,7 +177,7 @@ class SpinSystem(Clonable):
             Qs.append(quadrupole_moment(el, iso))
             Is.append(spin(el, iso))
 
-            opdict = {a: SpinOperator.from_axes(Is[-1], a) for a in 'xyz+-0'}
+            opdict = {a: SpinOperator.from_axes(Is[-1], a) for a in "xyz+-0"}
 
             operators.append(opdict)
 
@@ -192,15 +185,17 @@ class SpinSystem(Clonable):
         self._gammas = np.array(gammas)
         self._Qs = np.array(Qs)
         self._Is = np.array(Is)
-        self._dim = tuple((2*self._Is+1).astype(int))
+        self._dim = tuple((2 * self._Is + 1).astype(int))
 
         self._operators = operators
 
         self._terms = []
         self._dissip_terms = []
 
-        logging.info('Created spin system with spins:')
-        logging.info('\t\t{0}'.format(' '.join(self.spins)))
+        snames = [s if (type(s) == str) else '{1}{0}'.format(*s) 
+                  for s in self.spins]
+        logging.info("Created spin system with spins:")
+        logging.info("\t\t{0}".format(" ".join(snames)))
 
     @property
     def spins(self):
@@ -224,12 +219,12 @@ class SpinSystem(Clonable):
 
     @property
     def is_dissipative(self):
-        return np.any([g != 0 for g in self._dissip_terms.values()])
+        return (np.array(self._dissip_terms) != 0.0).any()
 
-    def add_term(self, indices, tensor, label='Term'):
+    def add_term(self, indices, tensor, label="Term"):
         """Add to the spin system a generic interaction term
 
-        Add a term of the form T*S_i*S_j*S_k*..., where S_i is the vector of 
+        Add a term of the form T*S_i*S_j*S_k*..., where S_i is the vector of
         the three spin operators:
 
         [S_x, S_y, S_z]
@@ -238,7 +233,7 @@ class SpinSystem(Clonable):
 
         Arguments:
             indices {[int]} -- Indices of spins appearing in the term
-            tensor {ndarray} -- Tensor with n dimensions (n = len(indices)), 
+            tensor {ndarray} -- Tensor with n dimensions (n = len(indices)),
                                 each of length 3, describing the interaction.
 
         Keyword Arguments:
@@ -253,7 +248,7 @@ class SpinSystem(Clonable):
 
         for i in indices:
             if i < 0 or i >= len(self._spins):
-                raise ValueError('Invalid index i')
+                raise ValueError("Invalid index i")
 
         tensor = np.array(tensor)
 
@@ -262,7 +257,7 @@ class SpinSystem(Clonable):
 
         return term
 
-    def add_linear_term(self, i, vector, label='Single'):
+    def add_linear_term(self, i, vector, label="Single"):
         """Add to the spin system a term linear in one spin
 
         Add a term of the form v*S_i, where S_i is the vector of the three
@@ -287,7 +282,7 @@ class SpinSystem(Clonable):
         """
 
         if i < 0 or i >= len(self._spins):
-            raise ValueError('Invalid index i')
+            raise ValueError("Invalid index i")
 
         vector = np.array(vector)
 
@@ -296,7 +291,7 @@ class SpinSystem(Clonable):
 
         return term
 
-    def add_bilinear_term(self, i, j, matrix, label='Double'):
+    def add_bilinear_term(self, i, j, matrix, label="Double"):
         """Add to the spin system a term bilinear in two spins
 
         Add a term of the form S_i*M*S_j, where S_i is the vector of the three
@@ -322,10 +317,10 @@ class SpinSystem(Clonable):
         """
 
         if i < 0 or i >= len(self._spins):
-            raise ValueError('Invalid index i')
+            raise ValueError("Invalid index i")
 
         if j < 0 or j >= len(self._spins):
-            raise ValueError('Invalid index j')
+            raise ValueError("Invalid index j")
 
         matrix = np.array(matrix)
 
@@ -353,14 +348,14 @@ class SpinSystem(Clonable):
 
         B = np.array(B)
 
-        logging.info('Adding Zeeman term to spin {0}'.format(i+1))
+        logging.info("Adding Zeeman term to spin {0}".format(i + 1))
 
-        return self.add_linear_term(i, B*self.gamma(i), 'Zeeman')
+        return self.add_linear_term(i, B * self.gamma(i), "Zeeman")
 
     def add_dipolar_term(self, i, j, r):
         """Add a dipolar term
 
-        Add a spin-spin dipolar coupling between two distinct spins. The 
+        Add a spin-spin dipolar coupling between two distinct spins. The
         coupling is calculated geometrically from the vector connecting them,
         in Angstrom.
 
@@ -377,7 +372,7 @@ class SpinSystem(Clonable):
         """
 
         if i == j:
-            raise ValueError('Can not set up dipolar coupling with itself')
+            raise ValueError("Can not set up dipolar coupling with itself")
 
         r = np.array(r)
 
@@ -385,14 +380,15 @@ class SpinSystem(Clonable):
         g_j = self.gamma(j)
 
         rnorm = np.linalg.norm(r)
-        D = -(np.eye(3) - 3.0/rnorm**2.0*r[:, None]*r[None, :])
-        dij = (- (cnst.mu_0*cnst.hbar*(g_i*g_j*1e6)) /
-               (2*(rnorm*1e-10)**3))  # MHz
+        D = -(np.eye(3) - 3.0 / rnorm ** 2.0 * r[:, None] * r[None, :])
+        dij = -(cnst.mu_0 * cnst.hbar * (g_i * g_j * 1e6)) / (
+            2 * (rnorm * 1e-10) ** 3
+        )  # MHz
         D *= dij
 
-        logging.info('Adding dipolar term to spins {0}-{1}'.format(i+1, j+1))
+        logging.info("Adding dipolar term to spins {0}-{1}".format(i + 1, j + 1))
 
-        return self.add_bilinear_term(i, j, D, 'Dipolar')
+        return self.add_bilinear_term(i, j, D, "Dipolar")
 
     def add_quadrupolar_term(self, i, EFG):
         """Add a quadrupolar term
@@ -413,14 +409,15 @@ class SpinSystem(Clonable):
         I = self.I(i)
 
         if I == 0.5:
-            raise ValueError('Can not set up quadrupolar coupling for '
-                             'spin 1/2 particle')
+            raise ValueError(
+                "Can not set up quadrupolar coupling for " "spin 1/2 particle"
+            )
 
-        Qtens = EFG_2_MHZ*Q/(2*I*(2*I-1))*EFG
+        Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
 
-        logging.info('Adding quadrupolar term to spin {0}'.format(i+1))
+        logging.info("Adding quadrupolar term to spin {0}".format(i + 1))
 
-        return self.add_bilinear_term(i, i, Qtens, 'Quadrupolar')
+        return self.add_bilinear_term(i, i, Qtens, "Quadrupolar")
 
     def remove_term(self, term):
         """Remove a term from the spin system
@@ -451,7 +448,7 @@ class SpinSystem(Clonable):
 
         Set a dissipation operator for this system, representing its coupling
         (in MHz) with an external heat bath to include in the Lindbladian of
-        the system. 
+        the system.
 
         Arguments:
             op {SpinOperator} -- Operator for the dissipation term
@@ -526,11 +523,11 @@ class SpinSystem(Clonable):
     def operator(self, terms={}):
         """Return an operator for this spin system
 
-        Return a SpinOperator for this system containing the specified terms.        
+        Return a SpinOperator for this system containing the specified terms.
 
         Keyword Arguments:
             terms {dict} -- A dictionary of terms to include. The keys should
-                            indices of particles and the values should be 
+                            indices of particles and the values should be
                             symbols indicating one spin operator (either x, y,
                             z, +, - or 0). Wherever not specified, the identity
                             operaror is applied (default: {{}})
@@ -539,8 +536,7 @@ class SpinSystem(Clonable):
             SpinOperator -- The requested operator
         """
 
-        ops = [self._operators[i][terms.get(i, '0')]
-               for i in range(len(self))]
+        ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
 
         M = ops[0]
 
@@ -563,8 +559,9 @@ class SpinSystem(Clonable):
         try:
             rssys._terms = [t.rotate(rotmat) for t in terms]
         except AttributeError:
-            raise RuntimeError('Can only rotate SpinSystems containing Single'
-                               ' or Double terms')
+            raise RuntimeError(
+                "Can only rotate SpinSystems containing Single" " or Double terms"
+            )
 
         return rssys
 
@@ -594,21 +591,21 @@ class SpinSystem(Clonable):
 
 
 class MuonSpinSystem(SpinSystem):
-
-    def __init__(self, spins=['mu', 'e']):
+    def __init__(self, spins=["mu", "e"]):
 
         super(MuonSpinSystem, self).__init__(spins)
 
         # Identify the muon index
-        if self._spins.count('mu') != 1:
-            raise ValueError('Spins passed to MuonSpinSystem must contain'
-                             ' exactly one muon')
+        if self._spins.count("mu") != 1:
+            raise ValueError(
+                "Spins passed to MuonSpinSystem must contain" " exactly one muon"
+            )
 
-        self._mu_i = self._spins.index('mu')
-        self._e_i = set([i for i, s in enumerate(self.spins) if s == 'e'])
+        self._mu_i = self._spins.index("mu")
+        self._e_i = set([i for i, s in enumerate(self.spins) if s == "e"])
 
         # For convenience, store the operators for the muon
-        self._mu_ops = [self.operator({self._mu_i: e}) for e in 'xyz']
+        self._mu_ops = [self.operator({self._mu_i: e}) for e in "xyz"]
 
     @property
     def muon_index(self):
@@ -641,21 +638,25 @@ class MuonSpinSystem(SpinSystem):
 
         if j is None:
             if len(elec_i) > 1:
-                raise ValueError('Must specify an electron index in system '
-                                 'with multiple electrons')
+                raise ValueError(
+                    "Must specify an electron index in system "
+                    "with multiple electrons"
+                )
             else:
                 j = list(elec_i)[0]
         else:
             if j not in elec_i:
-                raise ValueError('Second index in hyperfine coupling must'
-                                 ' refer to an electron')
+                raise ValueError(
+                    "Second index in hyperfine coupling must" " refer to an electron"
+                )
         if i in elec_i:
-            raise ValueError('First index in hyperfine coupling must'
-                             ' not refer to an electron')
+            raise ValueError(
+                "First index in hyperfine coupling must" " not refer to an electron"
+            )
 
-        logging.info('Adding hyperfine term to spins {0}-{1}'.format(i+1, j+1))
+        logging.info("Adding hyperfine term to spins {0}-{1}".format(i + 1, j + 1))
 
-        return self.add_bilinear_term(i, j, A, 'Hyperfine')
+        return self.add_bilinear_term(i, j, A, "Hyperfine")
 
     def muon_operator(self, v):
         """Get a muon operator
@@ -675,10 +676,11 @@ class MuonSpinSystem(SpinSystem):
         """
 
         if len(v) != 3:
-            raise ValueError('Vector passed to muon_operator must be three'
-                             ' dimensional')
+            raise ValueError(
+                "Vector passed to muon_operator must be three" " dimensional"
+            )
 
-        op = [x*self._mu_ops[i] for i, x in enumerate(v)]
+        op = [x * self._mu_ops[i] for i, x in enumerate(v)]
         op = sum(op[1:], op[0])
 
         return op

@@ -11,7 +11,7 @@ from soprano.calculate.powder import ZCW
 
 
 class Clonable(object):
-    """A helper class; any object inheriting 
+    """A helper class; any object inheriting
     from this will have a .clone method that copies it easily."""
 
     def clone(self):
@@ -24,7 +24,7 @@ class Clonable(object):
 
 
 def deepmap(func, obj):
-    """Deep traverse obj, and apply func to each of its non-Iterable 
+    """Deep traverse obj, and apply func to each of its non-Iterable
     elements"""
 
     if isinstance(obj, Iterable):
@@ -33,20 +33,22 @@ def deepmap(func, obj):
         return func(obj)
 
 
-def zcw_gen(N, mode='sphere'):
+def zcw_gen(N, mode="sphere"):
     pwd = ZCW(mode)
     return pwd.get_orient_angles(N)[0]
 
+
 def eulrange_gen(N):
     # Generate a range of Euler angles and related weights
-    a = np.linspace(0, 2*np.pi, N)
-    b = np.linspace(0, np.pi, N+2)[1:-1]
-    c = np.linspace(0, 2*np.pi, N)
+    a = np.linspace(0, 2 * np.pi, N)
+    b = np.linspace(0, np.pi, N + 2)[1:-1]
+    c = np.linspace(0, 2 * np.pi, N)
 
-    a, b, c = np.array(np.meshgrid(a, b, c)).reshape((3,-1))
+    a, b, c = np.array(np.meshgrid(a, b, c)).reshape((3, -1))
     w = np.sin(b)
 
     return np.array([a, b, c, w]).T
+
 
 def quat_from_polar(theta, phi):
     """Make a Quaternion from two polar angles
@@ -63,7 +65,8 @@ def quat_from_polar(theta, phi):
         q {ase.Quaternion} -- Quaternion
     """
 
-    return Quaternion.from_euler_angles(phi, theta, phi, 'zyz')
+    return Quaternion.from_euler_angles(phi, theta, phi, "zyz")
+
 
 def get_xy(z):
     """Make two axes x and y orthogonal and correctly oriented with respect
@@ -71,16 +74,20 @@ def get_xy(z):
 
     zn = np.linalg.norm(z)
     if zn == 0:
-        raise ValueError('Can not find X and Y for null Z vector')
-    z = np.array(z)/zn
+        raise ValueError("Can not find X and Y for null Z vector")
+    z = np.array(z) / zn
 
     if z[0] == 0 and z[1] == 0:
         x = np.array([1.0, 0, 0])
         y = np.array([0, z[2], 0])
     else:
-        x = np.array([z[1], -z[0], 0.0])/(z[0]**2+z[1]**2)**0.5
-        y = np.array([z[1]*x[2]-z[2]*x[1],
-                      z[2]*x[0]-z[0]*x[2],
-                      z[0]*x[1]-z[1]*x[0]])
+        x = np.array([z[1], -z[0], 0.0]) / (z[0] ** 2 + z[1] ** 2) ** 0.5
+        y = np.array(
+            [
+                z[1] * x[2] - z[2] * x[1],
+                z[2] * x[0] - z[0] * x[2],
+                z[0] * x[1] - z[1] * x[0],
+            ]
+        )
 
     return x, y
