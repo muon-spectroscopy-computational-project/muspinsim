@@ -88,7 +88,7 @@ This defines a system of a muon and an electron, coupled by an isotropic hyperfi
 
 One of the new features of MuSpinSim v1.0.0 is the option to use functions and variables in keyword values. These have a few uses:
 
-1. They can be used to access some meaningful mathematical or physical constants in place of numbers. For example, one can write `10.0*MHz` as an applied magnetic field, and it will immediately be converted to the equivalent field in Tesla for an ALC resonance, as `MHz = 1/(2*muon_gyr)`, with the gyromagnetic ratio of the muon, `muon_gyr = 135.5388 MHz/T`.
+1. They can be used to access some meaningful mathematical or physical constants in place of numbers. For example, one can write `10.0*MHz` as an applied magnetic field, and it will immediately be converted to the equivalent field in Tesla for an ALC resonance, as `MHz = 1/(2*muon_gyr)`, with the gyromagnetic ratio of the muon, `muon_gyr = 135.5388` (in MHz/T).
 2. They can be used to generate large ranges of values automatically for some very common use cases. For example, the keyword `time` stores all the times at which the simulation should be performed. It's a common requirement to want to acquire hundreds or thousands of time points, regularly spaced. One could do this by writing hundreds or thousands of values in column, but it's a lot faster and easier to simply use something like `range(0, 1, 100)` to create 100 equally spaced time points going from 0 to 1 microseconds.
 3. They can be used to insert variables defined for fitting. For example one might define a hyperfine interaction tensor as a function of two parameters, then fit those parameters to find the optimal tensor that explains an experimental result.
 
