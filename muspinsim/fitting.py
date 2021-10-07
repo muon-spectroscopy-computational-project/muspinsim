@@ -28,6 +28,7 @@ class FittingRunner(object):
         """
 
         self._input = inpfile
+        self._runner = None
 
         # Identify variables
         self._fitinfo = inpfile.fitting_info
@@ -78,6 +79,9 @@ class FittingRunner(object):
             mpi.broadcast_object(self, ['_x', '_done'])
 
             mpi.broadcast_object(self, ['_sol'])
+
+            # And now save the last result
+            self._runner.config.save_output()
         else:
             while not self._done:
                 self._targfun(self._x)
@@ -97,8 +101,8 @@ class FittingRunner(object):
             return
 
         vardict = dict(zip(self._xnames, self._x))
-        runner = ExperimentRunner(self._input, variables=vardict)
-        y = runner.run_all()
+        self._runner = ExperimentRunner(self._input, variables=vardict)
+        y = self._runner.run_all()
 
         if mpi.is_root:
             # Compare with target data
@@ -125,7 +129,7 @@ class FittingRunner(object):
             config = MuSpinConfig(self._input.evaluate(**variables))
 
             if fname is None:
-                fname = config.name + '_fitting.txt'
+                fname = config.name + '_fitreport.txt'
 
             with open(os.path.join(path, fname), 'w') as f:
                 f.write(

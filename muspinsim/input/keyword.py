@@ -487,7 +487,7 @@ class KWFittingMethod(MuSpinKeyword):
     accept_range = False
     default = 'nelder-mead'
     _validators = {
-        'Invalid value': lambda s: ((s[0].lower() in ('nelder-mead', 
+        'Invalid value': lambda s: ((s[0].lower() in ('nelder-mead',
                                                       'lbfgs'))
                                     and len(s) == 1)
     }
