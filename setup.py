@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 #
 import setuptools
-from muspinsim.version import __version__
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+version = {}
+with open("muspinsim/version.py") as fp:
+    exec(fp.read(), version)
+
 setuptools.setup(
     name="muspinsim",
-    version=__version__,
+    version=version['__version__'],
     author="Simone Sturniolo",
     author_email="simonesturniolo@gmail.com",
     description="Full quantum simulation of muon experiments",
