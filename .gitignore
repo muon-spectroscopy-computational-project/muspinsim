@@ -131,6 +131,7 @@ dmypy.json
 # Examples
 examples/*/*
 !examples/*/*.in
+!examples/fitting/experiment.dat
 
 # Visual Studio Code settings
 .vscode
