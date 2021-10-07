@@ -13,7 +13,7 @@ class TestConfig(unittest.TestCase):
         stest = StringIO(
             """
 spins
-    mu N e
+    mu 2H e
 field
     range(1, 11, 2)
 temperature
@@ -65,7 +65,9 @@ dissipation 2
         self.assertTrue((cfg.results == 1).all())
 
         # System checks
-        self.assertTrue((np.array(cfg.system.spins) == ["mu", "N", "e"]).all())
+        self.assertEqual(cfg.system.spins[0], "mu")
+        self.assertEqual(cfg.system.spins[1], ("H", 2))
+        self.assertEqual(cfg.system.spins[2], "e")
         self.assertEqual(len(cfg.system._terms), 4)
         self.assertEqual(cfg._dissip_terms[1], 0.1)
 

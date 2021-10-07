@@ -3,6 +3,7 @@
 Classes to generate and distribute configurations for simulations
 """
 
+import re
 import os
 import logging
 import datetime
@@ -465,6 +466,18 @@ Parameters used:
         if len(v) > 1:
             raise MuSpinConfigError("Name must be a word without spaces")
         return v[0]
+
+    def _validate_spins(self, v):
+
+        # Find isotopes
+        isore = re.compile("([0-9]+)([A-Z][a-z]*|e)")
+        m = isore.match(v)
+        if m is None:
+            return v
+        else:
+            A, el = m.groups()
+            A = int(A)
+            return (el, A)
 
     def _validate_t(self, v):
         if len(v) != 1:

@@ -192,8 +192,9 @@ class SpinSystem(Clonable):
         self._terms = []
         self._dissip_terms = []
 
-        snames = [s if (type(s) == str) else '{1}{0}'.format(*s) 
-                  for s in self.spins]
+        snames = [
+            "{1}{0}".format(*s) if (type(s) == tuple) else str(s) for s in self._spins
+        ]
         logging.info("Created spin system with spins:")
         logging.info("\t\t{0}".format(" ".join(snames)))
 
