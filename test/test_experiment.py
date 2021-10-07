@@ -128,7 +128,7 @@ time
         itest = MuSpinInput(stest)
         ertest = ExperimentRunner(itest)
 
-        results = ertest.run_all()
+        results = ertest.run()
 
         self.assertTrue(np.all(results == 0.5))
 
@@ -146,7 +146,7 @@ zeeman 2
         itest = MuSpinInput(stest)
         ertest = ExperimentRunner(itest)
 
-        results = ertest.run_all()
+        results = ertest.run()
         times = ertest.config.x_axis_values
 
         self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
@@ -173,7 +173,7 @@ field
         itest = MuSpinInput(stest)
         ertest = ExperimentRunner(itest)
 
-        results = ertest.run_all()
+        results = ertest.run()
 
         self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi ** 2 * tau ** 2))
 
@@ -197,7 +197,7 @@ dissipation 1
 
         times = ertest.config.x_axis_values
 
-        results = ertest.run_all()
+        results = ertest.run()
 
         solx = np.real(0.5 * np.exp(-np.pi * g * times))
         self.assertTrue(np.all(np.isclose(results, solx)))

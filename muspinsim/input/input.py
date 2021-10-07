@@ -41,15 +41,7 @@ x_axis
     time
 y_axis
     asymmetry
-""",
-    "longitudinal": """
-polarization
-    longitudinal
-x_axis
-    time
-y_axis
-    asymmetry
-""",
+"""
 }
 
 
@@ -112,8 +104,11 @@ class MuSpinInput(object):
                         "Can not define more than one experiment type"
                     )
                 elif len(exptype) == 1:
-                    mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
-                    self._keywords.update(mock_i._keywords)
+                    try:
+                        mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
+                        self._keywords.update(mock_i._keywords)
+                    except KeyError:
+                        raise MuSpinInputError('Invalid experiment type defined')
             except KeyError:
                 pass
 

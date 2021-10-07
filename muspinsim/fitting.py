@@ -103,7 +103,7 @@ class FittingRunner(object):
 
         vardict = dict(zip(self._xnames, self._x))
         self._runner = ExperimentRunner(self._input, variables=vardict)
-        y = self._runner.run_all()
+        y = self._runner.run()
 
         if mpi.is_root:
             # Compare with target data

@@ -23,6 +23,7 @@ _math_functions = {
     "arctan": np.arctan,
     "arctan2": np.arctan2,
     "exp": np.exp,
+    "log": np.log,
     "sqrt": np.sqrt,
 }
 
@@ -156,9 +157,11 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
     def __init__(self, block=[], args=[], variables=[]):
 
         cnames = set(self._constants.keys())
+        fnames = set(self._functions.keys())
         vnames = set(variables)
 
         conflicts = cnames.intersection(vnames)
+        conflicts = conflicts.union(fnames.intersection(vnames))
         if len(conflicts) > 0:
             raise ValueError(
                 "Variable names {0}".format(conflicts)

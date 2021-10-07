@@ -147,9 +147,13 @@ class MuSpinConfig(object):
 
                 self._time_N = len(v)
             elif cname == "orient":
-                # We need to normalize the weights so that they sum to N
-                norm = len(v) / np.sum(np.array([w for (q, w) in v]))
-                v = np.array([(q, w * norm) for (q, w) in v])
+                if cname in self._avg_ranges:
+                    # We need to normalize the weights so that they sum to N
+                    norm = len(v) / np.sum(np.array([w for (q, w) in v]))
+                    v = np.array([(q, w * norm) for (q, w) in v])
+                else:
+                    # Ignore the weights
+                    v = np.array([(q, 1.0) for (q, w) in v])
 
             if len(v) > 1:
                 # It's a range
@@ -362,6 +366,7 @@ Parameters used:
         fname_pattern = "{name}{id}{ext}"
 
         x = self.x_axis_values
+
         if "B" in self._x_range.keys():
             x = np.linalg.norm(x, axis=-1)
 

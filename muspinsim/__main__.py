@@ -62,7 +62,7 @@ def main(use_mpi=False):
     if not is_fitting:
         # No fitting
         runner = ExperimentRunner(infile, {})
-        runner.run_all()
+        runner.run()
 
         if mpi.is_root:
             # Output

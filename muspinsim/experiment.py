@@ -259,7 +259,7 @@ class ExperimentRunner(object):
     def p_operator(self):
         return self._system.muon_operator(self.p)
 
-    def run_all(self):
+    def run(self):
         """Run the experiment
 
         Run all calculations in the configuration set, gather the results and
