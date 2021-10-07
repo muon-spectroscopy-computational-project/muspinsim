@@ -54,7 +54,7 @@ class MPIController(object):
         # A function to broadcast a single variable
 
         if not (self.comm is None):
-            self.comm.bcast(var, root=0)
+            var = self.comm.bcast(var, root=0)
 
         return var
 

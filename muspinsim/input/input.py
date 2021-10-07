@@ -62,7 +62,13 @@ class MuSpinInput(object):
         """
 
         self._keywords = {}
-        self._variables = []
+        self._variables = {}
+        self._fitting_info = {
+            'fit': False,
+            'data': None,
+            'method': None,
+            'rtol': None
+        }
 
         if fs is not None:
 
@@ -153,7 +159,8 @@ class MuSpinInput(object):
         interpreted given the variable values that have been passed."""
 
         result = {
-            'couplings': {}
+            'couplings': {},
+            'fitting_info': self.fitting_info
         }
 
         for name, KWClass in InputKeywords.items():
@@ -184,13 +191,6 @@ class MuSpinInput(object):
     def _load_fitting_kw(self, raw_blocks):
         """Special case: handling of all the fitting related keywords and 
         information."""
-
-        self._fitting_info = {
-            'fit': False,
-            'data': None,
-            'method': None,
-            'rtol': None
-        }
 
         try:
             block = raw_blocks.pop('fitting_variables')

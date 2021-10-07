@@ -8,7 +8,9 @@ from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.input import MuSpinInput
 from muspinsim.simconfig import MuSpinConfig
 from muspinsim.experiment import ExperimentRunner
+from muspinsim.fitting import FittingRunner
 
+LOGFORMAT = '[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s'
 
 def main(use_mpi=False):
 
@@ -28,11 +30,10 @@ def main(use_mpi=False):
 
         # Open logfile
         logfile = '{0}.log'.format(os.path.splitext(args.input_file)[0])
-        logformat = '[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s'
         logging.basicConfig(filename=logfile,
                             filemode='w',
                             level=logging.INFO,
-                            format=logformat,
+                            format=LOGFORMAT,
                             datefmt='%Y-%m-%d %H:%M:%S')
 
         logging.info('Launching MuSpinSim calculation '
@@ -42,7 +43,7 @@ def main(use_mpi=False):
             logging.info('Performing fitting in variables: '
                          '{0}'.format(', '.join(infile.variables)))
 
-        tstart = datetime.now()        
+        tstart = datetime.now()
     else:
         infile = MuSpinInput()
         is_fitting = False
@@ -58,14 +59,16 @@ def main(use_mpi=False):
             # Output
             runner.config.save_output()
     else:
-        raise NotImplementedError('Fitting still not implemented')
+        fitter = FittingRunner(infile)
+        sol = fitter.run()
+        if mpi.is_root:
+            print(sol)
 
     if mpi.is_root:
         tend = datetime.now()
         simtime = (tend-tstart).total_seconds()
         logging.info('Simulation completed in '
                      '{0:.3f} seconds'.format(simtime))
-
 
 
 def main_mpi():

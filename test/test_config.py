@@ -192,6 +192,42 @@ orientation
         for ((theta, phi), (q1, w)) in zip(angles, cfg._avg_ranges['orient']):
             q2 = Quaternion.from_axis_angle([0, 0, 1], phi)
             q2 *= Quaternion.from_axis_angle([0, 1, 0], theta)
+            q2 *= Quaternion.from_axis_angle([0, 0, 1], phi)
             q2 = q2.conjugate()
 
             self.assertTrue(np.isclose(q1.q, q2.q).all())
+
+
+    def test_fitting(self):
+        # Special tests for fitting tasks
+
+        stest = StringIO("""
+fitting_variables
+    x
+fitting_data
+    0   0.5
+    1   0.2
+""")
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate(x=0.0))
+        # Check that the time axis has been overridden
+        self.assertTrue((np.array(cfg._x_range['t']) == [0, 1]).all())
+        
+        # Should fail due to file_ranges
+        stest = StringIO("""
+fitting_variables
+    x
+fitting_data
+    0   0.5
+    1   0.2
+average_axes
+    none
+orientation
+    0  0
+    0  1
+""")
+
+        itest = MuSpinInput(stest)
+        with self.assertRaises(MuSpinConfigError):
+            cfg = MuSpinConfig(itest.evaluate(x=0.0))

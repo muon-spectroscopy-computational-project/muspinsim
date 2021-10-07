@@ -45,7 +45,7 @@ ConfigSnapshot = namedtuple('ConfigSnapshot', ['id', 'y'] +
 # A useful decorator
 def _validate_coupling_args(fun):
     def decorated(self, value, **args):
-        ij = np.array([v for v in args.values() if v is not None])        
+        ij = np.array([v for v in args.values() if v is not None])
         if (ij < 1).any() or (ij > len(self.system)).any():
             raise MuSpinConfigError('Out of range indices for coupling')
 
@@ -67,10 +67,12 @@ def _validate_shape(v, target_shape=(3,), name='vector'):
 def _elems_from_arrayodict(inds, odict):
     return {k: v[inds[i]] for i, (k, v) in enumerate(odict.items())}
 
+
 def _log_dictranges(rdict):
 
     for k, r in rdict.items():
         logging.info('\t\t{k} => {n} points'.format(k=k, n=len(r)))
+
 
 class MuSpinConfigError(Exception):
     pass
@@ -168,8 +170,22 @@ class MuSpinConfig(object):
                 raise MuSpinConfigError('Can not use time as X axis when '
                                         'evaluating integral of signal')
 
+        # If we're fitting, we can't have file ranges
+        finfo = params['fitting_info']
+        if finfo['fit']:
+            if len(self._file_ranges) > 0:
+                raise MuSpinConfigError('Can not have file ranges when '
+                                        'fitting')
+            # The x axis is overridden, whatever it is
+            xname = list(self._x_range.keys())[0]
+            self._constants.pop(xname, None) # Just in case it was here
+            self._x_range[xname] = finfo['data'][:,0]
+            if xname == 't':
+                # Special case
+                self._time_N = len(self._x_range[xname])
+
         # Check that a X axis was found
-        if None in self._x_range.values():
+        if list(self._x_range.values())[0] is None:
             raise MuSpinConfigError('Specified x axis is not a range')
 
         # Remove anything that is not a range in averages
