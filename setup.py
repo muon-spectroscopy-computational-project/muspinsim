@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 #
 import setuptools
-import pkg_resources  # part of setuptools
-
-version = pkg_resources.require("muspinsim")[0].version
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="muspinsim",
-    version=version,
     author="Simone Sturniolo",
     author_email="simonesturniolo@gmail.com",
     description="Full quantum simulation of muon experiments",
