@@ -468,7 +468,7 @@ class KWFittingVariables(MuSpinKeyword):
 
 
 # Other fitting-related keywords
-class KWFittingData(MuSpinEvaluateKeyword):
+class KWFittingData(MuSpinExpandKeyword):
 
     name = 'fitting_data'
     block_size = 1
@@ -477,6 +477,29 @@ class KWFittingData(MuSpinEvaluateKeyword):
     _constants = {}
     _functions = {
         'load': np.loadtxt
+    }
+
+
+class KWFittingMethod(MuSpinKeyword):
+
+    name = 'fitting_method'
+    block_size = 1
+    accept_range = False
+    default = 'nelder-mead'
+    _validators = {
+        'Invalid value': lambda s: ((s[0].lower() in ('nelder-mead',)) and
+                                    len(s) == 1)
+    }
+
+
+class KWFittingTolerance(MuSpinKeyword):
+
+    name = 'fitting_tolerance'
+    block_size = 1
+    accept_range = False
+    default = '1e-3'
+    _validators = {
+        'Invalid value': lambda s: (float(s[0]) and len(s) == 1)
     }
 
 

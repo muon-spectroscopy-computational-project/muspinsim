@@ -211,3 +211,11 @@ class MuSpinInput(object):
         except KeyError:
             raise MuSpinInputError('Fitting variables defined without defining'
                                    ' a set of data to fit')
+
+        block = raw_blocks.pop('fitting_tolerance', [])
+        kw = InputKeywords['fitting_tolerance'](block)
+        self._fitting_info['rtol'] = float(kw.evaluate()[0][0])
+
+        block = raw_blocks.pop('fitting_method', [])
+        kw = InputKeywords['fitting_method'](block)
+        self._fitting_info['method'] = kw.evaluate()[0][0]

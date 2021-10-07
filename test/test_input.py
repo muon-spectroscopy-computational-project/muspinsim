@@ -248,11 +248,18 @@ fitting_variables
     x
 fitting_data
     load('{fname}')
+fitting_method
+    nelder-mead
 """.format(fname=tfile.name))
 
         i3 = MuSpinInput(s3)
-
-        data = i3.fitting_info['data']
-        self.assertTrue((data == tdata).all())
-
         tfile.close()
+
+        finfo = i3.fitting_info
+
+        data = finfo['data']
+        self.assertTrue(finfo['fit'])
+        self.assertTrue((data == tdata).all())
+        self.assertEqual(finfo['method'], 'nelder-mead')
+        self.assertAlmostEqual(finfo['rtol'], 1e-3)
+
