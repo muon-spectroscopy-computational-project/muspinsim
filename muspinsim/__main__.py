@@ -62,7 +62,8 @@ def main(use_mpi=False):
         fitter = FittingRunner(infile)
         sol = fitter.run()
         if mpi.is_root:
-            print(sol)
+            
+            fitter.write_report()
 
     if mpi.is_root:
         tend = datetime.now()
