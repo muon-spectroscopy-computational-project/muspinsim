@@ -61,6 +61,9 @@ class ASTExpression(object):
             elif type(o) is ast.Name:
                 name = o.id
                 found_names.append(name)
+            elif type(o) in (ast.Attribute,):
+                # A further safety against exploits. This stuff should never appear here!
+                raise ASTExpressionError("Unsafe expression used in ASTExpression")
 
         found_names = set(found_names)
         self._functions = set(found_functions)
