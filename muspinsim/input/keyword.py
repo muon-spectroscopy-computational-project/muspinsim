@@ -9,7 +9,7 @@ import inspect
 import numpy as np
 
 from muspinsim.constants import MU_GAMMA
-from muspinsim.input.asteval import ASTExpression, ast_tokenize
+from muspinsim.input.larkeval import LarkExpression, lark_tokenize
 from muspinsim.input.variables import FittingVariable
 from muspinsim.utils import deepmap, zcw_gen, eulrange_gen
 
@@ -39,7 +39,7 @@ _pwd_functions = {"zcw": zcw_gen, "eulrange": eulrange_gen}
 
 # Expansion functions
 def _range(x1, x2, n=100):
-    return np.linspace(x1, x2, n)[:, None]
+    return np.linspace(x1, x2, int(n))[:, None]
 
 
 class MuSpinKeyword(object):
@@ -176,10 +176,10 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
         for v in block:
             b = [
                 [
-                    ASTExpression(
+                    LarkExpression(
                         tk, variables=self._variables, functions=self._functions
                     )
-                    for tk in ast_tokenize(l)
+                    for tk in lark_tokenize(l)
                 ]
                 for l in v
             ]
@@ -445,7 +445,7 @@ class KWFittingVariables(MuSpinKeyword):
 
             if len(v) == 2:
                 b += [
-                    ASTExpression(tk, variables=variables) for tk in ast_tokenize(v[1])
+                    LarkExpression(tk, variables=variables) for tk in lark_tokenize(v[1])
                 ]
                 b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
 

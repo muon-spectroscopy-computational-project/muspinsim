@@ -24,7 +24,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    install_requires=["numpy", "scipy", "soprano"],
+    install_requires=["numpy", "scipy", "soprano", "lark"],
     extras_require={"docs": ["mkdocs", "pymdown-extensions"]},
     entry_points={
         "console_scripts": [

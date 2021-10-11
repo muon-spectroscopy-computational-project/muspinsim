@@ -3,7 +3,7 @@ import numpy as np
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
-from muspinsim.input.asteval import ASTExpression, ASTExpressionError, ast_tokenize
+from muspinsim.input.larkeval import LarkExpression, LarkExpressionError, lark_tokenize
 from muspinsim.input.keyword import (
     MuSpinKeyword,
     MuSpinEvaluateKeyword,
@@ -14,56 +14,62 @@ from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):
-    def test_astexpr(self):
 
-        # Start by testing simple expressions
+    def test_larkexpr(self):
+
+        # Start by testing proper precedence order
+        e1 = LarkExpression("3+2*6^2/9")
+
+        self.assertEqual(e1.evaluate(), 11)
+
+        # Simple expressions        
+        e2 = LarkExpression("x+y+1", variables="xy")
+
+        self.assertEqual(e2.variables, {"x", "y"})
+        self.assertEqual(e2.evaluate(x=2, y=5), 8)
+
+
+        # Try using a function
         def double(x):
             return 2 * x
 
-        e1 = ASTExpression("x+y+1", variables="xy")
+        e3 = LarkExpression("double(x)", variables="x", functions={"double": double})
 
-        self.assertEqual(e1.variables, {"x", "y"})
-        self.assertEqual(e1.evaluate(x=2, y=5), 8)
-
-        # Try using a function
-        e2 = ASTExpression("double(x)", variables="x", functions={"double": double})
-
-        self.assertEqual(e2.variables, {"x"})
-        self.assertEqual(e2.functions, {"double"})
-        self.assertEqual(e2.evaluate(x=2), 4)
+        self.assertEqual(e3.variables, {"x"})
+        self.assertEqual(e3.functions, {"double"})
+        self.assertEqual(e3.evaluate(x=2), 4)
 
         # Check that it evaluates when possible
-        e3 = ASTExpression("double(4)", functions={"double": double})
-        self.assertEqual(e3._store_eval, 8)
+        e4 = LarkExpression("double(4)", functions={"double": double})
+        self.assertEqual(e4._store_eval, 8)
 
         # Errors
-        with self.assertRaises(ASTExpressionError):
-            e4 = ASTExpression("print(666)")
+        with self.assertRaises(LarkExpressionError):
+            e5 = LarkExpression("print(666)")
 
-        with self.assertRaises(ASTExpressionError):
-            e5 = ASTExpression("x+1", variables="y")
+        with self.assertRaises(LarkExpressionError):
+            e6 = LarkExpression("x+1", variables="y")
 
-        with self.assertRaises(ASTExpressionError):
-            e1.evaluate()
+        with self.assertRaises(LarkExpressionError):
+            e2.evaluate()
+
+        with self.assertRaises(LarkExpressionError):
+            LarkExpression("3x%5")
 
         # Test tokenization
-        tokens = ast_tokenize("3.4 2.3 sin(x) atan2(3, 4)")
-        ast_tokens = [
-            ASTExpression(
+        tokens = lark_tokenize("3.4 2.3 sin(x) atan2(3, 4)")
+        lark_tokens = [
+            LarkExpression(
                 tk, variables="x", functions={"sin": np.sin, "atan2": np.arctan2}
             )
             for tk in tokens
         ]
 
         self.assertEqual(len(tokens), 4)
-        self.assertEqual(ast_tokens[0].evaluate(), 3.4)
-        self.assertEqual(ast_tokens[1].evaluate(), 2.3)
-        self.assertAlmostEqual(ast_tokens[2].evaluate(x=np.pi / 2.0), 1.0)
-        self.assertAlmostEqual(ast_tokens[3].evaluate(), np.arctan2(3.0, 4.0))
-
-        # Make sure for safety reasons:
-        with self.assertRaises(ASTExpressionError):
-            ASTExpression("__builtins__")
+        self.assertEqual(lark_tokens[0].evaluate(), 3.4)
+        self.assertEqual(lark_tokens[1].evaluate(), 2.3)
+        self.assertAlmostEqual(lark_tokens[2].evaluate(x=np.pi / 2.0), 1.0)
+        self.assertAlmostEqual(lark_tokens[3].evaluate(), np.arctan2(3.0, 4.0))
 
     def test_keyword(self):
 
@@ -83,7 +89,7 @@ class TestInput(unittest.TestCase):
         self.assertEqual(dkw.evaluate()[0][0], "1")
 
         # Let's try a numerical one
-        nkw = MuSpinEvaluateKeyword(["exp(0) 1+1 2**2"])
+        nkw = MuSpinEvaluateKeyword(["exp(0) 1+1 2^2"])
 
         self.assertTrue((nkw.evaluate()[0] == [1, 2, 4]).all())
 
@@ -161,7 +167,7 @@ class TestInput(unittest.TestCase):
         self.assertTrue((hkw.evaluate()[0] == np.zeros((3, 3))).all())
 
         qkw = InputKeywords["quadrupolar"](
-            ["1 0 0", "0 1 0", "0 0 cos(1)**2+sin(1)**2"], args=["1"]
+            ["1 0 0", "0 1 0", "0 0 cos(1)^2+sin(1)^2"], args=["1"]
         )
 
         self.assertTrue((qkw.evaluate()[0] == np.eye(3)).all())
@@ -251,7 +257,7 @@ fitting_variables
 fitting_variables
     x
 fitting_data
-    load('{fname}')
+    load("{fname}")
 fitting_method
     nelder-mead
 """.format(
