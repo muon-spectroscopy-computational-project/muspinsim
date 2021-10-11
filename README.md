@@ -92,6 +92,8 @@ One of the new features of MuSpinSim v1.0.0 is the option to use functions and v
 2. They can be used to generate large ranges of values automatically for some very common use cases. For example, the keyword `time` stores all the times at which the simulation should be performed. It's a common requirement to want to acquire hundreds or thousands of time points, regularly spaced. One could do this by writing hundreds or thousands of values in column, but it's a lot faster and easier to simply use something like `range(0, 1, 100)` to create 100 equally spaced time points going from 0 to 1 microseconds.
 3. They can be used to insert variables defined for fitting. For example one might define a hyperfine interaction tensor as a function of two parameters, then fit those parameters to find the optimal tensor that explains an experimental result.
 
+Expressions allow use of the operators `+`, `-`, `*`, `/` and `^` for exponentiation. Parentheses `(` and `)` can be used. Strings, if used, must be enclosed in double quotes `"`.
+
 In the keyword list, below, which constants and functions are allowed for each keyword are specified. User-defined constants are currently not allowed: the only types of user-defined variables that can be used are the ones for fitting. By default, all keywords in which expressions can be used allow the following constants:
 
 * `pi`: ratio of a circle and its diameter
