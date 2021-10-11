@@ -21,6 +21,6 @@ spins
 fitting_variables
     g 0.1 0.0 inf
 fitting_data
-    load('experiment.dat')
+    load("experiment.dat")
 dissipation 1
     g
