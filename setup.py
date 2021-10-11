@@ -11,7 +11,7 @@ with open("muspinsim/version.py") as fp:
 
 setuptools.setup(
     name="muspinsim",
-    version=version['__version__'],
+    version=version["__version__"],
     author="Simone Sturniolo",
     author_email="simonesturniolo@gmail.com",
     description="Full quantum simulation of muon experiments",

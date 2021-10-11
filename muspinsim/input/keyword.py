@@ -445,7 +445,8 @@ class KWFittingVariables(MuSpinKeyword):
 
             if len(v) == 2:
                 b += [
-                    LarkExpression(tk, variables=variables) for tk in lark_tokenize(v[1])
+                    LarkExpression(tk, variables=variables)
+                    for tk in lark_tokenize(v[1])
                 ]
                 b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
 

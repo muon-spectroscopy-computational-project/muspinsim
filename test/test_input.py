@@ -14,7 +14,6 @@ from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):
-
     def test_larkexpr(self):
 
         # Start by testing proper precedence order
@@ -22,12 +21,11 @@ class TestInput(unittest.TestCase):
 
         self.assertEqual(e1.evaluate(), 11)
 
-        # Simple expressions        
+        # Simple expressions
         e2 = LarkExpression("x+y+1", variables="xy")
 
         self.assertEqual(e2.variables, {"x", "y"})
         self.assertEqual(e2.evaluate(x=2, y=5), 8)
-
 
         # Try using a function
         def double(x):

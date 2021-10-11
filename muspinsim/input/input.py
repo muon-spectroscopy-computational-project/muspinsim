@@ -41,7 +41,7 @@ x_axis
     time
 y_axis
     asymmetry
-"""
+""",
 }
 
 
@@ -108,7 +108,7 @@ class MuSpinInput(object):
                         mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
                         self._keywords.update(mock_i._keywords)
                     except KeyError:
-                        raise MuSpinInputError('Invalid experiment type defined')
+                        raise MuSpinInputError("Invalid experiment type defined")
             except KeyError:
                 pass
 

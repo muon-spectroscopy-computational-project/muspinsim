@@ -5,7 +5,8 @@ Evaluation functions and classes based off the Lark grammar parser"""
 from lark import Lark
 from lark.exceptions import UnexpectedToken
 
-_expr_parser = Lark("""
+_expr_parser = Lark(
+    """
     ?start: sum
 
     ?function: NAME "(" (sum ("," sum)*)? ")" -> fun
@@ -34,7 +35,9 @@ _expr_parser = Lark("""
     %import common.ESCAPED_STRING -> STRING
 
     %ignore WS_INLINE
-""", parser='lalr')
+""",
+    parser="lalr",
+)
 
 
 def lark_tokenize(line):
@@ -64,7 +67,6 @@ class LarkExpressionError(Exception):
 
 
 class LarkExpression(object):
-
     def __init__(self, source, variables=[], functions={}):
         """Create an expression to parse and evaluate with the Lark grammar
         parser. Variables and functions will be accepted only if included
@@ -95,12 +97,10 @@ class LarkExpression(object):
 
         # Check if they are valid
         if len(self._variables - self._all_variables) > 0:
-            raise LarkExpressionError(
-                "Invalid variable used in LarkExpression")
+            raise LarkExpressionError("Invalid variable used in LarkExpression")
 
         if len(self._functions - set(functions.keys())) > 0:
-            raise LarkExpressionError(
-                "Invalid function used in LarkExpression")
+            raise LarkExpressionError("Invalid function used in LarkExpression")
 
         self._function_bodies = {fn: functions[fn] for fn in self._functions}
 
@@ -115,11 +115,11 @@ class LarkExpression(object):
         found_vars = []
         found_functions = []
 
-        if hasattr(root, 'data'):
+        if hasattr(root, "data"):
             children = root.children
-            if root.data == 'var':
+            if root.data == "var":
                 found_vars = [root.children[0].value]
-            elif root.data == 'fun':
+            elif root.data == "fun":
                 found_functions = [root.children[0].value]
                 children = root.children[1:]  # Skip the NAME
         else:
@@ -134,28 +134,28 @@ class LarkExpression(object):
 
     def _evaluate_tree(self, root, variables={}):
 
-        if hasattr(root, 'data'):
+        if hasattr(root, "data"):
             d = root.data
             evc = [self._evaluate_tree(c, variables) for c in root.children]
-            if d == 'add':
+            if d == "add":
                 return evc[0] + evc[1]
-            elif d == 'sub':
+            elif d == "sub":
                 return evc[0] - evc[1]
-            elif d == 'mul':
+            elif d == "mul":
                 return evc[0] * evc[1]
-            elif d == 'div':
+            elif d == "div":
                 return evc[0] / evc[1]
-            elif d == 'pow':
+            elif d == "pow":
                 return evc[0] ** evc[1]
-            elif d == 'neg':
+            elif d == "neg":
                 return -evc[0]
-            elif d == 'num':
+            elif d == "num":
                 return float(evc[0])
-            elif d == 'str':
+            elif d == "str":
                 return str(evc[0][1:-1])
-            elif d == 'var':
+            elif d == "var":
                 return variables[evc[0]]
-            elif d == 'fun':
+            elif d == "fun":
                 fname = evc[0]
                 return self._function_bodies[fname](*evc[1:])
         else:
