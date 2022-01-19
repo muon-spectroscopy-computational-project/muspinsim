@@ -1,23 +1,28 @@
-# Welcome to MkDocs
+# Welcome to MuSpinSim's documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+MuSpinSim is a program designed to carry out spin dynamics calculations for 
+muon science experiments. MuSpinSim can:
 
-## Commands
+* simulate zero, transverse and longitudinal field experiments
+* simulate experiments resolved in time, field, or temperature
+* include the effects of hyperfine, dipolar, quadrupolar and Zeeman couplings
+* simulate quantum systems exchanging energy with the environment with the Lindblad master equation
+* fit experimental data with simulations using all of the above
+* run in parallel on multiple cores for the most expensive tasks
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+## How to install
 
-## Project layout
+Download the latest version of the code from [Github](https://github.com/muon-spectroscopy-computational-project/muspinsim)
+and unzip it, then in the command line enter the folder and use `pip` to install it:
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+```bash
+$> pip install ./
+```
 
-## A test for equations
+It can then be run from anywhere simply with
 
-$$
-\dot{\rho} = -\frac{i}{\hbar}[H, \rho]
-$$
+```bash
+$> muspinsim input_file
+```
+
+[Theory](./theory.md)

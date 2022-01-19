@@ -17,7 +17,7 @@ setuptools.setup(
     description="Full quantum simulation of muon experiments",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/stur86/muspinsim",
+    url="https://github.com/muon-spectroscopy-computational-project/muspinsim.git",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
