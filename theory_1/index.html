@@ -61,9 +61,13 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#operators-as-matrices">Operators as matrices</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#hamiltonians">Hamiltonians</a>
+    <li class="toctree-l3"><a class="reference internal" href="#hamiltonian-and-time-evolution">Hamiltonian and time evolution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-density-matrix-formalism">The density matrix formalism</a>
     </li>
         </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#systems-of-multiple-spins">Systems of multiple spins</a>
     </li>
     </ul>
                     </li>
@@ -112,23 +116,23 @@
 \mid\psi_{1/2}\rangle = a\mid\uparrow\rangle + b\mid\downarrow\rangle
 \]</div>
 <p>with <span class="arithmatex">\(a^*a+b^*b = 1\)</span> as a normalisation condition. One possible convention to write this wavefunction and manipulate it in a computer program is to treat these states as the basis for a vector space (which effectively, they are: they obey the same inner product rules as the versors for a regular Euclidean 2D space). Then we can write the wavefunction as a column vector:</p>
-<p>$$
+<div class="arithmatex">\[
 \mid\uparrow\rangle = \begin{bmatrix}
-1 \
+1 \\
 0
 \end{bmatrix}
 \qquad
 \mid\downarrow\rangle = \begin{bmatrix}
-0 \
+0 \\
 1
 \end{bmatrix}
 \qquad
 \mid\psi_{1/2}\rangle = \begin{bmatrix}
-a \
+a \\
 b
 \end{bmatrix}
-$$
-Conversely, we can write the complex conjugate versions of these states (the "bras" to these "kets") as <em>row</em> vectors:</p>
+\]</div>
+<p>Conversely, we can write the complex conjugate versions of these states (the "bras" to these "kets") as <em>row</em> vectors:</p>
 <div class="arithmatex">\[
 \langle\uparrow\mid = \begin{bmatrix}
 1 &amp; 0
@@ -145,23 +149,23 @@ a^* &amp; b^*
 <p>(where of course it's important to remember that the coefficients too are to be conjugated). That way, one can see for example how the inner product results naturally as a scalar product between vectors. </p>
 <h3 id="operators-as-matrices">Operators as matrices</h3>
 <p>If we are describing spin states as vectors, operators can be described as matrices instead. In particular, for the spin-½ particle, we have the Pauli matrices:</p>
-<p>$$
+<div class="arithmatex">\[
 S_x = \begin{bmatrix}
-0 &amp; 1 \
+0 &amp; 1 \\
 1 &amp; 0
 \end{bmatrix}
 \qquad
 S_y = \begin{bmatrix}
-0 &amp; -i \
+0 &amp; -i \\
 i &amp; 0
 \end{bmatrix}
 \qquad
 S_z = \begin{bmatrix}
-1 &amp; 0 \
+1 &amp; 0 \\
 0 &amp; -1
 \end{bmatrix}
-$$
-for the three spatial components of the spin. Together with the identity matrix, these form a complete basis for the operators for this kind of spin. These operators can be easily used to compute expectation values. For example, consider the following state:</p>
+\]</div>
+<p>for the three spatial components of the spin. Together with the identity matrix, these form a complete basis for the operators for this kind of spin. These operators can be easily used to compute expectation values. For example, consider the following state:</p>
 <div class="arithmatex">\[
 \psi = \begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
@@ -243,12 +247,88 @@ i &amp; 0
 <li>the component along <em>z</em> of the moment is determined by the relative probabilities of finding the spin up or down. If the probability are equal, the component along <em>z</em> is zero;</li>
 <li>the component in the <em>xy</em> plane can only be non-zero if the spin exists in some mixture of up and down states, and it's maximum if the up and down states have amplitudes with the same modulus. The specific direction of the component is then controlled by the relative <em>phase</em> of those amplitudes.</li>
 </ul>
-<h3 id="hamiltonians">Hamiltonians</h3>
-<p>Hamiltonians are operators with the additional required property of being <em>Hermitian</em>, that is, they have to be identical to their conjugate transpose. In this formalism they are described by matrices with the requirement that</p>
+<p><strong>For developers</strong>: in MuSpinSim, quantum operators are defined by the class <code>Operator</code> and derived classes in <code>muspinsim/spinop.py</code>.</p>
+<h3 id="hamiltonian-and-time-evolution">Hamiltonian and time evolution</h3>
+<p>Hamiltonians are operators with the additional required property of being <em>Hermitian</em>, that is, they have to be identical to their conjugate transpose. For a spin system, the Hamiltonian is the operator whose expectation value is the energy of that system. The Hamiltonian also controls the time evolution of the system; like for every other quantum system, the dynamics of a spin system are defined by the equation</p>
+<div class="arithmatex">\[
+H\mid\psi\rangle = i\hbar\frac{\partial}{\partial t}\mid\psi\rangle,
+\]</div>
+<p>whose solution is</p>
+<div class="arithmatex">\[
+\mid \psi(t) \rangle = e^{-\frac{i}{\hbar}Ht} \mid \psi(0) \rangle. 
+\]</div>
+<p>The key task of MuSpinSim is to solve this equation in time, and then estimate the expectation values of the observables that interest us. The simplest way to do so in the case of a small system is to diagonalise the Hamiltonian, which numerically can be done fairly easily by taking advantage of its properties (for example using the NumPy routine <code>numpy.linalg.eigh</code>). This gives a number of eigenvalues <span class="arithmatex">\(\lambda_i\)</span> and corresponding eigenvectors (namely, eigenstates) <span class="arithmatex">\(\mid u_i \rangle\)</span>. One can then write the Hamiltonian matrix as:</p>
 <p>$$
-H = H^\dag,
+H = \sum_i \lambda_i \mid u_i \rangle \langle u_i \mid = UH_0U^\dagger
 $$
-which is fairly easily checked. </p>
+where <span class="arithmatex">\(H_0\)</span> is a diagonal matrix with the eigenvalues along its diagonal, and <span class="arithmatex">\(U\)</span> is the matrix with the eigenvectors for columns (and <span class="arithmatex">\(U^\dagger\)</span> its conjugate transpose). One can then transform the wavefunction in this new basis, and the matrix exponential of the now diagonal Hamiltonian becomes trivial.</p>
+<p><strong>For developers:</strong> in MuSpinSim, the <code>Hamiltonian</code> class is a mixin inheriting from <code>Operator</code> and <code>Hermitian</code> and is found in <code>muspinsim/hamiltonian.py</code>.</p>
+<h3 id="the-density-matrix-formalism">The density matrix formalism</h3>
+<p>Until here we've focused on wave functions as a way to write quantum states. However, in practice, in MuSpinSim we never use simple wave functions to express the state of a system - rather, we use <em>density matrices</em>. 
+The density matrix formalism is a generalisation of the state vectors we described above that allows us to describe <em>statistical ensembles</em> of quantum states, rather than just individual pure states. Density matrices are especially useful and important when dealing with spin systems at a thermal equilibrium, which is what makes them so essential in MuSpinSim, as any spin other than the muon itself is usually in a thermal state at the beginning of the experiment. 
+The density matrix is an operator whose expectaction value with a certain state is the probability to find the system in that state. For a pure state in a spin-½ system as the one described above, the density matrix would be</p>
+<div class="arithmatex">\[
+\rho = a^*a \mid \uparrow \rangle \langle \uparrow \mid + a^*b \mid \downarrow \rangle \langle \uparrow \mid +
+b^*a \mid \uparrow \rangle \langle \downarrow \mid + b^*b \mid \downarrow \rangle \langle \downarrow \mid = 
+\begin{bmatrix}
+a \\
+b
+\end{bmatrix}
+\begin{bmatrix}
+a^* &amp; b^*
+\end{bmatrix} = 
+\begin{bmatrix}
+a^*a &amp; b^*a \\
+a^*b &amp; b^*b
+\end{bmatrix}.
+\]</div>
+<p>One can see how the normalisation rule implies that <span class="arithmatex">\(\mathrm{Tr}(\rho) = 1\)</span>. The expectation value of an operator can be found</p>
+<p>$$
+\langle O \rangle = \mathrm{Tr}(\rho O)
+$$
+and the time evolution is</p>
+<div class="arithmatex">\[
+\frac{\partial \rho}{\partial t} = \frac{i}{\hbar}[H, \rho]
+\qquad\implies\qquad
+\rho(t) = e^{-\frac{i}{\hbar}Ht}\rho(0)e^{\frac{i}{\hbar}Ht}.
+\]</div>
+<p>To see an example of the usefulness of density matrices, let's consider again a spin-½ example. Consider an ensemble of particles prepared such that half of them is prepared in a state <span class="arithmatex">\(\psi_+\)</span> and the other half in a state <span class="arithmatex">\(\psi_-\)</span>:</p>
+<div class="arithmatex">\[
+\mid\psi_+\rangle = \begin{bmatrix}
+\frac{\sqrt{2}}{2} \\
+\frac{\sqrt{2}}{2}
+\end{bmatrix}
+\qquad
+\mid\psi_-\rangle = \begin{bmatrix}
+\frac{\sqrt{2}}{2} \\
+\frac{-\sqrt{2}}{2}
+\end{bmatrix}.
+\]</div>
+<p>Now imagine taking a measurement of the spin along the <em>x</em> axis. Using the formulas above, we can discover <span class="arithmatex">\(\langle \psi_+ \mid S_x \mid \psi_+ \rangle = 1\)</span> and <span class="arithmatex">\(\langle \psi_- \mid S_x \mid \psi_- \rangle = -1\)</span>, so that the total average measured spin will be 0. What if we used a density matrix? Then we would find out:</p>
+<div class="arithmatex">\[
+\rho_+ = \mid \psi_+ \rangle \langle \psi_+ \mid = \begin{bmatrix}
+\frac{1}{2} &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; \frac{1}{2}
+\end{bmatrix}
+\qquad
+\rho_- = \mid \psi_- \rangle \langle \psi_- \mid = \begin{bmatrix}
+\frac{1}{2} &amp; -\frac{1}{2} \\
+-\frac{1}{2} &amp; \frac{1}{2}
+\end{bmatrix}.
+\]</div>
+<p>Because equations involving the density matrix are linear, we can carry out the average immediately and finding a collective density matrix describing the whole ensemble (something that is not possible with the individual wavefunctions):</p>
+<div class="arithmatex">\[
+\rho_{tot} = \frac{\rho_++\rho_-}{2} = \begin{bmatrix}
+\frac{1}{2} &amp; 0 \\
+0 &amp; \frac{1}{2}
+\end{bmatrix}.
+\]</div>
+<p>We can then compute the expectation value of the operator <span class="arithmatex">\(S_x\)</span>:</p>
+<p>$$
+\langle S_x \rangle = \mathrm{Tr}(\rho_{tot} S_x) = 0.
+$$
+This is a very simple example of <em>decoherence</em> - because we are measuring a statistical ensemble of quantum systems, rather than a single spin, some information on the phase factors of its wavefunctions (the off-diagonal terms of the density matrix) can be averaged out and lost. In real life we almost never observe spins in isolations, and spin ensembles that have had a long time to exchange energy with their environment and all its random thermal fluctuations are highly decohered, as each individual spin has had its own dynamical history. This is effectively the case for the spins one usually finds inside a sample when performing a muon spin resonance experiment. For this reason we need to use density matrices when dealing with systems that have been initialised in a thermal state, as well as when trying to approximate the interaction of an <em>open</em> quantum system with its surrounding environment, exchanging energy with it and thus relaxing towards a thermal state.</p>
+<h2 id="systems-of-multiple-spins">Systems of multiple spins</h2>
               
             </div>
           </div>
