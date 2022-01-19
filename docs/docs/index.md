@@ -25,4 +25,5 @@ It can then be run from anywhere simply with
 $> muspinsim input_file
 ```
 
-[Theory](./theory.md)
+## Topics
+* Learn about the [theory of spin dynamics behind MuSpinSim](./theory_1.md)
