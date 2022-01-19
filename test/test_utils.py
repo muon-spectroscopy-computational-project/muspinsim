@@ -84,7 +84,6 @@ class TestUtils(unittest.TestCase):
 
         Asum = np.zeros((3, 3))
         quats = [Quaternion.from_euler_angles(a, b, c).q for (a, b, c, w) in ow]
-        print(np.average(quats, axis=0))
 
         for (a, b, c, w) in ow:
             q = Quaternion.from_euler_angles(a, b, c)

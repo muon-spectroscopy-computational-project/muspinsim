@@ -168,7 +168,7 @@ class TestInput(unittest.TestCase):
             ["1 0 0", "0 1 0", "0 0 cos(1)^2+sin(1)^2"], args=["1"]
         )
 
-        self.assertTrue((qkw.evaluate()[0] == np.eye(3)).all())
+        self.assertTrue(np.isclose(qkw.evaluate()[0], np.eye(3)).all())
 
         # Failure case (wrong argument type)
         with self.assertRaises(RuntimeError):
