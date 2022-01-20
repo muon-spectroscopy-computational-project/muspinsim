@@ -119,7 +119,7 @@ venv.bak/
 
 # mkdocs documentation
 docs/site
-docs/docs/.ztr-directory
+docs/.ztr-directory
 
 # mypy
 .mypy_cache/
