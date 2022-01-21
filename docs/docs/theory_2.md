@@ -22,5 +22,74 @@ One can see how finding this matrix would in principle require diagonalising the
 
 ## Time evolution
 ### Closed system
+Time evolution for the density matrix of a closed quantum system is controlled by the Liouville-von Neumann equation that we've already seen:
 
+$$
+\frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[\mathcal{H}, \rho]
+$$
 
+If we write the matrix quantities with indices (repeated indices imply summation) we can write this as a system of coupled differential equations for each individual coefficient:
+
+$$
+\frac{\partial \rho_{ij}}{\partial t} = -\frac{i}{\hbar}\left(\mathcal{H}_{ik}\rho_{kj}-\rho_{ik}\mathcal{H}_{kj}\right)
+$$
+
+This gets significantly simpler when we express both the matrices in a basis in which the Hamiltonian is diagonal, and thus $\mathcal{H}_{ij} = \lambda_i\delta_{ij}$:
+
+$$
+\frac{\partial \rho_{ij}}{\partial t} = -\frac{i}{\hbar}\rho_{ij}\left(\lambda_i-\lambda_j\right) 
+\qquad
+\implies
+\qquad
+\rho_{ij}(t) = e^{-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right) t}\rho_{ij}(0)
+$$
+
+This way we can see that the equations are completely decoupled. Coefficients on the diagonal of the density matrix don't change, while off-diagonal coefficients gain a phase factor at a constant rate that is dependent on the differences between the Hamiltonian eigenvalues. This method gives us the exact evolution of the system and perfectly preserves unitarity. The downside of it is that it requires a full diagonalization of the Hamiltonian. However, many spin systems that we are interested in are relatively small, and one single diagonalisation for each of them isn't a big deal. Cheaper, more approximate methods might be implemented in the future, but at the moment, MuSpinSim can easily carry out calculations on systems that don't exceed nine or ten spins on a laptop in a few minutes.
+
+> **For developers:** time evolution of a system is handled by the `.evolve()` method of the `Hamiltonian` class.
+
+### Integral of asymmetry
+In muon experiments we're usually interested in measuring the asymmetry of positron hits between the forward and back detectors in the experimental setup - namely, the polarisation of the muon along a certain axis, as it evolves in time. However, in some cases (like ALC experiments) what we actually care about is the *integral* of this asymmetry throughout a certain time interval. This could be trivially computed simply by computing the time evolution and then integrating numerically. However MuSpinSim in this case uses a different algorithm to perform the integral analytically, saving some unnecessary steps. The full derivation of the formula is detailed in [this arXiv paper](https://arxiv.org/abs/1704.02785). The essence of it is that, if we have an operator $S$ with matrix elements $s_{ij}$ whose integral value we want to compute:
+
+$$
+\langle P \rangle = \int_0^\infty \langle S \rangle(t) e^{-\frac{t}{\tau}} dt
+$$
+where the integral is weighed with the decay process of the muon with lifetime $\tau$, then we can define a new operator $P$ with matrix elements:
+
+$$
+p_{ij} = \frac{s_{ij}}{\frac{1}{\tau}-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right)}
+$$
+
+and evaluating its expectation value on the initial state of the system will in a single pass return the value of the desired integral.
+
+> **For developers:** integral expectation values are handled by the `.integrate_decaying()` method of the `Hamiltonian` class.
+
+### Open system
+Systems described by the Liouville-von Neumann equation are closed; they conserve energy and evolve in a perfectly reversible way. This is sometimes not a good approximation, because in real life, the chunk of the sample that we're describing is of course only a small part of a much bigger system, fully coupled to it and interacting in a lot of ways. Since including an environment of hundreds or thousands of spins is not practical, a more common approach is to use a *master equation* that allows to describe irreversible evolution through some kind of energy exchange with environmental degrees of freedom.
+In MuSpinSim, the only such master equation that is supported is the simplest one, the Lindblad equation. It is an extension of the Liouville-von Neumann equation including dissipative terms:
+
+$$
+\frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[\mathcal{H}, \rho] + \sum_{i=1}^{N^2-1}\alpha_i\left(L_i \rho L_i^\dagger - \frac{1}{2}\left\{L_i^\dagger L_i, \rho\right\} \right)
+$$
+
+Here the $\alpha_i$ are coefficients that express the strength of the coupling with a certain degree of freedom, and the $L_i$ are the so-called Lindblad or jump operators of the system, each connected to one coefficient. The curly braces denote the *anticommutator* of two matrices: $\{A, B\} = AB+BA$.
+
+This equation unfortunately does not have a neat solution in exponential form as the one seen above in the matrix formalism. It is however possible to find something very close to it by making a few small changes in the representation, namely, expressing the density matrix in what is called the *Fock-Liouville space*. An excellent and detailed explanation of this technique is given in this [useful introductory paper by Daniel Manzano](https://arxiv.org/abs/1906.04478). The essence of it is that we "straighten up" the density matrix, writing all its elements in a single column vector. For example, a $4\times 4$ matrix can turn into a $16$ elements column vector. It is then possible to write a matrix called the Lindbladian (that in the example will be $16 \times 16$) that operates on it exactly like a Hamiltonian does on a single wavefunction:
+
+$$
+\frac{\partial}{\partial t} \mid \rho \rangle\rangle = \mathcal{L} \mid \rho \rangle\rangle
+$$
+
+and following from that, it is possible to integrate the equations as trivially as seen for the others by diagonalising the Lindbladian. Care must be taken though because unlike for the Hamiltonian, there is no guarantee that the Lindbladian is Hermitian, or for that matter, diagonalizable at all! This can potentially cause issues - however in my experience well-defined systems will be solvable without problems.
+
+In MuSpinSim, the only way dissipation can be included in a calculation is by putting an individual spin in contact with a thermal reserve. This is done by defining two jump operators for that spin, $S_+^i$ and $S_-^i$, and the corresponding dissipation coefficients such that
+
+$$
+\frac{\alpha_+^i}{\alpha_-^i} = \exp\left(-\frac{\hbar\gamma |B|}{k_BT}\right)
+$$
+
+where $T$ is the temperature of the system, and $\hbar\gamma|B|$ is an approximation using only the Zeeman interaction of the energy gap between successive states of the spin. For $T < \infty$, this is subject to the same limits as the choice of using only the Zeeman interaction to define the initial thermal state density matrix. In fact, the effect of these terms is to tend to drive the individual spin's state towards exactly that thermal state, adding or removing energy as needed and erasing coherences.
+
+> **For developers:** the `Lindbladian` class is defined in `muspinsim/lindbladian.py`. It has `.evolve()` and `.integrate_decaying()` methods analogous to those of the `Hamiltonian` class.
+
+In the [next section](./hamiltonian.md) we will look specifically at the exact shape of the terms of the Hamiltonian (and when necessary, Lindbladian) used in MuSpinSim.

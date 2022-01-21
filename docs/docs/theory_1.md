@@ -212,7 +212,7 @@ $$
 and the time evolution is
 
 $$
-\frac{\partial \rho}{\partial t} = \frac{i}{\hbar}[H, \rho]
+\frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[H, \rho]
 \qquad\implies\qquad
 \rho(t) = e^{-\frac{i}{\hbar}Ht}\rho(0)e^{\frac{i}{\hbar}Ht}.
 $$
