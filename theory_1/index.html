@@ -68,8 +68,20 @@
         </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#systems-of-multiple-spins">Systems of multiple spins</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#combining-spin-states">Combining spin states</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#combining-operators">Combining operators</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#spin-spin-couplings">Spin-spin couplings</a>
+    </li>
+        </ul>
     </li>
     </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../theory_2/">Theory of spin dynamics - II</a>
                     </li>
                 </ul>
       </div>
@@ -111,7 +123,7 @@
 <h2 id="the-basics-spin-states-and-hamiltonians">The basics: spin states and Hamiltonians</h2>
 <h3 id="spin-states-as-vectors">Spin states as vectors</h3>
 <p>Quantum mechanics is often taught first with an eye to particles, like electrons, which are described by a complex-valued wavefunction <span class="arithmatex">\(\psi(x)\)</span> all across the three-dimensional space. The value of the wave function at a point corresponds to the <em>amplitude</em> of finding the particle at that point. Quantum amplitudes act like probabilities, in the sense that their square modulus <span class="arithmatex">\(\psi^*\psi\)</span> expresses the probability of finding the particle at that specific point, but being complex numbers have the peculiar property that they can <em>interfere</em> with themselves constructively or destructively, leading to many of quantum mechanics' most counter-intuitive results (such as the way an electron's probability amplitudes add up to fringes in the double slit experiment).</p>
-<p>When it comes to individual spins, the situation is not that different, except for the fact that the wavefunction is not defined over an infinite amount of points in <span class="arithmatex">\(\mathbb{R}^3\)</span>; instead, it is defined over a discrete number of states that the spin can occupy. In the simplest case, a spin-½ particle, there are just <em>two</em> possible states: up, <span class="arithmatex">\(\mid\uparrow\rangle\)</span> and down, <span class="arithmatex">\(\mid\downarrow\rangle\)</span>. For this reason, a spin-½ particle can also be considered a "quantum bit", or <em>qubit</em>. Electrons, muons and protons (namely, hydrogen nuclei) are all spin-½ particles. The wavefunction of a spin particle can therefore be expressed with just two complex coefficients:</p>
+<p>When it comes to individual spins, the situation is not that different, except for the fact that the wavefunction is not defined over an infinite amount of points in <span class="arithmatex">\(\mathbb{R}^3\)</span>; instead, it is defined over a discrete number of states that the spin can occupy. Specifically, for a particle with spin <span class="arithmatex">\(S\)</span>, there are <span class="arithmatex">\(2S+1\)</span> possible states. In the simplest case, a spin-½ particle, there are just <em>two</em> possible states: up, <span class="arithmatex">\(\mid\uparrow\rangle\)</span> and down, <span class="arithmatex">\(\mid\downarrow\rangle\)</span>. For this reason, a spin-½ particle can also be considered a "quantum bit", or <em>qubit</em>. Electrons, muons and protons (namely, hydrogen nuclei) are all spin-½ particles. The wavefunction of a spin-½ particle can therefore be expressed with just two complex coefficients:</p>
 <div class="arithmatex">\[
 \mid\psi_{1/2}\rangle = a\mid\uparrow\rangle + b\mid\downarrow\rangle
 \]</div>
@@ -247,7 +259,9 @@ i &amp; 0
 <li>the component along <em>z</em> of the moment is determined by the relative probabilities of finding the spin up or down. If the probability are equal, the component along <em>z</em> is zero;</li>
 <li>the component in the <em>xy</em> plane can only be non-zero if the spin exists in some mixture of up and down states, and it's maximum if the up and down states have amplitudes with the same modulus. The specific direction of the component is then controlled by the relative <em>phase</em> of those amplitudes.</li>
 </ul>
-<p><strong>For developers</strong>: in MuSpinSim, quantum operators are defined by the class <code>Operator</code> and derived classes in <code>muspinsim/spinop.py</code>.</p>
+<blockquote>
+<p><strong>For developers</strong>: quantum operators are defined by the class <code>Operator</code> and derived classes in <code>muspinsim/spinop.py</code>.</p>
+</blockquote>
 <h3 id="hamiltonian-and-time-evolution">Hamiltonian and time evolution</h3>
 <p>Hamiltonians are operators with the additional required property of being <em>Hermitian</em>, that is, they have to be identical to their conjugate transpose. For a spin system, the Hamiltonian is the operator whose expectation value is the energy of that system. The Hamiltonian also controls the time evolution of the system; like for every other quantum system, the dynamics of a spin system are defined by the equation</p>
 <div class="arithmatex">\[
@@ -262,7 +276,9 @@ H\mid\psi\rangle = i\hbar\frac{\partial}{\partial t}\mid\psi\rangle,
 H = \sum_i \lambda_i \mid u_i \rangle \langle u_i \mid = UH_0U^\dagger
 $$
 where <span class="arithmatex">\(H_0\)</span> is a diagonal matrix with the eigenvalues along its diagonal, and <span class="arithmatex">\(U\)</span> is the matrix with the eigenvectors for columns (and <span class="arithmatex">\(U^\dagger\)</span> its conjugate transpose). One can then transform the wavefunction in this new basis, and the matrix exponential of the now diagonal Hamiltonian becomes trivial.</p>
-<p><strong>For developers:</strong> in MuSpinSim, the <code>Hamiltonian</code> class is a mixin inheriting from <code>Operator</code> and <code>Hermitian</code> and is found in <code>muspinsim/hamiltonian.py</code>.</p>
+<blockquote>
+<p><strong>For developers:</strong> the <code>Hamiltonian</code> class is a mixin inheriting from <code>Operator</code> and <code>Hermitian</code> and is found in <code>muspinsim/hamiltonian.py</code>.</p>
+</blockquote>
 <h3 id="the-density-matrix-formalism">The density matrix formalism</h3>
 <p>Until here we've focused on wave functions as a way to write quantum states. However, in practice, in MuSpinSim we never use simple wave functions to express the state of a system - rather, we use <em>density matrices</em>. 
 The density matrix formalism is a generalisation of the state vectors we described above that allows us to describe <em>statistical ensembles</em> of quantum states, rather than just individual pure states. Density matrices are especially useful and important when dealing with spin systems at a thermal equilibrium, which is what makes them so essential in MuSpinSim, as any spin other than the muon itself is usually in a thermal state at the beginning of the experiment. 
@@ -282,13 +298,13 @@ a^*a &amp; b^*a \\
 a^*b &amp; b^*b
 \end{bmatrix}.
 \]</div>
-<p>One can see how the normalisation rule implies that <span class="arithmatex">\(\mathrm{Tr}(\rho) = 1\)</span>. The expectation value of an operator can be found</p>
-<p>$$
-\langle O \rangle = \mathrm{Tr}(\rho O)
-$$
-and the time evolution is</p>
+<p>This type of product between vectors is called the <em>outer product</em>. One can see how the normalisation rule implies that <span class="arithmatex">\(\mathrm{Tr}(\rho) = 1\)</span>. The expectation value of an operator can be found</p>
 <div class="arithmatex">\[
-\frac{\partial \rho}{\partial t} = \frac{i}{\hbar}[H, \rho]
+\langle O \rangle = \mathrm{Tr}(\rho O)
+\]</div>
+<p>and the time evolution is</p>
+<div class="arithmatex">\[
+\frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[H, \rho]
 \qquad\implies\qquad
 \rho(t) = e^{-\frac{i}{\hbar}Ht}\rho(0)e^{\frac{i}{\hbar}Ht}.
 \]</div>
@@ -323,18 +339,179 @@ and the time evolution is</p>
 0 &amp; \frac{1}{2}
 \end{bmatrix}.
 \]</div>
-<p>We can then compute the expectation value of the operator <span class="arithmatex">\(S_x\)</span>:</p>
-<p>$$
+<p>This density matrix describes a <em>mixed</em> state, as it can not be expressed as the outer product of any vector with itself.  We can then compute the expectation value of the operator <span class="arithmatex">\(S_x\)</span>:</p>
+<div class="arithmatex">\[
 \langle S_x \rangle = \mathrm{Tr}(\rho_{tot} S_x) = 0.
-$$
-This is a very simple example of <em>decoherence</em> - because we are measuring a statistical ensemble of quantum systems, rather than a single spin, some information on the phase factors of its wavefunctions (the off-diagonal terms of the density matrix) can be averaged out and lost. In real life we almost never observe spins in isolations, and spin ensembles that have had a long time to exchange energy with their environment and all its random thermal fluctuations are highly decohered, as each individual spin has had its own dynamical history. This is effectively the case for the spins one usually finds inside a sample when performing a muon spin resonance experiment. For this reason we need to use density matrices when dealing with systems that have been initialised in a thermal state, as well as when trying to approximate the interaction of an <em>open</em> quantum system with its surrounding environment, exchanging energy with it and thus relaxing towards a thermal state.</p>
+\]</div>
+<p>This is a very simple example of <em>decoherence</em> - because we are measuring a statistical ensemble of quantum systems, rather than a single spin, some information on the phase factors of its wavefunctions (the off-diagonal terms of the density matrix) can be averaged out and lost. In real life we almost never observe spins in isolations, and spin ensembles that have had a long time to exchange energy with their environment and all its random thermal fluctuations are highly decohered, as each individual spin has had its own dynamical history. This is effectively the case for the spins one usually finds inside a sample when performing a muon spin resonance experiment. For this reason we need to use density matrices when dealing with systems that have been initialised in a thermal state, as well as when trying to approximate the interaction of an <em>open</em> quantum system with its surrounding environment, exchanging energy with it and thus relaxing towards a thermal state.</p>
+<blockquote>
+<p><strong>For developers:</strong> the <code>DensityOperator</code> class inherits from <code>Operator</code> and is found in <code>muspinsim/spinop.py</code>.</p>
+</blockquote>
 <h2 id="systems-of-multiple-spins">Systems of multiple spins</h2>
+<h3 id="combining-spin-states">Combining spin states</h3>
+<p>Systems of only one spin are not very interesting for our purposes. A lot of muon spin resonance experiments involve some kind of interaction - either hyperfine interaction between a muon and an electron in a radical, or hyperfine <em>mediated</em> interaction between the muon and another atomic nucleus (like hydrogen), or dipolar interaction, and so on. To see how we build such a compound state, let's consider the case of an electron and a muon, two spin-½ particles.
+If each particle is described on a basis of <span class="arithmatex">\(\mid \uparrow \rangle\)</span> and <span class="arithmatex">\(\mid \downarrow \rangle\)</span>, then the combined system has four possible states, corresponding to all permutations of individual states: <span class="arithmatex">\(\mid \uparrow \uparrow \rangle\)</span>, <span class="arithmatex">\(\mid \uparrow \downarrow \rangle\)</span>, <span class="arithmatex">\(\mid \downarrow \uparrow \rangle\)</span> and <span class="arithmatex">\(\mid \downarrow \downarrow \rangle\)</span>. In general, a system of <span class="arithmatex">\(N\)</span> spin-½ particles will have <span class="arithmatex">\(2^N\)</span> possible states. If the two spins were prepared independently in their own state, the state of the combined system can be built using the so-called <em>Kronecker product</em> between vectors:</p>
+<div class="arithmatex">\[
+\mid\psi_{\mu}\rangle = \begin{bmatrix}
+\frac{\sqrt{2}}{2} \\
+\frac{\sqrt{2}}{2}
+\end{bmatrix}
+\qquad
+\mid\psi_{e}\rangle = \begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
+\qquad
+\mid\psi_{\mu,e}\rangle = \mid\psi_{\mu}\rangle \otimes \mid\psi_{e}\rangle = 
+\begin{bmatrix}
+\frac{\sqrt{2}}{2}\cdot
+\begin{bmatrix}
+1 \\
+0
+\end{bmatrix} \\
+\frac{\sqrt{2}}{2}\cdot
+\begin{bmatrix}
+1 \\
+0
+\end{bmatrix}
+\end{bmatrix} = 
+\begin{bmatrix}
+\frac{\sqrt{2}}{2} \\
+0 \\
+\frac{\sqrt{2}}{2} \\
+0
+\end{bmatrix}
+\]</div>
+<p>In this convention, we say the index of the electron states updates faster (moving down the column vector we change electron state more rapidly than we do muon states). Of course, it would be possible to also decide for the opposite convention and have the index of the muon states be the faster ones - it does not matter as long as we keep our convention consistent throughout all the calculations that follow.
+The same exact approach can be used for density matrices too. Consider the following state, describing a muon polarised along <em>x</em> and an unpolarised electron. This is a typical starting state to use for muon spin dynamics simulations:</p>
+<div class="arithmatex">\[
+\rho_\mu = \begin{bmatrix}
+\frac{1}{2} &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; \frac{1}{2}
+\end{bmatrix}
+\qquad
+\rho_e = \begin{bmatrix}
+\frac{1}{2} &amp; 0           \\
+0           &amp; \frac{1}{2}
+\end{bmatrix}
+\]</div>
+<div class="arithmatex">\[
+\rho_{\mu,e} = \rho_{\mu}\otimes \rho_{e} = 
+\begin{bmatrix}
+\frac{1}{2}\cdot
+\begin{bmatrix}
+\frac{1}{2} &amp; 0           \\
+0           &amp; \frac{1}{2}
+\end{bmatrix} &amp; 
+\frac{1}{2}\cdot
+\begin{bmatrix}
+\frac{1}{2} &amp; 0           \\
+0           &amp; \frac{1}{2}
+\end{bmatrix} \\ 
+\frac{1}{2}\cdot
+\begin{bmatrix}
+\frac{1}{2} &amp; 0           \\
+0           &amp; \frac{1}{2}
+\end{bmatrix} &amp; 
+\frac{1}{2}\cdot
+\begin{bmatrix}
+\frac{1}{2} &amp; 0           \\
+0           &amp; \frac{1}{2}
+\end{bmatrix} 
+\end{bmatrix} = 
+\begin{bmatrix}
+\frac{1}{4} &amp; 0 &amp; \frac{1}{4} &amp; 0 \\
+0 &amp; \frac{1}{4} &amp; 0 &amp; \frac{1}{4} \\
+\frac{1}{4} &amp; 0 &amp; \frac{1}{4} &amp; 0 \\
+0 &amp; \frac{1}{4} &amp; 0 &amp; \frac{1}{4} 
+\end{bmatrix}
+\]</div>
+<p>Any state built by Kronecker product of two individual states will have the particles acting effectively independently from one another. This is not always the case. Evolution under an Hamiltonian that couples two spins will produce correlations between them. Consider the following vector state:</p>
+<div class="arithmatex">\[
+\mid \psi_{corr} \rangle = \begin{bmatrix}
+\frac{\sqrt{2}}{2} \\
+0 \\
+0 \\
+\frac{\sqrt{2}}{2}
+\end{bmatrix}
+\]</div>
+<p>In this state, the values measured on one particle depend on those measured on the other - either they're both up, or they're both down. This is an example of a state that can not be obtained by simply multiplying together two single particle states, because it's an example of <em>entanglement</em>.</p>
+<blockquote>
+<p><strong>For developers:</strong> all classes inheriting from <code>Operator</code> have a <code>.kron()</code> method that allows Kronecker products with other operators, which will internally keep track of the dimensions of the system in order to check for compatibility in any subsequent operations.</p>
+</blockquote>
+<h3 id="combining-operators">Combining operators</h3>
+<p>We've seen in the previous section how to combine multiple density matrices. Since density matrices are operators, it should be clear that the rules for combining operators are exactly the same, using the Kronecker product of individual matrices. For example, a term <span class="arithmatex">\(S_z^\mu S_x^e\)</span> in matrix form will be:</p>
+<div class="arithmatex">\[
+S_z^\mu S_x^e = \begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; -1
+\end{bmatrix}
+\otimes
+\begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix} = 
+\begin{bmatrix}
+0 &amp; 1 &amp; 0 &amp; 0 \\
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp;-1 \\
+0 &amp; 0 &amp;-1 &amp; 0
+\end{bmatrix}
+\]</div>
+<p>Sometimes, even in a system with multiple spins, operators involving only one of them, like <span class="arithmatex">\(S_x^\mu\)</span>, might be relevant. In that case we must understand them as having an implicit identity matrix for all the spins that don't appear explicitly. So we have:</p>
+<div class="arithmatex">\[
+S_x^\mu = S_x^\mu\mathbb{I}^e =
+\begin{bmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{bmatrix}
+\otimes
+\begin{bmatrix}
+1 &amp; 0 \\
+0 &amp; 1
+\end{bmatrix} = 
+\begin{bmatrix}
+0 &amp; 0 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp;1 \\
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp;1 &amp; 0 &amp; 0 \\
+\end{bmatrix}
+\]</div>
+<h3 id="spin-spin-couplings">Spin-spin couplings</h3>
+<p>All spin resonance experiments are driven by interactions between the muon and other spins. These interactions can have different nature, but are generally described by tensors. In MuSpinSim, one can either input these tensors in (as calculated with an ab initio software, for example), or run a fitting routine to try and infer them from the results of an experiment. These tensors describe an interaction in <em>space</em>, and thus are always <span class="arithmatex">\(3\times 3\)</span> matrices. How does one build these coupling terms with the formalism we're using? Let's consider a simple case: an electron and a muon coupled by a hyperfine tensor <span class="arithmatex">\(\mathbf{A}\)</span> in zero external magnetic field. The Hamiltonian is then calculated as follows:</p>
+<div class="arithmatex">\[
+\begin{split}
+\mathcal{H} = &amp; \mathbf{S}^\mu\mathbf{A}\mathbf{S}^e = \begin{bmatrix}
+S^\mu_x &amp; S^\mu_y &amp; S^\mu_z
+\end{bmatrix}
+\begin{bmatrix}
+A_{xx} &amp; A_{xy} &amp; A_{xz} \\
+A_{xy} &amp; A_{yy} &amp; A_{yz} \\
+A_{xz} &amp; A_{yz} &amp; A_{zz}
+\end{bmatrix}
+\begin{bmatrix}
+S^e_x \\ 
+S^e_y \\ 
+S^e_z
+\end{bmatrix}
+= \\
+ = &amp; A_{xx}S^\mu_xS^e_x + A_{yy}S^\mu_yS^e_y + A_{zz}S^\mu_zS^e_z + \\
+ +&amp;A_{xy}(S^\mu_xS^e_y+S^\mu_yS^e_x) + A_{xz}(S^\mu_xS^e_z+S^\mu_zS^e_x) +  A_{yz}(S^\mu_yS^e_z+S^\mu_zS^e_y)
+\end{split}
+\]</div>
+<p>In other words, it is a sum of operators as the ones described above. If the spin system included more spins than just the muon and electron, those would have to be implicitly included too as identity matrices in the Kronecker products. In the case of a two spin system, the final sum can be seen as a sum of <span class="arithmatex">\(4 \times 4\)</span> matrices, whereas the vectors <span class="arithmatex">\(\mathbf{S}^\mu\)</span> and <span class="arithmatex">\(\mathbf{S}^e\)</span> are really "vectors of matrices". Numerically, we would store them as <span class="arithmatex">\(3\times4\times4\)</span> arrays.</p>
+<blockquote>
+<p><strong>For developers:</strong> tensor products involving spin operators and the creation of terms like the above are handled by the <code>InteractionTerm</code> class and its children, found in <code>muspinsim/spinsys.py</code>.</p>
+</blockquote>
+<p>Next up, we'll look at <a href="../theory_2/">how calculations are actually initialised and run in MuSpinSim</a>.</p>
               
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../theory_2/" class="btn btn-neutral float-right" title="Theory of spin dynamics - II">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href=".." class="btn btn-neutral" title="Welcome to MuSpinSim's documentation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -365,6 +542,8 @@ This is a very simple example of <em>decoherence</em> - because we are measuring
     
       <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../theory_2/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

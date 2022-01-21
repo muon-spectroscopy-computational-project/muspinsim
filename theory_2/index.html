@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Theory of spin dynamics - II - MuSpinSim Documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Theory of spin dynamics - II";
+    var mkdocs_page_input_path = "theory_2.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MuSpinSim Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Welcome to MuSpinSim's documentation</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../theory_1/">Theory of spin dynamics - I</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Theory of spin dynamics - II</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#preparing-the-initial-state">Preparing the initial state</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#time-evolution">Time evolution</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#closed-system">Closed system</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#integral-of-asymmetry">Integral of asymmetry</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#open-system">Open system</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MuSpinSim Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Theory of spin dynamics - II</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="theory-of-spin-dynamics-ii">Theory of spin dynamics - II</h1>
+<h2 id="preparing-the-initial-state">Preparing the initial state</h2>
+<p>When performing a simulation of a muon experiment, the first step is to prepare the system in an appropriate quantum state to evolve under the Hamiltonian. MuSpinSim uses the following rules to prepare this state:</p>
+<ul>
+<li>the muon is prepared in a state polarised along the direction of the beam (conventionally, the <em>x</em> axis in the laboratory frame of reference);</li>
+<li>every other spin is prepared in a thermal density matrix state.</li>
+</ul>
+<p>A thermal density matrix state simply means a state in which every energy level is populated with a probability following the Boltzmann distribution, and fully decohered otherwise. In other words:</p>
+<div class="arithmatex">\[
+    \rho_{th}(T) = \frac{e^{-\frac{\mathcal{H}}{k_BT}}}{\mathrm{Tr}\left(e^{-\frac{\mathcal{H}}{k_BT}}\right)}
+\]</div>
+<p>where the trace below is the partition function of the system. 
+One can see how finding this matrix would in principle require diagonalising the Hamiltonian of the whole system the muon is being inserted in. In practice, in MuSpinSim we use one of two approximations:</p>
+<ul>
+<li>by default, the <span class="arithmatex">\(T=\infty\)</span> approximation is used, in which all states are equally populated. The advantage of this approximation is that it's completely invariant to any change of basis - it doesn't make a difference what exactly the eigenstates of the Hamiltonian are. The real temperature of the sample, of course, is not infinite, but as long as <span class="arithmatex">\(k_BT \gg \mathcal{H}\)</span>, that's a fair enough approximation;</li>
+<li>if requested by the user, finite temperature can be used, but the Hamiltonian is simplified to the Zeeman Hamiltonian, <span class="arithmatex">\(\mathcal{H} \approx \hbar \sum_i\gamma_i \mathbf{B}\mathbf{S}^{(i)}\)</span>.  This approximation keeps all spins independent from each other, ignoring their possible couplings, and is very effective in the case in which a strong magnetic field is applied and the Zeeman term is prevalent in the Hamiltonian. It should not be used for zero field experiment simulations.</li>
+</ul>
+<blockquote>
+<p><strong>For developers:</strong> the initial density matrix is calculated in the property <code>.rho0()</code> of the class <code>ExperimentRunner</code>, found in <code>muspinsim/experiment.py</code>.</p>
+</blockquote>
+<h2 id="time-evolution">Time evolution</h2>
+<h3 id="closed-system">Closed system</h3>
+<p>Time evolution for the density matrix of a closed quantum system is controlled by the von Neumann equation that we've already seen:</p>
+<div class="arithmatex">\[
+\frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[\mathcal{H}, \rho]
+\]</div>
+<p>If we write the matrix quantities with indices (repeated indices imply summation) we can write this as a system of coupled differential equations for each individual coefficient:</p>
+<div class="arithmatex">\[
+\frac{\partial \rho_{ij}}{\partial t} = -\frac{i}{\hbar}\left(\mathcal{H}_{ik}\rho_{kj}-\rho_{ik}\mathcal{H}_{kj}\right)
+\]</div>
+<p>This gets significantly simpler when we express both the matrices in a basis in which the Hamiltonian is diagonal, and thus <span class="arithmatex">\(\mathcal{H}_{ij} = \lambda_i\delta_{ij}\)</span>:</p>
+<div class="arithmatex">\[
+\frac{\partial \rho_{ij}}{\partial t} = -\frac{i}{\hbar}\rho_{ij}\left(\lambda_i-\lambda_j\right) 
+\qquad
+\implies
+\qquad
+\rho_{ij}(t) = e^{-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right) t}\rho_{ij}(0)
+\]</div>
+<p>This way we can see that the equations are completely decoupled. Coefficients on the diagonal of the density matrix don't change, while off-diagonal coefficients gain a phase factor at a constant rate that is dependent on the differences between the Hamiltonian eigenvalues. This method gives us the exact evolution of the system and perfectly preserves unitarity. The downside of it is that it requires a full diagonalization of the Hamiltonian. However, many spin systems that we are interested in are relatively small, and one single diagonalisation for each of them isn't a big deal. Cheaper, more approximate methods might be implemented in the future, but at the moment, MuSpinSim can easily carry out calculations on systems that don't exceed nine or ten spins on a laptop in a few minutes.</p>
+<h3 id="integral-of-asymmetry">Integral of asymmetry</h3>
+<p>In muon experiments we're usually interested in measuring the asymmetry of positron hits between the forward and back detectors in the experimental setup - namely, the polarisation of the muon along a certain axis, as it evolves in time. However, in some cases (like ALC experiments) what we actually care about is the <em>integral</em> of this asymmetry throughout a certain time interval. This could be trivially computed simply by computing the time evolution and then integrating numerically. However MuSpinSim in this case uses a different algorithm to perform the integral analytically, saving some unnecessary steps. The full derivation of the formula is detailed in <a href="https://arxiv.org/abs/1704.02785">this arXiv paper</a>. The essence of it is that, if we have an operator <span class="arithmatex">\(S\)</span> with matrix elements <span class="arithmatex">\(s_{ij}\)</span> whose integral value we want to compute:</p>
+<p>$$
+\langle P \rangle = \int_0^\infty \langle S \rangle(t) e^{-\frac{t}{\tau}} dt
+$$
+where the integral is weighed with the decay process of the muon with lifetime <span class="arithmatex">\(\tau\)</span>, then we can define a new operator <span class="arithmatex">\(P\)</span> with matrix elements:</p>
+<div class="arithmatex">\[
+p_{ij} = \frac{s_{ij}}{\frac{1}{\tau}-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right)}
+\]</div>
+<p>and evaluating its expectation value on the initial state of the system will in a single pass return the value of the desired integral.</p>
+<h3 id="open-system">Open system</h3>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../theory_1/" class="btn btn-neutral" title="Theory of spin dynamics - I"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../theory_1/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/config.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
