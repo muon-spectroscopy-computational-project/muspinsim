@@ -72,6 +72,10 @@
     </ul>
                     </li>
                 </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../hamiltonian/">Hamiltonian</a>
+                    </li>
+                </ul>
       </div>
     </div>
     </nav>
@@ -127,7 +131,7 @@ One can see how finding this matrix would in principle require diagonalising the
 </blockquote>
 <h2 id="time-evolution">Time evolution</h2>
 <h3 id="closed-system">Closed system</h3>
-<p>Time evolution for the density matrix of a closed quantum system is controlled by the von Neumann equation that we've already seen:</p>
+<p>Time evolution for the density matrix of a closed quantum system is controlled by the Liouville-von Neumann equation that we've already seen:</p>
 <div class="arithmatex">\[
 \frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[\mathcal{H}, \rho]
 \]</div>
@@ -144,6 +148,9 @@ One can see how finding this matrix would in principle require diagonalising the
 \rho_{ij}(t) = e^{-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right) t}\rho_{ij}(0)
 \]</div>
 <p>This way we can see that the equations are completely decoupled. Coefficients on the diagonal of the density matrix don't change, while off-diagonal coefficients gain a phase factor at a constant rate that is dependent on the differences between the Hamiltonian eigenvalues. This method gives us the exact evolution of the system and perfectly preserves unitarity. The downside of it is that it requires a full diagonalization of the Hamiltonian. However, many spin systems that we are interested in are relatively small, and one single diagonalisation for each of them isn't a big deal. Cheaper, more approximate methods might be implemented in the future, but at the moment, MuSpinSim can easily carry out calculations on systems that don't exceed nine or ten spins on a laptop in a few minutes.</p>
+<blockquote>
+<p><strong>For developers:</strong> time evolution of a system is handled by the <code>.evolve()</code> method of the <code>Hamiltonian</code> class.</p>
+</blockquote>
 <h3 id="integral-of-asymmetry">Integral of asymmetry</h3>
 <p>In muon experiments we're usually interested in measuring the asymmetry of positron hits between the forward and back detectors in the experimental setup - namely, the polarisation of the muon along a certain axis, as it evolves in time. However, in some cases (like ALC experiments) what we actually care about is the <em>integral</em> of this asymmetry throughout a certain time interval. This could be trivially computed simply by computing the time evolution and then integrating numerically. However MuSpinSim in this case uses a different algorithm to perform the integral analytically, saving some unnecessary steps. The full derivation of the formula is detailed in <a href="https://arxiv.org/abs/1704.02785">this arXiv paper</a>. The essence of it is that, if we have an operator <span class="arithmatex">\(S\)</span> with matrix elements <span class="arithmatex">\(s_{ij}\)</span> whose integral value we want to compute:</p>
 <p>$$
@@ -154,13 +161,38 @@ where the integral is weighed with the decay process of the muon with lifetime <
 p_{ij} = \frac{s_{ij}}{\frac{1}{\tau}-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right)}
 \]</div>
 <p>and evaluating its expectation value on the initial state of the system will in a single pass return the value of the desired integral.</p>
+<blockquote>
+<p><strong>For developers:</strong> integral expectation values are handled by the <code>.integrate_decaying()</code> method of the <code>Hamiltonian</code> class.</p>
+</blockquote>
 <h3 id="open-system">Open system</h3>
+<p>Systems described by the Liouville-von Neumann equation are closed; they conserve energy and evolve in a perfectly reversible way. This is sometimes not a good approximation, because in real life, the chunk of the sample that we're describing is of course only a small part of a much bigger system, fully coupled to it and interacting in a lot of ways. Since including an environment of hundreds or thousands of spins is not practical, a more common approach is to use a <em>master equation</em> that allows to describe irreversible evolution through some kind of energy exchange with environmental degrees of freedom.
+In MuSpinSim, the only such master equation that is supported is the simplest one, the Lindblad equation. It is an extension of the Liouville-von Neumann equation including dissipative terms:</p>
+<div class="arithmatex">\[
+\frac{\partial \rho}{\partial t} = -\frac{i}{\hbar}[\mathcal{H}, \rho] + \sum_{i=1}^{N^2-1}\alpha_i\left(L_i \rho L_i^\dagger - \frac{1}{2}\left\{L_i^\dagger L_i, \rho\right\} \right)
+\]</div>
+<p>Here the <span class="arithmatex">\(\alpha_i\)</span> are coefficients that express the strength of the coupling with a certain degree of freedom, and the <span class="arithmatex">\(L_i\)</span> are the so-called Lindblad or jump operators of the system, each connected to one coefficient. The curly braces denote the <em>anticommutator</em> of two matrices: <span class="arithmatex">\(\{A, B\} = AB+BA\)</span>.</p>
+<p>This equation unfortunately does not have a neat solution in exponential form as the one seen above in the matrix formalism. It is however possible to find something very close to it by making a few small changes in the representation, namely, expressing the density matrix in what is called the <em>Fock-Liouville space</em>. An excellent and detailed explanation of this technique is given in this <a href="https://arxiv.org/abs/1906.04478">useful introductory paper by Daniel Manzano</a>. The essence of it is that we "straighten up" the density matrix, writing all its elements in a single column vector. For example, a <span class="arithmatex">\(4\times 4\)</span> matrix can turn into a <span class="arithmatex">\(16\)</span> elements column vector. It is then possible to write a matrix called the Lindbladian (that in the example will be <span class="arithmatex">\(16 \times 16\)</span>) that operates on it exactly like a Hamiltonian does on a single wavefunction:</p>
+<div class="arithmatex">\[
+\frac{\partial}{\partial t} \mid \rho \rangle\rangle = \mathcal{L} \mid \rho \rangle\rangle
+\]</div>
+<p>and following from that, it is possible to integrate the equations as trivially as seen for the others by diagonalising the Lindbladian. Care must be taken though because unlike for the Hamiltonian, there is no guarantee that the Lindbladian is Hermitian, or for that matter, diagonalizable at all! This can potentially cause issues - however in my experience well-defined systems will be solvable without problems.</p>
+<p>In MuSpinSim, the only way dissipation can be included in a calculation is by putting an individual spin in contact with a thermal reserve. This is done by defining two jump operators for that spin, <span class="arithmatex">\(S_+^i\)</span> and <span class="arithmatex">\(S_-^i\)</span>, and the corresponding dissipation coefficients such that</p>
+<div class="arithmatex">\[
+\frac{\alpha_+^i}{\alpha_-^i} = \exp\left(-\frac{\hbar\gamma |B|}{k_BT}\right)
+\]</div>
+<p>where <span class="arithmatex">\(T\)</span> is the temperature of the system, and <span class="arithmatex">\(\hbar\gamma|B|\)</span> is an approximation using only the Zeeman interaction of the energy gap between successive states of the spin. For <span class="arithmatex">\(T &lt; \infty\)</span>, this is subject to the same limits as the choice of using only the Zeeman interaction to define the initial thermal state density matrix. In fact, the effect of these terms is to tend to drive the individual spin's state towards exactly that thermal state, adding or removing energy as needed and erasing coherences.</p>
+<blockquote>
+<p><strong>For developers:</strong> the <code>Lindbladian</code> class is defined in <code>muspinsim/lindbladian.py</code>. It has <code>.evolve()</code> and <code>.integrate_decaying()</code> methods analogous to those of the <code>Hamiltonian</code> class.</p>
+</blockquote>
+<p>In the <a href="../hamiltonian/">next section</a> we will look specifically at the exact shape of the terms of the Hamiltonian (and when necessary, Lindbladian) used in MuSpinSim.</p>
               
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../hamiltonian/" class="btn btn-neutral float-right" title="Hamiltonian">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../theory_1/" class="btn btn-neutral" title="Theory of spin dynamics - I"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -191,6 +223,8 @@ p_{ij} = \frac{s_{ij}}{\frac{1}{\tau}-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\r
     
       <span><a href="../theory_1/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../hamiltonian/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

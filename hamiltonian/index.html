@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Hamiltonian - MuSpinSim Documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
+
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Hamiltonian";
+    var mkdocs_page_input_path = "hamiltonian.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> MuSpinSim Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Welcome to MuSpinSim's documentation</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../theory_1/">Theory of spin dynamics - I</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../theory_2/">Theory of spin dynamics - II</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Hamiltonian</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#zeeman-hamiltonian">Zeeman Hamiltonian</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#hyperfine-hamiltonian">Hyperfine Hamiltonian</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dipolar-hamiltonian">Dipolar Hamiltonian</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#quadrupolar-hamiltonian">Quadrupolar Hamiltonian</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">MuSpinSim Documentation</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Hamiltonian</li>
+    <li class="wy-breadcrumbs-aside">
+      
+    </li>
+  </ul>
+  
+  <hr/>
+</div>
+
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="hamiltonian">Hamiltonian</h1>
+<p>In this section we will go a bit more in detail into the general Hamiltonian for a system in MuSpinSim, each term, and how they are defined and implemented.</p>
+<p>The generic Hamiltonian for any MuSpinSim simulation can be written as follows:</p>
+<div class="arithmatex">\[
+\mathcal{H} = \mathcal{H}_Z + \mathcal{H}_{hfine} + \mathcal{H}_{dip} + \mathcal{H}_Q
+\]</div>
+<p>Where:</p>
+<ul>
+<li><span class="arithmatex">\(\mathcal{H}_Z\)</span> is the <a href="#zeeman-hamiltonian">Zeeman Hamiltonian</a></li>
+<li><span class="arithmatex">\(\mathcal{H}_{hfine}\)</span> is the <a href="#hyperfine-hamiltonian">hyperfine Hamiltonian</a></li>
+<li><span class="arithmatex">\(\mathcal{H}_{dip}\)</span> is the <a href="#dipolar-hamiltonian">dipolar Hamiltonian</a></li>
+<li><span class="arithmatex">\(\mathcal{H}_Q\)</span> is the <a href="#quadrupolar-hamiltonian">quadrupolar Hamiltonian</a></li>
+</ul>
+<p>Let's now look at these more in detail.</p>
+<blockquote>
+<p><strong>For developers:</strong> the system Hamiltonian is built by the <code>SpinSystem</code> class, found in <code>muspinsim/spinsys.py</code>. While here we detail the terms in energy units, in practice MuSpinSim internally uses Hamiltonians in frequency units, specifically, MHz. This tends to be a very natural choice of unit for these problems as it coincides with the units used for hyperfine tensors, and keeps the numbers small and manageable, minimising risks of over or underflow. Working in SI units, this would mean that to get them in Joule you'd have to multiply by a factor of <span class="arithmatex">\(h\cdot 10^6\)</span> . </p>
+</blockquote>
+<h2 id="zeeman-hamiltonian">Zeeman Hamiltonian</h2>
+<p>The Zeeman interaction is the interaction of any spin with an external magnetic field. In MuSpinSim this mainly means a strong global field applied to the entire experiment, though it is possible for the user to also set custom local magnetic fields for individual spins (representing for example the effect of nearby paramagnetic nuclei). The Hamiltonian written explicitly is:</p>
+<div class="arithmatex">\[
+\mathcal{H}_Z = 2\pi\hbar\sum_i^N \gamma_i (\mathbf{B}+\mathbf{B}_i)\mathbf{S}_i
+\]</div>
+<p>The sum is intended over all spins, with the gyromagnetic ratios <span class="arithmatex">\(\gamma_i\)</span> depending on the nuclei's own properties. The magnetic field here was split in two parts, a global and a local one which bears the index of the spin. Of course, both of these can be zero, and by default are if the user does not specify anything. <span class="arithmatex">\(\mathbf{S}_i\)</span> is the vector of spin operators.</p>
+<blockquote>
+<p><strong>For developers:</strong> <code>SpinSystem</code> has an <code>add_zeeman_term()</code> method to deal with this term.</p>
+</blockquote>
+<h2 id="hyperfine-hamiltonian">Hyperfine Hamiltonian</h2>
+<p>The hyperfine interaction is often the main interaction we care about in muon spin resonance simulations. It represents an interaction between an electronic spin and a nuclear one (muon or otherwise). While physically it is often distinguished in two terms - a Fermi contact term due to the electronic spin density at the site of the nucleus as well as a dipolar part at a distance - these are effectively both incorporated in a single <span class="arithmatex">\(3 \times 3\)</span> symmetric tensor with non-zero trace. The following interaction between spins is written like this:</p>
+<div class="arithmatex">\[
+\mathcal{H}_{hfine} = 2\pi\hbar \sum_{i &lt; j}^N \mathbf{S}_i\mathbf{A}_{ij}\mathbf{S}_j
+\]</div>
+<p>(assuming a hyperfine tensor <span class="arithmatex">\(\mathbf{A}_{ij}\)</span> in frequency units). MuSpinSim also makes sure that hyperfine terms can only be defined when one of the two spins is confirmed to be an electron.</p>
+<blockquote>
+<p><strong>For developers:</strong> <code>SpinSystem</code> has an <code>add_hyperfine_term()</code> method to deal with this term.</p>
+</blockquote>
+<h2 id="dipolar-hamiltonian">Dipolar Hamiltonian</h2>
+<p>Dipole-dipole interactions are the result of one spin interacting with the magnetic field generated by a different one. Conceptually, they are not unlike hyperfine interactions. The differences between them are due to the fact that unlike with a muon or nucleus and an electron, both dipoles in this case are considered point-like. This leads to two consequences:</p>
+<ul>
+<li>there is no Fermi contact term, as the two spins don't overlap; therefore the tensor is traceless;</li>
+<li>both spins can be approximated as being localised at precise points, which gives a very well defined geometric formula for the interaction tensor between them that only depends on the vector connecting them.</li>
+</ul>
+<p>Given two spins <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>, and a vector connecting them <span class="arithmatex">\(\mathbf{r}_{ij}\)</span>, the dipolar tensor for them can be computed as:</p>
+<div class="arithmatex">\[
+\mathbf{D}_{ij} = -\frac{\mu_0\hbar \gamma_i \gamma_j}{2|r_{ij}|^3}\left(\frac{3}{|r_{ij}|^2}\mathbf{r}_{ij}\otimes \mathbf{r}_{ij} - \mathbb{I} \right)
+\]</div>
+<p>This will return a tensor in frequency units, and thus the dipolar Hamiltonian can be defined like the hyperfine one:</p>
+<div class="arithmatex">\[
+\mathcal{H}_{dip} = 2\pi\hbar \sum_{i &lt; j}^N \mathbf{S}_i\mathbf{D}_{ij}\mathbf{S}_j
+\]</div>
+<h2 id="quadrupolar-hamiltonian">Quadrupolar Hamiltonian</h2>
+<p>Nuclei with spin greater than ½ can possess a <em>quadrupole moment</em>. This can be roughly understood in classical terms as the result of the nuclei's internal charge distribution (due to proton and neutron arrangement) not being perfectly symmetric, and the resulting inhomogeneities in the electrostatic field. Due to having spin 1/2, neither electrons, nor muons, nor protons possess a quadrupole moment. However, some other nuclei (most commonly, <span class="arithmatex">\(^{14}N\)</span>) do possess a quadrupole moment. In presence of an electric field gradient (EFG), this affects the energies of their spin levels through quadrupolar self-interaction. This can then indirectly affect the results of a muon experiment when the particle interacts with the quadrupolar nucleus either through dipolar or hyperfine coupling. For this reason, MuSpinSim includes the possibility of simulating quadrupolar interactions as well.
+The Hamiltonian term for quadrupolar interactions depends mainly on the EFG, which can be written as a <span class="arithmatex">\(3 \times 3\)</span> symmetric, traceless tensor:</p>
+<div class="arithmatex">\[
+\mathbf{Z} = \begin{bmatrix}
+\frac{\partial E_x}{\partial x} &amp; \frac{\partial E_x}{\partial y} &amp; \frac{\partial E_x}{\partial z} \\
+\frac{\partial E_y}{\partial x} &amp; \frac{\partial E_y}{\partial y} &amp; \frac{\partial E_y}{\partial z} \\
+\frac{\partial E_z}{\partial x} &amp; \frac{\partial E_z}{\partial y} &amp; \frac{\partial E_z}{\partial z}
+\end{bmatrix}
+\]</div>
+<p>The quadrupolar interaction Hamiltonian is then found as:
+$$
+\mathcal{H}<em>Q = \sum</em>{S_i &gt; 1/2}^N \frac{eQ_i}{2S_i(2S_i-1)}\mathbf{S}_i\mathbf{Z}_i\mathbf{S}_i
+$$
+where <span class="arithmatex">\(e\)</span> is the elementary charge, <span class="arithmatex">\(Q_i\)</span> the quadrupolar moment of the nucleus (these are tabulated, and MuSpinSim has data for most relevant isotopes of the periodic table) and <span class="arithmatex">\(S_i\)</span> the spin of the nucleus. </p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../theory_2/" class="btn btn-neutral" title="Theory of spin dynamics - II"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../theory_2/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/config.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
