@@ -64,7 +64,8 @@ and evaluating its expectation value on the initial state of the system will in 
 
 > **For developers:** integral expectation values are handled by the `.integrate_decaying()` method of the `Hamiltonian` class.
 
-### Open system
+## Open systems
+### The Lindblad Master Equation
 Systems described by the Liouville-von Neumann equation are closed; they conserve energy and evolve in a perfectly reversible way. This is sometimes not a good approximation, because in real life, the chunk of the sample that we're describing is of course only a small part of a much bigger system, fully coupled to it and interacting in a lot of ways. Since including an environment of hundreds or thousands of spins is not practical, a more common approach is to use a *master equation* that allows to describe irreversible evolution through some kind of energy exchange with environmental degrees of freedom.
 In MuSpinSim, the only such master equation that is supported is the simplest one, the Lindblad equation. It is an extension of the Liouville-von Neumann equation including dissipative terms:
 
@@ -91,5 +92,88 @@ $$
 where $T$ is the temperature of the system, and $\hbar\gamma|B|$ is an approximation using only the Zeeman interaction of the energy gap between successive states of the spin. For $T < \infty$, this is subject to the same limits as the choice of using only the Zeeman interaction to define the initial thermal state density matrix. In fact, the effect of these terms is to tend to drive the individual spin's state towards exactly that thermal state, adding or removing energy as needed and erasing coherences.
 
 > **For developers:** the `Lindbladian` class is defined in `muspinsim/lindbladian.py`. It has `.evolve()` and `.integrate_decaying()` methods analogous to those of the `Hamiltonian` class.
+
+### A simple example
+Let's look at a basic example of a problem that can be solved analytically with the Lindblad master equation to see how it works. Let's consider a single muon immersed in a magnetic field $B$ such that it has Larmor frequency $\omega_L = \gamma_\mu B$. It is prepared in a state polarised along $x$, so the initial density matrix is
+
+$$
+\rho_0 = \begin{bmatrix}
+\frac{1}{2} & \frac{1}{2} \\
+\frac{1}{2} & \frac{1}{2}
+\end{bmatrix}
+$$
+and is coupled to an environment with infinite temperature (so $\alpha_+ = \alpha_- = \alpha$). The Hamiltonian for this system will then be:
+
+$$
+\mathcal{H} = \hbar \omega_L S_z
+$$
+
+and the jump operators are 
+
+$$
+S_+ = \begin{bmatrix}
+0 & \frac{1}{2} \\
+0 & 0
+\end{bmatrix}
+\qquad
+S_- = \begin{bmatrix}
+0 & 0 \\
+\frac{1}{2} & 0
+\end{bmatrix}.
+$$
+
+Let's write the Lindblad master equation in full:
+
+$$
+\begin{align*}
+\frac{\partial \rho}{\partial t} = &i\omega_L(\rho S_z-S_z\rho) + \\
+& \alpha\left(S_+ \rho S_- + S_- \rho S_+ - \frac{1}{2}S_+S_-\rho - \frac{1}{2} S_-S_+\rho - \frac{1}{2} \rho S_+S_- - \frac{1}{2} \rho S_-S_+ \right)
+\end{align*}
+$$
+
+where we made use of the fact that $S_+^\dagger = S_-$ and vice versa. If we write $\rho$ in terms of its components and expand the products, keeping in mind that it has to be Hermitian, we get:
+
+$$
+\frac{\partial}{\partial t}\begin{bmatrix}
+\rho_{11} & \rho_{12} \\
+\rho_{12}^* & \rho_{22}
+\end{bmatrix} = 
+i \omega_L \begin{bmatrix}
+0 & -r_{12} \\
+r_{12}^* & 0
+\end{bmatrix}
++\frac{\alpha}{4}
+\left(
+\begin{bmatrix}
+\rho_{22} & 0 \\
+0 & \rho_{11}
+\end{bmatrix}
+- \begin{bmatrix}
+\rho_{11} & \rho_{12} \\
+\rho_{12}^* & \rho_{22}
+\end{bmatrix}
+\right)
+$$
+
+We can then expand this in three differential equations (we leave out the fourth one as it's just the complex conjugate of one of the others):
+
+$$
+\begin{align*}
+\frac{\partial \rho_{11}}{\partial t} = & \frac{\alpha}{4}(\rho_{22}-\rho_{11}) \\
+\frac{\partial \rho_{22}}{\partial t} = & \frac{\alpha}{4}(\rho_{11}-\rho_{22}) \\
+\frac{\partial \rho_{12}}{\partial t} = & -i\omega_L \rho_{12} -\frac{\alpha}{4}\rho_{12}
+\end{align*}
+$$
+
+which combined with the initial conditions from the starting density matrix lead to the solutions:
+
+$$
+\begin{align*}
+\rho_{11}(t) = & \rho_{22}(t) = \frac{1}{2} \\
+\rho_{12}(t) = & \frac{1}{2}e^{-i\omega_Lt -\frac{\alpha}{4}t}
+\end{align*}
+$$
+
+In other words, the evolution has an oscillating phase on the off-diagonal elements plus an exponential decay which brings them down to zero, as the interactions with the environment cause decoherence.
 
 In the [next section](./hamiltonian.md) we will look specifically at the exact shape of the terms of the Hamiltonian (and when necessary, Lindbladian) used in MuSpinSim.

@@ -26,4 +26,6 @@ $> muspinsim input_file
 ```
 
 ## Topics
-* Learn about the [theory of spin dynamics behind MuSpinSim](./theory_1.md)
+* Learn about the [theory of spin dynamics behind MuSpinSim](./theory_1.md);
+* go into more detail into the [Hamiltonian](./hamiltonian.md) used in simulations;
+* check out the list of [input keywords](./input.md);

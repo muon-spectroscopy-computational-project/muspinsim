@@ -70,7 +70,10 @@ $$
 $$
 
 The quadrupolar interaction Hamiltonian is then found as:
+
 $$
 \mathcal{H}_Q = \sum_{S_i > 1/2}^N \frac{eQ_i}{2S_i(2S_i-1)}\mathbf{S}_i\mathbf{Z}_i\mathbf{S}_i
 $$
-where $e$ is the elementary charge, $Q_i$ the quadrupolar moment of the nucleus (these are tabulated, and MuSpinSim has data for most relevant isotopes of the periodic table) and $S_i$ the spin of the nucleus. 
+
+where $e$ is the elementary charge, $Q_i$ the quadrupolar moment of the nucleus (these are tabulated, and MuSpinSim has data for most relevant isotopes of the periodic table) and $S_i$ the spin of the nucleus.
+

@@ -54,18 +54,18 @@ If we are describing spin states as vectors, operators can be described as matri
 
 $$
 S_x = \begin{bmatrix}
-0 & 1 \\
-1 & 0
+0 & \frac{1}{2} \\
+\frac{1}{2} & 0
 \end{bmatrix}
 \qquad
 S_y = \begin{bmatrix}
-0 & -i \\
-i & 0
+0 & -\frac{i}{2} \\
+\frac{i}{2} & 0
 \end{bmatrix}
 \qquad
 S_z = \begin{bmatrix}
-1 & 0 \\
-0 & -1
+\frac{1}{2} & 0 \\
+0 & -\frac{1}{2}
 \end{bmatrix}
 $$
 
@@ -87,10 +87,9 @@ $$
 -\frac{1}{2}i
 \end{bmatrix}
  \begin{bmatrix}
-0 & 1 \\
-1 & 0
-\end{bmatrix}
-\begin{bmatrix}
+0 & \frac{1}{2} \\
+\frac{1}{2} & 0
+\end{bmatrix}\begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
 \frac{1}{2}i
 \end{bmatrix} = 
@@ -99,8 +98,8 @@ $$
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{1}{2}i \\
-\frac{\sqrt{3}}{2}
+\frac{1}{4}i \\
+\frac{\sqrt{3}}{4}
 \end{bmatrix} = 0
 $$
 
@@ -111,8 +110,8 @@ $$
 -\frac{1}{2}i
 \end{bmatrix}
  \begin{bmatrix}
-0 & -i \\
-i & 0
+0 & -\frac{i}{2} \\
+\frac{i}{2} & 0
 \end{bmatrix}
 \begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
@@ -123,9 +122,9 @@ i & 0
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{1}{2} \\
-\frac{\sqrt{3}}{2}i
-\end{bmatrix} = \frac{\sqrt{3}}{2}
+\frac{1}{4} \\
+\frac{\sqrt{3}}{4}i
+\end{bmatrix} = \frac{\sqrt{3}}{4}
 $$
 
 $$
@@ -135,8 +134,8 @@ $$
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-1 & 0 \\
-0 & -1
+\frac{1}{2} & 0 \\
+0 & -\frac{1}{2}
 \end{bmatrix}
 \begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
@@ -147,9 +146,9 @@ $$
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{\sqrt{3}}{2} \\
--\frac{1}{2}i
-\end{bmatrix} = \frac{1}{2}
+\frac{\sqrt{3}}{4} \\
+-\frac{1}{4}i
+\end{bmatrix} = \frac{1}{4}
 $$
 
 We can learn a few things from it. The three expectation values along *x, y, z* would correspond, classically, to the three components of the spin's magnetic moment. In classical terms, this would be a vector making a $60°$ angle with the vertical, pointing towards the *y* direction. In general this example shows two important features of spin-½ states:
@@ -172,12 +171,12 @@ $$
 \mid \psi(t) \rangle = e^{-\frac{i}{\hbar}Ht} \mid \psi(0) \rangle. 
 $$
 
-
 The key task of MuSpinSim is to solve this equation in time, and then estimate the expectation values of the observables that interest us. The simplest way to do so in the case of a small system is to diagonalise the Hamiltonian, which numerically can be done fairly easily by taking advantage of its properties (for example using the NumPy routine `numpy.linalg.eigh`). This gives a number of eigenvalues $\lambda_i$ and corresponding eigenvectors (namely, eigenstates) $\mid u_i \rangle$. One can then write the Hamiltonian matrix as:
 
 $$
 H = \sum_i \lambda_i \mid u_i \rangle \langle u_i \mid = UH_0U^\dagger
 $$
+
 where $H_0$ is a diagonal matrix with the eigenvalues along its diagonal, and $U$ is the matrix with the eigenvectors for columns (and $U^\dagger$ its conjugate transpose). One can then transform the wavefunction in this new basis, and the matrix exponential of the now diagonal Hamiltonian becomes trivial.
 
 > **For developers:** the `Hamiltonian` class is a mixin inheriting from `Operator` and `Hermitian` and is found in `muspinsim/hamiltonian.py`.
@@ -231,7 +230,7 @@ $$
 \end{bmatrix}.
 $$
 
-Now imagine taking a measurement of the spin along the *x* axis. Using the formulas above, we can discover $\langle \psi_+ \mid S_x \mid \psi_+ \rangle = 1$ and $\langle \psi_- \mid S_x \mid \psi_- \rangle = -1$, so that the total average measured spin will be 0. What if we used a density matrix? Then we would find out:
+Now imagine taking a measurement of the spin along the *x* axis. Using the formulas above, we can discover $\langle \psi_+ \mid S_x \mid \psi_+ \rangle = 1/2$ and $\langle \psi_- \mid S_x \mid \psi_- \rangle = -1/2$, so that the total average measured spin will be 0. What if we used a density matrix? Then we would find out:
 
 $$
 \rho_+ = \mid \psi_+ \rangle \langle \psi_+ \mid = \begin{bmatrix}
@@ -369,19 +368,19 @@ We've seen in the previous section how to combine multiple density matrices. Sin
 
 $$
 S_z^\mu S_x^e = \begin{bmatrix}
-1 & 0 \\
-0 & -1
+\frac{1}{2} & 0 \\
+0 & -\frac{1}{2}
 \end{bmatrix}
 \otimes
 \begin{bmatrix}
-0 & 1 \\
-1 & 0
+0 & \frac{1}{2} \\
+\frac{1}{2} & 0
 \end{bmatrix} = 
 \begin{bmatrix}
-0 & 1 & 0 & 0 \\
-1 & 0 & 0 & 0 \\
-0 & 0 & 0 &-1 \\
-0 & 0 &-1 & 0
+0 & \frac{1}{4} & 0 & 0 \\
+\frac{1}{4} & 0 & 0 & 0 \\
+0 & 0 & 0 &-\frac{1}{4} \\
+0 & 0 &-\frac{1}{4} & 0
 \end{bmatrix}
 $$
 
@@ -390,8 +389,8 @@ Sometimes, even in a system with multiple spins, operators involving only one of
 $$
 S_x^\mu = S_x^\mu\mathbb{I}^e =
 \begin{bmatrix}
-0 & 1 \\
-1 & 0
+0 & \frac{1}{2} \\
+\frac{1}{2} & 0
 \end{bmatrix}
 \otimes
 \begin{bmatrix}
@@ -399,10 +398,10 @@ S_x^\mu = S_x^\mu\mathbb{I}^e =
 0 & 1
 \end{bmatrix} = 
 \begin{bmatrix}
-0 & 0 & 1 & 0 \\
-0 & 0 & 0 &1 \\
-1 & 0 & 0 & 0 \\
-0 &1 & 0 & 0 \\
+0 & 0 & \frac{1}{2} & 0 \\
+0 & 0 & 0 & \frac{1}{2} \\
+\frac{1}{2} & 0 & 0 & 0 \\
+0 & \frac{1}{2} & 0 & 0 \\
 \end{bmatrix}
 $$
 
