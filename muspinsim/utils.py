@@ -40,6 +40,7 @@ def zcw_gen(N, mode="sphere"):
 
 def eulrange_gen(N):
     # Generate a range of Euler angles and related weights
+    N = int(N) # Just making sure
     a = np.linspace(0, 2 * np.pi, N)
     b = np.linspace(0, np.pi, N + 2)[1:-1]
     c = np.linspace(0, 2 * np.pi, N)
