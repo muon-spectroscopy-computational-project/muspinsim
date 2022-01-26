@@ -72,6 +72,14 @@
     </ul>
                     </li>
                 </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../input/">Input</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                    </li>
+                </ul>
       </div>
     </div>
     </nav>
@@ -164,17 +172,19 @@ The Hamiltonian term for quadrupolar interactions depends mainly on the EFG, whi
 \frac{\partial E_z}{\partial x} &amp; \frac{\partial E_z}{\partial y} &amp; \frac{\partial E_z}{\partial z}
 \end{bmatrix}
 \]</div>
-<p>The quadrupolar interaction Hamiltonian is then found as:
-$$
-\mathcal{H}<em>Q = \sum</em>{S_i &gt; 1/2}^N \frac{eQ_i}{2S_i(2S_i-1)}\mathbf{S}_i\mathbf{Z}_i\mathbf{S}_i
-$$
-where <span class="arithmatex">\(e\)</span> is the elementary charge, <span class="arithmatex">\(Q_i\)</span> the quadrupolar moment of the nucleus (these are tabulated, and MuSpinSim has data for most relevant isotopes of the periodic table) and <span class="arithmatex">\(S_i\)</span> the spin of the nucleus. </p>
+<p>The quadrupolar interaction Hamiltonian is then found as:</p>
+<div class="arithmatex">\[
+\mathcal{H}_Q = \sum_{S_i &gt; 1/2}^N \frac{eQ_i}{2S_i(2S_i-1)}\mathbf{S}_i\mathbf{Z}_i\mathbf{S}_i
+\]</div>
+<p>where <span class="arithmatex">\(e\)</span> is the elementary charge, <span class="arithmatex">\(Q_i\)</span> the quadrupolar moment of the nucleus (these are tabulated, and MuSpinSim has data for most relevant isotopes of the periodic table) and <span class="arithmatex">\(S_i\)</span> the spin of the nucleus.</p>
               
             </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../input/" class="btn btn-neutral float-right" title="Input">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../theory_2/" class="btn btn-neutral" title="Theory of spin dynamics - II"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -205,6 +215,8 @@ where <span class="arithmatex">\(e\)</span> is the elementary charge, <span clas
     
       <span><a href="../theory_2/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../input/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

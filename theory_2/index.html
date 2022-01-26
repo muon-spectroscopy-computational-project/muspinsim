@@ -65,7 +65,13 @@
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#integral-of-asymmetry">Integral of asymmetry</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#open-system">Open system</a>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#open-systems">Open systems</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#the-lindblad-master-equation">The Lindblad Master Equation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#a-simple-example">A simple example</a>
     </li>
         </ul>
     </li>
@@ -74,6 +80,14 @@
                 </ul>
                 <ul>
                     <li class="toctree-l1"><a class="reference internal" href="../hamiltonian/">Hamiltonian</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../input/">Input</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
                     </li>
                 </ul>
       </div>
@@ -164,7 +178,8 @@ p_{ij} = \frac{s_{ij}}{\frac{1}{\tau}-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\r
 <blockquote>
 <p><strong>For developers:</strong> integral expectation values are handled by the <code>.integrate_decaying()</code> method of the <code>Hamiltonian</code> class.</p>
 </blockquote>
-<h3 id="open-system">Open system</h3>
+<h2 id="open-systems">Open systems</h2>
+<h3 id="the-lindblad-master-equation">The Lindblad Master Equation</h3>
 <p>Systems described by the Liouville-von Neumann equation are closed; they conserve energy and evolve in a perfectly reversible way. This is sometimes not a good approximation, because in real life, the chunk of the sample that we're describing is of course only a small part of a much bigger system, fully coupled to it and interacting in a lot of ways. Since including an environment of hundreds or thousands of spins is not practical, a more common approach is to use a <em>master equation</em> that allows to describe irreversible evolution through some kind of energy exchange with environmental degrees of freedom.
 In MuSpinSim, the only such master equation that is supported is the simplest one, the Lindblad equation. It is an extension of the Liouville-von Neumann equation including dissipative terms:</p>
 <div class="arithmatex">\[
@@ -184,6 +199,75 @@ In MuSpinSim, the only such master equation that is supported is the simplest on
 <blockquote>
 <p><strong>For developers:</strong> the <code>Lindbladian</code> class is defined in <code>muspinsim/lindbladian.py</code>. It has <code>.evolve()</code> and <code>.integrate_decaying()</code> methods analogous to those of the <code>Hamiltonian</code> class.</p>
 </blockquote>
+<h3 id="a-simple-example">A simple example</h3>
+<p>Let's look at a basic example of a problem that can be solved analytically with the Lindblad master equation to see how it works. Let's consider a single muon immersed in a magnetic field <span class="arithmatex">\(B\)</span> such that it has Larmor frequency <span class="arithmatex">\(\omega_L = \gamma_\mu B\)</span>. It is prepared in a state polarised along <span class="arithmatex">\(x\)</span>, so the initial density matrix is</p>
+<p>$$
+\rho_0 = \begin{bmatrix}
+\frac{1}{2} &amp; \frac{1}{2} \
+\frac{1}{2} &amp; \frac{1}{2}
+\end{bmatrix}
+$$
+and is coupled to an environment with infinite temperature (so <span class="arithmatex">\(\alpha_+ = \alpha_- = \alpha\)</span>). The Hamiltonian for this system will then be:</p>
+<div class="arithmatex">\[
+\mathcal{H} = \hbar \omega_L S_z
+\]</div>
+<p>and the jump operators are </p>
+<div class="arithmatex">\[
+S_+ = \begin{bmatrix}
+0 &amp; \frac{1}{2} \\
+0 &amp; 0
+\end{bmatrix}
+\qquad
+S_- = \begin{bmatrix}
+0 &amp; 0 \\
+\frac{1}{2} &amp; 0
+\end{bmatrix}.
+\]</div>
+<p>Let's write the Lindblad master equation in full:</p>
+<div class="arithmatex">\[
+\begin{align*}
+\frac{\partial \rho}{\partial t} = &amp;i\omega_L(\rho S_z-S_z\rho) + \\
+&amp; \alpha\left(S_+ \rho S_- + S_- \rho S_+ - \frac{1}{2}S_+S_-\rho - \frac{1}{2} S_-S_+\rho - \frac{1}{2} \rho S_+S_- - \frac{1}{2} \rho S_-S_+ \right)
+\end{align*}
+\]</div>
+<p>where we made use of the fact that <span class="arithmatex">\(S_+^\dagger = S_-\)</span> and vice versa. If we write <span class="arithmatex">\(\rho\)</span> in terms of its components and expand the products, keeping in mind that it has to be Hermitian, we get:</p>
+<div class="arithmatex">\[
+\frac{\partial}{\partial t}\begin{bmatrix}
+\rho_{11} &amp; \rho_{12} \\
+\rho_{12}^* &amp; \rho_{22}
+\end{bmatrix} = 
+i \omega_L \begin{bmatrix}
+0 &amp; -r_{12} \\
+r_{12}^* &amp; 0
+\end{bmatrix}
++\frac{\alpha}{4}
+\left(
+\begin{bmatrix}
+\rho_{22} &amp; 0 \\
+0 &amp; \rho_{11}
+\end{bmatrix}
+- \begin{bmatrix}
+\rho_{11} &amp; \rho_{12} \\
+\rho_{12}^* &amp; \rho_{22}
+\end{bmatrix}
+\right)
+\]</div>
+<p>We can then expand this in three differential equations (we leave out the fourth one as it's just the complex conjugate of one of the others):</p>
+<div class="arithmatex">\[
+\begin{align*}
+\frac{\partial \rho_{11}}{\partial t} = &amp; \frac{\alpha}{4}(\rho_{22}-\rho_{11}) \\
+\frac{\partial \rho_{22}}{\partial t} = &amp; \frac{\alpha}{4}(\rho_{11}-\rho_{22}) \\
+\frac{\partial \rho_{12}}{\partial t} = &amp; -i\omega_L \rho_{12} -\frac{\alpha}{4}\rho_{12}
+\end{align*}
+\]</div>
+<p>which combined with the initial conditions from the starting density matrix lead to the solutions:</p>
+<div class="arithmatex">\[
+\begin{align*}
+\rho_{11}(t) = &amp; \rho_{22}(t) = \frac{1}{2} \\
+\rho_{12}(t) = &amp; \frac{1}{2}e^{-i\omega_Lt -\frac{\alpha}{4}t}
+\end{align*}
+\]</div>
+<p>In other words, the evolution has an oscillating phase on the off-diagonal elements plus an exponential decay which brings them down to zero, as the interactions with the environment cause decoherence.</p>
 <p>In the <a href="../hamiltonian/">next section</a> we will look specifically at the exact shape of the terms of the Hamiltonian (and when necessary, Lindbladian) used in MuSpinSim.</p>
               
             </div>

@@ -88,6 +88,14 @@
                     <li class="toctree-l1"><a class="reference internal" href="../hamiltonian/">Hamiltonian</a>
                     </li>
                 </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../input/">Input</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                    </li>
+                </ul>
       </div>
     </div>
     </nav>
@@ -167,18 +175,18 @@ a^* &amp; b^*
 <p>If we are describing spin states as vectors, operators can be described as matrices instead. In particular, for the spin-½ particle, we have the Pauli matrices:</p>
 <div class="arithmatex">\[
 S_x = \begin{bmatrix}
-0 &amp; 1 \\
-1 &amp; 0
+0 &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; 0
 \end{bmatrix}
 \qquad
 S_y = \begin{bmatrix}
-0 &amp; -i \\
-i &amp; 0
+0 &amp; -\frac{i}{2} \\
+\frac{i}{2} &amp; 0
 \end{bmatrix}
 \qquad
 S_z = \begin{bmatrix}
-1 &amp; 0 \\
-0 &amp; -1
+\frac{1}{2} &amp; 0 \\
+0 &amp; -\frac{1}{2}
 \end{bmatrix}
 \]</div>
 <p>for the three spatial components of the spin. Together with the identity matrix, these form a complete basis for the operators for this kind of spin. These operators can be easily used to compute expectation values. For example, consider the following state:</p>
@@ -196,10 +204,9 @@ S_z = \begin{bmatrix}
 -\frac{1}{2}i
 \end{bmatrix}
  \begin{bmatrix}
-0 &amp; 1 \\
-1 &amp; 0
-\end{bmatrix}
-\begin{bmatrix}
+0 &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; 0
+\end{bmatrix}\begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
 \frac{1}{2}i
 \end{bmatrix} = 
@@ -208,8 +215,8 @@ S_z = \begin{bmatrix}
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{1}{2}i \\
-\frac{\sqrt{3}}{2}
+\frac{1}{4}i \\
+\frac{\sqrt{3}}{4}
 \end{bmatrix} = 0
 \]</div>
 <div class="arithmatex">\[
@@ -219,8 +226,8 @@ S_z = \begin{bmatrix}
 -\frac{1}{2}i
 \end{bmatrix}
  \begin{bmatrix}
-0 &amp; -i \\
-i &amp; 0
+0 &amp; -\frac{i}{2} \\
+\frac{i}{2} &amp; 0
 \end{bmatrix}
 \begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
@@ -231,9 +238,9 @@ i &amp; 0
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{1}{2} \\
-\frac{\sqrt{3}}{2}i
-\end{bmatrix} = \frac{\sqrt{3}}{2}
+\frac{1}{4} \\
+\frac{\sqrt{3}}{4}i
+\end{bmatrix} = \frac{\sqrt{3}}{4}
 \]</div>
 <div class="arithmatex">\[
 \langle S_z \rangle = \langle\psi\mid S_z \mid\psi\rangle = 
@@ -242,8 +249,8 @@ i &amp; 0
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-1 &amp; 0 \\
-0 &amp; -1
+\frac{1}{2} &amp; 0 \\
+0 &amp; -\frac{1}{2}
 \end{bmatrix}
 \begin{bmatrix}
 \frac{\sqrt{3}}{2} \\
@@ -254,9 +261,9 @@ i &amp; 0
 -\frac{1}{2}i
 \end{bmatrix}
 \begin{bmatrix}
-\frac{\sqrt{3}}{2} \\
--\frac{1}{2}i
-\end{bmatrix} = \frac{1}{2}
+\frac{\sqrt{3}}{4} \\
+-\frac{1}{4}i
+\end{bmatrix} = \frac{1}{4}
 \]</div>
 <p>We can learn a few things from it. The three expectation values along <em>x, y, z</em> would correspond, classically, to the three components of the spin's magnetic moment. In classical terms, this would be a vector making a <span class="arithmatex">\(60°\)</span> angle with the vertical, pointing towards the <em>y</em> direction. In general this example shows two important features of spin-½ states:</p>
 <ul>
@@ -276,10 +283,10 @@ H\mid\psi\rangle = i\hbar\frac{\partial}{\partial t}\mid\psi\rangle,
 \mid \psi(t) \rangle = e^{-\frac{i}{\hbar}Ht} \mid \psi(0) \rangle. 
 \]</div>
 <p>The key task of MuSpinSim is to solve this equation in time, and then estimate the expectation values of the observables that interest us. The simplest way to do so in the case of a small system is to diagonalise the Hamiltonian, which numerically can be done fairly easily by taking advantage of its properties (for example using the NumPy routine <code>numpy.linalg.eigh</code>). This gives a number of eigenvalues <span class="arithmatex">\(\lambda_i\)</span> and corresponding eigenvectors (namely, eigenstates) <span class="arithmatex">\(\mid u_i \rangle\)</span>. One can then write the Hamiltonian matrix as:</p>
-<p>$$
+<div class="arithmatex">\[
 H = \sum_i \lambda_i \mid u_i \rangle \langle u_i \mid = UH_0U^\dagger
-$$
-where <span class="arithmatex">\(H_0\)</span> is a diagonal matrix with the eigenvalues along its diagonal, and <span class="arithmatex">\(U\)</span> is the matrix with the eigenvectors for columns (and <span class="arithmatex">\(U^\dagger\)</span> its conjugate transpose). One can then transform the wavefunction in this new basis, and the matrix exponential of the now diagonal Hamiltonian becomes trivial.</p>
+\]</div>
+<p>where <span class="arithmatex">\(H_0\)</span> is a diagonal matrix with the eigenvalues along its diagonal, and <span class="arithmatex">\(U\)</span> is the matrix with the eigenvectors for columns (and <span class="arithmatex">\(U^\dagger\)</span> its conjugate transpose). One can then transform the wavefunction in this new basis, and the matrix exponential of the now diagonal Hamiltonian becomes trivial.</p>
 <blockquote>
 <p><strong>For developers:</strong> the <code>Hamiltonian</code> class is a mixin inheriting from <code>Operator</code> and <code>Hermitian</code> and is found in <code>muspinsim/hamiltonian.py</code>.</p>
 </blockquote>
@@ -324,7 +331,7 @@ a^*b &amp; b^*b
 \frac{-\sqrt{2}}{2}
 \end{bmatrix}.
 \]</div>
-<p>Now imagine taking a measurement of the spin along the <em>x</em> axis. Using the formulas above, we can discover <span class="arithmatex">\(\langle \psi_+ \mid S_x \mid \psi_+ \rangle = 1\)</span> and <span class="arithmatex">\(\langle \psi_- \mid S_x \mid \psi_- \rangle = -1\)</span>, so that the total average measured spin will be 0. What if we used a density matrix? Then we would find out:</p>
+<p>Now imagine taking a measurement of the spin along the <em>x</em> axis. Using the formulas above, we can discover <span class="arithmatex">\(\langle \psi_+ \mid S_x \mid \psi_+ \rangle = 1/2\)</span> and <span class="arithmatex">\(\langle \psi_- \mid S_x \mid \psi_- \rangle = -1/2\)</span>, so that the total average measured spin will be 0. What if we used a density matrix? Then we would find out:</p>
 <div class="arithmatex">\[
 \rho_+ = \mid \psi_+ \rangle \langle \psi_+ \mid = \begin{bmatrix}
 \frac{1}{2} &amp; \frac{1}{2} \\
@@ -447,27 +454,27 @@ The same exact approach can be used for density matrices too. Consider the follo
 <p>We've seen in the previous section how to combine multiple density matrices. Since density matrices are operators, it should be clear that the rules for combining operators are exactly the same, using the Kronecker product of individual matrices. For example, a term <span class="arithmatex">\(S_z^\mu S_x^e\)</span> in matrix form will be:</p>
 <div class="arithmatex">\[
 S_z^\mu S_x^e = \begin{bmatrix}
-1 &amp; 0 \\
-0 &amp; -1
+\frac{1}{2} &amp; 0 \\
+0 &amp; -\frac{1}{2}
 \end{bmatrix}
 \otimes
 \begin{bmatrix}
-0 &amp; 1 \\
-1 &amp; 0
+0 &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; 0
 \end{bmatrix} = 
 \begin{bmatrix}
-0 &amp; 1 &amp; 0 &amp; 0 \\
-1 &amp; 0 &amp; 0 &amp; 0 \\
-0 &amp; 0 &amp; 0 &amp;-1 \\
-0 &amp; 0 &amp;-1 &amp; 0
+0 &amp; \frac{1}{4} &amp; 0 &amp; 0 \\
+\frac{1}{4} &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp;-\frac{1}{4} \\
+0 &amp; 0 &amp;-\frac{1}{4} &amp; 0
 \end{bmatrix}
 \]</div>
 <p>Sometimes, even in a system with multiple spins, operators involving only one of them, like <span class="arithmatex">\(S_x^\mu\)</span>, might be relevant. In that case we must understand them as having an implicit identity matrix for all the spins that don't appear explicitly. So we have:</p>
 <div class="arithmatex">\[
 S_x^\mu = S_x^\mu\mathbb{I}^e =
 \begin{bmatrix}
-0 &amp; 1 \\
-1 &amp; 0
+0 &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; 0
 \end{bmatrix}
 \otimes
 \begin{bmatrix}
@@ -475,10 +482,10 @@ S_x^\mu = S_x^\mu\mathbb{I}^e =
 0 &amp; 1
 \end{bmatrix} = 
 \begin{bmatrix}
-0 &amp; 0 &amp; 1 &amp; 0 \\
-0 &amp; 0 &amp; 0 &amp;1 \\
-1 &amp; 0 &amp; 0 &amp; 0 \\
-0 &amp;1 &amp; 0 &amp; 0 \\
+0 &amp; 0 &amp; \frac{1}{2} &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; \frac{1}{2} \\
+\frac{1}{2} &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; \frac{1}{2} &amp; 0 &amp; 0 \\
 \end{bmatrix}
 \]</div>
 <h3 id="spin-spin-couplings">Spin-spin couplings</h3>
