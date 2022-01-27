@@ -69,13 +69,21 @@
                 <ul class="current">
                     <li class="toctree-l1 current"><a class="reference internal current" href="./">Examples</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#example-1-hyperfine-coupling">Example 1 - Hyperfine coupling</a>
+    <li class="toctree-l2"><a class="reference internal" href="#example-1-zeeman-coupling">Example 1 - Zeeman coupling</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#example-2-hyperfine-coupling-with-powder-averaging">Example 2 - Hyperfine coupling (with powder averaging)</a>
-        <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#example-3-avoided-level-crossing">Example 3 - Avoided Level Crossing</a>
+    <li class="toctree-l2"><a class="reference internal" href="#example-2-hyperfine-coupling">Example 2 - Hyperfine coupling</a>
     </li>
-        </ul>
+    <li class="toctree-l2"><a class="reference internal" href="#example-3-hyperfine-coupling-with-powder-averaging">Example 3 - Hyperfine coupling (with powder averaging)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-4-avoided-level-crossing">Example 4 - Avoided Level Crossing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-5-finite-temperature">Example 5 - Finite temperature</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-6-dissipation">Example 6 - Dissipation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-7-fluorine">Example 7 - Fluorine</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#example-8-fluorine-with-dissipation">Example 8 - Fluorine with dissipation</a>
     </li>
     </ul>
                     </li>
@@ -114,10 +122,18 @@
             <div class="section">
               
                 <h1 id="examples">Examples</h1>
-<p>Here we go over a few examples of usage of MuSpinSim which cover some common use cases. The examples can be found in the <code>./examples</code> folder.</p>
-<h2 id="example-1-hyperfine-coupling">Example 1 - Hyperfine coupling</h2>
-<p><strong>Input file:</strong> <code>./examples/hfine/hfine.in</code></p>
-<p>A very simple case: a muon and an electron with hyperfine coupling and zero magnetic field. The hyperfine tensor is set to have an isotropic component (Fermi contact term) of 10 MHz:</p>
+<p>Here we go over a few examples of usage of MuSpinSim which cover some common use cases. The examples can be found in the <code>examples</code> folder.</p>
+<h2 id="example-1-zeeman-coupling">Example 1 - Zeeman coupling</h2>
+<p><strong>Input file:</strong> <code>examples/zeeman/zeeman.in</code></p>
+<p>This is a very simple example of a single muon with a static magnetic field - a Zeeman interaction. The field is set to be</p>
+<pre><code class="language-plaintext">zeeman 1
+    0 0 20.0/muon_gyr
+</code></pre>
+<p>Being aligned with the <em>z</em> axis, it will produce a full precession of the entire muon polarisation, and given the field is defined as a function of the muon gyromagnetic ratio, it will result in a Larmor frequency of <span class="arithmatex">\(\gamma_\mu B = 20 \,\mathrm{MHz}\)</span>, meaning it will do two full precessions in the <span class="arithmatex">\(0.1\,\mu s\)</span> range covered by the time axis.</p>
+<p><img alt="" src="../figExZeeman.png" /></p>
+<h2 id="example-2-hyperfine-coupling">Example 2 - Hyperfine coupling</h2>
+<p><strong>Input file:</strong> <code>examples/hfine/hfine.in</code></p>
+<p>This example is for the simplified case of a muon and an electron with isotropic hyperfine coupling and zero magnetic field. The hyperfine tensor has a Fermi contact term of 10 MHz:</p>
 <pre><code class="language-plaintext">hyperfine 1
     10   0    0
     0    10   0
@@ -125,8 +141,8 @@
 </code></pre>
 <p>so we expect an oscillation of the muon's polarisation at that frequency.</p>
 <p><img alt="" src="../figExHfine.png" /></p>
-<h2 id="example-2-hyperfine-coupling-with-powder-averaging">Example 2 - Hyperfine coupling (with powder averaging)</h2>
-<p><strong>Input file:</strong> <code>./examples/hfine_powder/hfine_powder.in</code></p>
+<h2 id="example-3-hyperfine-coupling-with-powder-averaging">Example 3 - Hyperfine coupling (with powder averaging)</h2>
+<p><strong>Input file:</strong> <code>examples/hfine_powder/hfine_powder.in</code></p>
 <p>A similar example as the first, but this time, an anisotropic hyperfine tensor including a dipolar part is used:</p>
 <pre><code class="language-plaintext">hyperfine 1
     5    2    3
@@ -139,10 +155,103 @@
 </code></pre>
 <p>Each of these orientations will contribute an oscillation like the one above with a slightly different frequency. The overall sum of all contributions ends up decaying due to the dephased individual oscillations cancelling out.</p>
 <p><img alt="" src="../figExHfinePowder.png" /></p>
-<h3 id="example-3-avoided-level-crossing">Example 3 - Avoided Level Crossing</h3>
-<p><strong>Input file:</strong> <code>./examples/alc/alc.in</code></p>
+<h2 id="example-4-avoided-level-crossing">Example 4 - Avoided Level Crossing</h2>
+<p><strong>Input file:</strong> <code>examples/alc/alc.in</code></p>
 <p>A simple example of an Avoided Level Crossing experiment involving three spins: a muon, an electron, and a hydrogen atom. Both muon and hydrogen are coupled via hyperfine coupling to the electron. The tensors are orientation dependent, and an average is carried out over different orientations (because this is an experiment with longitudinal polarisation, the <code>zcw</code> averaging should be sufficient, and is much cheaper than <code>eulrange</code>). The result can be seen as one major <span class="arithmatex">\(\Delta_1\)</span> peak around 2.1 T and a much smaller <span class="arithmatex">\(\Delta_0\)</span> one at 2.3 T.</p>
 <p><img alt="" src="../figExALC.png" /></p>
+<h2 id="example-5-finite-temperature">Example 5 - Finite temperature</h2>
+<p><strong>Input files:</strong> <code>examples/temperature/low_T.in</code>, <code>examples/temperature/high_T.in</code></p>
+<p>In this example we look at the effect of temperature on the starting density matrix of the system, and how it affects the final result. We work with a system very similar to that of <a href="#example-2---hyperfine-coupling">example 2</a>, with the difference that we add an external static field of 1 T. This means that the difference in energy between the "up" and "down" states for the electron is given by:</p>
+<div class="arithmatex">\[
+\Delta E = 2\pi\hbar \gamma_e \cdot (1 \,\mathrm{T}) =  2\pi\hbar \cdot (28024.95 \,\mathrm{MHz}) \approx 1.159\cdot 10^{-4} \,\mathrm{eV}
+\]</div>
+<p>The scale of this energy is much higher than anything that can come out of the hyperfine coupling between electron and muon (only 10 MHz), so we're safely in the area of validity of the high field approximation. In terms of temperature scale, we expect the high temperature (<span class="arithmatex">\(T \approx \infty\)</span>) regime will be valid for</p>
+<div class="arithmatex">\[
+T \gg \frac{1.159\cdot 10^{-4} \,\mathrm{eV}}{ k_B} \approx 1.35 \,\mathrm{K}.
+\]</div>
+<p>For this reason, we make a comparison between two versions of the same system, one with <span class="arithmatex">\(T=\infty\)</span> and one with <span class="arithmatex">\(T = 1 \,\mathrm{K}\)</span>, low enough to be out of the high temperature regime. The expected behaviour is as follows:</p>
+<ul>
+<li>the external field sets a base Larmor frequency of 135.54 MHz for the muon. The hyperfine interaction adds or subtracts 5 MHz based on whether the electron is up or down;</li>
+<li>for very low T, the electron will start entirely in one state, aligned with the external magnetic field. In this case we expect the signal to be a single cosinusoid at 140.54 MHz;</li>
+<li>for very high T, the electron will be in a statistical ensemble of up and down state, and we expect the signal to be an average of two cosinusoids at 140.54 and 130.54 MHz respectively.</li>
+</ul>
+<p>We can see the trends very obviously in the figure below. The high temperature limit corresponds to the sum of two slightly dephased cosinusoids, while the low temperature example is closer to a single wave. You can try experimenting with changing the temperature and re-running the simulation to see how it affects the result.</p>
+<p><img alt="" src="../figExTemperature.png" /></p>
+<h2 id="example-6-dissipation">Example 6 - Dissipation</h2>
+<p><strong>Input file:</strong> <code>example/dissipation/dissipation.in</code></p>
+<p>This example shows exactly the case that was solved analytically in the <a href="../theory_2/#a-simple-example">theory section about the Lindbladian</a>. A system is set up with a single muon polarised in the <em>x</em> direction, a perpendicular field, and a dissipation constant. The system is defined as follows:</p>
+<pre><code class="language-plaintext">field
+    2.0/muon_gyr
+dissipation 1
+    5.0
+</code></pre>
+<p>Thus, following the theory as described, we expect to observe a signal that has the equation</p>
+<div class="arithmatex">\[
+A(t) = \frac{1}{2} \cos(4\pi t)e^{-5t} 
+\]</div>
+<p>where the time is in microseconds. We can in fact see this exact result in the figure below:</p>
+<p><img alt="" src="../figExDissipation.png" /></p>
+<h2 id="example-7-fluorine">Example 7 - Fluorine</h2>
+<p><strong>Input files:</strong> <code>examples/fluorine/fluorine_zf.in</code>, <code>examples/fluorine/fluorine_tf.in</code></p>
+<p>This example draws inspiration from an important paper in muon science, namely:</p>
+<blockquote>
+<p>J. H. Brewer, S. R. Kreitzman, D. R. Noakes, E. J. Ansaldo, D. R. Harshman, and R. Keitel
+<a href="https://doi.org/10.1103/PhysRevB.33.7813">Observation of muon-fluorine "hydrogen bonding" in ionic crystals</a>
+<em>Phys. Rev. B 33, </em><em>7813(R)</em><em> – Published 1 June 1986</em></p>
+</blockquote>
+<p>In this paper, it was observed that in some ionic fluorides, muons tend to form a <span class="arithmatex">\(\mathrm{F}-\mu-\mathrm{F}\)</span> complex that then becomes recognisable due to the specific signature of the dipolar coupling of the muon with the two fluorine nuclei. The input file uses the paper's estimated distances for NaF (sodium fluoride) for both Zero Field (ZF) and Transverse Field (TF) cases. 
+Dipolar couplings are defined taking into account that the bond is in the <span class="arithmatex">\(\langle 110\rangle\)</span> direction in the crystal:</p>
+<pre><code class="language-plaintext">dipolar 1 2
+    0.82731493 0.82731493 0
+dipolar 1 3
+    -0.82731493 -0.82731493 0
+</code></pre>
+<p>while the muon starts polarised along <em>x</em>, namely, the <span class="arithmatex">\(\langle 100\rangle\)</span> direction. Let's first look at the TF case. Here the field is aligned to the <span class="arithmatex">\(\langle 111 \rangle\)</span> direction and has an intensity of 220 Oe (corresponding to 0.022 T):</p>
+<pre><code class="language-plaintext">field
+    1.27e-2 1.27e-2 1.27e-2                         # Original paper uses field in Oe, direction &lt;111&gt;
+</code></pre>
+<p>This result is meant to be compared with Fig. 1 of the paper:</p>
+<p><img alt="" src="../figExFluorineTF.png" /></p>
+<p>One can see the similarity at the beginning, though at longer time scales, the experimental data decays a lot more quickly. This is due to how in the real experiment, of course, there aren't just <em>three</em> spins - there is a whole lattice of them. The fluorine nuclei in particular interact with other neighbouring nuclei via dipolar coupling, and that ends up causing a phenomenon known as 'spin diffusion' in which the polarisation is irreversibly dispersed throughout the crystal, and thus the muon loses it almost entirely.</p>
+<p>Here is instead the ZF experiment. This is meant to be compared with Fig. 3 of the paper, the bottom left quadrant:</p>
+<p><img alt="" src="../figExFluorineZF.png" /></p>
+<p>Again, the same principle holds, as the similarity is stronger for <span class="arithmatex">\(t \lt 4 \,\mu\mathrm{s}\)</span> and then is lost as the effect of spin diffusion becomes more pronounced.</p>
+<h2 id="example-8-fluorine-with-dissipation">Example 8 - Fluorine with dissipation</h2>
+<p><strong>Input files:</strong> <code>examples/fluorine_dissipation/fluorine_tf_dissip.in</code> and <code>examples/fluorine_dissipation/fluorine_zf_dissip.in</code></p>
+<p>We saw above how the simulation of the <span class="arithmatex">\(\mathrm{F}-\mu-\mathrm{F}\)</span> complex is accurate only at short time due to spin diffusion affecting the system. We can, however, try to approximate the effect of spin diffusion too. To this end we add dissipative terms to the two fluorine nuclei, as a way to represent the effect of exchange with the reserve of other fluorine spins in the crystal. The couplings here have been worked out to match the experimental result.</p>
+<p>```plaintext
+dissipation 2
+    0.1
+dissipation 3
+    0.1</p>
+<pre><code>
+The results in this way show a marked decay towards the end of the plot, for both transverse field:
+
+![](./figExFluorineTFDissip.png)
+
+ and zero field:
+
+ ![](./figExFluorineZFDissip.png)
+
+and if you can compare with the original paper, you can notice how these are already much more similar to the look of the experimental results.
+
+## Example 9 - Fitting
+**Input file:** `examples/fitting/fitting.in`
+
+Finally, we look at how we can fit some data with MuSpinSim. Here we use again the same system seen in the [dissipation example](#example-6---dissipation), but we use some fake simulated data (found in `examples/fitting/experiment.dat`) calculated from the analytical solution to the problem with some added random noise. The data is formatted in two columns and normalised so that it begins around 0.5 intensity, and then is loaded in the input file:
+
+```plaintext
+fitting_data
+    load(&quot;experiment.dat&quot;)
+</code></pre>
+<p>Then we define a variable <code>g</code> with a starting value of 0.1 and comprised between 0 and <span class="arithmatex">\(+\infty\)</span> and use it to define the dissipation:</p>
+<pre><code class="language-plaintext">fitting_variables
+    g 0.1 0.0 inf
+dissipation 1
+    g
+</code></pre>
+<p>Running this example will take a bit longer than the others, as the program needs to evaluate the function a lot of times to find the correct value. At the end, it should converge on a value close to <code>g = 3.0</code>, and as we can see here, the fitted function matches the fake data quite well:</p>
+<p><img alt="" src="../figExFitting.png" /></p>
               
             </div>
           </div>

@@ -214,13 +214,13 @@ and is coupled to an environment with infinite temperature (so <span class="arit
 <p>and the jump operators are </p>
 <div class="arithmatex">\[
 S_+ = \begin{bmatrix}
-0 &amp; \frac{1}{2} \\
+0 &amp; 1 \\
 0 &amp; 0
 \end{bmatrix}
 \qquad
 S_- = \begin{bmatrix}
 0 &amp; 0 \\
-\frac{1}{2} &amp; 0
+1 &amp; 0
 \end{bmatrix}.
 \]</div>
 <p>Let's write the Lindblad master equation in full:</p>
@@ -240,7 +240,7 @@ i \omega_L \begin{bmatrix}
 0 &amp; -r_{12} \\
 r_{12}^* &amp; 0
 \end{bmatrix}
-+\frac{\alpha}{4}
++\alpha
 \left(
 \begin{bmatrix}
 \rho_{22} &amp; 0 \\
@@ -255,16 +255,16 @@ r_{12}^* &amp; 0
 <p>We can then expand this in three differential equations (we leave out the fourth one as it's just the complex conjugate of one of the others):</p>
 <div class="arithmatex">\[
 \begin{align*}
-\frac{\partial \rho_{11}}{\partial t} = &amp; \frac{\alpha}{4}(\rho_{22}-\rho_{11}) \\
-\frac{\partial \rho_{22}}{\partial t} = &amp; \frac{\alpha}{4}(\rho_{11}-\rho_{22}) \\
-\frac{\partial \rho_{12}}{\partial t} = &amp; -i\omega_L \rho_{12} -\frac{\alpha}{4}\rho_{12}
+\frac{\partial \rho_{11}}{\partial t} = &amp; \alpha(\rho_{22}-\rho_{11}) \\
+\frac{\partial \rho_{22}}{\partial t} = &amp; \alpha(\rho_{11}-\rho_{22}) \\
+\frac{\partial \rho_{12}}{\partial t} = &amp; -i\omega_L \rho_{12} -\alpha\rho_{12}
 \end{align*}
 \]</div>
 <p>which combined with the initial conditions from the starting density matrix lead to the solutions:</p>
 <div class="arithmatex">\[
 \begin{align*}
 \rho_{11}(t) = &amp; \rho_{22}(t) = \frac{1}{2} \\
-\rho_{12}(t) = &amp; \frac{1}{2}e^{-i\omega_Lt -\frac{\alpha}{4}t}
+\rho_{12}(t) = &amp; \frac{1}{2}e^{-i\omega_Lt -\alpha t}
 \end{align*}
 \]</div>
 <p>In other words, the evolution has an oscillating phase on the off-diagonal elements plus an exponential decay which brings them down to zero, as the interactions with the environment cause decoherence.</p>
