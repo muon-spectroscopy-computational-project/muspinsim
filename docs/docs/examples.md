@@ -152,7 +152,7 @@ This result is meant to be compared with Fig. 1 of the paper:
  
  We saw above how the simulation of the $\mathrm{F}-\mu-\mathrm{F}$ complex is accurate only at short time due to spin diffusion affecting the system. We can, however, try to approximate the effect of spin diffusion too. To this end we add dissipative terms to the two fluorine nuclei, as a way to represent the effect of exchange with the reserve of other fluorine spins in the crystal. The couplings here have been worked out to match the experimental result.
  
- ```plaintext
+```plaintext
 dissipation 2
     0.1
 dissipation 3
