@@ -112,13 +112,13 @@ and the jump operators are
 
 $$
 S_+ = \begin{bmatrix}
-0 & \frac{1}{2} \\
+0 & 1 \\
 0 & 0
 \end{bmatrix}
 \qquad
 S_- = \begin{bmatrix}
 0 & 0 \\
-\frac{1}{2} & 0
+1 & 0
 \end{bmatrix}.
 $$
 
@@ -142,7 +142,7 @@ i \omega_L \begin{bmatrix}
 0 & -r_{12} \\
 r_{12}^* & 0
 \end{bmatrix}
-+\frac{\alpha}{4}
++\alpha
 \left(
 \begin{bmatrix}
 \rho_{22} & 0 \\
@@ -159,9 +159,9 @@ We can then expand this in three differential equations (we leave out the fourth
 
 $$
 \begin{align*}
-\frac{\partial \rho_{11}}{\partial t} = & \frac{\alpha}{4}(\rho_{22}-\rho_{11}) \\
-\frac{\partial \rho_{22}}{\partial t} = & \frac{\alpha}{4}(\rho_{11}-\rho_{22}) \\
-\frac{\partial \rho_{12}}{\partial t} = & -i\omega_L \rho_{12} -\frac{\alpha}{4}\rho_{12}
+\frac{\partial \rho_{11}}{\partial t} = & \alpha(\rho_{22}-\rho_{11}) \\
+\frac{\partial \rho_{22}}{\partial t} = & \alpha(\rho_{11}-\rho_{22}) \\
+\frac{\partial \rho_{12}}{\partial t} = & -i\omega_L \rho_{12} -\alpha\rho_{12}
 \end{align*}
 $$
 
@@ -170,7 +170,7 @@ which combined with the initial conditions from the starting density matrix lead
 $$
 \begin{align*}
 \rho_{11}(t) = & \rho_{22}(t) = \frac{1}{2} \\
-\rho_{12}(t) = & \frac{1}{2}e^{-i\omega_Lt -\frac{\alpha}{4}t}
+\rho_{12}(t) = & \frac{1}{2}e^{-i\omega_Lt -\alpha t}
 \end{align*}
 $$
 

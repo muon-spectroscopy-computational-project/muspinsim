@@ -1,0 +1,26 @@
+# An example of a F-mu-F complex interacting via dipolar coupling
+# The specifics are taken for NaF, from the paper:
+#
+# Observation of muon-fluorine "hydrogen bonding" in ionic crystals
+# J. H. Brewer, S. R. Kreitzman, D. R. Noakes, E. J. Ansaldo, D. R. Harshman, and R. Keitel
+# Phys. Rev. B 33, 7813(R) – Published 1 June 1986
+# 
+# Compare the results with the data presented in Fig. 1 of the paper.
+name
+    fluorine_tf_dissip
+spins
+    mu F F
+dipolar 1 2
+    0.82731493 0.82731493 0
+dipolar 1 3
+    -0.82731493 -0.82731493 0
+field
+    1.27e-2 1.27e-2 1.27e-2                         # Original paper uses field in Oe, direction <111>
+polarization
+    1 0 0
+time
+    range(0, 8.0, 1000)
+dissipation 2
+    0.1
+dissipation 3
+    0.1

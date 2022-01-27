@@ -4,16 +4,10 @@
 name
     dissipation
 spins
-    mu e
-hyperfine 1
-    5    2    3
-    2    5    2
-    3    2    5
-field
-    0.01
+    mu
 time
-    range(0, 1.0)
-orientation
-    eulrange(10)
-dissipation 2
-    0.5
+    range(0, 1.0, 50)
+field
+    2.0/muon_gyr
+dissipation 1
+    5.0

@@ -6,21 +6,23 @@
 # Some target data with added artificial noise is used as the "experiment"
 # that we are trying to fit. We expect the decay to go like 
 #
-#    0.5*exp(-g*pi*t)
+#    0.5*cos(2*pi*t)*exp(-g*t)
 # 
-# with g our variable, t the time, and pi=3.14159... 
+# with g our variable, t the time, and pi = 3.1415...
 # 
 # The 0.5 factor appears in front as that's the moment of the muon.
-# With the data provided, we expect the fitting to find that g = 0.2
+# With the data provided, we expect the fitting to find that g = 3.0
 
 
 name
     fitting
 spins
     mu
-fitting_variables
-    g 0.1 0.0 inf
+field
+    1.0/muon_gyr
 fitting_data
     load("experiment.dat")
+fitting_variables
+    g 0.1 0.0 inf
 dissipation 1
     g
