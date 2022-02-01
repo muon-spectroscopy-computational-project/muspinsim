@@ -34,6 +34,7 @@ def deepmap(func, obj):
 
 
 def zcw_gen(N, mode="sphere"):
+    N = int(N)
     pwd = ZCW(mode)
     return pwd.get_orient_angles(N)[0]
 
