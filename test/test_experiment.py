@@ -199,7 +199,7 @@ dissipation 1
 
         results = ertest.run()
 
-        solx = np.real(0.5 * np.exp(-np.pi * g * times))
+        solx = np.real(0.5 * np.exp(- g * times))
         self.assertTrue(np.all(np.isclose(results, solx)))
 
         # Check for temperature equilibrium
