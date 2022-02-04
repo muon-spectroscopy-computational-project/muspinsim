@@ -102,6 +102,7 @@ $$
 \frac{1}{2} & \frac{1}{2}
 \end{bmatrix}
 $$
+
 and is coupled to an environment with infinite temperature (so $\alpha_+ = \alpha_- = \alpha$). The Hamiltonian for this system will then be:
 
 $$
