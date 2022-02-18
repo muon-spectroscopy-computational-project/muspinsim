@@ -8,7 +8,7 @@ to experimental data, to find the optimal parameters that describe it.
 You can install the latest version of this repository directly from GitHub using pip:
 
 ```bash
-pip install git+https://github.com/stur86/muspinsim.git
+pip install git+https://github.com/muon-spectroscopy-computational-project/muspinsim.git
 ```
 
 ## Usage
