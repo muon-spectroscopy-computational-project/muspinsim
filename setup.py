@@ -35,7 +35,10 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
     install_requires=["numpy", "scipy", "soprano", "lark"],
-    extras_require={"docs": ["mkdocs", "pymdown-extensions"]},
+    extras_require={
+        "docs": ["mkdocs", "pymdown-extensions"],
+        "dev": ["flake8", "black>=22.3.0", "pytest", "pre-commit"],
+    },
     entry_points={
         "console_scripts": [
             "muspinsim = muspinsim.__main__:main",
