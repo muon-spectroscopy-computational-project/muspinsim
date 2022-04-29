@@ -6,15 +6,17 @@ name: Python package tests
 on:
   # Triggers the workflow on push or pull request events but only for non-docs commits
   push:
-    paths_ignore:
+    paths-ignore:
       - "docs/**"
       - .github/workflows/build-docs.yml
       - CITATION.cff
+      - .github/workflows/citation-cff.yml
   pull_request:
-    paths_ignore:
+    paths-ignore:
       - "docs/**"
       - .github/workflows/build-docs.yml
       - CITATION.cff
+      - .github/workflows/citation-cff.yml
 
 jobs:
   lint:
