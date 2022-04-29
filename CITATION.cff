@@ -39,6 +39,7 @@ abstract: >-
 keywords:
   - "muon spectroscopy"
   - muons
+  - testkeyword
 license: MIT
 # version data
 version: v1.0.4
