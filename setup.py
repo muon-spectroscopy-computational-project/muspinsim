@@ -23,6 +23,16 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        # How mature is this project? Common values are
+        #   3 - Alpha
+        #   4 - Beta
+        #   5 - Production/Stable
+        "Development Status :: 4 - Beta",
+        # Indicate who your project is intended for
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Chemistry",
+        "Topic :: Scientific/Engineering :: Physics",
+        "Topic :: Scientific/Engineering :: Information Analysis",
     ],
     install_requires=["numpy", "scipy", "soprano", "lark"],
     extras_require={"docs": ["mkdocs", "pymdown-extensions"]},
