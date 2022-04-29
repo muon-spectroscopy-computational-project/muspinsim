@@ -38,6 +38,7 @@ abstract: >-
   optimal parameters that describe it.
 keywords:
   - "muon spectroscopy"
+  - muons
 license: MIT
 # version data
 version: v1.0.4
