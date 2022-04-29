@@ -61,8 +61,8 @@ class TestLindbladian(unittest.TestCase):
             L = Lindbladian.from_hamiltonian(H, [(sx, g)])
             evol = L.evolve(rho0, t, sx)
 
-            ap = -0.5 * np.pi * g + ((0.5 * np.pi * g) ** 2 - 4 * np.pi ** 2) ** 0.5
-            am = -0.5 * np.pi * g - ((0.5 * np.pi * g) ** 2 - 4 * np.pi ** 2) ** 0.5
+            ap = -0.5 * np.pi * g + ((0.5 * np.pi * g) ** 2 - 4 * np.pi**2) ** 0.5
+            am = -0.5 * np.pi * g - ((0.5 * np.pi * g) ** 2 - 4 * np.pi**2) ** 0.5
             A = ap * am / (am - ap)
 
             # Analytical solution for this case
@@ -96,7 +96,7 @@ class TestLindbladian(unittest.TestCase):
         tau = 2.0
         avg = L.integrate_decaying(rho0, tau, sx)
 
-        self.assertAlmostEqual(avg[0], 0.5 * tau / (1 + 4 * np.pi ** 2 * tau ** 2))
+        self.assertAlmostEqual(avg[0], 0.5 * tau / (1 + 4 * np.pi**2 * tau**2))
 
         # Same but with decay
         for g in [1.0, 2.0, 5.0, 10.0]:
@@ -104,8 +104,8 @@ class TestLindbladian(unittest.TestCase):
             L = Lindbladian.from_hamiltonian(H, [(sx, g)])
             avg = L.integrate_decaying(rho0, tau, sx)
 
-            ap = -0.5 * np.pi * g + ((0.5 * np.pi * g) ** 2 - 4 * np.pi ** 2) ** 0.5
-            am = -0.5 * np.pi * g - ((0.5 * np.pi * g) ** 2 - 4 * np.pi ** 2) ** 0.5
+            ap = -0.5 * np.pi * g + ((0.5 * np.pi * g) ** 2 - 4 * np.pi**2) ** 0.5
+            am = -0.5 * np.pi * g - ((0.5 * np.pi * g) ** 2 - 4 * np.pi**2) ** 0.5
             A = ap * am / (am - ap)
 
             # Analytical solution for this case

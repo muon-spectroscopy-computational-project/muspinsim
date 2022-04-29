@@ -175,7 +175,7 @@ field
 
         results = ertest.run()
 
-        self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi ** 2 * tau ** 2))
+        self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi**2 * tau**2))
 
     def test_dissipation(self):
 
@@ -199,7 +199,7 @@ dissipation 1
 
         results = ertest.run()
 
-        solx = np.real(0.5 * np.exp(- g * times))
+        solx = np.real(0.5 * np.exp(-g * times))
         self.assertTrue(np.all(np.isclose(results, solx)))
 
         # Check for temperature equilibrium

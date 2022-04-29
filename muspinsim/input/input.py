@@ -73,9 +73,9 @@ class MuSpinInput(object):
             for l in lines:
 
                 # Remove any comments
-                l = l.split('#', 1)[0]
+                l = l.split("#", 1)[0]
 
-                if l.strip() == '':
+                if l.strip() == "":
                     continue  # It's a comment
                 m = indre.match(l)
                 if m:
