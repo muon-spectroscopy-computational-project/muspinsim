@@ -9,10 +9,12 @@ on:
     paths_ignore:
       - "docs/**"
       - .github/workflows/build-docs.yml
+      - CITATION.cff
   pull_request:
     paths_ignore:
       - "docs/**"
       - .github/workflows/build-docs.yml
+      - CITATION.cff
 
 jobs:
   lint:
