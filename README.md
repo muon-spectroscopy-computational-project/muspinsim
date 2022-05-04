@@ -5,15 +5,16 @@ to experimental data, to find the optimal parameters that describe it.
 
 ## Installation
 
-You can install the latest version of this repository directly from GitHub using pip:
+You can install the latest release using pip or conda:
 
 ```bash
-pip install git+https://github.com/muon-spectroscopy-computational-project/muspinsim.git
+pip install muspinsim
+conda install muspinsim
 ```
 
 ## Usage
 
-Once installed, the program will be made available for command line use as `muspinsim`. The usage is simply
+Once installed, the program will be made available for command line use as `muspinsim`. The usage is
 
 ```bash
 muspinsim input_file.in
@@ -27,11 +28,11 @@ For especially expensive calculations MuSpinSim can also be used in parallel wit
 mpirun -n <number of cores> muspinsim.mpi input_file.in
 ```
 
-where of course `<number of cores>` is replaced by the number of desired cores on the given system.
+where `<number of cores>` is replaced by the number of desired cores on the given system.
 
 ## Usage as a library
 
-MuSpinSim can also easily be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the `MuSpinInput` class, then use it to create a `MuonExperimentalSetup` that runs the actual experiment. The minimal script is:
+MuSpinSim can also be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the `MuSpinInput` class, then use it to create a `MuonExperimentalSetup` that runs the actual experiment. The minimal script is:
 
 ```python
 from muspinsim import MuSpinInput, ExperimentRunner
