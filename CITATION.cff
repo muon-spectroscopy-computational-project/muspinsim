@@ -47,10 +47,12 @@ license: MIT
 # version data
 version: v1.0.4
 date-released: '2022-05-04'
-# permanent identifiers - to come?
-# identifiers:
-#  - type: doi
-#    value:
-#    description:
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.6517626
+    description: The concept DOI for the collection containing all versions of muspinsim.
+  - type: doi
+    value: 10.5281/zenodo.6517627
+    description: The versioned DOI for the version 1.0.4 of muspinsim.
 # references - to come!
 # references:
