@@ -21,6 +21,7 @@ authors:
   - given-names: Josh
     family-names: Owen
     affiliation: Science and Technology Facilities Council
+    orcid: 'https://orcid.org/0000-0003-1971-521X'
   - name: "Muon Spectroscopy Computational Project"
 repository-code: >-
   https://github.com/muon-spectroscopy-computational-project/muspinsim
