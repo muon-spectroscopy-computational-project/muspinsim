@@ -182,7 +182,8 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
                         l_tokens += [
                             LarkExpression(
                                 tk, variables=self._variables, functions=self._functions
-                            )]
+                            )
+                        ]
                     except LarkExpressionError as e:
                         raise ValueError(
                             "Error occurred when parsing keyword {0}".format(self.name)

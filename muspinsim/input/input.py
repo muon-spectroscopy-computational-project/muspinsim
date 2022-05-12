@@ -152,7 +152,7 @@ class MuSpinInput(object):
                 for i, e in enumerate(errors_found):
                     tbs += "Error {0}\n{1}\n".format(
                         i + 1,
-                        ''.join(traceback.format_exception(None, e, e.__traceback__))
+                        "".join(traceback.format_exception(None, e, e.__traceback__)),
                     )
 
                 raise MuSpinInputError(

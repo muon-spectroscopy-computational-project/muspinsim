@@ -100,16 +100,15 @@ class LarkExpression(object):
             if v not in self._all_variables:
                 raise LarkExpressionError(
                     "Invalid variable: '{0}', valid functions are ['{1}']".format(
-                        v,
-                        "', '".join(self._all_variables))
+                        v, "', '".join(self._all_variables)
+                    )
                 )
 
         for f in self._functions:
             if f not in functions.keys():
                 raise LarkExpressionError(
                     "Invalid function: '{0}()', valid functions are ['{1}()']".format(
-                        f,
-                        "()', '".join(functions.keys())
+                        f, "()', '".join(functions.keys())
                     )
                 )
 
