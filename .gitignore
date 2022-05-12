@@ -135,5 +135,8 @@ examples/*/*
 !examples/*/*.in
 !examples/fitting/experiment.dat
 
+# pycharm
+.idea/*
+
 # Visual Studio Code settings
 .vscode
