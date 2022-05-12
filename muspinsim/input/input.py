@@ -4,6 +4,7 @@ Class to read in input files for the muspinsim script
 """
 
 import re
+import traceback
 from io import StringIO
 
 import numpy as np
@@ -73,9 +74,9 @@ class MuSpinInput(object):
             for l in lines:
 
                 # Remove any comments
-                l = l.split('#', 1)[0]
+                l = l.split("#", 1)[0]
 
-                if l.strip() == '':
+                if l.strip() == "":
                     continue  # It's a comment
                 m = indre.match(l)
                 if m:
@@ -117,31 +118,43 @@ class MuSpinInput(object):
                 pass
 
             # Now parse
+            errors_found = []
             for header, block in raw_blocks.items():
-
-                hsplit = header.split()
-                name = hsplit[0]
-                args = hsplit[1:]
-
                 try:
-                    KWClass = InputKeywords[name]
-                except KeyError:
-                    raise MuSpinInputError(
-                        "Invalid keyword " "{0} ".format(name) + "found in input file"
-                    )
+                    hsplit = header.split()
+                    name = hsplit[0]
+                    args = hsplit[1:]
 
-                if issubclass(KWClass, MuSpinEvaluateKeyword):
-                    kw = KWClass(block, args=args, variables=self._variables)
-                else:
-                    kw = KWClass(block, args=args)
+                    try:
+                        KWClass = InputKeywords[name]
+                    except KeyError:
+                        raise MuSpinInputError(
+                            "Invalid keyword " "{0} ".format(name) + "found in input file"
+                        )
 
-                kwid = kw.id
+                    if issubclass(KWClass, MuSpinEvaluateKeyword):
+                        kw = KWClass(block, args=args, variables=self._variables)
+                    else:
+                        kw = KWClass(block, args=args)
 
-                if name != kwid:
-                    self._keywords[name] = self._keywords.get(name, {})
-                    self._keywords[name][kwid] = kw
-                else:
-                    self._keywords[name] = kw
+                    kwid = kw.id
+
+                    if name != kwid:
+                        self._keywords[name] = self._keywords.get(name, {})
+                        self._keywords[name][kwid] = kw
+                    else:
+                        self._keywords[name] = kw
+                except ValueError as e:
+                    errors_found += [e]
+
+            if errors_found:
+                tbs = ""
+                for i, e in enumerate(errors_found):
+                    tbs += "Error {0}\n{1}\n".format(i+1, ''.join(traceback.format_exception(None, e, e.__traceback__)))
+
+                raise MuSpinInputError("Errors found whilst trying to parse input file: \n\n{0}".format(tbs))
+
+
 
     @property
     def variables(self):
