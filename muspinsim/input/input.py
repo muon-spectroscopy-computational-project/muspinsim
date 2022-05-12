@@ -129,7 +129,7 @@ class MuSpinInput(object):
                         KWClass = InputKeywords[name]
                     except KeyError:
                         raise MuSpinInputError(
-                            "Invalid keyword " "{0} ".format(name) + "found in input file"
+                            "Invalid keyword {0} found in input file".format(name)
                         )
 
                     if issubclass(KWClass, MuSpinEvaluateKeyword):
@@ -150,11 +150,16 @@ class MuSpinInput(object):
             if errors_found:
                 tbs = ""
                 for i, e in enumerate(errors_found):
-                    tbs += "Error {0}\n{1}\n".format(i+1, ''.join(traceback.format_exception(None, e, e.__traceback__)))
+                    tbs += "Error {0}\n{1}\n".format(
+                        i + 1,
+                        ''.join(traceback.format_exception(None, e, e.__traceback__))
+                    )
 
-                raise MuSpinInputError("Errors found whilst trying to parse input file: \n\n{0}".format(tbs))
-
-
+                raise MuSpinInputError(
+                    "Errors found whilst trying to parse input file: \n\n{0}".format(
+                        tbs
+                    )
+                )
 
     @property
     def variables(self):

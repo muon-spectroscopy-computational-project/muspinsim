@@ -176,7 +176,7 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
         b = []
         for values in block:
             for line in values:
-                l_tokens =[]
+                l_tokens = []
                 for tk in lark_tokenize(line):
                     try:
                         l_tokens += [
