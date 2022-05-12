@@ -173,21 +173,21 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
 
     def _store_values(self, block):
         self._values = []
-        b = []
-        for values in block:
-            for line in values:
-                l_tokens = []
-                for tk in lark_tokenize(line):
-                    try:
-                        l_tokens += [
-                            LarkExpression(
-                                tk, variables=self._variables, functions=self._functions
-                            )
-                        ]
-                    except LarkExpressionError as e:
-                        raise ValueError(
-                            "Error occurred when parsing keyword {0}".format(self.name)
-                        ) from e
+        for v in block:
+            try:
+                b = [
+                    [
+                        LarkExpression(
+                            tk, variables=self._variables, functions=self._functions
+                        )
+                        for tk in lark_tokenize(l)
+                    ]
+                    for l in v
+                ]
+            except LarkExpressionError as e:
+                raise ValueError(
+                    "Error occurred when parsing keyword {0}".format(self.name)
+                ) from e
             if len(b) == 1:
                 b = b[0]
             self._values.append(b)
