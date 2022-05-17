@@ -4,7 +4,6 @@ Class to read in input files for the muspinsim script
 """
 
 import re
-import traceback
 from io import StringIO
 
 import numpy as np
@@ -15,6 +14,8 @@ from muspinsim.input.keyword import (
     MuSpinEvaluateKeyword,
     MuSpinCouplingKeyword,
 )
+
+from muspinsim.input.larkeval import LarkExpressionError
 
 
 class MuSpinInputError(Exception):
@@ -67,11 +68,12 @@ class MuSpinInput(object):
             # Split lines in blocks
             raw_blocks = {}
             curr_block = None
+            block_line_nums = {}
 
             indre = re.compile("(\\s+)[^\\s]")
             indent = None
 
-            for l in lines:
+            for i, l in enumerate(lines):
 
                 # Remove any comments
                 l = l.split("#", 1)[0]
@@ -92,6 +94,7 @@ class MuSpinInput(object):
                 else:
                     curr_block = l.strip()
                     raw_blocks[curr_block] = []
+                    block_line_nums[curr_block] = i + 1
                     indent = None  # Reset for each block
 
             # A special case: if there are fitting variables, we need to know
@@ -144,20 +147,21 @@ class MuSpinInput(object):
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
-                except ValueError as e:
-                    errors_found += [e]
+                except LarkExpressionError as e:
+                    errors_found += [
+                        "Error occurred when parsing keyword {0}"
+                        "(block starting at line {1})\n{2}".format(
+                            name, block_line_nums[header], str(e)
+                        )
+                    ]
 
             if errors_found:
-                tbs = ""
-                for i, e in enumerate(errors_found):
-                    tbs += "Error {0}\n{1}\n".format(
-                        i + 1,
-                        "".join(traceback.format_exception(None, e, e.__traceback__)),
-                    )
-
+                err_str = ""
+                for i, err in enumerate(errors_found):
+                    err_str += "Error {0}:\n{1}\n\n".format(i, err)
                 raise MuSpinInputError(
                     "Errors found whilst trying to parse input file: \n\n{0}".format(
-                        tbs
+                        err_str
                     )
                 )
 
