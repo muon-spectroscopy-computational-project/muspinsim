@@ -15,6 +15,8 @@ from muspinsim.input.keyword import (
     MuSpinCouplingKeyword,
 )
 
+from muspinsim.input.larkeval import LarkExpressionError
+
 
 class MuSpinInputError(Exception):
     pass
@@ -66,11 +68,12 @@ class MuSpinInput(object):
             # Split lines in blocks
             raw_blocks = {}
             curr_block = None
+            block_line_nums = {}
 
             indre = re.compile("(\\s+)[^\\s]")
             indent = None
 
-            for l in lines:
+            for i, l in enumerate(lines):
 
                 # Remove any comments
                 l = l.split("#", 1)[0]
@@ -91,6 +94,7 @@ class MuSpinInput(object):
                 else:
                     curr_block = l.strip()
                     raw_blocks[curr_block] = []
+                    block_line_nums[curr_block] = i + 1
                     indent = None  # Reset for each block
 
             # A special case: if there are fitting variables, we need to know
@@ -117,31 +121,45 @@ class MuSpinInput(object):
                 pass
 
             # Now parse
+            errors_found = []
             for header, block in raw_blocks.items():
-
-                hsplit = header.split()
-                name = hsplit[0]
-                args = hsplit[1:]
-
                 try:
-                    KWClass = InputKeywords[name]
-                except KeyError:
-                    raise MuSpinInputError(
-                        "Invalid keyword " "{0} ".format(name) + "found in input file"
-                    )
+                    hsplit = header.split()
+                    name = hsplit[0]
+                    args = hsplit[1:]
 
-                if issubclass(KWClass, MuSpinEvaluateKeyword):
-                    kw = KWClass(block, args=args, variables=self._variables)
-                else:
-                    kw = KWClass(block, args=args)
+                    try:
+                        KWClass = InputKeywords[name]
+                    except KeyError:
+                        raise MuSpinInputError(
+                            "Invalid keyword {0} found in input file".format(name)
+                        )
 
-                kwid = kw.id
+                    if issubclass(KWClass, MuSpinEvaluateKeyword):
+                        kw = KWClass(block, args=args, variables=self._variables)
+                    else:
+                        kw = KWClass(block, args=args)
 
-                if name != kwid:
-                    self._keywords[name] = self._keywords.get(name, {})
-                    self._keywords[name][kwid] = kw
-                else:
-                    self._keywords[name] = kw
+                    kwid = kw.id
+
+                    if name != kwid:
+                        self._keywords[name] = self._keywords.get(name, {})
+                        self._keywords[name][kwid] = kw
+                    else:
+                        self._keywords[name] = kw
+                except LarkExpressionError as e:
+                    errors_found += [
+                        "Error occurred when parsing keyword {0}"
+                        " (block starting at line {1}):\n{2}".format(
+                            name, block_line_nums[header], str(e)
+                        )
+                    ]
+
+            if errors_found:
+                raise MuSpinInputError(
+                    "Found {0} Errors whilst trying to parse input file: "
+                    "\n\n{1}".format(len(errors_found), "\n\n".join(errors_found))
+                )
 
     @property
     def variables(self):

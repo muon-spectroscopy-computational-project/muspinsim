@@ -96,11 +96,21 @@ class LarkExpression(object):
         self._all_variables = set(variables)
 
         # Check if they are valid
-        if len(self._variables - self._all_variables) > 0:
-            raise LarkExpressionError("Invalid variable used in LarkExpression")
+        for v in self._variables:
+            if v not in self._all_variables:
+                raise LarkExpressionError(
+                    "Invalid variable: '{0}', valid functions are ['{1}']".format(
+                        v, "', '".join(self._all_variables)
+                    )
+                )
 
-        if len(self._functions - set(functions.keys())) > 0:
-            raise LarkExpressionError("Invalid function used in LarkExpression")
+        for f in self._functions:
+            if f not in functions.keys():
+                raise LarkExpressionError(
+                    "Invalid function: '{0}()', valid functions are ['{1}()']".format(
+                        f, "()', '".join(functions.keys())
+                    )
+                )
 
         self._function_bodies = {fn: functions[fn] for fn in self._functions}
 
