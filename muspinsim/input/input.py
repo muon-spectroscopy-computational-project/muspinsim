@@ -150,19 +150,15 @@ class MuSpinInput(object):
                 except LarkExpressionError as e:
                     errors_found += [
                         "Error occurred when parsing keyword {0}"
-                        "(block starting at line {1})\n{2}".format(
+                        " (block starting at line {1}):\n{2}".format(
                             name, block_line_nums[header], str(e)
                         )
                     ]
 
             if errors_found:
-                err_str = ""
-                for i, err in enumerate(errors_found):
-                    err_str += "Error {0}:\n{1}\n\n".format(i, err)
                 raise MuSpinInputError(
-                    "Errors found whilst trying to parse input file: \n\n{0}".format(
-                        err_str
-                    )
+                    "Found {0} Errors whilst trying to parse input file: "
+                    "\n\n{1}".format(len(errors_found), "\n\n".join(errors_found))
                 )
 
     @property
