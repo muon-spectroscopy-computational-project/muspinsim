@@ -160,7 +160,7 @@ class MuSpinInput(object):
 
             if errors_found:
                 raise MuSpinInputError(
-                    "Found {0} Errors whilst trying to parse input file: "
+                    "Found {0} Error(s) whilst trying to parse input file: "
                     "\n\n{1}".format(len(errors_found), "\n\n".join(errors_found))
                 )
 
@@ -225,7 +225,8 @@ class MuSpinInput(object):
             self._fitting_info["data"] = np.array(kw.evaluate())
         except KeyError:
             raise MuSpinInputError(
-                "Fitting variables defined without defining" " a set of data to fit"
+                "Fitting variables defined without defining"
+                " a set of data to fit"
             )
 
         block = raw_blocks.pop("fitting_tolerance", [])

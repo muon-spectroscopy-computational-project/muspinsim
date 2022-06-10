@@ -78,7 +78,7 @@ class MuSpinKeyword(object):
             block = block.reshape((-1, self.block_size))
         except ValueError:
             raise RuntimeError(
-                "Invalid block length for " "keyword {0}".format(self.name)
+                "Invalid number of entries for block, expected {0}, got {1}".format(self.block_size, len(block))
             )
         if not self.accept_range and len(block) > 1:
             raise RuntimeError(
@@ -101,11 +101,15 @@ class MuSpinKeyword(object):
             self._args = self._default_args(*args)
         except TypeError:
             raise RuntimeError(
-                "Wrong number of arguments passed to " "keyword {0}".format(self.name)
+                "Wrong number of keyword arguments given '{0}', expected {1}, got {2}".format(
+                    " ".join(args),
+                    len(inspect.signature(self._default_args).parameters),
+                    len(args)
+                )
             )
-        except ValueError:
+        except ValueError as e:
             raise RuntimeError(
-                "Invalid argument type passed to " "keyword {0}".format(self.name)
+                "Error parsing keyword argument(s) '{0}': {1}".format(self.name, str(e))
             )
 
     def _store_values(self, block):
@@ -318,7 +322,7 @@ class KWXAxis(MuSpinKeyword):
     accept_range = False
     default = "time"
     _validators = {
-        "Invalid value": lambda s: (
+        "Invalid value given, accepts input keywords only": lambda s: (
             s[0] in InputKeywords and InputKeywords[s[0]].accept_as_x
         )
     }
@@ -330,7 +334,9 @@ class KWYAxis(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "asymmetry"
-    _validators = {"Invalid value": lambda s: s in ("asymmetry", "integral")}
+    _validators = {"Invalid value, "
+                   "accepted values ['asymmetry', 'integral']":
+                       lambda s: s in ("asymmetry", "integral")}
 
 
 class KWAverageAxes(MuSpinKeyword):
@@ -340,9 +346,10 @@ class KWAverageAxes(MuSpinKeyword):
     accept_range = True
     default = "orientation"
     _validators = {
-        "Invalid value": lambda s: all(
-            (w in InputKeywords or w.lower() == "none") for w in s
-        )
+        "Invalid value given, accepts keyword names":
+            lambda s: all(
+                (w in InputKeywords or w.lower() == "none") for w in s
+            )
     }
 
 
@@ -473,9 +480,11 @@ class KWFittingMethod(MuSpinKeyword):
     accept_range = False
     default = "nelder-mead"
     _validators = {
-        "Invalid value": lambda s: (
-            (s[0].lower() in ("nelder-mead", "lbfgs")) and len(s) == 1
-        )
+        "Invalid value, "
+        "accepted values ['nelder-mead', 'lbfgs']":
+            lambda s: (
+                (s[0].lower() in ("nelder-mead", "lbfgs")) and len(s) == 1
+            )
     }
 
 
@@ -485,7 +494,9 @@ class KWFittingTolerance(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "1e-3"
-    _validators = {"Invalid value": lambda s: (float(s[0]) and len(s) == 1)}
+    _validators = {"Invalid value, "
+                   "accepts single float value":
+                       lambda s: (float(s[0]) and len(s) == 1)}
 
 
 # Special configuration keyword
