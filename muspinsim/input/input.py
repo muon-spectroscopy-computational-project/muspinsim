@@ -115,27 +115,22 @@ class MuSpinInput(object):
                 block = raw_blocks.pop("experiment")
                 kw = InputKeywords["experiment"](block)
                 exptype = kw.evaluate()[0]
-                if len(exptype) > 1:
-                    raise MuSpinInputError(
-                        "Can not define more than one experiment type"
-                    )
-                elif len(exptype) == 1:
-                    try:
-                        mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
-                        self._keywords.update(mock_i._keywords)
-                    except KeyError:
-                        raise MuSpinInputError("Invalid experiment type defined")
+                try:
+                    mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
+                    self._keywords.update(mock_i._keywords)
+                except KeyError:
+                    raise MuSpinInputError("Invalid experiment type '{0}' defined, possible types include {1}".format(
+                        exptype[0], list(_exp_defaults.keys())))
             except KeyError:
                 pass
 
             # Now parse
             errors_found = []
             for header, block in raw_blocks.items():
+                hsplit = header.split()
+                name = hsplit[0]
+                args = hsplit[1:]
                 try:
-                    hsplit = header.split()
-                    name = hsplit[0]
-                    args = hsplit[1:]
-
                     try:
                         KWClass = InputKeywords[name]
                     except KeyError:
