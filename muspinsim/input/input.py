@@ -85,12 +85,13 @@ class MuSpinInput(object):
                     if indent is None:
                         indent = m.groups()[0]
                     if m.groups()[0] != indent:
-                        raise RuntimeError("Invalid indent in input file")
+                        raise RuntimeError("Invalid indent found for keyword '{0}' near line {1}".format(
+                            curr_block, i+1))
                     else:
                         try:
                             raw_blocks[curr_block].append(l.strip())
                         except KeyError:
-                            raise RuntimeError("Badly formatted input file")
+                            raise RuntimeError("Invalid indent found near line {0}".format(i+1))
                 else:
                     curr_block = l.strip()
                     raw_blocks[curr_block] = []
