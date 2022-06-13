@@ -122,8 +122,11 @@ class MuSpinInput(object):
                     mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
                     self._keywords.update(mock_i._keywords)
                 except KeyError:
-                    raise MuSpinInputError("Invalid experiment type '{0}' defined, possible types include {1}".format(
-                        exptype[0], list(_exp_defaults.keys())))
+                    errors_found += [
+                        "Invalid experiment type '{0}' defined, possible types include {1}".format(
+                            exptype[0], list(_exp_defaults.keys())
+                        )
+                    ]
             except KeyError:
                 pass
 
