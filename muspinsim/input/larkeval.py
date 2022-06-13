@@ -86,8 +86,9 @@ class LarkExpression(object):
         try:
             self._tree = _expr_parser.parse(source)
         except UnexpectedToken as e:
-            raise LarkExpressionError("Invalid characters in LarkExpression: "
-                                      "{0}".format(e))
+            raise LarkExpressionError(
+                "Invalid characters in LarkExpression: " "{0}".format(e)
+            )
 
         # Find the variables and the function calls
         found_vars, found_funcs = self._analyse_tree(self._tree)
@@ -200,7 +201,8 @@ class LarkExpression(object):
             raise LarkExpressionError(
                 "Some invalid variable(s) {0} have been "
                 "defined when evaluating LarkExpression".format(
-                    vset - self._all_variables)
+                    vset - self._all_variables
+                )
             )
 
         if self._store_eval is not None:

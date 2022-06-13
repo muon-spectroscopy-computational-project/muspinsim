@@ -93,9 +93,8 @@ class MuSpinInput(object):
                         indent = m.groups()[0]
                     if m.groups()[0] != indent:
                         raise RuntimeError(
-                            "Invalid indent found for keyword '{0}' near line {1}".format(
-                                curr_block, i + 1
-                            )
+                            "Invalid indent found for keyword '{0}' "
+                            "near line {1}".format(curr_block, i + 1)
                         )
                     else:
                         try:
@@ -132,8 +131,11 @@ class MuSpinInput(object):
                     mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
                     self._keywords.update(mock_i._keywords)
                 except KeyError:
-                    err = "Invalid experiment type '{0}' defined, possible types include {1}".format(
-                        exptype[0], list(_exp_defaults.keys())
+                    err = (
+                        "Invalid experiment type '{0}' defined, "
+                        "possible types include {1}".format(
+                            exptype[0], list(_exp_defaults.keys())
+                        )
                     )
                     errors_found += [
                         write_error("experiment", block_line_nums["experiment"], err)

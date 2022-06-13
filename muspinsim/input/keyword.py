@@ -124,7 +124,8 @@ class MuSpinKeyword(object):
                     or length > self.expr_size_bounds[1]
                 ):
                     raise RuntimeError(
-                        "Incorrect number of args for entry '{0}', expected {1}, got {2}".format(
+                        "Incorrect number of args for entry '{0}', "
+                        "expected {1}, got {2}".format(
                             block[i][0],
                             "between {0} and {1}".format(
                                 self.expr_size_bounds[0],
@@ -145,7 +146,8 @@ class MuSpinKeyword(object):
             self._args = self._default_args(*args)
         except TypeError:
             raise RuntimeError(
-                "Wrong number of keyword arguments given '{0}', expected {1}, got {2}".format(
+                "Wrong number of keyword arguments given '{0}', "
+                "expected {1}, got {2}".format(
                     " ".join(args),
                     len(inspect.signature(self._default_args).parameters),
                     len(args),
