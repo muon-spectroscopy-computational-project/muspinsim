@@ -134,7 +134,7 @@ class MuSpinInput(object):
                     try:
                         KWClass = InputKeywords[name]
                     except KeyError:
-                        raise MuSpinInputError(
+                        raise RuntimeError(
                             "Invalid keyword {0} found in input file".format(name)
                         )
 
@@ -150,7 +150,7 @@ class MuSpinInput(object):
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
-                except LarkExpressionError as e:
+                except (ValueError, LarkExpressionError, RuntimeError, FileNotFoundError) as e:
                     errors_found += [
                         "Error occurred when parsing keyword {0}"
                         " (block starting at line {1}):\n{2}".format(
