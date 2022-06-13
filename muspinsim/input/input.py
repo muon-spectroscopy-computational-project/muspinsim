@@ -107,7 +107,10 @@ class MuSpinInput(object):
 
             # A special case: if there are fitting variables, we need to know
             # right away
-            self._load_fitting_kw(raw_blocks)
+            errors_found = []
+            failed_status, errors = self._load_fitting_kw(raw_blocks, block_line_nums)
+            if failed_status:
+                errors_found.extend(errors)
 
             # Another special case: if the "experiment" keyword is present,
             # use it to set some defaults
@@ -125,7 +128,6 @@ class MuSpinInput(object):
                 pass
 
             # Now parse
-            errors_found = []
             for header, block in raw_blocks.items():
                 hsplit = header.split()
                 name = hsplit[0]
@@ -203,19 +205,29 @@ class MuSpinInput(object):
 
         return result
 
-    def _load_fitting_kw(self, raw_blocks):
+    def _load_fitting_kw(self, raw_blocks, block_line_nums):
         """Special case: handling of all the fitting related keywords and
         information."""
-
+        errors_found = []
         try:
             block = raw_blocks.pop("fitting_variables")
             kw = InputKeywords["fitting_variables"](block)
             self._variables = {v.name: v for v in kw.evaluate()}
         except KeyError:
             pass
+        except (RuntimeError, ValueError, LarkExpressionError) as e:
+            errors_found += [
+                "Error occurred when parsing keyword fitting_variables "
+                "(block starting at line {0}):\n{1}".format(
+                    block_line_nums["fitting_variables"], str(e)
+                )
+            ]
+
+        if errors_found:
+            return 1, errors_found
 
         if len(self._variables) == 0:
-            return
+            return 0, None
 
         self._fitting_info["fit"] = True
 
@@ -224,15 +236,44 @@ class MuSpinInput(object):
             kw = InputKeywords["fitting_data"](block)
             self._fitting_info["data"] = np.array(kw.evaluate())
         except KeyError:
-            raise MuSpinInputError(
-                "Fitting variables defined without defining"
-                " a set of data to fit"
-            )
+            errors_found += [
+                "Error occurred when parsing keyword fitting variables (block starting at line {0}):\n"
+                "Fitting variables defined defining any data to fit".format(
+                    block_line_nums["fitting_variables"]
+                )
+            ]
+        except (RuntimeError, ValueError, LarkExpressionError) as e:
+            errors_found += [
+                "Error occurred when parsing keyword "
+                "fitting_data (block starting at line {0}):\n{1}".format(
+                    block_line_nums["fitting_data"], str(e)
+                )
+            ]
 
-        block = raw_blocks.pop("fitting_tolerance", [])
-        kw = InputKeywords["fitting_tolerance"](block)
-        self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
+        try:
+            block = raw_blocks.pop("fitting_tolerance", [])
+            kw = InputKeywords["fitting_tolerance"](block)
+            self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
+        except (RuntimeError, ValueError) as e:
+            errors_found += [
+                "Error occurred when parsing keyword "
+                "fitting_tolerance (block starting at line {0}):\n{1}".format(
+                    block_line_nums["fitting_data"], str(e)
+                )
+            ]
 
-        block = raw_blocks.pop("fitting_method", [])
-        kw = InputKeywords["fitting_method"](block)
-        self._fitting_info["method"] = kw.evaluate()[0][0]
+        try:
+            block = raw_blocks.pop("fitting_method", [])
+            kw = InputKeywords["fitting_method"](block)
+            self._fitting_info["method"] = kw.evaluate()[0][0]
+        except (RuntimeError, ValueError) as e:
+            errors_found += [
+                "Error occurred when parsing keyword "
+                "fitting_method (block starting at line {0}):\n{1}".format(
+                    block_line_nums["fitting_data"], str(e)
+                )
+            ]
+
+        if errors_found:
+            return 1, errors_found
+        return 0, None
