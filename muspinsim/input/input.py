@@ -94,6 +94,13 @@ class MuSpinInput(object):
                             raise RuntimeError("Invalid indent found near line {0}".format(i+1))
                 else:
                     curr_block = l.strip()
+                    if curr_block in raw_blocks.keys():
+                        raise RuntimeError(
+                            "Duplicate entry found for keyword: '{0}' on line {1}, "
+                            "please delete or merge entries".format(
+                                curr_block, i + 1
+                            )
+                        )
                     raw_blocks[curr_block] = []
                     block_line_nums[curr_block] = i + 1
                     indent = None  # Reset for each block
