@@ -381,7 +381,7 @@ class SpinSystem(Clonable):
         g_j = self.gamma(j)
 
         rnorm = np.linalg.norm(r)
-        D = -(np.eye(3) - 3.0 / rnorm ** 2.0 * r[:, None] * r[None, :])
+        D = -(np.eye(3) - 3.0 / rnorm**2.0 * r[:, None] * r[None, :])
         dij = -(cnst.mu_0 * cnst.hbar * (g_i * g_j * 1e6)) / (
             2 * (rnorm * 1e-10) ** 3
         )  # MHz

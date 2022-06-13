@@ -32,7 +32,7 @@ class TestUtils(unittest.TestCase):
         data = [[1, 2, 3], [4, 5], [6, [7, 8]]]
 
         def square(x):
-            return x ** 2
+            return x**2
 
         data2 = deepmap(square, data)
 

@@ -61,7 +61,7 @@ class TestSpinOperator(unittest.TestCase):
             np.all(
                 np.isclose(
                     Sx.matrix,
-                    np.array([[0, 1, 0.0], [1, 0, 1.0], [0, 1, 0.0]]) / 2 ** 0.5,
+                    np.array([[0, 1, 0.0], [1, 0, 1.0], [0, 1, 0.0]]) / 2**0.5,
                 )
             )
         )
@@ -99,9 +99,9 @@ class TestSpinOperator(unittest.TestCase):
         )
 
         # Test Hilbert-Schmidt product
-        rho = DensityOperator.from_vectors(0.5, np.array([1, 1, 0]) / 2 ** 0.5)
+        rho = DensityOperator.from_vectors(0.5, np.array([1, 1, 0]) / 2**0.5)
         sx = SpinOperator.from_axes(0.5, "x")
-        self.assertEqual(2 * np.real(rho.hilbert_schmidt(sx)), 0.5 ** 0.5)
+        self.assertEqual(2 * np.real(rho.hilbert_schmidt(sx)), 0.5**0.5)
 
     def test_multi(self):
 

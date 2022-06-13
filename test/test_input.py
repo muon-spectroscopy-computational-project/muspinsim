@@ -245,11 +245,12 @@ fitting_variables
         tdata[:, 0] = np.linspace(0, 1, 10)
         tdata[:, 1] = tdata[:, 0] ** 2
 
-        tfile = NamedTemporaryFile(mode="w")
+        tfile = NamedTemporaryFile(mode="w", delete=False)
 
         for d in tdata:
             tfile.write("{0} {1}\n".format(*d))
         tfile.flush()
+        tfile.close()
 
         s3 = StringIO(
             """
@@ -265,7 +266,6 @@ fitting_method
         )
 
         i3 = MuSpinInput(s3)
-        tfile.close()
 
         finfo = i3.fitting_info
 

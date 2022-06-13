@@ -237,9 +237,9 @@ class ExperimentRunner(object):
                 # The 1/pi factor here makes sure that the convention is that when
                 # a user inputs a certain value of dissipation for a single spin,
                 # that is exactly the exponential decay factor that is observed.
-                
-                self._dops.append((op_p, 1/np.pi * a * Zu[i] / (1 + Zu[i])))
-                self._dops.append((op_m, 1/np.pi * a / (1 + Zu[i])))
+
+                self._dops.append((op_p, 1 / np.pi * a * Zu[i] / (1 + Zu[i])))
+                self._dops.append((op_m, 1 / np.pi * a / (1 + Zu[i])))
 
         return self._dops
 

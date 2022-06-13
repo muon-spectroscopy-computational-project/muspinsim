@@ -35,7 +35,7 @@ fitting_data
         data = np.zeros((100, 3))
         data[:, 0] = np.linspace(0, 10.0, len(data))
         g = 0.2
-        data[:, 1] = 0.5 * np.exp(- g * data[:, 0])
+        data[:, 1] = 0.5 * np.exp(-g * data[:, 0])
         dblock = "\n".join(["\t{0} {1}".format(*d) for d in data])
 
         s1 = StringIO(

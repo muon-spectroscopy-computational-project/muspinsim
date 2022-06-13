@@ -24,7 +24,7 @@ class TestHamiltonian(unittest.TestCase):
         H = Hamiltonian(Sx.matrix)
 
         evals, evecs = H.diag()
-        evecsT = np.array([[1.0, 1.0], [-1.0, 1.0]]) / 2 ** 0.5
+        evecsT = np.array([[1.0, 1.0], [-1.0, 1.0]]) / 2**0.5
 
         self.assertTrue(np.all(evals == [-0.5, 0.5]))
         self.assertTrue(np.all(np.isclose(abs(np.dot(evecs, evecsT)), np.eye(2))))
@@ -53,4 +53,4 @@ class TestHamiltonian(unittest.TestCase):
         rho0 = DensityOperator.from_vectors()  # Start along z
         avg = H.integrate_decaying(rho0, 1.0, ssys.operator({0: "z"}))
 
-        self.assertTrue(np.isclose(avg[0], 0.5 / (1.0 + 4 * np.pi ** 2)))
+        self.assertTrue(np.isclose(avg[0], 0.5 / (1.0 + 4 * np.pi**2)))
