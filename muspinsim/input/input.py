@@ -47,6 +47,12 @@ y_axis
 }
 
 
+def write_error(keyword, block_line_num, err):
+    return "Error occurred when parsing keyword {0} " \
+           "(block starting at line {1}):\n{2}".format(
+                keyword, block_line_num, str(err))
+
+
 class MuSpinInput(object):
     def __init__(self, fs=None):
         """Read in an input file
@@ -122,10 +128,11 @@ class MuSpinInput(object):
                     mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
                     self._keywords.update(mock_i._keywords)
                 except KeyError:
-                    errors_found += [
-                        "Invalid experiment type '{0}' defined, possible types include {1}".format(
+                    err = "Invalid experiment type '{0}' defined, possible types include {1}".format(
                             exptype[0], list(_exp_defaults.keys())
-                        )
+                    )
+                    errors_found += [
+                        write_error('experiment', block_line_nums['experiment'], err)
                     ]
             except KeyError:
                 pass
@@ -157,10 +164,7 @@ class MuSpinInput(object):
                         self._keywords[name] = kw
                 except (ValueError, LarkExpressionError, RuntimeError, FileNotFoundError) as e:
                     errors_found += [
-                        "Error occurred when parsing keyword {0}"
-                        " (block starting at line {1}):\n{2}".format(
-                            name, block_line_nums[header], str(e)
-                        )
+                        write_error(name, block_line_nums[header], str(e))
                     ]
 
             if errors_found:
@@ -220,10 +224,9 @@ class MuSpinInput(object):
             pass
         except (RuntimeError, ValueError, LarkExpressionError) as e:
             errors_found += [
-                "Error occurred when parsing keyword fitting_variables "
-                "(block starting at line {0}):\n{1}".format(
-                    block_line_nums["fitting_variables"], str(e)
-                )
+                write_error('fitting_variables',
+                            block_line_nums['fitting_variables'],
+                            str(e))
             ]
 
         if errors_found:
@@ -240,17 +243,13 @@ class MuSpinInput(object):
             self._fitting_info["data"] = np.array(kw.evaluate())
         except KeyError:
             errors_found += [
-                "Error occurred when parsing keyword fitting variables (block starting at line {0}):\n"
-                "Fitting variables defined defining any data to fit".format(
-                    block_line_nums["fitting_variables"]
-                )
+                write_error('fitting_variables', block_line_nums['fitting_variables'], str(
+                    "Fitting variables defined without defining any data to fit"
+                ))
             ]
         except (RuntimeError, ValueError, LarkExpressionError) as e:
             errors_found += [
-                "Error occurred when parsing keyword "
-                "fitting_data (block starting at line {0}):\n{1}".format(
-                    block_line_nums["fitting_data"], str(e)
-                )
+                write_error('fitting_data', block_line_nums['fitting_data'], str(e))
             ]
 
         try:
@@ -259,10 +258,7 @@ class MuSpinInput(object):
             self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
         except (RuntimeError, ValueError) as e:
             errors_found += [
-                "Error occurred when parsing keyword "
-                "fitting_tolerance (block starting at line {0}):\n{1}".format(
-                    block_line_nums["fitting_data"], str(e)
-                )
+                write_error('fitting_tolerance', block_line_nums['fitting_tolerance'], str(e))
             ]
 
         try:
@@ -271,10 +267,7 @@ class MuSpinInput(object):
             self._fitting_info["method"] = kw.evaluate()[0][0]
         except (RuntimeError, ValueError) as e:
             errors_found += [
-                "Error occurred when parsing keyword "
-                "fitting_method (block starting at line {0}):\n{1}".format(
-                    block_line_nums["fitting_data"], str(e)
-                )
+                write_error('fitting_method', block_line_nums['fitting_method'], str(e))
             ]
 
         if errors_found:
