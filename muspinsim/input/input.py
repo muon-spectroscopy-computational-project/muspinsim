@@ -48,9 +48,10 @@ y_axis
 
 
 def write_error(keyword, block_line_num, err):
-    return "Error occurred when parsing keyword {0} " \
-           "(block starting at line {1}):\n{2}".format(
-                keyword, block_line_num, str(err))
+    return (
+        "Error occurred when parsing keyword {0} "
+        "(block starting at line {1}):\n{2}".format(keyword, block_line_num, str(err))
+    )
 
 
 class MuSpinInput(object):
@@ -91,21 +92,24 @@ class MuSpinInput(object):
                     if indent is None:
                         indent = m.groups()[0]
                     if m.groups()[0] != indent:
-                        raise RuntimeError("Invalid indent found for keyword '{0}' near line {1}".format(
-                            curr_block, i+1))
+                        raise RuntimeError(
+                            "Invalid indent found for keyword '{0}' near line {1}".format(
+                                curr_block, i + 1
+                            )
+                        )
                     else:
                         try:
                             raw_blocks[curr_block].append(l.strip())
                         except KeyError:
-                            raise RuntimeError("Invalid indent found near line {0}".format(i+1))
+                            raise RuntimeError(
+                                "Invalid indent found near line {0}".format(i + 1)
+                            )
                 else:
                     curr_block = l.strip()
                     if curr_block in raw_blocks.keys():
                         raise RuntimeError(
                             "Duplicate entry found for keyword: '{0}' on line {1}, "
-                            "please delete or merge entries".format(
-                                curr_block, i + 1
-                            )
+                            "please delete or merge entries".format(curr_block, i + 1)
                         )
                     raw_blocks[curr_block] = []
                     block_line_nums[curr_block] = i + 1
@@ -129,10 +133,10 @@ class MuSpinInput(object):
                     self._keywords.update(mock_i._keywords)
                 except KeyError:
                     err = "Invalid experiment type '{0}' defined, possible types include {1}".format(
-                            exptype[0], list(_exp_defaults.keys())
+                        exptype[0], list(_exp_defaults.keys())
                     )
                     errors_found += [
-                        write_error('experiment', block_line_nums['experiment'], err)
+                        write_error("experiment", block_line_nums["experiment"], err)
                     ]
             except KeyError:
                 pass
@@ -162,10 +166,13 @@ class MuSpinInput(object):
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
-                except (ValueError, LarkExpressionError, RuntimeError, FileNotFoundError) as e:
-                    errors_found += [
-                        write_error(name, block_line_nums[header], str(e))
-                    ]
+                except (
+                    ValueError,
+                    LarkExpressionError,
+                    RuntimeError,
+                    FileNotFoundError,
+                ) as e:
+                    errors_found += [write_error(name, block_line_nums[header], str(e))]
 
             if errors_found:
                 raise MuSpinInputError(
@@ -224,9 +231,9 @@ class MuSpinInput(object):
             pass
         except (RuntimeError, ValueError, LarkExpressionError) as e:
             errors_found += [
-                write_error('fitting_variables',
-                            block_line_nums['fitting_variables'],
-                            str(e))
+                write_error(
+                    "fitting_variables", block_line_nums["fitting_variables"], str(e)
+                )
             ]
 
         if errors_found:
@@ -243,13 +250,15 @@ class MuSpinInput(object):
             self._fitting_info["data"] = np.array(kw.evaluate())
         except KeyError:
             errors_found += [
-                write_error('fitting_variables', block_line_nums['fitting_variables'], str(
-                    "Fitting variables defined without defining any data to fit"
-                ))
+                write_error(
+                    "fitting_variables",
+                    block_line_nums["fitting_variables"],
+                    str("Fitting variables defined without defining any data to fit"),
+                )
             ]
         except (RuntimeError, ValueError, LarkExpressionError) as e:
             errors_found += [
-                write_error('fitting_data', block_line_nums['fitting_data'], str(e))
+                write_error("fitting_data", block_line_nums["fitting_data"], str(e))
             ]
 
         try:
@@ -258,7 +267,9 @@ class MuSpinInput(object):
             self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
         except (RuntimeError, ValueError) as e:
             errors_found += [
-                write_error('fitting_tolerance', block_line_nums['fitting_tolerance'], str(e))
+                write_error(
+                    "fitting_tolerance", block_line_nums["fitting_tolerance"], str(e)
+                )
             ]
 
         try:
@@ -267,7 +278,7 @@ class MuSpinInput(object):
             self._fitting_info["method"] = kw.evaluate()[0][0]
         except (RuntimeError, ValueError) as e:
             errors_found += [
-                write_error('fitting_method', block_line_nums['fitting_method'], str(e))
+                write_error("fitting_method", block_line_nums["fitting_method"], str(e))
             ]
 
         if errors_found:

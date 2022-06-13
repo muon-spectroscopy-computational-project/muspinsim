@@ -85,8 +85,7 @@ class MuSpinKeyword(object):
             )
         if not self.accept_range and len(block) > 1:
             raise RuntimeError(
-                "Can not accept range of values for "
-                "keyword {0}".format(self.name)
+                "Can not accept range of values for " "keyword {0}".format(self.name)
             )
 
         use_default = False
@@ -104,8 +103,7 @@ class MuSpinKeyword(object):
         if not use_default:
             if type(self._values) is np.ndarray:
                 entry_lengths = [
-                    np.shape(self._values)[1]
-                    for _ in range(np.shape(self._values)[0])
+                    np.shape(self._values)[1] for _ in range(np.shape(self._values)[0])
                 ]
             else:
                 # traverse nested lists
@@ -132,8 +130,7 @@ class MuSpinKeyword(object):
                                 self.expr_size_bounds[0],
                                 self.expr_size_bounds[1],
                             )
-                            if self.expr_size_bounds[0]
-                            != self.expr_size_bounds[1]
+                            if self.expr_size_bounds[0] != self.expr_size_bounds[1]
                             else self.expr_size_bounds[0],
                             length,
                         )
@@ -156,9 +153,7 @@ class MuSpinKeyword(object):
             )
         except ValueError as e:
             raise RuntimeError(
-                "Error parsing keyword argument(s) '{0}': {1}".format(
-                    self.name, str(e)
-                )
+                "Error parsing keyword argument(s) '{0}': {1}".format(self.name, str(e))
             )
 
     def _store_values(self, block):
@@ -178,8 +173,7 @@ class MuSpinKeyword(object):
 
             if not ans:
                 raise ValueError(
-                    "Invalid block for "
-                    "keyword {0}: {1}".format(self.name, rule)
+                    "Invalid block for " "keyword {0}: {1}".format(self.name, rule)
                 )
 
     @property
