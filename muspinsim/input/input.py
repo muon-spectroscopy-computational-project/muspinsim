@@ -140,6 +140,10 @@ class MuSpinInput(object):
                     errors_found += [
                         write_error("experiment", block_line_nums["experiment"], err)
                     ]
+            except RuntimeError as e:
+                errors_found += [
+                    write_error("experiment", block_line_nums["experiment"], str(e))
+                ]
             except KeyError:
                 pass
 
