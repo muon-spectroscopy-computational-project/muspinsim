@@ -429,7 +429,7 @@ class KWTemperature(MuSpinExpandKeyword):
 class KWZeeman(MuSpinCouplingKeyword):
 
     name = "zeeman"
-    expr_size_bounds = (2, 3)
+    expr_size_bounds = (3, 3)
     block_size = 1
     _constants = {**_math_constants, **_phys_constants}
 
