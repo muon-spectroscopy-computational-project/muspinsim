@@ -477,6 +477,7 @@ class KWDissipation(MuSpinCouplingKeyword):
 
     name = "dissipation"
     block_size = 1
+    expr_size_bounds = (1, 1)
 
     def _default_args(self, i):
         args = {"i": int(i)}
