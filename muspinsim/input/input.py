@@ -172,12 +172,7 @@ class MuSpinInput(object):
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
-                except (
-                    ValueError,
-                    LarkExpressionError,
-                    RuntimeError,
-                    FileNotFoundError,
-                ) as e:
+                except (ValueError, LarkExpressionError, RuntimeError) as e:
                     errors_found += [write_error(name, block_line_nums[header], str(e))]
 
             if errors_found:
@@ -262,7 +257,7 @@ class MuSpinInput(object):
                     str("Fitting variables defined without defining any data to fit"),
                 )
             ]
-        except (RuntimeError, ValueError, LarkExpressionError) as e:
+        except (RuntimeError, ValueError, LarkExpressionError, IOError) as e:
             errors_found += [
                 write_error("fitting_data", block_line_nums["fitting_data"], str(e))
             ]
