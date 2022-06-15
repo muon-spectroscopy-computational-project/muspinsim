@@ -3,7 +3,7 @@
 Evaluation functions and classes based off the Lark grammar parser"""
 
 from lark import Lark
-from lark.exceptions import UnexpectedToken
+from lark.exceptions import UnexpectedToken, UnexpectedInput
 
 _expr_parser = Lark(
     """
@@ -51,12 +51,16 @@ def lark_tokenize(line):
             try:
                 _expr_parser.parse(tk)
                 valid = True
-            except UnexpectedToken:
+            except UnexpectedToken as e:
                 if len(ls) == 0:
                     raise RuntimeError(
-                        "Line can not be tokenized into valid expressions"
+                        "Line can not be tokenized into valid expressions: {0}".format(
+                            str(e)
+                        )
                     )
                 tk = tk + ls.pop(0)
+            except UnexpectedInput as e:
+                raise LarkExpressionError("Could not parse input: {0}".format(e))
         tokens.append(tk)
 
     return tokens
