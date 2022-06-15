@@ -145,14 +145,21 @@ class MuSpinKeyword(object):
         try:
             self._args = self._default_args(*args)
         except TypeError:
-            raise RuntimeError(
-                "Wrong number of keyword arguments given '{0}', "
-                "expected {1}, got {2}".format(
-                    " ".join(args),
-                    len(inspect.signature(self._default_args).parameters),
-                    len(args),
+            if args:
+                raise RuntimeError(
+                    "Wrong number of in-line arguments given '{0}', "
+                    "expected {1}, got {2}".format(
+                        " ".join(args),
+                        len(inspect.signature(self._default_args).parameters),
+                        len(args),
+                    )
                 )
-            )
+            else:
+                raise RuntimeError(
+                    "This keyword requires {0} in-line arguments".format(
+                        len(inspect.signature(self._default_args).parameters),
+                    )
+                )
         except ValueError as e:
             raise RuntimeError(
                 "Error parsing keyword argument(s) '{0}': {1}".format(self.name, str(e))
