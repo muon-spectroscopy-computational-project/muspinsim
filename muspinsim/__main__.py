@@ -24,6 +24,16 @@ from muspinsim.fitting import FittingRunner
 LOGFORMAT = "[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s"
 
 
+def check_dir_path(string):
+    if os.path.isdir(string):
+        return string
+    else:
+        try:
+            os.makedirs(string)
+        except:
+            raise NotADirectoryError(string)
+    return string
+
 def main(use_mpi=False):
 
     if use_mpi:
@@ -32,6 +42,12 @@ def main(use_mpi=False):
     if mpi.is_root:
         # Entry point for script
         parser = ap.ArgumentParser(description='Muspinsim arguments')
+        parser.add_argument(
+            '-o', '--out-dir',
+            type=str,
+            default=None,
+            help="""destination folder to store output .dat files"""
+        )
         parser.add_argument(
             "input_file",
             type=ap.FileType('r'),
@@ -78,8 +94,12 @@ def main(use_mpi=False):
         runner.run()
 
         if mpi.is_root:
+            if args.out_dir:
+                out_path = check_dir_path(args.out_dir)
+            else:
+                out_path = "./"
             # Output
-            runner.config.save_output()
+            runner.config.save_output(name=None, path=out_path)
     else:
         fitter = FittingRunner(infile)
         fitter.run()
