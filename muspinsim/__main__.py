@@ -36,8 +36,7 @@ def main(use_mpi=False):
             "input_file",
             type=str,
             default=None,
-            help="""YAML
-                            formatted file with input parameters.""",
+            help="""muspinsim formatted file with input parameters.""",
         )
         args = parser.parse_args()
 
