@@ -49,6 +49,12 @@ def main(use_mpi=False):
             help="""destination folder to store output .dat files"""
         )
         parser.add_argument(
+            '-l', '--log-path',
+            type=str,
+            default=None,
+            help="""set log output path"""
+        )
+        parser.add_argument(
             "input_file",
             type=ap.FileType('r'),
             default=None,
@@ -62,7 +68,15 @@ def main(use_mpi=False):
         is_fitting = len(infile.variables) > 0
 
         # Open logfile
-        logfile = "{0}.log".format(os.path.splitext(args.input_file)[0])
+        if args.log_path:
+            # check if directory exists, if not create it
+            logfile = '{0}/{1}'.format(
+                check_dir_path(os.path.dirname(args.log_path)),
+                os.path.basename(args.log_path)
+            )
+        else:
+            logfile = "{0}.log".format(os.path.splitext(inp_filepath)[0])
+
         logging.basicConfig(
             filename=logfile,
             filemode="w",
