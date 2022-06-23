@@ -31,16 +31,17 @@ def main(use_mpi=False):
 
     if mpi.is_root:
         # Entry point for script
-        parser = ap.ArgumentParser()
+        parser = ap.ArgumentParser(description='Muspinsim arguments')
         parser.add_argument(
             "input_file",
-            type=str,
+            type=ap.FileType('r'),
             default=None,
             help="""muspinsim formatted file with input parameters.""",
         )
         args = parser.parse_args()
+        inp_filepath = args.input_file.name
 
-        fs = open(args.input_file)
+        fs = open(inp_filepath)
         infile = MuSpinInput(fs)
         is_fitting = len(infile.variables) > 0
 
@@ -55,7 +56,7 @@ def main(use_mpi=False):
         )
 
         logging.info(
-            "Launching MuSpinSim calculation " "from file: {0}".format(args.input_file)
+            "Launching MuSpinSim calculation " "from file: {0}".format(inp_filepath)
         )
 
         if is_fitting:
