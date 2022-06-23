@@ -30,9 +30,10 @@ def check_dir_path(string):
     else:
         try:
             os.makedirs(string)
-        except:
+        except OSError:
             raise NotADirectoryError(string)
     return string
+
 
 def main(use_mpi=False):
 
@@ -41,28 +42,27 @@ def main(use_mpi=False):
 
     if mpi.is_root:
         # Entry point for script
-        parser = ap.ArgumentParser(description='Muspinsim arguments')
+        parser = ap.ArgumentParser(description="Muspinsim arguments")
         parser.add_argument(
-            '-o', '--out-dir',
+            "-o",
+            "--out-dir",
             type=str,
             default=None,
-            help="""destination folder to store output .dat files"""
+            help="""destination folder to store output .dat files""",
         )
         parser.add_argument(
-            '-l', '--log-path',
-            type=str,
-            default=None,
-            help="""set log output path"""
+            "-l", "--log-path", type=str, default=None, help="""set log output path"""
         )
         parser.add_argument(
-            '-f', '--fitreport-path',
+            "-f",
+            "--fitreport-path",
             type=str,
             default=None,
-            help="""set fit report output path"""
+            help="""set fit report output path""",
         )
         parser.add_argument(
             "input_file",
-            type=ap.FileType('r'),
+            type=ap.FileType("r"),
             default=None,
             help="""muspinsim formatted file with input parameters.""",
         )
@@ -76,9 +76,9 @@ def main(use_mpi=False):
         # Open logfile
         if args.log_path:
             # check if directory exists, if not create it
-            logfile = '{0}/{1}'.format(
+            logfile = "{0}/{1}".format(
                 check_dir_path(os.path.dirname(args.log_path)),
-                os.path.basename(args.log_path)
+                os.path.basename(args.log_path),
             )
         else:
             logfile = "{0}.log".format(os.path.splitext(inp_filepath)[0])
