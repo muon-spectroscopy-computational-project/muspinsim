@@ -55,6 +55,12 @@ def main(use_mpi=False):
             help="""set log output path"""
         )
         parser.add_argument(
+            '-f', '--fitreport-path',
+            type=str,
+            default=None,
+            help="""set fit report output path"""
+        )
+        parser.add_argument(
             "input_file",
             type=ap.FileType('r'),
             default=None,
@@ -119,7 +125,12 @@ def main(use_mpi=False):
         fitter.run()
 
         if mpi.is_root:
-            fitter.write_report()
+            if args.fitreport_path:
+                rep_path = check_dir_path(os.path.dirname(args.fitreport_path))
+                rep_fname = os.path.basename(args.fitreport_path)
+            else:
+                rep_path = "./"
+            fitter.write_report(fname=rep_fname, path=rep_path)
 
     if mpi.is_root:
         tend = datetime.now()
