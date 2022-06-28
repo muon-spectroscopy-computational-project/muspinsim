@@ -1,0 +1,2754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.spinsys API documentation</title>
+<meta name="description" content="spinsys.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.spinsys</code></h1>
+</header>
+<section id="section-intro">
+<p>spinsys.py</p>
+<p>A class to hold a given spin system, defined by specific nuclei</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;spinsys.py
+
+A class to hold a given spin system, defined by specific nuclei
+&#34;&#34;&#34;
+
+import logging
+
+import numpy as np
+from numbers import Number
+import scipy.constants as cnst
+
+from muspinsim.utils import Clonable
+from muspinsim.spinop import SpinOperator
+from muspinsim.hamiltonian import Hamiltonian
+from muspinsim.lindbladian import Lindbladian
+from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment, EFG_2_MHZ
+
+
+class InteractionTerm(Clonable):
+    def __init__(self, spinsys, indices=[], tensor=0, label=None):
+
+        self._spinsys = spinsys
+        self._indices = np.array(indices)
+        self._tensor = np.array(tensor)
+        self._label = &#34;Term&#34; if label is None else label
+
+        if np.any(np.array(self._tensor.shape) != 3):
+            raise ValueError(&#34;Tensor is not fully three-dimensional&#34;)
+
+        self._recalc_operator()
+
+    def _recalc_operator(self):
+
+        total_op = None
+        d = len(self._tensor.shape)
+
+        if d &gt; 0:
+            index_tuples = np.indices(self._tensor.shape).reshape((d, -1)).T
+        else:
+            index_tuples = [[]]
+
+        for ii in index_tuples:
+            op = (
+                self._spinsys.operator(
+                    {ind: &#34;xyz&#34;[ii[i]] for i, ind in enumerate(self._indices)}
+                )
+                * self._tensor[tuple(ii)]
+            )
+            if total_op is None:
+                total_op = op
+            else:
+                total_op += op
+
+        self._operator = total_op
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def indices(self):
+        return tuple(self._indices)
+
+    @property
+    def tensor(self):
+        return np.array(self._tensor)
+
+    @property
+    def operator(self):
+        return self._operator.clone()
+
+    @property
+    def matrix(self):
+        return self._operator.matrix
+
+    def __repr__(self):
+        return self.label
+
+
+class SingleTerm(InteractionTerm):
+    def __init__(self, spinsys, i, vector, label=&#34;Single&#34;):
+
+        super(SingleTerm, self).__init__(spinsys, [i], vector, label)
+
+    @property
+    def i(self):
+        return self._indices[0]
+
+    def rotate(self, rotmat):
+
+        R = np.array(rotmat)
+        v = self._tensor
+        v = np.dot(v, R.T)
+
+        rt = SingleTerm(self._spinsys, self.i, v, self._label)
+
+        return rt
+
+    def __repr__(self):
+        return &#34;{0} {{ S_{1} * {2} }}&#34;.format(self._label, self.i, self._tensor)
+
+
+class DoubleTerm(InteractionTerm):
+    def __init__(self, spinsys, i, j, matrix, label=&#34;Double&#34;):
+
+        super(DoubleTerm, self).__init__(spinsys, [i, j], matrix, label)
+
+    @property
+    def i(self):
+        return self._indices[0]
+
+    @property
+    def j(self):
+        return self._indices[1]
+
+    def rotate(self, rotmat):
+
+        R = np.array(rotmat)
+        M = self._tensor
+        M = np.linalg.multi_dot([R, M, R.T])
+
+        rt = DoubleTerm(self._spinsys, self.i, self.j, M, self._label)
+
+        return rt
+
+    def __repr__(self):
+        return &#34;{0} {{ S_{1} * [{2} {3} {4}] * S_{5} }}&#34;.format(
+            self._label, self.i, *self._tensor, self.j
+        )
+
+
+class DissipationTerm(Clonable):
+    def __init__(self, operator, gamma=0.0):
+
+        self._op = operator
+        self._g = gamma
+
+    @property
+    def operator(self):
+        return self._op
+
+    @property
+    def gamma(self):
+        return self._g
+
+    @property
+    def tuple(self):
+        return (self._op, self._g)
+
+
+class SpinSystem(Clonable):
+    def __init__(self, spins=[]):
+        &#34;&#34;&#34;Create a SpinSystem object
+
+        Create an object representing a system of particles with spins (muons,
+        electrons and atomic nuclei) and holding their operators.
+
+        Keyword Arguments:
+            spins {list} -- List of symbols representing the various particles.
+                            Each element can be &#39;e&#39; (electron), &#39;mu&#39; (muon) a
+                            chemical symbol, or a (str, int) tuple with a
+                            chemical symbol and an isotope (default: {[]})
+        &#34;&#34;&#34;
+
+        gammas = []
+        Qs = []
+        Is = []
+        operators = []
+
+        for s in spins:
+            if isinstance(s, tuple):
+                el, iso = s
+            else:
+                el, iso = s, None
+
+            gammas.append(gyromagnetic_ratio(el, iso))
+            Qs.append(quadrupole_moment(el, iso))
+            Is.append(spin(el, iso))
+
+            opdict = {a: SpinOperator.from_axes(Is[-1], a) for a in &#34;xyz+-0&#34;}
+
+            operators.append(opdict)
+
+        self._spins = list(spins)
+        self._gammas = np.array(gammas)
+        self._Qs = np.array(Qs)
+        self._Is = np.array(Is)
+        self._dim = tuple((2 * self._Is + 1).astype(int))
+
+        self._operators = operators
+
+        self._terms = []
+        self._dissip_terms = []
+
+        snames = [
+            &#34;{1}{0}&#34;.format(*s) if (type(s) == tuple) else str(s) for s in self._spins
+        ]
+        logging.info(&#34;Created spin system with spins:&#34;)
+        logging.info(&#34;\t\t{0}&#34;.format(&#34; &#34;.join(snames)))
+
+    @property
+    def spins(self):
+        return list(self._spins)
+
+    @property
+    def gammas(self):
+        return self._gammas.copy()
+
+    @property
+    def Qs(self):
+        return self._Qs.copy()
+
+    @property
+    def Is(self):
+        return self._Is.copy()
+
+    @property
+    def dimension(self):
+        return self._dim
+
+    @property
+    def is_dissipative(self):
+        return (np.array(self._dissip_terms) != 0.0).any()
+
+    def add_term(self, indices, tensor, label=&#34;Term&#34;):
+        &#34;&#34;&#34;Add to the spin system a generic interaction term
+
+        Add a term of the form T*S_i*S_j*S_k*..., where S_i is the vector of
+        the three spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            indices {[int]} -- Indices of spins appearing in the term
+            tensor {ndarray} -- Tensor with n dimensions (n = len(indices)),
+                                each of length 3, describing the interaction.
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {&#39;Term&#39;})
+
+        Returns:
+            term {InteractionTerm} -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        &#34;&#34;&#34;
+
+        for i in indices:
+            if i &lt; 0 or i &gt;= len(self._spins):
+                raise ValueError(&#34;Invalid index i&#34;)
+
+        tensor = np.array(tensor)
+
+        term = InteractionTerm(self, indices, tensor, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_linear_term(self, i, vector, label=&#34;Single&#34;):
+        &#34;&#34;&#34;Add to the spin system a term linear in one spin
+
+        Add a term of the form v*S_i, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            i {int} -- Index of the spin
+            vector {ndarray} -- Vector v
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {&#39;Single&#39;})
+
+        Returns:
+            SingleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        &#34;&#34;&#34;
+
+        if i &lt; 0 or i &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index i&#34;)
+
+        vector = np.array(vector)
+
+        term = SingleTerm(self, i, vector, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_bilinear_term(self, i, j, matrix, label=&#34;Double&#34;):
+        &#34;&#34;&#34;Add to the spin system a term bilinear in two spins
+
+        Add a term of the form S_i*M*S_j, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i, and same for S_j.
+
+        Arguments:
+            i {int} -- Index of first spin
+            j {int} -- Index of second spin
+            matrix {ndarray} -- Matrix M
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {&#39;Double&#39;})
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        &#34;&#34;&#34;
+
+        if i &lt; 0 or i &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index i&#34;)
+
+        if j &lt; 0 or j &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index j&#34;)
+
+        matrix = np.array(matrix)
+
+        term = DoubleTerm(self, i, j, matrix, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_zeeman_term(self, i, B):
+        &#34;&#34;&#34;Add a zeeman term
+
+        Add a single term coupling a given spin to a magnetic field
+
+        Arguments:
+            i {int} -- Index of the spin
+            B {ndarray | number} -- Magnetic field vector, in Tesla. If just a
+                                    scalar is assumed to be along z
+
+        Returns:
+            SingleTerm -- The term just created
+        &#34;&#34;&#34;
+
+        if isinstance(B, Number):
+            B = [0, 0, B]  # Treat it as along z by default
+
+        B = np.array(B)
+
+        logging.info(&#34;Adding Zeeman term to spin {0}&#34;.format(i + 1))
+
+        return self.add_linear_term(i, B * self.gamma(i), &#34;Zeeman&#34;)
+
+    def add_dipolar_term(self, i, j, r):
+        &#34;&#34;&#34;Add a dipolar term
+
+        Add a spin-spin dipolar coupling between two distinct spins. The
+        coupling is calculated geometrically from the vector connecting them,
+        in Angstrom.
+
+        Arguments:
+            i {int} -- Index of the first spin
+            j {int} -- Index of the second spin
+            r {ndarray} -- Vector connecting the two spins (in Angstrom)
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Raised if i == j
+        &#34;&#34;&#34;
+
+        if i == j:
+            raise ValueError(&#34;Can not set up dipolar coupling with itself&#34;)
+
+        r = np.array(r)
+
+        g_i = self.gamma(i)
+        g_j = self.gamma(j)
+
+        rnorm = np.linalg.norm(r)
+        D = -(np.eye(3) - 3.0 / rnorm**2.0 * r[:, None] * r[None, :])
+        dij = -(cnst.mu_0 * cnst.hbar * (g_i * g_j * 1e6)) / (
+            2 * (rnorm * 1e-10) ** 3
+        )  # MHz
+        D *= dij
+
+        logging.info(&#34;Adding dipolar term to spins {0}-{1}&#34;.format(i + 1, j + 1))
+
+        return self.add_bilinear_term(i, j, D, &#34;Dipolar&#34;)
+
+    def add_quadrupolar_term(self, i, EFG):
+        &#34;&#34;&#34;Add a quadrupolar term
+
+        Add a quadrupolar term to a nucleus with I &gt;= 1 from its Electric
+        Field Gradient tensor.
+
+        Arguments:
+            i {int} -- Index of the spin
+            EFG {ndarray} --  Electric Field Gradient tensor
+
+        Returns:
+            DoubleTerm -- The term just created
+        &#34;&#34;&#34;
+
+        EFG = np.array(EFG)
+        Q = self.Q(i)
+        I = self.I(i)
+
+        if I == 0.5:
+            raise ValueError(
+                &#34;Can not set up quadrupolar coupling for &#34; &#34;spin 1/2 particle&#34;
+            )
+
+        Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
+
+        logging.info(&#34;Adding quadrupolar term to spin {0}&#34;.format(i + 1))
+
+        return self.add_bilinear_term(i, i, Qtens, &#34;Quadrupolar&#34;)
+
+    def remove_term(self, term):
+        &#34;&#34;&#34;Remove a term from the spin system
+
+        Remove an interaction term from this spin system.
+
+        Arguments:
+            term {InteractionTerm} -- Term to remove
+
+        Raises:
+            ValueError -- The term is not contained in this system
+        &#34;&#34;&#34;
+
+        self._terms.remove(term)
+
+    def clear_terms(self):
+        &#34;&#34;&#34;Remove all terms
+
+        Remove all interaction terms from this spin system.
+        &#34;&#34;&#34;
+
+        terms = list(self._terms)
+        for t in terms:
+            self.remove_term(t)
+
+    def add_dissipative_term(self, op, d=0.0):
+        &#34;&#34;&#34;Set a dissipation operator for the system.
+
+        Set a dissipation operator for this system, representing its coupling
+        (in MHz) with an external heat bath to include in the Lindbladian of
+        the system.
+
+        Arguments:
+            op {SpinOperator} -- Operator for the dissipation term
+
+        Keyword Arguments:
+            d {number} -- Dissipation coupling in MHz (default: {0.0})
+        &#34;&#34;&#34;
+
+        term = DissipationTerm(op, d)
+        self._dissip_terms.append(term)
+
+        return term
+
+    def remove_dissipative_term(self, term):
+        &#34;&#34;&#34;Remove a dissipation term from the system.
+
+        Remove a dissipation term from this spin system.
+
+        Arguments:
+            term {DissipationTerm} -- Term to remove
+
+        Raises:
+            ValueError -- The term is not contained in this system
+        &#34;&#34;&#34;
+
+        self._dissip_terms.remove(term)
+
+    def clear_dissipative_terms(self):
+        &#34;&#34;&#34;Remove all terms
+
+        Remove all dissipative terms from this spin system.
+        &#34;&#34;&#34;
+
+        dterms = list(self._dissip_terms)
+        for t in dterms:
+            self.remove_dissipative_term(t)
+
+    def gamma(self, i):
+        &#34;&#34;&#34;Returns the gyromagnetic ratio of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Gyromagnetic ratio in MHz/T
+        &#34;&#34;&#34;
+        return self._gammas[i]
+
+    def Q(self, i):
+        &#34;&#34;&#34;Returns the quadrupole moment of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Quadrupole moment in Barn
+        &#34;&#34;&#34;
+        return self._Qs[i]
+
+    def I(self, i):
+        &#34;&#34;&#34;Returns the spin of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Spin in units of hbar
+        &#34;&#34;&#34;
+
+        return self._Is[i]
+
+    def operator(self, terms={}):
+        &#34;&#34;&#34;Return an operator for this spin system
+
+        Return a SpinOperator for this system containing the specified terms.
+
+        Keyword Arguments:
+            terms {dict} -- A dictionary of terms to include. The keys should
+                            indices of particles and the values should be
+                            symbols indicating one spin operator (either x, y,
+                            z, +, - or 0). Wherever not specified, the identity
+                            operaror is applied (default: {{}})
+
+        Returns:
+            SpinOperator -- The requested operator
+        &#34;&#34;&#34;
+
+        ops = [self._operators[i][terms.get(i, &#34;0&#34;)] for i in range(len(self))]
+
+        M = ops[0]
+
+        for i in range(1, len(ops)):
+            M = M.kron(ops[i])
+
+        return M
+
+    def rotate(self, rotmat=np.eye(3)):
+
+        # Trying to avoid pointlessly cloning the terms
+        terms = self._terms
+        self._terms = []
+
+        # Make a clone
+        rssys = self.clone()
+        self._terms = terms
+
+        # Edit the terms
+        try:
+            rssys._terms = [t.rotate(rotmat) for t in terms]
+        except AttributeError:
+            raise RuntimeError(
+                &#34;Can only rotate SpinSystems containing Single&#34; &#34; or Double terms&#34;
+            )
+
+        return rssys
+
+    @property
+    def hamiltonian(self):
+
+        if len(self._terms) == 0:
+            n = np.prod(self.dimension)
+            H = np.zeros((n, n))
+        else:
+            H = np.sum([t.matrix for t in self._terms], axis=0)
+        H = Hamiltonian(H, dim=self.dimension)
+
+        return H
+
+    @property
+    def lindbladian(self):
+
+        H = self.hamiltonian
+        dops = [t.tuple for t in self._dissip_terms]
+        L = Lindbladian.from_hamiltonian(H, dops)
+
+        return L
+
+    def __len__(self):
+        return len(self._gammas)
+
+
+class MuonSpinSystem(SpinSystem):
+    def __init__(self, spins=[&#34;mu&#34;, &#34;e&#34;]):
+
+        super(MuonSpinSystem, self).__init__(spins)
+
+        # Identify the muon index
+        if self._spins.count(&#34;mu&#34;) != 1:
+            raise ValueError(
+                &#34;Spins passed to MuonSpinSystem must contain&#34; &#34; exactly one muon&#34;
+            )
+
+        self._mu_i = self._spins.index(&#34;mu&#34;)
+        self._e_i = set([i for i, s in enumerate(self.spins) if s == &#34;e&#34;])
+
+        # For convenience, store the operators for the muon
+        self._mu_ops = [self.operator({self._mu_i: e}) for e in &#34;xyz&#34;]
+
+    @property
+    def muon_index(self):
+        return self._mu_i
+
+    @property
+    def elec_indices(self):
+        return self._e_i
+
+    def add_hyperfine_term(self, i, A, j=None):
+        &#34;&#34;&#34;Add a hyperfine term
+
+        Add a hyperfine term for a given spin, provided that an electron is
+        present.
+
+        Arguments:
+            i {int} -- Index of the spin (must be different from electron)
+            A {[type]} -- Hyperfine tensor (in MHz)
+            j {int} -- Index of the electron spin. If not specified uses the
+                       one that is present, if there is one (default: None)
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index
+        &#34;&#34;&#34;
+
+        elec_i = self.elec_indices
+
+        if j is None:
+            if len(elec_i) &gt; 1:
+                raise ValueError(
+                    &#34;Must specify an electron index in system &#34;
+                    &#34;with multiple electrons&#34;
+                )
+            else:
+                j = list(elec_i)[0]
+        else:
+            if j not in elec_i:
+                raise ValueError(
+                    &#34;Second index in hyperfine coupling must&#34; &#34; refer to an electron&#34;
+                )
+        if i in elec_i:
+            raise ValueError(
+                &#34;First index in hyperfine coupling must&#34; &#34; not refer to an electron&#34;
+            )
+
+        logging.info(&#34;Adding hyperfine term to spins {0}-{1}&#34;.format(i + 1, j + 1))
+
+        return self.add_bilinear_term(i, j, A, &#34;Hyperfine&#34;)
+
+    def muon_operator(self, v):
+        &#34;&#34;&#34;Get a muon operator
+
+        Get a single operator for the muon, given a vector representing its
+        direction. Uses precalculated operators for speed.
+
+        Arguments:
+            v {[float]} -- 3-dimensional vector representing the directions of
+                           the desired operator
+
+        Returns:
+            mu_op {SpinOperator} -- Requested operator
+
+        Raises:
+            ValueError -- Invalid length of v
+        &#34;&#34;&#34;
+
+        if len(v) != 3:
+            raise ValueError(
+                &#34;Vector passed to muon_operator must be three&#34; &#34; dimensional&#34;
+            )
+
+        op = [x * self._mu_ops[i] for i, x in enumerate(v)]
+        op = sum(op[1:], op[0])
+
+        return op</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.spinsys.DissipationTerm"><code class="flex name class">
+<span>class <span class="ident">DissipationTerm</span></span>
+<span>(</span><span>operator, gamma=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DissipationTerm(Clonable):
+    def __init__(self, operator, gamma=0.0):
+
+        self._op = operator
+        self._g = gamma
+
+    @property
+    def operator(self):
+        return self._op
+
+    @property
+    def gamma(self):
+        return self._g
+
+    @property
+    def tuple(self):
+        return (self._op, self._g)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinsys.DissipationTerm.gamma"><code class="name">var <span class="ident">gamma</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def gamma(self):
+    return self._g</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.DissipationTerm.operator"><code class="name">var <span class="ident">operator</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def operator(self):
+    return self._op</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.DissipationTerm.tuple"><code class="name">var <span class="ident">tuple</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def tuple(self):
+    return (self._op, self._g)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.spinsys.DoubleTerm"><code class="flex name class">
+<span>class <span class="ident">DoubleTerm</span></span>
+<span>(</span><span>spinsys, i, j, matrix, label='Double')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DoubleTerm(InteractionTerm):
+    def __init__(self, spinsys, i, j, matrix, label=&#34;Double&#34;):
+
+        super(DoubleTerm, self).__init__(spinsys, [i, j], matrix, label)
+
+    @property
+    def i(self):
+        return self._indices[0]
+
+    @property
+    def j(self):
+        return self._indices[1]
+
+    def rotate(self, rotmat):
+
+        R = np.array(rotmat)
+        M = self._tensor
+        M = np.linalg.multi_dot([R, M, R.T])
+
+        rt = DoubleTerm(self._spinsys, self.i, self.j, M, self._label)
+
+        return rt
+
+    def __repr__(self):
+        return &#34;{0} {{ S_{1} * [{2} {3} {4}] * S_{5} }}&#34;.format(
+            self._label, self.i, *self._tensor, self.j
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinsys.InteractionTerm" href="#muspinsim.spinsys.InteractionTerm">InteractionTerm</a></li>
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinsys.DoubleTerm.i"><code class="name">var <span class="ident">i</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def i(self):
+    return self._indices[0]</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.DoubleTerm.j"><code class="name">var <span class="ident">j</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def j(self):
+    return self._indices[1]</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinsys.DoubleTerm.rotate"><code class="name flex">
+<span>def <span class="ident">rotate</span></span>(<span>self, rotmat)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rotate(self, rotmat):
+
+    R = np.array(rotmat)
+    M = self._tensor
+    M = np.linalg.multi_dot([R, M, R.T])
+
+    rt = DoubleTerm(self._spinsys, self.i, self.j, M, self._label)
+
+    return rt</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.spinsys.InteractionTerm"><code class="flex name class">
+<span>class <span class="ident">InteractionTerm</span></span>
+<span>(</span><span>spinsys, indices=[], tensor=0, label=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InteractionTerm(Clonable):
+    def __init__(self, spinsys, indices=[], tensor=0, label=None):
+
+        self._spinsys = spinsys
+        self._indices = np.array(indices)
+        self._tensor = np.array(tensor)
+        self._label = &#34;Term&#34; if label is None else label
+
+        if np.any(np.array(self._tensor.shape) != 3):
+            raise ValueError(&#34;Tensor is not fully three-dimensional&#34;)
+
+        self._recalc_operator()
+
+    def _recalc_operator(self):
+
+        total_op = None
+        d = len(self._tensor.shape)
+
+        if d &gt; 0:
+            index_tuples = np.indices(self._tensor.shape).reshape((d, -1)).T
+        else:
+            index_tuples = [[]]
+
+        for ii in index_tuples:
+            op = (
+                self._spinsys.operator(
+                    {ind: &#34;xyz&#34;[ii[i]] for i, ind in enumerate(self._indices)}
+                )
+                * self._tensor[tuple(ii)]
+            )
+            if total_op is None:
+                total_op = op
+            else:
+                total_op += op
+
+        self._operator = total_op
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def indices(self):
+        return tuple(self._indices)
+
+    @property
+    def tensor(self):
+        return np.array(self._tensor)
+
+    @property
+    def operator(self):
+        return self._operator.clone()
+
+    @property
+    def matrix(self):
+        return self._operator.matrix
+
+    def __repr__(self):
+        return self.label</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinsys.DoubleTerm" href="#muspinsim.spinsys.DoubleTerm">DoubleTerm</a></li>
+<li><a title="muspinsim.spinsys.SingleTerm" href="#muspinsim.spinsys.SingleTerm">SingleTerm</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinsys.InteractionTerm.indices"><code class="name">var <span class="ident">indices</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def indices(self):
+    return tuple(self._indices)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.InteractionTerm.label"><code class="name">var <span class="ident">label</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def label(self):
+    return self._label</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.InteractionTerm.matrix"><code class="name">var <span class="ident">matrix</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def matrix(self):
+    return self._operator.matrix</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.InteractionTerm.operator"><code class="name">var <span class="ident">operator</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def operator(self):
+    return self._operator.clone()</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.InteractionTerm.tensor"><code class="name">var <span class="ident">tensor</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def tensor(self):
+    return np.array(self._tensor)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.spinsys.MuonSpinSystem"><code class="flex name class">
+<span>class <span class="ident">MuonSpinSystem</span></span>
+<span>(</span><span>spins=['mu', 'e'])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p>
+<p>Create a SpinSystem object</p>
+<p>Create an object representing a system of particles with spins (muons,
+electrons and atomic nuclei) and holding their operators.</p>
+<p>Keyword Arguments:
+spins {list} &ndash; List of symbols representing the various particles.
+Each element can be 'e' (electron), 'mu' (muon) a
+chemical symbol, or a (str, int) tuple with a
+chemical symbol and an isotope (default: {[]})</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuonSpinSystem(SpinSystem):
+    def __init__(self, spins=[&#34;mu&#34;, &#34;e&#34;]):
+
+        super(MuonSpinSystem, self).__init__(spins)
+
+        # Identify the muon index
+        if self._spins.count(&#34;mu&#34;) != 1:
+            raise ValueError(
+                &#34;Spins passed to MuonSpinSystem must contain&#34; &#34; exactly one muon&#34;
+            )
+
+        self._mu_i = self._spins.index(&#34;mu&#34;)
+        self._e_i = set([i for i, s in enumerate(self.spins) if s == &#34;e&#34;])
+
+        # For convenience, store the operators for the muon
+        self._mu_ops = [self.operator({self._mu_i: e}) for e in &#34;xyz&#34;]
+
+    @property
+    def muon_index(self):
+        return self._mu_i
+
+    @property
+    def elec_indices(self):
+        return self._e_i
+
+    def add_hyperfine_term(self, i, A, j=None):
+        &#34;&#34;&#34;Add a hyperfine term
+
+        Add a hyperfine term for a given spin, provided that an electron is
+        present.
+
+        Arguments:
+            i {int} -- Index of the spin (must be different from electron)
+            A {[type]} -- Hyperfine tensor (in MHz)
+            j {int} -- Index of the electron spin. If not specified uses the
+                       one that is present, if there is one (default: None)
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index
+        &#34;&#34;&#34;
+
+        elec_i = self.elec_indices
+
+        if j is None:
+            if len(elec_i) &gt; 1:
+                raise ValueError(
+                    &#34;Must specify an electron index in system &#34;
+                    &#34;with multiple electrons&#34;
+                )
+            else:
+                j = list(elec_i)[0]
+        else:
+            if j not in elec_i:
+                raise ValueError(
+                    &#34;Second index in hyperfine coupling must&#34; &#34; refer to an electron&#34;
+                )
+        if i in elec_i:
+            raise ValueError(
+                &#34;First index in hyperfine coupling must&#34; &#34; not refer to an electron&#34;
+            )
+
+        logging.info(&#34;Adding hyperfine term to spins {0}-{1}&#34;.format(i + 1, j + 1))
+
+        return self.add_bilinear_term(i, j, A, &#34;Hyperfine&#34;)
+
+    def muon_operator(self, v):
+        &#34;&#34;&#34;Get a muon operator
+
+        Get a single operator for the muon, given a vector representing its
+        direction. Uses precalculated operators for speed.
+
+        Arguments:
+            v {[float]} -- 3-dimensional vector representing the directions of
+                           the desired operator
+
+        Returns:
+            mu_op {SpinOperator} -- Requested operator
+
+        Raises:
+            ValueError -- Invalid length of v
+        &#34;&#34;&#34;
+
+        if len(v) != 3:
+            raise ValueError(
+                &#34;Vector passed to muon_operator must be three&#34; &#34; dimensional&#34;
+            )
+
+        op = [x * self._mu_ops[i] for i, x in enumerate(v)]
+        op = sum(op[1:], op[0])
+
+        return op</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinsys.SpinSystem" href="#muspinsim.spinsys.SpinSystem">SpinSystem</a></li>
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinsys.MuonSpinSystem.elec_indices"><code class="name">var <span class="ident">elec_indices</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def elec_indices(self):
+    return self._e_i</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.MuonSpinSystem.muon_index"><code class="name">var <span class="ident">muon_index</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def muon_index(self):
+    return self._mu_i</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinsys.MuonSpinSystem.add_hyperfine_term"><code class="name flex">
+<span>def <span class="ident">add_hyperfine_term</span></span>(<span>self, i, A, j=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a hyperfine term</p>
+<p>Add a hyperfine term for a given spin, provided that an electron is
+present.</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the spin (must be different from electron)
+A {[type]} &ndash; Hyperfine tensor (in MHz)
+j {int} &ndash; Index of the electron spin. If not specified uses the
+one that is present, if there is one (default: None)</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DoubleTerm -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Invalid index</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_hyperfine_term(self, i, A, j=None):
+    &#34;&#34;&#34;Add a hyperfine term
+
+    Add a hyperfine term for a given spin, provided that an electron is
+    present.
+
+    Arguments:
+        i {int} -- Index of the spin (must be different from electron)
+        A {[type]} -- Hyperfine tensor (in MHz)
+        j {int} -- Index of the electron spin. If not specified uses the
+                   one that is present, if there is one (default: None)
+
+    Returns:
+        DoubleTerm -- The term just created
+
+    Raises:
+        ValueError -- Invalid index
+    &#34;&#34;&#34;
+
+    elec_i = self.elec_indices
+
+    if j is None:
+        if len(elec_i) &gt; 1:
+            raise ValueError(
+                &#34;Must specify an electron index in system &#34;
+                &#34;with multiple electrons&#34;
+            )
+        else:
+            j = list(elec_i)[0]
+    else:
+        if j not in elec_i:
+            raise ValueError(
+                &#34;Second index in hyperfine coupling must&#34; &#34; refer to an electron&#34;
+            )
+    if i in elec_i:
+        raise ValueError(
+            &#34;First index in hyperfine coupling must&#34; &#34; not refer to an electron&#34;
+        )
+
+    logging.info(&#34;Adding hyperfine term to spins {0}-{1}&#34;.format(i + 1, j + 1))
+
+    return self.add_bilinear_term(i, j, A, &#34;Hyperfine&#34;)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.MuonSpinSystem.muon_operator"><code class="name flex">
+<span>def <span class="ident">muon_operator</span></span>(<span>self, v)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get a muon operator</p>
+<p>Get a single operator for the muon, given a vector representing its
+direction. Uses precalculated operators for speed.</p>
+<h2 id="arguments">Arguments</h2>
+<p>v {[float]} &ndash; 3-dimensional vector representing the directions of
+the desired operator</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>mu_op {SpinOperator} -- Requested operator</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Invalid length</code> of <code>v</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def muon_operator(self, v):
+    &#34;&#34;&#34;Get a muon operator
+
+    Get a single operator for the muon, given a vector representing its
+    direction. Uses precalculated operators for speed.
+
+    Arguments:
+        v {[float]} -- 3-dimensional vector representing the directions of
+                       the desired operator
+
+    Returns:
+        mu_op {SpinOperator} -- Requested operator
+
+    Raises:
+        ValueError -- Invalid length of v
+    &#34;&#34;&#34;
+
+    if len(v) != 3:
+        raise ValueError(
+            &#34;Vector passed to muon_operator must be three&#34; &#34; dimensional&#34;
+        )
+
+    op = [x * self._mu_ops[i] for i, x in enumerate(v)]
+    op = sum(op[1:], op[0])
+
+    return op</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.spinsys.SpinSystem" href="#muspinsim.spinsys.SpinSystem">SpinSystem</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.spinsys.SpinSystem.I" href="#muspinsim.spinsys.SpinSystem.I">I</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.Q" href="#muspinsim.spinsys.SpinSystem.Q">Q</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_bilinear_term" href="#muspinsim.spinsys.SpinSystem.add_bilinear_term">add_bilinear_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_dipolar_term" href="#muspinsim.spinsys.SpinSystem.add_dipolar_term">add_dipolar_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_dissipative_term" href="#muspinsim.spinsys.SpinSystem.add_dissipative_term">add_dissipative_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_linear_term" href="#muspinsim.spinsys.SpinSystem.add_linear_term">add_linear_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_quadrupolar_term" href="#muspinsim.spinsys.SpinSystem.add_quadrupolar_term">add_quadrupolar_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_term" href="#muspinsim.spinsys.SpinSystem.add_term">add_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_zeeman_term" href="#muspinsim.spinsys.SpinSystem.add_zeeman_term">add_zeeman_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.clear_dissipative_terms" href="#muspinsim.spinsys.SpinSystem.clear_dissipative_terms">clear_dissipative_terms</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.clear_terms" href="#muspinsim.spinsys.SpinSystem.clear_terms">clear_terms</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.gamma" href="#muspinsim.spinsys.SpinSystem.gamma">gamma</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.operator" href="#muspinsim.spinsys.SpinSystem.operator">operator</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.remove_dissipative_term" href="#muspinsim.spinsys.SpinSystem.remove_dissipative_term">remove_dissipative_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.remove_term" href="#muspinsim.spinsys.SpinSystem.remove_term">remove_term</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.spinsys.SingleTerm"><code class="flex name class">
+<span>class <span class="ident">SingleTerm</span></span>
+<span>(</span><span>spinsys, i, vector, label='Single')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SingleTerm(InteractionTerm):
+    def __init__(self, spinsys, i, vector, label=&#34;Single&#34;):
+
+        super(SingleTerm, self).__init__(spinsys, [i], vector, label)
+
+    @property
+    def i(self):
+        return self._indices[0]
+
+    def rotate(self, rotmat):
+
+        R = np.array(rotmat)
+        v = self._tensor
+        v = np.dot(v, R.T)
+
+        rt = SingleTerm(self._spinsys, self.i, v, self._label)
+
+        return rt
+
+    def __repr__(self):
+        return &#34;{0} {{ S_{1} * {2} }}&#34;.format(self._label, self.i, self._tensor)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinsys.InteractionTerm" href="#muspinsim.spinsys.InteractionTerm">InteractionTerm</a></li>
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinsys.SingleTerm.i"><code class="name">var <span class="ident">i</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def i(self):
+    return self._indices[0]</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinsys.SingleTerm.rotate"><code class="name flex">
+<span>def <span class="ident">rotate</span></span>(<span>self, rotmat)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rotate(self, rotmat):
+
+    R = np.array(rotmat)
+    v = self._tensor
+    v = np.dot(v, R.T)
+
+    rt = SingleTerm(self._spinsys, self.i, v, self._label)
+
+    return rt</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem"><code class="flex name class">
+<span>class <span class="ident">SpinSystem</span></span>
+<span>(</span><span>spins=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p>
+<p>Create a SpinSystem object</p>
+<p>Create an object representing a system of particles with spins (muons,
+electrons and atomic nuclei) and holding their operators.</p>
+<p>Keyword Arguments:
+spins {list} &ndash; List of symbols representing the various particles.
+Each element can be 'e' (electron), 'mu' (muon) a
+chemical symbol, or a (str, int) tuple with a
+chemical symbol and an isotope (default: {[]})</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SpinSystem(Clonable):
+    def __init__(self, spins=[]):
+        &#34;&#34;&#34;Create a SpinSystem object
+
+        Create an object representing a system of particles with spins (muons,
+        electrons and atomic nuclei) and holding their operators.
+
+        Keyword Arguments:
+            spins {list} -- List of symbols representing the various particles.
+                            Each element can be &#39;e&#39; (electron), &#39;mu&#39; (muon) a
+                            chemical symbol, or a (str, int) tuple with a
+                            chemical symbol and an isotope (default: {[]})
+        &#34;&#34;&#34;
+
+        gammas = []
+        Qs = []
+        Is = []
+        operators = []
+
+        for s in spins:
+            if isinstance(s, tuple):
+                el, iso = s
+            else:
+                el, iso = s, None
+
+            gammas.append(gyromagnetic_ratio(el, iso))
+            Qs.append(quadrupole_moment(el, iso))
+            Is.append(spin(el, iso))
+
+            opdict = {a: SpinOperator.from_axes(Is[-1], a) for a in &#34;xyz+-0&#34;}
+
+            operators.append(opdict)
+
+        self._spins = list(spins)
+        self._gammas = np.array(gammas)
+        self._Qs = np.array(Qs)
+        self._Is = np.array(Is)
+        self._dim = tuple((2 * self._Is + 1).astype(int))
+
+        self._operators = operators
+
+        self._terms = []
+        self._dissip_terms = []
+
+        snames = [
+            &#34;{1}{0}&#34;.format(*s) if (type(s) == tuple) else str(s) for s in self._spins
+        ]
+        logging.info(&#34;Created spin system with spins:&#34;)
+        logging.info(&#34;\t\t{0}&#34;.format(&#34; &#34;.join(snames)))
+
+    @property
+    def spins(self):
+        return list(self._spins)
+
+    @property
+    def gammas(self):
+        return self._gammas.copy()
+
+    @property
+    def Qs(self):
+        return self._Qs.copy()
+
+    @property
+    def Is(self):
+        return self._Is.copy()
+
+    @property
+    def dimension(self):
+        return self._dim
+
+    @property
+    def is_dissipative(self):
+        return (np.array(self._dissip_terms) != 0.0).any()
+
+    def add_term(self, indices, tensor, label=&#34;Term&#34;):
+        &#34;&#34;&#34;Add to the spin system a generic interaction term
+
+        Add a term of the form T*S_i*S_j*S_k*..., where S_i is the vector of
+        the three spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            indices {[int]} -- Indices of spins appearing in the term
+            tensor {ndarray} -- Tensor with n dimensions (n = len(indices)),
+                                each of length 3, describing the interaction.
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {&#39;Term&#39;})
+
+        Returns:
+            term {InteractionTerm} -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        &#34;&#34;&#34;
+
+        for i in indices:
+            if i &lt; 0 or i &gt;= len(self._spins):
+                raise ValueError(&#34;Invalid index i&#34;)
+
+        tensor = np.array(tensor)
+
+        term = InteractionTerm(self, indices, tensor, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_linear_term(self, i, vector, label=&#34;Single&#34;):
+        &#34;&#34;&#34;Add to the spin system a term linear in one spin
+
+        Add a term of the form v*S_i, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i.
+
+        Arguments:
+            i {int} -- Index of the spin
+            vector {ndarray} -- Vector v
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {&#39;Single&#39;})
+
+        Returns:
+            SingleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        &#34;&#34;&#34;
+
+        if i &lt; 0 or i &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index i&#34;)
+
+        vector = np.array(vector)
+
+        term = SingleTerm(self, i, vector, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_bilinear_term(self, i, j, matrix, label=&#34;Double&#34;):
+        &#34;&#34;&#34;Add to the spin system a term bilinear in two spins
+
+        Add a term of the form S_i*M*S_j, where S_i is the vector of the three
+        spin operators:
+
+        [S_x, S_y, S_z]
+
+        for spin of index i, and same for S_j.
+
+        Arguments:
+            i {int} -- Index of first spin
+            j {int} -- Index of second spin
+            matrix {ndarray} -- Matrix M
+
+        Keyword Arguments:
+            label {str} -- A label to name the term (default: {&#39;Double&#39;})
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Invalid index or vector
+        &#34;&#34;&#34;
+
+        if i &lt; 0 or i &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index i&#34;)
+
+        if j &lt; 0 or j &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index j&#34;)
+
+        matrix = np.array(matrix)
+
+        term = DoubleTerm(self, i, j, matrix, label=label)
+        self._terms.append(term)
+
+        return term
+
+    def add_zeeman_term(self, i, B):
+        &#34;&#34;&#34;Add a zeeman term
+
+        Add a single term coupling a given spin to a magnetic field
+
+        Arguments:
+            i {int} -- Index of the spin
+            B {ndarray | number} -- Magnetic field vector, in Tesla. If just a
+                                    scalar is assumed to be along z
+
+        Returns:
+            SingleTerm -- The term just created
+        &#34;&#34;&#34;
+
+        if isinstance(B, Number):
+            B = [0, 0, B]  # Treat it as along z by default
+
+        B = np.array(B)
+
+        logging.info(&#34;Adding Zeeman term to spin {0}&#34;.format(i + 1))
+
+        return self.add_linear_term(i, B * self.gamma(i), &#34;Zeeman&#34;)
+
+    def add_dipolar_term(self, i, j, r):
+        &#34;&#34;&#34;Add a dipolar term
+
+        Add a spin-spin dipolar coupling between two distinct spins. The
+        coupling is calculated geometrically from the vector connecting them,
+        in Angstrom.
+
+        Arguments:
+            i {int} -- Index of the first spin
+            j {int} -- Index of the second spin
+            r {ndarray} -- Vector connecting the two spins (in Angstrom)
+
+        Returns:
+            DoubleTerm -- The term just created
+
+        Raises:
+            ValueError -- Raised if i == j
+        &#34;&#34;&#34;
+
+        if i == j:
+            raise ValueError(&#34;Can not set up dipolar coupling with itself&#34;)
+
+        r = np.array(r)
+
+        g_i = self.gamma(i)
+        g_j = self.gamma(j)
+
+        rnorm = np.linalg.norm(r)
+        D = -(np.eye(3) - 3.0 / rnorm**2.0 * r[:, None] * r[None, :])
+        dij = -(cnst.mu_0 * cnst.hbar * (g_i * g_j * 1e6)) / (
+            2 * (rnorm * 1e-10) ** 3
+        )  # MHz
+        D *= dij
+
+        logging.info(&#34;Adding dipolar term to spins {0}-{1}&#34;.format(i + 1, j + 1))
+
+        return self.add_bilinear_term(i, j, D, &#34;Dipolar&#34;)
+
+    def add_quadrupolar_term(self, i, EFG):
+        &#34;&#34;&#34;Add a quadrupolar term
+
+        Add a quadrupolar term to a nucleus with I &gt;= 1 from its Electric
+        Field Gradient tensor.
+
+        Arguments:
+            i {int} -- Index of the spin
+            EFG {ndarray} --  Electric Field Gradient tensor
+
+        Returns:
+            DoubleTerm -- The term just created
+        &#34;&#34;&#34;
+
+        EFG = np.array(EFG)
+        Q = self.Q(i)
+        I = self.I(i)
+
+        if I == 0.5:
+            raise ValueError(
+                &#34;Can not set up quadrupolar coupling for &#34; &#34;spin 1/2 particle&#34;
+            )
+
+        Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
+
+        logging.info(&#34;Adding quadrupolar term to spin {0}&#34;.format(i + 1))
+
+        return self.add_bilinear_term(i, i, Qtens, &#34;Quadrupolar&#34;)
+
+    def remove_term(self, term):
+        &#34;&#34;&#34;Remove a term from the spin system
+
+        Remove an interaction term from this spin system.
+
+        Arguments:
+            term {InteractionTerm} -- Term to remove
+
+        Raises:
+            ValueError -- The term is not contained in this system
+        &#34;&#34;&#34;
+
+        self._terms.remove(term)
+
+    def clear_terms(self):
+        &#34;&#34;&#34;Remove all terms
+
+        Remove all interaction terms from this spin system.
+        &#34;&#34;&#34;
+
+        terms = list(self._terms)
+        for t in terms:
+            self.remove_term(t)
+
+    def add_dissipative_term(self, op, d=0.0):
+        &#34;&#34;&#34;Set a dissipation operator for the system.
+
+        Set a dissipation operator for this system, representing its coupling
+        (in MHz) with an external heat bath to include in the Lindbladian of
+        the system.
+
+        Arguments:
+            op {SpinOperator} -- Operator for the dissipation term
+
+        Keyword Arguments:
+            d {number} -- Dissipation coupling in MHz (default: {0.0})
+        &#34;&#34;&#34;
+
+        term = DissipationTerm(op, d)
+        self._dissip_terms.append(term)
+
+        return term
+
+    def remove_dissipative_term(self, term):
+        &#34;&#34;&#34;Remove a dissipation term from the system.
+
+        Remove a dissipation term from this spin system.
+
+        Arguments:
+            term {DissipationTerm} -- Term to remove
+
+        Raises:
+            ValueError -- The term is not contained in this system
+        &#34;&#34;&#34;
+
+        self._dissip_terms.remove(term)
+
+    def clear_dissipative_terms(self):
+        &#34;&#34;&#34;Remove all terms
+
+        Remove all dissipative terms from this spin system.
+        &#34;&#34;&#34;
+
+        dterms = list(self._dissip_terms)
+        for t in dterms:
+            self.remove_dissipative_term(t)
+
+    def gamma(self, i):
+        &#34;&#34;&#34;Returns the gyromagnetic ratio of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Gyromagnetic ratio in MHz/T
+        &#34;&#34;&#34;
+        return self._gammas[i]
+
+    def Q(self, i):
+        &#34;&#34;&#34;Returns the quadrupole moment of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Quadrupole moment in Barn
+        &#34;&#34;&#34;
+        return self._Qs[i]
+
+    def I(self, i):
+        &#34;&#34;&#34;Returns the spin of a given particle
+
+        Arguments:
+            i {int} -- Index of the particle
+
+        Returns:
+            float -- Spin in units of hbar
+        &#34;&#34;&#34;
+
+        return self._Is[i]
+
+    def operator(self, terms={}):
+        &#34;&#34;&#34;Return an operator for this spin system
+
+        Return a SpinOperator for this system containing the specified terms.
+
+        Keyword Arguments:
+            terms {dict} -- A dictionary of terms to include. The keys should
+                            indices of particles and the values should be
+                            symbols indicating one spin operator (either x, y,
+                            z, +, - or 0). Wherever not specified, the identity
+                            operaror is applied (default: {{}})
+
+        Returns:
+            SpinOperator -- The requested operator
+        &#34;&#34;&#34;
+
+        ops = [self._operators[i][terms.get(i, &#34;0&#34;)] for i in range(len(self))]
+
+        M = ops[0]
+
+        for i in range(1, len(ops)):
+            M = M.kron(ops[i])
+
+        return M
+
+    def rotate(self, rotmat=np.eye(3)):
+
+        # Trying to avoid pointlessly cloning the terms
+        terms = self._terms
+        self._terms = []
+
+        # Make a clone
+        rssys = self.clone()
+        self._terms = terms
+
+        # Edit the terms
+        try:
+            rssys._terms = [t.rotate(rotmat) for t in terms]
+        except AttributeError:
+            raise RuntimeError(
+                &#34;Can only rotate SpinSystems containing Single&#34; &#34; or Double terms&#34;
+            )
+
+        return rssys
+
+    @property
+    def hamiltonian(self):
+
+        if len(self._terms) == 0:
+            n = np.prod(self.dimension)
+            H = np.zeros((n, n))
+        else:
+            H = np.sum([t.matrix for t in self._terms], axis=0)
+        H = Hamiltonian(H, dim=self.dimension)
+
+        return H
+
+    @property
+    def lindbladian(self):
+
+        H = self.hamiltonian
+        dops = [t.tuple for t in self._dissip_terms]
+        L = Lindbladian.from_hamiltonian(H, dops)
+
+        return L
+
+    def __len__(self):
+        return len(self._gammas)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinsys.MuonSpinSystem" href="#muspinsim.spinsys.MuonSpinSystem">MuonSpinSystem</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinsys.SpinSystem.Is"><code class="name">var <span class="ident">Is</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Is(self):
+    return self._Is.copy()</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.Qs"><code class="name">var <span class="ident">Qs</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Qs(self):
+    return self._Qs.copy()</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.dimension"><code class="name">var <span class="ident">dimension</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dimension(self):
+    return self._dim</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.gammas"><code class="name">var <span class="ident">gammas</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def gammas(self):
+    return self._gammas.copy()</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.hamiltonian"><code class="name">var <span class="ident">hamiltonian</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def hamiltonian(self):
+
+    if len(self._terms) == 0:
+        n = np.prod(self.dimension)
+        H = np.zeros((n, n))
+    else:
+        H = np.sum([t.matrix for t in self._terms], axis=0)
+    H = Hamiltonian(H, dim=self.dimension)
+
+    return H</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.is_dissipative"><code class="name">var <span class="ident">is_dissipative</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def is_dissipative(self):
+    return (np.array(self._dissip_terms) != 0.0).any()</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.lindbladian"><code class="name">var <span class="ident">lindbladian</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def lindbladian(self):
+
+    H = self.hamiltonian
+    dops = [t.tuple for t in self._dissip_terms]
+    L = Lindbladian.from_hamiltonian(H, dops)
+
+    return L</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.spins"><code class="name">var <span class="ident">spins</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def spins(self):
+    return list(self._spins)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinsys.SpinSystem.I"><code class="name flex">
+<span>def <span class="ident">I</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the spin of a given particle</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the particle</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float -- Spin in units</code> of <code>hbar</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def I(self, i):
+    &#34;&#34;&#34;Returns the spin of a given particle
+
+    Arguments:
+        i {int} -- Index of the particle
+
+    Returns:
+        float -- Spin in units of hbar
+    &#34;&#34;&#34;
+
+    return self._Is[i]</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.Q"><code class="name flex">
+<span>def <span class="ident">Q</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the quadrupole moment of a given particle</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the particle</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float -- Quadrupole moment in Barn</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def Q(self, i):
+    &#34;&#34;&#34;Returns the quadrupole moment of a given particle
+
+    Arguments:
+        i {int} -- Index of the particle
+
+    Returns:
+        float -- Quadrupole moment in Barn
+    &#34;&#34;&#34;
+    return self._Qs[i]</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_bilinear_term"><code class="name flex">
+<span>def <span class="ident">add_bilinear_term</span></span>(<span>self, i, j, matrix, label='Double')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add to the spin system a term bilinear in two spins</p>
+<p>Add a term of the form S_i<em>M</em>S_j, where S_i is the vector of the three
+spin operators:</p>
+<p>[S_x, S_y, S_z]</p>
+<p>for spin of index i, and same for S_j.</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of first spin
+j {int} &ndash; Index of second spin
+matrix {ndarray} &ndash; Matrix M</p>
+<p>Keyword Arguments:
+label {str} &ndash; A label to name the term (default: {'Double'})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DoubleTerm -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Invalid index</code> or <code>vector</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_bilinear_term(self, i, j, matrix, label=&#34;Double&#34;):
+    &#34;&#34;&#34;Add to the spin system a term bilinear in two spins
+
+    Add a term of the form S_i*M*S_j, where S_i is the vector of the three
+    spin operators:
+
+    [S_x, S_y, S_z]
+
+    for spin of index i, and same for S_j.
+
+    Arguments:
+        i {int} -- Index of first spin
+        j {int} -- Index of second spin
+        matrix {ndarray} -- Matrix M
+
+    Keyword Arguments:
+        label {str} -- A label to name the term (default: {&#39;Double&#39;})
+
+    Returns:
+        DoubleTerm -- The term just created
+
+    Raises:
+        ValueError -- Invalid index or vector
+    &#34;&#34;&#34;
+
+    if i &lt; 0 or i &gt;= len(self._spins):
+        raise ValueError(&#34;Invalid index i&#34;)
+
+    if j &lt; 0 or j &gt;= len(self._spins):
+        raise ValueError(&#34;Invalid index j&#34;)
+
+    matrix = np.array(matrix)
+
+    term = DoubleTerm(self, i, j, matrix, label=label)
+    self._terms.append(term)
+
+    return term</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_dipolar_term"><code class="name flex">
+<span>def <span class="ident">add_dipolar_term</span></span>(<span>self, i, j, r)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a dipolar term</p>
+<p>Add a spin-spin dipolar coupling between two distinct spins. The
+coupling is calculated geometrically from the vector connecting them,
+in Angstrom.</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the first spin
+j {int} &ndash; Index of the second spin
+r {ndarray} &ndash; Vector connecting the two spins (in Angstrom)</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DoubleTerm -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Raised if i == j</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_dipolar_term(self, i, j, r):
+    &#34;&#34;&#34;Add a dipolar term
+
+    Add a spin-spin dipolar coupling between two distinct spins. The
+    coupling is calculated geometrically from the vector connecting them,
+    in Angstrom.
+
+    Arguments:
+        i {int} -- Index of the first spin
+        j {int} -- Index of the second spin
+        r {ndarray} -- Vector connecting the two spins (in Angstrom)
+
+    Returns:
+        DoubleTerm -- The term just created
+
+    Raises:
+        ValueError -- Raised if i == j
+    &#34;&#34;&#34;
+
+    if i == j:
+        raise ValueError(&#34;Can not set up dipolar coupling with itself&#34;)
+
+    r = np.array(r)
+
+    g_i = self.gamma(i)
+    g_j = self.gamma(j)
+
+    rnorm = np.linalg.norm(r)
+    D = -(np.eye(3) - 3.0 / rnorm**2.0 * r[:, None] * r[None, :])
+    dij = -(cnst.mu_0 * cnst.hbar * (g_i * g_j * 1e6)) / (
+        2 * (rnorm * 1e-10) ** 3
+    )  # MHz
+    D *= dij
+
+    logging.info(&#34;Adding dipolar term to spins {0}-{1}&#34;.format(i + 1, j + 1))
+
+    return self.add_bilinear_term(i, j, D, &#34;Dipolar&#34;)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_dissipative_term"><code class="name flex">
+<span>def <span class="ident">add_dissipative_term</span></span>(<span>self, op, d=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Set a dissipation operator for the system.</p>
+<p>Set a dissipation operator for this system, representing its coupling
+(in MHz) with an external heat bath to include in the Lindbladian of
+the system.</p>
+<h2 id="arguments">Arguments</h2>
+<p>op {SpinOperator} &ndash; Operator for the dissipation term</p>
+<p>Keyword Arguments:
+d {number} &ndash; Dissipation coupling in MHz (default: {0.0})</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_dissipative_term(self, op, d=0.0):
+    &#34;&#34;&#34;Set a dissipation operator for the system.
+
+    Set a dissipation operator for this system, representing its coupling
+    (in MHz) with an external heat bath to include in the Lindbladian of
+    the system.
+
+    Arguments:
+        op {SpinOperator} -- Operator for the dissipation term
+
+    Keyword Arguments:
+        d {number} -- Dissipation coupling in MHz (default: {0.0})
+    &#34;&#34;&#34;
+
+    term = DissipationTerm(op, d)
+    self._dissip_terms.append(term)
+
+    return term</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_linear_term"><code class="name flex">
+<span>def <span class="ident">add_linear_term</span></span>(<span>self, i, vector, label='Single')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add to the spin system a term linear in one spin</p>
+<p>Add a term of the form v*S_i, where S_i is the vector of the three
+spin operators:</p>
+<p>[S_x, S_y, S_z]</p>
+<p>for spin of index i.</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the spin
+vector {ndarray} &ndash; Vector v</p>
+<p>Keyword Arguments:
+label {str} &ndash; A label to name the term (default: {'Single'})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SingleTerm -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Invalid index</code> or <code>vector</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_linear_term(self, i, vector, label=&#34;Single&#34;):
+    &#34;&#34;&#34;Add to the spin system a term linear in one spin
+
+    Add a term of the form v*S_i, where S_i is the vector of the three
+    spin operators:
+
+    [S_x, S_y, S_z]
+
+    for spin of index i.
+
+    Arguments:
+        i {int} -- Index of the spin
+        vector {ndarray} -- Vector v
+
+    Keyword Arguments:
+        label {str} -- A label to name the term (default: {&#39;Single&#39;})
+
+    Returns:
+        SingleTerm -- The term just created
+
+    Raises:
+        ValueError -- Invalid index or vector
+    &#34;&#34;&#34;
+
+    if i &lt; 0 or i &gt;= len(self._spins):
+        raise ValueError(&#34;Invalid index i&#34;)
+
+    vector = np.array(vector)
+
+    term = SingleTerm(self, i, vector, label=label)
+    self._terms.append(term)
+
+    return term</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_quadrupolar_term"><code class="name flex">
+<span>def <span class="ident">add_quadrupolar_term</span></span>(<span>self, i, EFG)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a quadrupolar term</p>
+<p>Add a quadrupolar term to a nucleus with I &gt;= 1 from its Electric
+Field Gradient tensor.</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the spin
+EFG {ndarray} &ndash;
+Electric Field Gradient tensor</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DoubleTerm -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_quadrupolar_term(self, i, EFG):
+    &#34;&#34;&#34;Add a quadrupolar term
+
+    Add a quadrupolar term to a nucleus with I &gt;= 1 from its Electric
+    Field Gradient tensor.
+
+    Arguments:
+        i {int} -- Index of the spin
+        EFG {ndarray} --  Electric Field Gradient tensor
+
+    Returns:
+        DoubleTerm -- The term just created
+    &#34;&#34;&#34;
+
+    EFG = np.array(EFG)
+    Q = self.Q(i)
+    I = self.I(i)
+
+    if I == 0.5:
+        raise ValueError(
+            &#34;Can not set up quadrupolar coupling for &#34; &#34;spin 1/2 particle&#34;
+        )
+
+    Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
+
+    logging.info(&#34;Adding quadrupolar term to spin {0}&#34;.format(i + 1))
+
+    return self.add_bilinear_term(i, i, Qtens, &#34;Quadrupolar&#34;)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_term"><code class="name flex">
+<span>def <span class="ident">add_term</span></span>(<span>self, indices, tensor, label='Term')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add to the spin system a generic interaction term</p>
+<p>Add a term of the form T<em>S_i</em>S_j<em>S_k</em>&hellip;, where S_i is the vector of
+the three spin operators:</p>
+<p>[S_x, S_y, S_z]</p>
+<p>for spin of index i.</p>
+<h2 id="arguments">Arguments</h2>
+<p>indices {[int]} &ndash; Indices of spins appearing in the term
+tensor {ndarray} &ndash; Tensor with n dimensions (n = len(indices)),
+each of length 3, describing the interaction.</p>
+<p>Keyword Arguments:
+label {str} &ndash; A label to name the term (default: {'Term'})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>term {InteractionTerm} -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Invalid index</code> or <code>vector</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_term(self, indices, tensor, label=&#34;Term&#34;):
+    &#34;&#34;&#34;Add to the spin system a generic interaction term
+
+    Add a term of the form T*S_i*S_j*S_k*..., where S_i is the vector of
+    the three spin operators:
+
+    [S_x, S_y, S_z]
+
+    for spin of index i.
+
+    Arguments:
+        indices {[int]} -- Indices of spins appearing in the term
+        tensor {ndarray} -- Tensor with n dimensions (n = len(indices)),
+                            each of length 3, describing the interaction.
+
+    Keyword Arguments:
+        label {str} -- A label to name the term (default: {&#39;Term&#39;})
+
+    Returns:
+        term {InteractionTerm} -- The term just created
+
+    Raises:
+        ValueError -- Invalid index or vector
+    &#34;&#34;&#34;
+
+    for i in indices:
+        if i &lt; 0 or i &gt;= len(self._spins):
+            raise ValueError(&#34;Invalid index i&#34;)
+
+    tensor = np.array(tensor)
+
+    term = InteractionTerm(self, indices, tensor, label=label)
+    self._terms.append(term)
+
+    return term</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.add_zeeman_term"><code class="name flex">
+<span>def <span class="ident">add_zeeman_term</span></span>(<span>self, i, B)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Add a zeeman term</p>
+<p>Add a single term coupling a given spin to a magnetic field</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the spin
+B {ndarray | number} &ndash; Magnetic field vector, in Tesla. If just a
+scalar is assumed to be along z</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SingleTerm -- The term just created</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_zeeman_term(self, i, B):
+    &#34;&#34;&#34;Add a zeeman term
+
+    Add a single term coupling a given spin to a magnetic field
+
+    Arguments:
+        i {int} -- Index of the spin
+        B {ndarray | number} -- Magnetic field vector, in Tesla. If just a
+                                scalar is assumed to be along z
+
+    Returns:
+        SingleTerm -- The term just created
+    &#34;&#34;&#34;
+
+    if isinstance(B, Number):
+        B = [0, 0, B]  # Treat it as along z by default
+
+    B = np.array(B)
+
+    logging.info(&#34;Adding Zeeman term to spin {0}&#34;.format(i + 1))
+
+    return self.add_linear_term(i, B * self.gamma(i), &#34;Zeeman&#34;)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.clear_dissipative_terms"><code class="name flex">
+<span>def <span class="ident">clear_dissipative_terms</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove all terms</p>
+<p>Remove all dissipative terms from this spin system.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_dissipative_terms(self):
+    &#34;&#34;&#34;Remove all terms
+
+    Remove all dissipative terms from this spin system.
+    &#34;&#34;&#34;
+
+    dterms = list(self._dissip_terms)
+    for t in dterms:
+        self.remove_dissipative_term(t)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.clear_terms"><code class="name flex">
+<span>def <span class="ident">clear_terms</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove all terms</p>
+<p>Remove all interaction terms from this spin system.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clear_terms(self):
+    &#34;&#34;&#34;Remove all terms
+
+    Remove all interaction terms from this spin system.
+    &#34;&#34;&#34;
+
+    terms = list(self._terms)
+    for t in terms:
+        self.remove_term(t)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.gamma"><code class="name flex">
+<span>def <span class="ident">gamma</span></span>(<span>self, i)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the gyromagnetic ratio of a given particle</p>
+<h2 id="arguments">Arguments</h2>
+<p>i {int} &ndash; Index of the particle</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>float -- Gyromagnetic ratio in MHz/T</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def gamma(self, i):
+    &#34;&#34;&#34;Returns the gyromagnetic ratio of a given particle
+
+    Arguments:
+        i {int} -- Index of the particle
+
+    Returns:
+        float -- Gyromagnetic ratio in MHz/T
+    &#34;&#34;&#34;
+    return self._gammas[i]</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.operator"><code class="name flex">
+<span>def <span class="ident">operator</span></span>(<span>self, terms={})</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return an operator for this spin system</p>
+<p>Return a SpinOperator for this system containing the specified terms.</p>
+<p>Keyword Arguments:
+terms {dict} &ndash; A dictionary of terms to include. The keys should
+indices of particles and the values should be
+symbols indicating one spin operator (either x, y,
+z, +, - or 0). Wherever not specified, the identity
+operaror is applied (default: {{}})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SpinOperator -- The requested operator</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def operator(self, terms={}):
+    &#34;&#34;&#34;Return an operator for this spin system
+
+    Return a SpinOperator for this system containing the specified terms.
+
+    Keyword Arguments:
+        terms {dict} -- A dictionary of terms to include. The keys should
+                        indices of particles and the values should be
+                        symbols indicating one spin operator (either x, y,
+                        z, +, - or 0). Wherever not specified, the identity
+                        operaror is applied (default: {{}})
+
+    Returns:
+        SpinOperator -- The requested operator
+    &#34;&#34;&#34;
+
+    ops = [self._operators[i][terms.get(i, &#34;0&#34;)] for i in range(len(self))]
+
+    M = ops[0]
+
+    for i in range(1, len(ops)):
+        M = M.kron(ops[i])
+
+    return M</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.remove_dissipative_term"><code class="name flex">
+<span>def <span class="ident">remove_dissipative_term</span></span>(<span>self, term)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove a dissipation term from the system.</p>
+<p>Remove a dissipation term from this spin system.</p>
+<h2 id="arguments">Arguments</h2>
+<p>term {DissipationTerm} &ndash; Term to remove</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- The term is not contained in this system</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_dissipative_term(self, term):
+    &#34;&#34;&#34;Remove a dissipation term from the system.
+
+    Remove a dissipation term from this spin system.
+
+    Arguments:
+        term {DissipationTerm} -- Term to remove
+
+    Raises:
+        ValueError -- The term is not contained in this system
+    &#34;&#34;&#34;
+
+    self._dissip_terms.remove(term)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.remove_term"><code class="name flex">
+<span>def <span class="ident">remove_term</span></span>(<span>self, term)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove a term from the spin system</p>
+<p>Remove an interaction term from this spin system.</p>
+<h2 id="arguments">Arguments</h2>
+<p>term {InteractionTerm} &ndash; Term to remove</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- The term is not contained in this system</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_term(self, term):
+    &#34;&#34;&#34;Remove a term from the spin system
+
+    Remove an interaction term from this spin system.
+
+    Arguments:
+        term {InteractionTerm} -- Term to remove
+
+    Raises:
+        ValueError -- The term is not contained in this system
+    &#34;&#34;&#34;
+
+    self._terms.remove(term)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinsys.SpinSystem.rotate"><code class="name flex">
+<span>def <span class="ident">rotate</span></span>(<span>self, rotmat=array([[1., 0., 0.],
+[0., 1., 0.],
+[0., 0., 1.]]))</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rotate(self, rotmat=np.eye(3)):
+
+    # Trying to avoid pointlessly cloning the terms
+    terms = self._terms
+    self._terms = []
+
+    # Make a clone
+    rssys = self.clone()
+    self._terms = terms
+
+    # Edit the terms
+    try:
+        rssys._terms = [t.rotate(rotmat) for t in terms]
+    except AttributeError:
+        raise RuntimeError(
+            &#34;Can only rotate SpinSystems containing Single&#34; &#34; or Double terms&#34;
+        )
+
+    return rssys</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim" href="index.html">muspinsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.spinsys.DissipationTerm" href="#muspinsim.spinsys.DissipationTerm">DissipationTerm</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinsys.DissipationTerm.gamma" href="#muspinsim.spinsys.DissipationTerm.gamma">gamma</a></code></li>
+<li><code><a title="muspinsim.spinsys.DissipationTerm.operator" href="#muspinsim.spinsys.DissipationTerm.operator">operator</a></code></li>
+<li><code><a title="muspinsim.spinsys.DissipationTerm.tuple" href="#muspinsim.spinsys.DissipationTerm.tuple">tuple</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinsys.DoubleTerm" href="#muspinsim.spinsys.DoubleTerm">DoubleTerm</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinsys.DoubleTerm.i" href="#muspinsim.spinsys.DoubleTerm.i">i</a></code></li>
+<li><code><a title="muspinsim.spinsys.DoubleTerm.j" href="#muspinsim.spinsys.DoubleTerm.j">j</a></code></li>
+<li><code><a title="muspinsim.spinsys.DoubleTerm.rotate" href="#muspinsim.spinsys.DoubleTerm.rotate">rotate</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinsys.InteractionTerm" href="#muspinsim.spinsys.InteractionTerm">InteractionTerm</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinsys.InteractionTerm.indices" href="#muspinsim.spinsys.InteractionTerm.indices">indices</a></code></li>
+<li><code><a title="muspinsim.spinsys.InteractionTerm.label" href="#muspinsim.spinsys.InteractionTerm.label">label</a></code></li>
+<li><code><a title="muspinsim.spinsys.InteractionTerm.matrix" href="#muspinsim.spinsys.InteractionTerm.matrix">matrix</a></code></li>
+<li><code><a title="muspinsim.spinsys.InteractionTerm.operator" href="#muspinsim.spinsys.InteractionTerm.operator">operator</a></code></li>
+<li><code><a title="muspinsim.spinsys.InteractionTerm.tensor" href="#muspinsim.spinsys.InteractionTerm.tensor">tensor</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinsys.MuonSpinSystem" href="#muspinsim.spinsys.MuonSpinSystem">MuonSpinSystem</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinsys.MuonSpinSystem.add_hyperfine_term" href="#muspinsim.spinsys.MuonSpinSystem.add_hyperfine_term">add_hyperfine_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.MuonSpinSystem.elec_indices" href="#muspinsim.spinsys.MuonSpinSystem.elec_indices">elec_indices</a></code></li>
+<li><code><a title="muspinsim.spinsys.MuonSpinSystem.muon_index" href="#muspinsim.spinsys.MuonSpinSystem.muon_index">muon_index</a></code></li>
+<li><code><a title="muspinsim.spinsys.MuonSpinSystem.muon_operator" href="#muspinsim.spinsys.MuonSpinSystem.muon_operator">muon_operator</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinsys.SingleTerm" href="#muspinsim.spinsys.SingleTerm">SingleTerm</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinsys.SingleTerm.i" href="#muspinsim.spinsys.SingleTerm.i">i</a></code></li>
+<li><code><a title="muspinsim.spinsys.SingleTerm.rotate" href="#muspinsim.spinsys.SingleTerm.rotate">rotate</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinsys.SpinSystem" href="#muspinsim.spinsys.SpinSystem">SpinSystem</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinsys.SpinSystem.I" href="#muspinsim.spinsys.SpinSystem.I">I</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.Is" href="#muspinsim.spinsys.SpinSystem.Is">Is</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.Q" href="#muspinsim.spinsys.SpinSystem.Q">Q</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.Qs" href="#muspinsim.spinsys.SpinSystem.Qs">Qs</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_bilinear_term" href="#muspinsim.spinsys.SpinSystem.add_bilinear_term">add_bilinear_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_dipolar_term" href="#muspinsim.spinsys.SpinSystem.add_dipolar_term">add_dipolar_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_dissipative_term" href="#muspinsim.spinsys.SpinSystem.add_dissipative_term">add_dissipative_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_linear_term" href="#muspinsim.spinsys.SpinSystem.add_linear_term">add_linear_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_quadrupolar_term" href="#muspinsim.spinsys.SpinSystem.add_quadrupolar_term">add_quadrupolar_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_term" href="#muspinsim.spinsys.SpinSystem.add_term">add_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.add_zeeman_term" href="#muspinsim.spinsys.SpinSystem.add_zeeman_term">add_zeeman_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.clear_dissipative_terms" href="#muspinsim.spinsys.SpinSystem.clear_dissipative_terms">clear_dissipative_terms</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.clear_terms" href="#muspinsim.spinsys.SpinSystem.clear_terms">clear_terms</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.dimension" href="#muspinsim.spinsys.SpinSystem.dimension">dimension</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.gamma" href="#muspinsim.spinsys.SpinSystem.gamma">gamma</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.gammas" href="#muspinsim.spinsys.SpinSystem.gammas">gammas</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.hamiltonian" href="#muspinsim.spinsys.SpinSystem.hamiltonian">hamiltonian</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.is_dissipative" href="#muspinsim.spinsys.SpinSystem.is_dissipative">is_dissipative</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.lindbladian" href="#muspinsim.spinsys.SpinSystem.lindbladian">lindbladian</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.operator" href="#muspinsim.spinsys.SpinSystem.operator">operator</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.remove_dissipative_term" href="#muspinsim.spinsys.SpinSystem.remove_dissipative_term">remove_dissipative_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.remove_term" href="#muspinsim.spinsys.SpinSystem.remove_term">remove_term</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.rotate" href="#muspinsim.spinsys.SpinSystem.rotate">rotate</a></code></li>
+<li><code><a title="muspinsim.spinsys.SpinSystem.spins" href="#muspinsim.spinsys.SpinSystem.spins">spins</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

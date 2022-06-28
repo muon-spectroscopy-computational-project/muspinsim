@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.input.larkeval API documentation</title>
+<meta name="description" content="larkeval.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.input.larkeval</code></h1>
+</header>
+<section id="section-intro">
+<p>larkeval.py</p>
+<p>Evaluation functions and classes based off the Lark grammar parser</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;larkeval.py
+
+Evaluation functions and classes based off the Lark grammar parser&#34;&#34;&#34;
+
+from lark import Lark
+from lark.exceptions import UnexpectedToken
+
+_expr_parser = Lark(
+    &#34;&#34;&#34;
+    ?start: sum
+
+    ?function: NAME &#34;(&#34; (sum (&#34;,&#34; sum)*)? &#34;)&#34; -&gt; fun
+
+    ?sum: product
+        | sum &#34;+&#34; product   -&gt; add
+        | sum &#34;-&#34; product   -&gt; sub
+
+    ?product: power
+        | product &#34;*&#34; power  -&gt; mul
+        | product &#34;/&#34; power  -&gt; div
+
+    ?power: atom
+        | power &#34;^&#34; atom -&gt; pow
+
+    ?atom: NUMBER           -&gt; num
+         | &#34;-&#34; atom         -&gt; neg
+         | NAME             -&gt; var
+         | STRING           -&gt; str
+         | &#34;(&#34; sum &#34;)&#34;
+         | function
+
+    %import common.CNAME -&gt; NAME
+    %import common.NUMBER
+    %import common.WS_INLINE
+    %import common.ESCAPED_STRING -&gt; STRING
+
+    %ignore WS_INLINE
+&#34;&#34;&#34;,
+    parser=&#34;lalr&#34;,
+)
+
+
+def lark_tokenize(line):
+    &#34;&#34;&#34;Splint a line of space-separated valid expressions.&#34;&#34;&#34;
+    ls = line.split()
+    tokens = []
+    while len(ls) &gt; 0:
+        tk = ls.pop(0)
+        valid = False
+        while not valid:
+            try:
+                _expr_parser.parse(tk)
+                valid = True
+            except UnexpectedToken:
+                if len(ls) == 0:
+                    raise RuntimeError(
+                        &#34;Line can not be tokenized into valid expressions&#34;
+                    )
+                tk = tk + ls.pop(0)
+        tokens.append(tk)
+
+    return tokens
+
+
+class LarkExpressionError(Exception):
+    pass
+
+
+class LarkExpression(object):
+    def __init__(self, source, variables=[], functions={}):
+        &#34;&#34;&#34;Create an expression to parse and evaluate with the Lark grammar
+        parser. Variables and functions will be accepted only if included
+        in the admissible ones.
+
+        Arguments:
+            source {str} -- Source code of the expression
+
+        Keyword Arguments
+            variables {[str]} -- Names of acceptable variables
+            functions {{str: callable}} -- Names and bodies of acceptable
+                                           functions
+        &#34;&#34;&#34;
+
+        # Start by parsing the expression
+        self._source = source
+        try:
+            self._tree = _expr_parser.parse(source)
+        except UnexpectedToken:
+            raise LarkExpressionError(&#34;Invalid characters in LarkExpression&#34;)
+
+        # Find the variables and the function calls
+        found_vars, found_funcs = self._analyse_tree(self._tree)
+
+        self._variables = set(found_vars)
+        self._functions = set(found_funcs)
+        self._all_variables = set(variables)
+
+        # Check if they are valid
+        for v in self._variables:
+            if v not in self._all_variables:
+                raise LarkExpressionError(
+                    &#34;Invalid variable: &#39;{0}&#39;, valid functions are [&#39;{1}&#39;]&#34;.format(
+                        v, &#34;&#39;, &#39;&#34;.join(self._all_variables)
+                    )
+                )
+
+        for f in self._functions:
+            if f not in functions.keys():
+                raise LarkExpressionError(
+                    &#34;Invalid function: &#39;{0}()&#39;, valid functions are [&#39;{1}()&#39;]&#34;.format(
+                        f, &#34;()&#39;, &#39;&#34;.join(functions.keys())
+                    )
+                )
+
+        self._function_bodies = {fn: functions[fn] for fn in self._functions}
+
+        self._store_eval = None
+        if len(self._variables) == 0:
+            # No need to wait
+            self._store_eval = self.evaluate()
+
+    def _analyse_tree(self, root):
+        &#34;&#34;&#34;Traverse the tree to look for variables and functions&#34;&#34;&#34;
+
+        found_vars = []
+        found_functions = []
+
+        if hasattr(root, &#34;data&#34;):
+            children = root.children
+            if root.data == &#34;var&#34;:
+                found_vars = [root.children[0].value]
+            elif root.data == &#34;fun&#34;:
+                found_functions = [root.children[0].value]
+                children = root.children[1:]  # Skip the NAME
+        else:
+            return [], []
+
+        for c in children:
+            fv, ff = self._analyse_tree(c)
+            found_vars += fv
+            found_functions += ff
+
+        return found_vars, found_functions
+
+    def _evaluate_tree(self, root, variables={}):
+
+        if hasattr(root, &#34;data&#34;):
+            d = root.data
+            evc = [self._evaluate_tree(c, variables) for c in root.children]
+            if d == &#34;add&#34;:
+                return evc[0] + evc[1]
+            elif d == &#34;sub&#34;:
+                return evc[0] - evc[1]
+            elif d == &#34;mul&#34;:
+                return evc[0] * evc[1]
+            elif d == &#34;div&#34;:
+                return evc[0] / evc[1]
+            elif d == &#34;pow&#34;:
+                return evc[0] ** evc[1]
+            elif d == &#34;neg&#34;:
+                return -evc[0]
+            elif d == &#34;num&#34;:
+                return float(evc[0])
+            elif d == &#34;str&#34;:
+                return str(evc[0][1:-1])
+            elif d == &#34;var&#34;:
+                return variables[evc[0]]
+            elif d == &#34;fun&#34;:
+                fname = evc[0]
+                return self._function_bodies[fname](*evc[1:])
+        else:
+            return root.value
+
+    @property
+    def functions(self):
+        return self._functions
+
+    @property
+    def variables(self):
+        return self._variables
+
+    def evaluate(self, **variables):
+        &#34;&#34;&#34;Evaluate the expression with a given set of updated variables.
+
+        Keyword Arguments:
+            All the variable names appearing in self.variables.
+
+        Returns:
+            result {any} -- Result of evaluating the expression.
+        &#34;&#34;&#34;
+
+        vset = set(variables.keys())
+        if len(self.variables - vset) &gt; 0:
+            raise LarkExpressionError(
+                &#34;Some necessary variables have not been &#34;
+                &#34;defined when evaluating LarkExpression&#34;
+            )
+        elif len(vset - self._all_variables) &gt; 0:
+            raise LarkExpressionError(
+                &#34;Some invalid variables have been &#34;
+                &#34;defined when evaluating LarkExpression&#34;
+            )
+
+        if self._store_eval is not None:
+            return self._store_eval
+        else:
+            return self._evaluate_tree(self._tree, variables)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="muspinsim.input.larkeval.lark_tokenize"><code class="name flex">
+<span>def <span class="ident">lark_tokenize</span></span>(<span>line)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Splint a line of space-separated valid expressions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lark_tokenize(line):
+    &#34;&#34;&#34;Splint a line of space-separated valid expressions.&#34;&#34;&#34;
+    ls = line.split()
+    tokens = []
+    while len(ls) &gt; 0:
+        tk = ls.pop(0)
+        valid = False
+        while not valid:
+            try:
+                _expr_parser.parse(tk)
+                valid = True
+            except UnexpectedToken:
+                if len(ls) == 0:
+                    raise RuntimeError(
+                        &#34;Line can not be tokenized into valid expressions&#34;
+                    )
+                tk = tk + ls.pop(0)
+        tokens.append(tk)
+
+    return tokens</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.input.larkeval.LarkExpression"><code class="flex name class">
+<span>class <span class="ident">LarkExpression</span></span>
+<span>(</span><span>source, variables=[], functions={})</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create an expression to parse and evaluate with the Lark grammar
+parser. Variables and functions will be accepted only if included
+in the admissible ones.</p>
+<h2 id="arguments">Arguments</h2>
+<p>source {str} &ndash; Source code of the expression</p>
+<p>Keyword Arguments
+variables {[str]} &ndash; Names of acceptable variables
+functions {{str: callable}} &ndash; Names and bodies of acceptable
+functions</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LarkExpression(object):
+    def __init__(self, source, variables=[], functions={}):
+        &#34;&#34;&#34;Create an expression to parse and evaluate with the Lark grammar
+        parser. Variables and functions will be accepted only if included
+        in the admissible ones.
+
+        Arguments:
+            source {str} -- Source code of the expression
+
+        Keyword Arguments
+            variables {[str]} -- Names of acceptable variables
+            functions {{str: callable}} -- Names and bodies of acceptable
+                                           functions
+        &#34;&#34;&#34;
+
+        # Start by parsing the expression
+        self._source = source
+        try:
+            self._tree = _expr_parser.parse(source)
+        except UnexpectedToken:
+            raise LarkExpressionError(&#34;Invalid characters in LarkExpression&#34;)
+
+        # Find the variables and the function calls
+        found_vars, found_funcs = self._analyse_tree(self._tree)
+
+        self._variables = set(found_vars)
+        self._functions = set(found_funcs)
+        self._all_variables = set(variables)
+
+        # Check if they are valid
+        for v in self._variables:
+            if v not in self._all_variables:
+                raise LarkExpressionError(
+                    &#34;Invalid variable: &#39;{0}&#39;, valid functions are [&#39;{1}&#39;]&#34;.format(
+                        v, &#34;&#39;, &#39;&#34;.join(self._all_variables)
+                    )
+                )
+
+        for f in self._functions:
+            if f not in functions.keys():
+                raise LarkExpressionError(
+                    &#34;Invalid function: &#39;{0}()&#39;, valid functions are [&#39;{1}()&#39;]&#34;.format(
+                        f, &#34;()&#39;, &#39;&#34;.join(functions.keys())
+                    )
+                )
+
+        self._function_bodies = {fn: functions[fn] for fn in self._functions}
+
+        self._store_eval = None
+        if len(self._variables) == 0:
+            # No need to wait
+            self._store_eval = self.evaluate()
+
+    def _analyse_tree(self, root):
+        &#34;&#34;&#34;Traverse the tree to look for variables and functions&#34;&#34;&#34;
+
+        found_vars = []
+        found_functions = []
+
+        if hasattr(root, &#34;data&#34;):
+            children = root.children
+            if root.data == &#34;var&#34;:
+                found_vars = [root.children[0].value]
+            elif root.data == &#34;fun&#34;:
+                found_functions = [root.children[0].value]
+                children = root.children[1:]  # Skip the NAME
+        else:
+            return [], []
+
+        for c in children:
+            fv, ff = self._analyse_tree(c)
+            found_vars += fv
+            found_functions += ff
+
+        return found_vars, found_functions
+
+    def _evaluate_tree(self, root, variables={}):
+
+        if hasattr(root, &#34;data&#34;):
+            d = root.data
+            evc = [self._evaluate_tree(c, variables) for c in root.children]
+            if d == &#34;add&#34;:
+                return evc[0] + evc[1]
+            elif d == &#34;sub&#34;:
+                return evc[0] - evc[1]
+            elif d == &#34;mul&#34;:
+                return evc[0] * evc[1]
+            elif d == &#34;div&#34;:
+                return evc[0] / evc[1]
+            elif d == &#34;pow&#34;:
+                return evc[0] ** evc[1]
+            elif d == &#34;neg&#34;:
+                return -evc[0]
+            elif d == &#34;num&#34;:
+                return float(evc[0])
+            elif d == &#34;str&#34;:
+                return str(evc[0][1:-1])
+            elif d == &#34;var&#34;:
+                return variables[evc[0]]
+            elif d == &#34;fun&#34;:
+                fname = evc[0]
+                return self._function_bodies[fname](*evc[1:])
+        else:
+            return root.value
+
+    @property
+    def functions(self):
+        return self._functions
+
+    @property
+    def variables(self):
+        return self._variables
+
+    def evaluate(self, **variables):
+        &#34;&#34;&#34;Evaluate the expression with a given set of updated variables.
+
+        Keyword Arguments:
+            All the variable names appearing in self.variables.
+
+        Returns:
+            result {any} -- Result of evaluating the expression.
+        &#34;&#34;&#34;
+
+        vset = set(variables.keys())
+        if len(self.variables - vset) &gt; 0:
+            raise LarkExpressionError(
+                &#34;Some necessary variables have not been &#34;
+                &#34;defined when evaluating LarkExpression&#34;
+            )
+        elif len(vset - self._all_variables) &gt; 0:
+            raise LarkExpressionError(
+                &#34;Some invalid variables have been &#34;
+                &#34;defined when evaluating LarkExpression&#34;
+            )
+
+        if self._store_eval is not None:
+            return self._store_eval
+        else:
+            return self._evaluate_tree(self._tree, variables)</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.input.larkeval.LarkExpression.functions"><code class="name">var <span class="ident">functions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def functions(self):
+    return self._functions</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.input.larkeval.LarkExpression.variables"><code class="name">var <span class="ident">variables</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def variables(self):
+    return self._variables</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.input.larkeval.LarkExpression.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>self, **variables)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Evaluate the expression with a given set of updated variables.</p>
+<p>Keyword Arguments:
+All the variable names appearing in self.variables.</p>
+<h2 id="returns">Returns</h2>
+<p>result {any} &ndash; Result of evaluating the expression.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate(self, **variables):
+    &#34;&#34;&#34;Evaluate the expression with a given set of updated variables.
+
+    Keyword Arguments:
+        All the variable names appearing in self.variables.
+
+    Returns:
+        result {any} -- Result of evaluating the expression.
+    &#34;&#34;&#34;
+
+    vset = set(variables.keys())
+    if len(self.variables - vset) &gt; 0:
+        raise LarkExpressionError(
+            &#34;Some necessary variables have not been &#34;
+            &#34;defined when evaluating LarkExpression&#34;
+        )
+    elif len(vset - self._all_variables) &gt; 0:
+        raise LarkExpressionError(
+            &#34;Some invalid variables have been &#34;
+            &#34;defined when evaluating LarkExpression&#34;
+        )
+
+    if self._store_eval is not None:
+        return self._store_eval
+    else:
+        return self._evaluate_tree(self._tree, variables)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.larkeval.LarkExpressionError"><code class="flex name class">
+<span>class <span class="ident">LarkExpressionError</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LarkExpressionError(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim.input" href="index.html">muspinsim.input</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="muspinsim.input.larkeval.lark_tokenize" href="#muspinsim.input.larkeval.lark_tokenize">lark_tokenize</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.input.larkeval.LarkExpression" href="#muspinsim.input.larkeval.LarkExpression">LarkExpression</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.larkeval.LarkExpression.evaluate" href="#muspinsim.input.larkeval.LarkExpression.evaluate">evaluate</a></code></li>
+<li><code><a title="muspinsim.input.larkeval.LarkExpression.functions" href="#muspinsim.input.larkeval.LarkExpression.functions">functions</a></code></li>
+<li><code><a title="muspinsim.input.larkeval.LarkExpression.variables" href="#muspinsim.input.larkeval.LarkExpression.variables">variables</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.larkeval.LarkExpressionError" href="#muspinsim.input.larkeval.LarkExpressionError">LarkExpressionError</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

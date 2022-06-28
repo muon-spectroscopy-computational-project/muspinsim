@@ -1,0 +1,2354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.input.keyword API documentation</title>
+<meta name="description" content="keyword.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.input.keyword</code></h1>
+</header>
+<section id="section-intro">
+<p>keyword.py</p>
+<p>Classes to define and read conveniently individual keywords of an input file</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;keyword.py
+
+Classes to define and read conveniently individual keywords of an input file
+&#34;&#34;&#34;
+
+import re
+import sys
+import inspect
+import numpy as np
+
+from muspinsim.constants import MU_GAMMA
+from muspinsim.input.larkeval import LarkExpression, lark_tokenize
+from muspinsim.input.variables import FittingVariable
+from muspinsim.utils import deepmap, zcw_gen, eulrange_gen
+
+# Supported math functions
+_math_functions = {
+    &#34;sin&#34;: np.sin,
+    &#34;cos&#34;: np.cos,
+    &#34;tan&#34;: np.tan,
+    &#34;arcsin&#34;: np.arcsin,
+    &#34;arccos&#34;: np.arccos,
+    &#34;arctan&#34;: np.arctan,
+    &#34;arctan2&#34;: np.arctan2,
+    &#34;exp&#34;: np.exp,
+    &#34;log&#34;: np.log,
+    &#34;sqrt&#34;: np.sqrt,
+}
+
+# And math constants
+_math_constants = {&#34;pi&#34;: np.pi, &#34;deg&#34;: np.pi / 180.0, &#34;e&#34;: np.exp(1), &#34;inf&#34;: np.inf}
+
+_phys_constants = {&#34;muon_gyr&#34;: MU_GAMMA, &#34;MHz&#34;: 1.0 / (2 * MU_GAMMA)}
+
+# Functions for powder orientation
+
+_pwd_functions = {&#34;zcw&#34;: zcw_gen, &#34;eulrange&#34;: eulrange_gen}
+
+
+# Expansion functions
+def _range(x1, x2, n=100):
+    return np.linspace(x1, x2, int(n))[:, None]
+
+
+class MuSpinKeyword(object):
+    &#34;&#34;&#34;Generic class used to parse a keyword from a MuSpinSim input file&#34;&#34;&#34;
+
+    name = &#34;keyword&#34;
+    block_size = 1
+    block_size_bounds = (1, np.inf)
+    accept_range = True
+    accept_as_x = False
+    default = None
+    _validators = {}
+
+    def __init__(self, block=[], args=[]):
+        &#34;&#34;&#34;Create an instance of a given keyword, passing the raw block of
+        text as well as the arguments.
+
+        Arguments:
+            block {[str]} -- Lines of text defining the value of the keyword
+            args {[any]} -- Any arguments appearing after the keyword
+
+        &#34;&#34;&#34;
+
+        # Sanity check
+        if (
+            self.block_size &lt; self.block_size_bounds[0]
+            or self.block_size &gt; self.block_size_bounds[1]
+        ):
+            raise RuntimeError(&#34;Invalid block_size for keyword {0}&#34;.format(self.name))
+
+        self._store_args(args)
+
+        # Reshape block
+        block = np.array(block)
+        try:
+            block = block.reshape((-1, self.block_size))
+        except ValueError:
+            raise RuntimeError(
+                &#34;Invalid block length for &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+        if not self.accept_range and len(block) &gt; 1:
+            raise RuntimeError(
+                &#34;Can not accept range of values for &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+
+        if len(block) == 0 and self.has_default:
+            block = np.array([self.default.split(&#34;\n&#34;)])
+
+        self._store_values(block)
+
+        self._validate_values()
+
+    def _default_args(self):
+        # Dummy function, used for type signature and processing of arguments
+        return {}
+
+    def _store_args(self, args):
+        try:
+            self._args = self._default_args(*args)
+        except TypeError:
+            raise RuntimeError(
+                &#34;Wrong number of arguments passed to &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+        except ValueError:
+            raise RuntimeError(
+                &#34;Invalid argument type passed to &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+
+    def _store_values(self, block):
+        # Parse and store each value separately
+        self._values = []
+        for v in block:
+            b = [l.split() for l in v]
+            if len(b) == 1:
+                b = b[0]
+            self._values.append(b)
+        self._values = np.array(self._values)
+
+    def _validate_values(self):
+
+        for rule, vfunc in self._validators.items():
+            ans = all([vfunc(b) for b in self._values])
+
+            if not ans:
+                raise ValueError(
+                    &#34;Invalid block for &#34; &#34;keyword {0}: {1}&#34;.format(self.name, rule)
+                )
+
+    @property
+    def arguments(self):
+        return {**self._args}
+
+    @property
+    def id(self):
+        return self.name
+
+    @property
+    def has_default(self):
+        return self.default is not None
+
+    def evaluate(self):
+        return self._values.copy()
+
+    def __len__(self):
+        return len(self._values)
+
+
+class MuSpinEvaluateKeyword(MuSpinKeyword):
+    &#34;&#34;&#34;Specialised class for keywords with values that need evaluating&#34;&#34;&#34;
+
+    name = &#34;evaluate_keyword&#34;
+    _functions = {**_math_functions}
+    _constants = {**_math_constants}
+
+    def __init__(self, block=[], args=[], variables=[]):
+
+        cnames = set(self._constants.keys())
+        fnames = set(self._functions.keys())
+        vnames = set(variables)
+
+        conflicts = cnames.intersection(vnames)
+        conflicts = conflicts.union(fnames.intersection(vnames))
+        if len(conflicts) &gt; 0:
+            raise ValueError(
+                &#34;Variable names {0}&#34;.format(conflicts)
+                + &#34; conflict with existing constants&#34;
+            )
+
+        self._variables = list(cnames.union(vnames))
+        super(MuSpinEvaluateKeyword, self).__init__(block, args)
+
+    def _store_values(self, block):
+        self._values = []
+        for v in block:
+            b = [
+                [
+                    LarkExpression(
+                        tk, variables=self._variables, functions=self._functions
+                    )
+                    for tk in lark_tokenize(l)
+                ]
+                for l in v
+            ]
+            if len(b) == 1:
+                b = b[0]
+            self._values.append(b)
+
+    def evaluate(self, **variables):
+
+        allvars = {**variables, **self._constants}
+
+        def expreval(expr):
+            return expr.evaluate(**allvars)
+
+        return np.array(deepmap(expreval, self._values))
+
+
+class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
+    &#34;&#34;&#34;Specialised class for keywords whose lines can be expanded with
+    particular functions&#34;&#34;&#34;
+
+    name = &#34;expand_keyword&#34;
+    block_size_bounds = (1, 1)
+    _functions = {**_math_functions, &#34;range&#34;: _range}
+
+    def evaluate(self, **variables):
+
+        allvars = {**variables, **self._constants}
+
+        if self.block_size != 1:
+            raise RuntimeError(&#34;MuSpinExpandKeyword can not have block_size &gt; 1&#34;)
+
+        def expreval(expr):
+            return expr.evaluate(**allvars)
+
+        eval_values = []
+        for line in self._values:
+            eval_line = np.array([expreval(expr) for expr in line])
+
+            if len(line) == 1 and len(eval_line.shape) == 3:
+                eval_values += list(eval_line[0])
+            elif len(line) == 1 and len(eval_line.shape) == 2:
+                eval_values += [eval_line[0]]
+            elif len(eval_line.shape) == 1:
+                eval_values += [eval_line]
+            else:
+                raise RuntimeError(
+                    &#34;Unable to evaluate expression for &#34; &#34;keyword {0}&#34;.format(self.name)
+                )
+
+        return eval_values
+
+
+class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
+
+    name = &#34;coupling_keyword&#34;
+    block_size = 1
+    default = &#34;0 0 0&#34;
+
+    def _default_args(self, i=None, j=None):
+        args = {
+            &#34;i&#34;: int(i) if (i is not None) else None,
+            &#34;j&#34;: int(j) if (j is not None) else None,
+        }
+        return args
+
+    @property
+    def accept_range(self):
+        return False  # Never ranges! These keywords define the system!
+
+    @property
+    def id(self):
+        id_str = &#34;&#34;
+        i = self._args.get(&#34;i&#34;)
+        j = self._args.get(&#34;j&#34;)
+        if i is not None:
+            id_str += &#34;_{0}&#34;.format(i)
+            if j is not None:
+                id_str += &#34;_{0}&#34;.format(j)
+        return &#34;{0}{1}&#34;.format(self.name, id_str)
+
+
+# Now on to defining the actual keywords that are admitted in input files
+class KWName(MuSpinKeyword):
+
+    name = &#34;name&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;muspinsim&#34;
+
+
+class KWSpins(MuSpinKeyword):
+
+    name = &#34;spins&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;mu e&#34;
+
+
+class KWPolarization(MuSpinExpandKeyword):
+
+    name = &#34;polarization&#34;
+    block_size = 1
+    default = &#34;transverse&#34;
+    _constants = {
+        **_math_constants,
+        &#34;longitudinal&#34;: np.array([0, 0, 1.0]),
+        &#34;transverse&#34;: np.array([1.0, 0, 0]),
+    }
+    _functions = {**_math_functions}
+
+
+class KWField(MuSpinExpandKeyword):
+
+    name = &#34;field&#34;
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = &#34;0.0&#34;
+    _constants = {**_math_constants, **_phys_constants}
+
+
+class KWTime(MuSpinExpandKeyword):
+
+    name = &#34;time&#34;
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = &#34;range(0, 10, 101)&#34;
+
+
+class KWXAxis(MuSpinKeyword):
+
+    name = &#34;x_axis&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;time&#34;
+    _validators = {
+        &#34;Invalid value&#34;: lambda s: (
+            s[0] in InputKeywords and InputKeywords[s[0]].accept_as_x
+        )
+    }
+
+
+class KWYAxis(MuSpinKeyword):
+
+    name = &#34;y_axis&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;asymmetry&#34;
+    _validators = {&#34;Invalid value&#34;: lambda s: s in (&#34;asymmetry&#34;, &#34;integral&#34;)}
+
+
+class KWAverageAxes(MuSpinKeyword):
+
+    name = &#34;average_axes&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;orientation&#34;
+    _validators = {
+        &#34;Invalid value&#34;: lambda s: all(
+            (w in InputKeywords or w.lower() == &#34;none&#34;) for w in s
+        )
+    }
+
+
+class KWOrientation(MuSpinExpandKeyword):
+
+    name = &#34;orientation&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;0 0 0&#34;
+    _functions = {**_math_functions, **_pwd_functions}
+
+    def _default_args(self, mode=&#34;zyz&#34;):
+        args = {&#34;mode&#34;: mode}
+        return args
+
+
+class KWTemperature(MuSpinExpandKeyword):
+
+    name = &#34;temperature&#34;
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = &#34;inf&#34;
+
+
+# Couplings
+class KWZeeman(MuSpinCouplingKeyword):
+
+    name = &#34;zeeman&#34;
+    block_size = 1
+    _constants = {**_math_constants, **_phys_constants}
+
+    def _default_args(self, i):
+        args = {&#34;i&#34;: int(i)}
+        return args
+
+
+class KWDipolar(MuSpinCouplingKeyword):
+
+    name = &#34;dipolar&#34;
+    block_size = 1
+
+    def _default_args(self, i, j):
+        args = {&#34;i&#34;: int(i), &#34;j&#34;: int(j)}
+        return args
+
+
+class KWHyperfine(MuSpinCouplingKeyword):
+
+    name = &#34;hyperfine&#34;
+    block_size = 3
+
+    def _default_args(self, i, j=None):
+        args = {&#34;i&#34;: int(i), &#34;j&#34;: int(j) if j is not None else None}
+        return args
+
+
+class KWQuadrupolar(MuSpinCouplingKeyword):
+
+    name = &#34;quadrupolar&#34;
+    block_size = 3
+
+    def _default_args(self, i):
+        args = {
+            &#34;i&#34;: int(i),
+        }
+        return args
+
+
+class KWDissipation(MuSpinCouplingKeyword):
+
+    name = &#34;dissipation&#34;
+    block_size = 1
+
+    def _default_args(self, i):
+        args = {&#34;i&#34;: int(i)}
+        return args
+
+
+# Fitting variables. This is a special case
+class KWFittingVariables(MuSpinKeyword):
+
+    name = &#34;fitting_variables&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;&#34;
+    _constants = {**_math_constants, **_phys_constants}
+
+    def _store_values(self, block):
+
+        variables = list(self._constants.keys())
+
+        self._values = []
+
+        for v in block:
+            v = v[0].split(maxsplit=1)
+            if len(v) == 0:
+                return
+            b = [v[0]]
+
+            if len(v) == 2:
+                b += [
+                    LarkExpression(tk, variables=variables)
+                    for tk in lark_tokenize(v[1])
+                ]
+                b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
+
+            b = FittingVariable(*b)
+
+            self._values.append(b)
+
+
+# Other fitting-related keywords
+class KWFittingData(MuSpinExpandKeyword):
+
+    name = &#34;fitting_data&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;&#34;
+    _constants = {}
+    _functions = {&#34;load&#34;: np.loadtxt}
+
+
+class KWFittingMethod(MuSpinKeyword):
+
+    name = &#34;fitting_method&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;nelder-mead&#34;
+    _validators = {
+        &#34;Invalid value&#34;: lambda s: (
+            (s[0].lower() in (&#34;nelder-mead&#34;, &#34;lbfgs&#34;)) and len(s) == 1
+        )
+    }
+
+
+class KWFittingTolerance(MuSpinKeyword):
+
+    name = &#34;fitting_tolerance&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;1e-3&#34;
+    _validators = {&#34;Invalid value&#34;: lambda s: (float(s[0]) and len(s) == 1)}
+
+
+# Special configuration keyword
+class KWExperiment(MuSpinKeyword):
+
+    name = &#34;experiment&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;&#34;
+
+
+# Compile all KW classes into a single dictionary automatically
+InputKeywords = {
+    obj.name: obj
+    for name, obj in inspect.getmembers(sys.modules[__name__])
+    if (inspect.isclass(obj) and re.match(&#34;KW[0-9a-zA-Z]+&#34;, name))
+}</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.input.keyword.KWAverageAxes"><code class="flex name class">
+<span>class <span class="ident">KWAverageAxes</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWAverageAxes(MuSpinKeyword):
+
+    name = &#34;average_axes&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;orientation&#34;
+    _validators = {
+        &#34;Invalid value&#34;: lambda s: all(
+            (w in InputKeywords or w.lower() == &#34;none&#34;) for w in s
+        )
+    }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWAverageAxes.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWAverageAxes.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWAverageAxes.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWAverageAxes.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWDipolar"><code class="flex name class">
+<span>class <span class="ident">KWDipolar</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWDipolar(MuSpinCouplingKeyword):
+
+    name = &#34;dipolar&#34;
+    block_size = 1
+
+    def _default_args(self, i, j):
+        args = {&#34;i&#34;: int(i), &#34;j&#34;: int(j)}
+        return args</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWDipolar.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWDipolar.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range">accept_range</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.input.keyword.KWDissipation"><code class="flex name class">
+<span>class <span class="ident">KWDissipation</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWDissipation(MuSpinCouplingKeyword):
+
+    name = &#34;dissipation&#34;
+    block_size = 1
+
+    def _default_args(self, i):
+        args = {&#34;i&#34;: int(i)}
+        return args</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWDissipation.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWDissipation.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range">accept_range</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.input.keyword.KWExperiment"><code class="flex name class">
+<span>class <span class="ident">KWExperiment</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWExperiment(MuSpinKeyword):
+
+    name = &#34;experiment&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWExperiment.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWExperiment.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWExperiment.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWExperiment.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWField"><code class="flex name class">
+<span>class <span class="ident">KWField</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWField(MuSpinExpandKeyword):
+
+    name = &#34;field&#34;
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = &#34;0.0&#34;
+    _constants = {**_math_constants, **_phys_constants}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWField.accept_as_x"><code class="name">var <span class="ident">accept_as_x</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWField.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWField.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWField.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWField.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingData"><code class="flex name class">
+<span>class <span class="ident">KWFittingData</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWFittingData(MuSpinExpandKeyword):
+
+    name = &#34;fitting_data&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;&#34;
+    _constants = {}
+    _functions = {&#34;load&#34;: np.loadtxt}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWFittingData.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingData.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingData.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingData.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingMethod"><code class="flex name class">
+<span>class <span class="ident">KWFittingMethod</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWFittingMethod(MuSpinKeyword):
+
+    name = &#34;fitting_method&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;nelder-mead&#34;
+    _validators = {
+        &#34;Invalid value&#34;: lambda s: (
+            (s[0].lower() in (&#34;nelder-mead&#34;, &#34;lbfgs&#34;)) and len(s) == 1
+        )
+    }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWFittingMethod.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingMethod.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingMethod.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingMethod.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingTolerance"><code class="flex name class">
+<span>class <span class="ident">KWFittingTolerance</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWFittingTolerance(MuSpinKeyword):
+
+    name = &#34;fitting_tolerance&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;1e-3&#34;
+    _validators = {&#34;Invalid value&#34;: lambda s: (float(s[0]) and len(s) == 1)}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWFittingTolerance.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingTolerance.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingTolerance.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingTolerance.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingVariables"><code class="flex name class">
+<span>class <span class="ident">KWFittingVariables</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWFittingVariables(MuSpinKeyword):
+
+    name = &#34;fitting_variables&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;&#34;
+    _constants = {**_math_constants, **_phys_constants}
+
+    def _store_values(self, block):
+
+        variables = list(self._constants.keys())
+
+        self._values = []
+
+        for v in block:
+            v = v[0].split(maxsplit=1)
+            if len(v) == 0:
+                return
+            b = [v[0]]
+
+            if len(v) == 2:
+                b += [
+                    LarkExpression(tk, variables=variables)
+                    for tk in lark_tokenize(v[1])
+                ]
+                b[1:] = [expr.evaluate(**self._constants) for expr in b[1:]]
+
+            b = FittingVariable(*b)
+
+            self._values.append(b)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWFittingVariables.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingVariables.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingVariables.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWFittingVariables.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWHyperfine"><code class="flex name class">
+<span>class <span class="ident">KWHyperfine</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWHyperfine(MuSpinCouplingKeyword):
+
+    name = &#34;hyperfine&#34;
+    block_size = 3
+
+    def _default_args(self, i, j=None):
+        args = {&#34;i&#34;: int(i), &#34;j&#34;: int(j) if j is not None else None}
+        return args</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWHyperfine.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWHyperfine.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range">accept_range</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.input.keyword.KWName"><code class="flex name class">
+<span>class <span class="ident">KWName</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWName(MuSpinKeyword):
+
+    name = &#34;name&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;muspinsim&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWName.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWName.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWName.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWName.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWOrientation"><code class="flex name class">
+<span>class <span class="ident">KWOrientation</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWOrientation(MuSpinExpandKeyword):
+
+    name = &#34;orientation&#34;
+    block_size = 1
+    accept_range = True
+    default = &#34;0 0 0&#34;
+    _functions = {**_math_functions, **_pwd_functions}
+
+    def _default_args(self, mode=&#34;zyz&#34;):
+        args = {&#34;mode&#34;: mode}
+        return args</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWOrientation.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWOrientation.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWOrientation.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWOrientation.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWPolarization"><code class="flex name class">
+<span>class <span class="ident">KWPolarization</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWPolarization(MuSpinExpandKeyword):
+
+    name = &#34;polarization&#34;
+    block_size = 1
+    default = &#34;transverse&#34;
+    _constants = {
+        **_math_constants,
+        &#34;longitudinal&#34;: np.array([0, 0, 1.0]),
+        &#34;transverse&#34;: np.array([1.0, 0, 0]),
+    }
+    _functions = {**_math_functions}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWPolarization.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWPolarization.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWPolarization.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWQuadrupolar"><code class="flex name class">
+<span>class <span class="ident">KWQuadrupolar</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWQuadrupolar(MuSpinCouplingKeyword):
+
+    name = &#34;quadrupolar&#34;
+    block_size = 3
+
+    def _default_args(self, i):
+        args = {
+            &#34;i&#34;: int(i),
+        }
+        return args</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWQuadrupolar.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWQuadrupolar.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range">accept_range</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.input.keyword.KWSpins"><code class="flex name class">
+<span>class <span class="ident">KWSpins</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWSpins(MuSpinKeyword):
+
+    name = &#34;spins&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;mu e&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWSpins.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWSpins.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWSpins.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWSpins.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWTemperature"><code class="flex name class">
+<span>class <span class="ident">KWTemperature</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWTemperature(MuSpinExpandKeyword):
+
+    name = &#34;temperature&#34;
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = &#34;inf&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWTemperature.accept_as_x"><code class="name">var <span class="ident">accept_as_x</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTemperature.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTemperature.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTemperature.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTemperature.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWTime"><code class="flex name class">
+<span>class <span class="ident">KWTime</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWTime(MuSpinExpandKeyword):
+
+    name = &#34;time&#34;
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = &#34;range(0, 10, 101)&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWTime.accept_as_x"><code class="name">var <span class="ident">accept_as_x</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTime.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTime.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTime.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWTime.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWXAxis"><code class="flex name class">
+<span>class <span class="ident">KWXAxis</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWXAxis(MuSpinKeyword):
+
+    name = &#34;x_axis&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;time&#34;
+    _validators = {
+        &#34;Invalid value&#34;: lambda s: (
+            s[0] in InputKeywords and InputKeywords[s[0]].accept_as_x
+        )
+    }</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWXAxis.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWXAxis.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWXAxis.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWXAxis.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWYAxis"><code class="flex name class">
+<span>class <span class="ident">KWYAxis</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWYAxis(MuSpinKeyword):
+
+    name = &#34;y_axis&#34;
+    block_size = 1
+    accept_range = False
+    default = &#34;asymmetry&#34;
+    _validators = {&#34;Invalid value&#34;: lambda s: s in (&#34;asymmetry&#34;, &#34;integral&#34;)}</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWYAxis.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWYAxis.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWYAxis.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWYAxis.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.KWZeeman"><code class="flex name class">
+<span>class <span class="ident">KWZeeman</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class KWZeeman(MuSpinCouplingKeyword):
+
+    name = &#34;zeeman&#34;
+    block_size = 1
+    _constants = {**_math_constants, **_phys_constants}
+
+    def _default_args(self, i):
+        args = {&#34;i&#34;: int(i)}
+        return args</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.KWZeeman.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.KWZeeman.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range">accept_range</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinCouplingKeyword"><code class="flex name class">
+<span>class <span class="ident">MuSpinCouplingKeyword</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
+
+    name = &#34;coupling_keyword&#34;
+    block_size = 1
+    default = &#34;0 0 0&#34;
+
+    def _default_args(self, i=None, j=None):
+        args = {
+            &#34;i&#34;: int(i) if (i is not None) else None,
+            &#34;j&#34;: int(j) if (j is not None) else None,
+        }
+        return args
+
+    @property
+    def accept_range(self):
+        return False  # Never ranges! These keywords define the system!
+
+    @property
+    def id(self):
+        id_str = &#34;&#34;
+        i = self._args.get(&#34;i&#34;)
+        j = self._args.get(&#34;j&#34;)
+        if i is not None:
+            id_str += &#34;_{0}&#34;.format(i)
+            if j is not None:
+                id_str += &#34;_{0}&#34;.format(j)
+        return &#34;{0}{1}&#34;.format(self.name, id_str)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.KWDipolar" href="#muspinsim.input.keyword.KWDipolar">KWDipolar</a></li>
+<li><a title="muspinsim.input.keyword.KWDissipation" href="#muspinsim.input.keyword.KWDissipation">KWDissipation</a></li>
+<li><a title="muspinsim.input.keyword.KWHyperfine" href="#muspinsim.input.keyword.KWHyperfine">KWHyperfine</a></li>
+<li><a title="muspinsim.input.keyword.KWQuadrupolar" href="#muspinsim.input.keyword.KWQuadrupolar">KWQuadrupolar</a></li>
+<li><a title="muspinsim.input.keyword.KWZeeman" href="#muspinsim.input.keyword.KWZeeman">KWZeeman</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinCouplingKeyword.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinCouplingKeyword.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinCouplingKeyword.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"><p>bool(x) -&gt; bool</p>
+<p>Returns True when the argument x is true, False otherwise.
+The builtins True and False are the only two instances of the class bool.
+The class bool is a subclass of the class int, and cannot be subclassed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def accept_range(self):
+    return False  # Never ranges! These keywords define the system!</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinCouplingKeyword.id"><code class="name">var <span class="ident">id</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def id(self):
+    id_str = &#34;&#34;
+    i = self._args.get(&#34;i&#34;)
+    j = self._args.get(&#34;j&#34;)
+    if i is not None:
+        id_str += &#34;_{0}&#34;.format(i)
+        if j is not None:
+            id_str += &#34;_{0}&#34;.format(j)
+    return &#34;{0}{1}&#34;.format(self.name, id_str)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinEvaluateKeyword"><code class="flex name class">
+<span>class <span class="ident">MuSpinEvaluateKeyword</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords with values that need evaluating</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuSpinEvaluateKeyword(MuSpinKeyword):
+    &#34;&#34;&#34;Specialised class for keywords with values that need evaluating&#34;&#34;&#34;
+
+    name = &#34;evaluate_keyword&#34;
+    _functions = {**_math_functions}
+    _constants = {**_math_constants}
+
+    def __init__(self, block=[], args=[], variables=[]):
+
+        cnames = set(self._constants.keys())
+        fnames = set(self._functions.keys())
+        vnames = set(variables)
+
+        conflicts = cnames.intersection(vnames)
+        conflicts = conflicts.union(fnames.intersection(vnames))
+        if len(conflicts) &gt; 0:
+            raise ValueError(
+                &#34;Variable names {0}&#34;.format(conflicts)
+                + &#34; conflict with existing constants&#34;
+            )
+
+        self._variables = list(cnames.union(vnames))
+        super(MuSpinEvaluateKeyword, self).__init__(block, args)
+
+    def _store_values(self, block):
+        self._values = []
+        for v in block:
+            b = [
+                [
+                    LarkExpression(
+                        tk, variables=self._variables, functions=self._functions
+                    )
+                    for tk in lark_tokenize(l)
+                ]
+                for l in v
+            ]
+            if len(b) == 1:
+                b = b[0]
+            self._values.append(b)
+
+    def evaluate(self, **variables):
+
+        allvars = {**variables, **self._constants}
+
+        def expreval(expr):
+            return expr.evaluate(**allvars)
+
+        return np.array(deepmap(expreval, self._values))</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinEvaluateKeyword.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinEvaluateKeyword.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>self, **variables)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate(self, **variables):
+
+    allvars = {**variables, **self._constants}
+
+    def expreval(expr):
+        return expr.evaluate(**allvars)
+
+    return np.array(deepmap(expreval, self._values))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinExpandKeyword"><code class="flex name class">
+<span>class <span class="ident">MuSpinExpandKeyword</span></span>
+<span>(</span><span>block=[], args=[], variables=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Specialised class for keywords whose lines can be expanded with
+particular functions</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
+    &#34;&#34;&#34;Specialised class for keywords whose lines can be expanded with
+    particular functions&#34;&#34;&#34;
+
+    name = &#34;expand_keyword&#34;
+    block_size_bounds = (1, 1)
+    _functions = {**_math_functions, &#34;range&#34;: _range}
+
+    def evaluate(self, **variables):
+
+        allvars = {**variables, **self._constants}
+
+        if self.block_size != 1:
+            raise RuntimeError(&#34;MuSpinExpandKeyword can not have block_size &gt; 1&#34;)
+
+        def expreval(expr):
+            return expr.evaluate(**allvars)
+
+        eval_values = []
+        for line in self._values:
+            eval_line = np.array([expreval(expr) for expr in line])
+
+            if len(line) == 1 and len(eval_line.shape) == 3:
+                eval_values += list(eval_line[0])
+            elif len(line) == 1 and len(eval_line.shape) == 2:
+                eval_values += [eval_line[0]]
+            elif len(eval_line.shape) == 1:
+                eval_values += [eval_line]
+            else:
+                raise RuntimeError(
+                    &#34;Unable to evaluate expression for &#34; &#34;keyword {0}&#34;.format(self.name)
+                )
+
+        return eval_values</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.KWField" href="#muspinsim.input.keyword.KWField">KWField</a></li>
+<li><a title="muspinsim.input.keyword.KWFittingData" href="#muspinsim.input.keyword.KWFittingData">KWFittingData</a></li>
+<li><a title="muspinsim.input.keyword.KWOrientation" href="#muspinsim.input.keyword.KWOrientation">KWOrientation</a></li>
+<li><a title="muspinsim.input.keyword.KWPolarization" href="#muspinsim.input.keyword.KWPolarization">KWPolarization</a></li>
+<li><a title="muspinsim.input.keyword.KWTemperature" href="#muspinsim.input.keyword.KWTemperature">KWTemperature</a></li>
+<li><a title="muspinsim.input.keyword.KWTime" href="#muspinsim.input.keyword.KWTime">KWTime</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinExpandKeyword.block_size_bounds"><code class="name">var <span class="ident">block_size_bounds</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinExpandKeyword.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinExpandKeyword.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>self, **variables)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate(self, **variables):
+
+    allvars = {**variables, **self._constants}
+
+    if self.block_size != 1:
+        raise RuntimeError(&#34;MuSpinExpandKeyword can not have block_size &gt; 1&#34;)
+
+    def expreval(expr):
+        return expr.evaluate(**allvars)
+
+    eval_values = []
+    for line in self._values:
+        eval_line = np.array([expreval(expr) for expr in line])
+
+        if len(line) == 1 and len(eval_line.shape) == 3:
+            eval_values += list(eval_line[0])
+        elif len(line) == 1 and len(eval_line.shape) == 2:
+            eval_values += [eval_line[0]]
+        elif len(eval_line.shape) == 1:
+            eval_values += [eval_line]
+        else:
+            raise RuntimeError(
+                &#34;Unable to evaluate expression for &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+
+    return eval_values</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword"><code class="flex name class">
+<span>class <span class="ident">MuSpinKeyword</span></span>
+<span>(</span><span>block=[], args=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generic class used to parse a keyword from a MuSpinSim input file</p>
+<p>Create an instance of a given keyword, passing the raw block of
+text as well as the arguments.</p>
+<h2 id="arguments">Arguments</h2>
+<p>block {[str]} &ndash; Lines of text defining the value of the keyword
+args {[any]} &ndash; Any arguments appearing after the keyword</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuSpinKeyword(object):
+    &#34;&#34;&#34;Generic class used to parse a keyword from a MuSpinSim input file&#34;&#34;&#34;
+
+    name = &#34;keyword&#34;
+    block_size = 1
+    block_size_bounds = (1, np.inf)
+    accept_range = True
+    accept_as_x = False
+    default = None
+    _validators = {}
+
+    def __init__(self, block=[], args=[]):
+        &#34;&#34;&#34;Create an instance of a given keyword, passing the raw block of
+        text as well as the arguments.
+
+        Arguments:
+            block {[str]} -- Lines of text defining the value of the keyword
+            args {[any]} -- Any arguments appearing after the keyword
+
+        &#34;&#34;&#34;
+
+        # Sanity check
+        if (
+            self.block_size &lt; self.block_size_bounds[0]
+            or self.block_size &gt; self.block_size_bounds[1]
+        ):
+            raise RuntimeError(&#34;Invalid block_size for keyword {0}&#34;.format(self.name))
+
+        self._store_args(args)
+
+        # Reshape block
+        block = np.array(block)
+        try:
+            block = block.reshape((-1, self.block_size))
+        except ValueError:
+            raise RuntimeError(
+                &#34;Invalid block length for &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+        if not self.accept_range and len(block) &gt; 1:
+            raise RuntimeError(
+                &#34;Can not accept range of values for &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+
+        if len(block) == 0 and self.has_default:
+            block = np.array([self.default.split(&#34;\n&#34;)])
+
+        self._store_values(block)
+
+        self._validate_values()
+
+    def _default_args(self):
+        # Dummy function, used for type signature and processing of arguments
+        return {}
+
+    def _store_args(self, args):
+        try:
+            self._args = self._default_args(*args)
+        except TypeError:
+            raise RuntimeError(
+                &#34;Wrong number of arguments passed to &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+        except ValueError:
+            raise RuntimeError(
+                &#34;Invalid argument type passed to &#34; &#34;keyword {0}&#34;.format(self.name)
+            )
+
+    def _store_values(self, block):
+        # Parse and store each value separately
+        self._values = []
+        for v in block:
+            b = [l.split() for l in v]
+            if len(b) == 1:
+                b = b[0]
+            self._values.append(b)
+        self._values = np.array(self._values)
+
+    def _validate_values(self):
+
+        for rule, vfunc in self._validators.items():
+            ans = all([vfunc(b) for b in self._values])
+
+            if not ans:
+                raise ValueError(
+                    &#34;Invalid block for &#34; &#34;keyword {0}: {1}&#34;.format(self.name, rule)
+                )
+
+    @property
+    def arguments(self):
+        return {**self._args}
+
+    @property
+    def id(self):
+        return self.name
+
+    @property
+    def has_default(self):
+        return self.default is not None
+
+    def evaluate(self):
+        return self._values.copy()
+
+    def __len__(self):
+        return len(self._values)</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.input.keyword.KWAverageAxes" href="#muspinsim.input.keyword.KWAverageAxes">KWAverageAxes</a></li>
+<li><a title="muspinsim.input.keyword.KWExperiment" href="#muspinsim.input.keyword.KWExperiment">KWExperiment</a></li>
+<li><a title="muspinsim.input.keyword.KWFittingMethod" href="#muspinsim.input.keyword.KWFittingMethod">KWFittingMethod</a></li>
+<li><a title="muspinsim.input.keyword.KWFittingTolerance" href="#muspinsim.input.keyword.KWFittingTolerance">KWFittingTolerance</a></li>
+<li><a title="muspinsim.input.keyword.KWFittingVariables" href="#muspinsim.input.keyword.KWFittingVariables">KWFittingVariables</a></li>
+<li><a title="muspinsim.input.keyword.KWName" href="#muspinsim.input.keyword.KWName">KWName</a></li>
+<li><a title="muspinsim.input.keyword.KWSpins" href="#muspinsim.input.keyword.KWSpins">KWSpins</a></li>
+<li><a title="muspinsim.input.keyword.KWXAxis" href="#muspinsim.input.keyword.KWXAxis">KWXAxis</a></li>
+<li><a title="muspinsim.input.keyword.KWYAxis" href="#muspinsim.input.keyword.KWYAxis">KWYAxis</a></li>
+<li><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.accept_as_x"><code class="name">var <span class="ident">accept_as_x</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.accept_range"><code class="name">var <span class="ident">accept_range</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.block_size"><code class="name">var <span class="ident">block_size</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.block_size_bounds"><code class="name">var <span class="ident">block_size_bounds</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.default"><code class="name">var <span class="ident">default</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.arguments"><code class="name">var <span class="ident">arguments</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def arguments(self):
+    return {**self._args}</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.has_default"><code class="name">var <span class="ident">has_default</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def has_default(self):
+    return self.default is not None</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.id"><code class="name">var <span class="ident">id</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def id(self):
+    return self.name</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.input.keyword.MuSpinKeyword.evaluate"><code class="name flex">
+<span>def <span class="ident">evaluate</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def evaluate(self):
+    return self._values.copy()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim.input" href="index.html">muspinsim.input</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWAverageAxes" href="#muspinsim.input.keyword.KWAverageAxes">KWAverageAxes</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWAverageAxes.accept_range" href="#muspinsim.input.keyword.KWAverageAxes.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWAverageAxes.block_size" href="#muspinsim.input.keyword.KWAverageAxes.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWAverageAxes.default" href="#muspinsim.input.keyword.KWAverageAxes.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWAverageAxes.name" href="#muspinsim.input.keyword.KWAverageAxes.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWDipolar" href="#muspinsim.input.keyword.KWDipolar">KWDipolar</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWDipolar.block_size" href="#muspinsim.input.keyword.KWDipolar.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWDipolar.name" href="#muspinsim.input.keyword.KWDipolar.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWDissipation" href="#muspinsim.input.keyword.KWDissipation">KWDissipation</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWDissipation.block_size" href="#muspinsim.input.keyword.KWDissipation.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWDissipation.name" href="#muspinsim.input.keyword.KWDissipation.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWExperiment" href="#muspinsim.input.keyword.KWExperiment">KWExperiment</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWExperiment.accept_range" href="#muspinsim.input.keyword.KWExperiment.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWExperiment.block_size" href="#muspinsim.input.keyword.KWExperiment.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWExperiment.default" href="#muspinsim.input.keyword.KWExperiment.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWExperiment.name" href="#muspinsim.input.keyword.KWExperiment.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWField" href="#muspinsim.input.keyword.KWField">KWField</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWField.accept_as_x" href="#muspinsim.input.keyword.KWField.accept_as_x">accept_as_x</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWField.accept_range" href="#muspinsim.input.keyword.KWField.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWField.block_size" href="#muspinsim.input.keyword.KWField.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWField.default" href="#muspinsim.input.keyword.KWField.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWField.name" href="#muspinsim.input.keyword.KWField.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWFittingData" href="#muspinsim.input.keyword.KWFittingData">KWFittingData</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWFittingData.accept_range" href="#muspinsim.input.keyword.KWFittingData.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingData.block_size" href="#muspinsim.input.keyword.KWFittingData.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingData.default" href="#muspinsim.input.keyword.KWFittingData.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingData.name" href="#muspinsim.input.keyword.KWFittingData.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWFittingMethod" href="#muspinsim.input.keyword.KWFittingMethod">KWFittingMethod</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWFittingMethod.accept_range" href="#muspinsim.input.keyword.KWFittingMethod.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingMethod.block_size" href="#muspinsim.input.keyword.KWFittingMethod.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingMethod.default" href="#muspinsim.input.keyword.KWFittingMethod.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingMethod.name" href="#muspinsim.input.keyword.KWFittingMethod.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWFittingTolerance" href="#muspinsim.input.keyword.KWFittingTolerance">KWFittingTolerance</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWFittingTolerance.accept_range" href="#muspinsim.input.keyword.KWFittingTolerance.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingTolerance.block_size" href="#muspinsim.input.keyword.KWFittingTolerance.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingTolerance.default" href="#muspinsim.input.keyword.KWFittingTolerance.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingTolerance.name" href="#muspinsim.input.keyword.KWFittingTolerance.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWFittingVariables" href="#muspinsim.input.keyword.KWFittingVariables">KWFittingVariables</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWFittingVariables.accept_range" href="#muspinsim.input.keyword.KWFittingVariables.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingVariables.block_size" href="#muspinsim.input.keyword.KWFittingVariables.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingVariables.default" href="#muspinsim.input.keyword.KWFittingVariables.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWFittingVariables.name" href="#muspinsim.input.keyword.KWFittingVariables.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWHyperfine" href="#muspinsim.input.keyword.KWHyperfine">KWHyperfine</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWHyperfine.block_size" href="#muspinsim.input.keyword.KWHyperfine.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWHyperfine.name" href="#muspinsim.input.keyword.KWHyperfine.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWName" href="#muspinsim.input.keyword.KWName">KWName</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWName.accept_range" href="#muspinsim.input.keyword.KWName.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWName.block_size" href="#muspinsim.input.keyword.KWName.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWName.default" href="#muspinsim.input.keyword.KWName.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWName.name" href="#muspinsim.input.keyword.KWName.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWOrientation" href="#muspinsim.input.keyword.KWOrientation">KWOrientation</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWOrientation.accept_range" href="#muspinsim.input.keyword.KWOrientation.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWOrientation.block_size" href="#muspinsim.input.keyword.KWOrientation.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWOrientation.default" href="#muspinsim.input.keyword.KWOrientation.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWOrientation.name" href="#muspinsim.input.keyword.KWOrientation.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWPolarization" href="#muspinsim.input.keyword.KWPolarization">KWPolarization</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWPolarization.block_size" href="#muspinsim.input.keyword.KWPolarization.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWPolarization.default" href="#muspinsim.input.keyword.KWPolarization.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWPolarization.name" href="#muspinsim.input.keyword.KWPolarization.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWQuadrupolar" href="#muspinsim.input.keyword.KWQuadrupolar">KWQuadrupolar</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWQuadrupolar.block_size" href="#muspinsim.input.keyword.KWQuadrupolar.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWQuadrupolar.name" href="#muspinsim.input.keyword.KWQuadrupolar.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWSpins" href="#muspinsim.input.keyword.KWSpins">KWSpins</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWSpins.accept_range" href="#muspinsim.input.keyword.KWSpins.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWSpins.block_size" href="#muspinsim.input.keyword.KWSpins.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWSpins.default" href="#muspinsim.input.keyword.KWSpins.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWSpins.name" href="#muspinsim.input.keyword.KWSpins.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWTemperature" href="#muspinsim.input.keyword.KWTemperature">KWTemperature</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWTemperature.accept_as_x" href="#muspinsim.input.keyword.KWTemperature.accept_as_x">accept_as_x</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTemperature.accept_range" href="#muspinsim.input.keyword.KWTemperature.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTemperature.block_size" href="#muspinsim.input.keyword.KWTemperature.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTemperature.default" href="#muspinsim.input.keyword.KWTemperature.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTemperature.name" href="#muspinsim.input.keyword.KWTemperature.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWTime" href="#muspinsim.input.keyword.KWTime">KWTime</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWTime.accept_as_x" href="#muspinsim.input.keyword.KWTime.accept_as_x">accept_as_x</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTime.accept_range" href="#muspinsim.input.keyword.KWTime.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTime.block_size" href="#muspinsim.input.keyword.KWTime.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTime.default" href="#muspinsim.input.keyword.KWTime.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWTime.name" href="#muspinsim.input.keyword.KWTime.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWXAxis" href="#muspinsim.input.keyword.KWXAxis">KWXAxis</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWXAxis.accept_range" href="#muspinsim.input.keyword.KWXAxis.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWXAxis.block_size" href="#muspinsim.input.keyword.KWXAxis.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWXAxis.default" href="#muspinsim.input.keyword.KWXAxis.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWXAxis.name" href="#muspinsim.input.keyword.KWXAxis.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWYAxis" href="#muspinsim.input.keyword.KWYAxis">KWYAxis</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWYAxis.accept_range" href="#muspinsim.input.keyword.KWYAxis.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWYAxis.block_size" href="#muspinsim.input.keyword.KWYAxis.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWYAxis.default" href="#muspinsim.input.keyword.KWYAxis.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWYAxis.name" href="#muspinsim.input.keyword.KWYAxis.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.KWZeeman" href="#muspinsim.input.keyword.KWZeeman">KWZeeman</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.KWZeeman.block_size" href="#muspinsim.input.keyword.KWZeeman.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.KWZeeman.name" href="#muspinsim.input.keyword.KWZeeman.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword" href="#muspinsim.input.keyword.MuSpinCouplingKeyword">MuSpinCouplingKeyword</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.block_size" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.default" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.id" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.id">id</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinCouplingKeyword.name" href="#muspinsim.input.keyword.MuSpinCouplingKeyword.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword">MuSpinEvaluateKeyword</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword.evaluate" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword.evaluate">evaluate</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinEvaluateKeyword.name" href="#muspinsim.input.keyword.MuSpinEvaluateKeyword.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.MuSpinExpandKeyword" href="#muspinsim.input.keyword.MuSpinExpandKeyword">MuSpinExpandKeyword</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.input.keyword.MuSpinExpandKeyword.block_size_bounds" href="#muspinsim.input.keyword.MuSpinExpandKeyword.block_size_bounds">block_size_bounds</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinExpandKeyword.evaluate" href="#muspinsim.input.keyword.MuSpinExpandKeyword.evaluate">evaluate</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinExpandKeyword.name" href="#muspinsim.input.keyword.MuSpinExpandKeyword.name">name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.input.keyword.MuSpinKeyword" href="#muspinsim.input.keyword.MuSpinKeyword">MuSpinKeyword</a></code></h4>
+<ul class="two-column">
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.accept_as_x" href="#muspinsim.input.keyword.MuSpinKeyword.accept_as_x">accept_as_x</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.accept_range" href="#muspinsim.input.keyword.MuSpinKeyword.accept_range">accept_range</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.arguments" href="#muspinsim.input.keyword.MuSpinKeyword.arguments">arguments</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.block_size" href="#muspinsim.input.keyword.MuSpinKeyword.block_size">block_size</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.block_size_bounds" href="#muspinsim.input.keyword.MuSpinKeyword.block_size_bounds">block_size_bounds</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.default" href="#muspinsim.input.keyword.MuSpinKeyword.default">default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.evaluate" href="#muspinsim.input.keyword.MuSpinKeyword.evaluate">evaluate</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.has_default" href="#muspinsim.input.keyword.MuSpinKeyword.has_default">has_default</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.id" href="#muspinsim.input.keyword.MuSpinKeyword.id">id</a></code></li>
+<li><code><a title="muspinsim.input.keyword.MuSpinKeyword.name" href="#muspinsim.input.keyword.MuSpinKeyword.name">name</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

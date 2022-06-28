@@ -1,0 +1,1499 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.simconfig API documentation</title>
+<meta name="description" content="simconfig.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.simconfig</code></h1>
+</header>
+<section id="section-intro">
+<p>simconfig.py</p>
+<p>Classes to generate and distribute configurations for simulations</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;simconfig.py
+
+Classes to generate and distribute configurations for simulations
+&#34;&#34;&#34;
+
+import re
+import os
+import logging
+import datetime
+from collections import OrderedDict, namedtuple
+from collections.abc import Iterable
+from itertools import product
+
+import numpy as np
+from ase.quaternions import Quaternion
+
+from muspinsim.spinsys import MuonSpinSystem
+from muspinsim.utils import quat_from_polar
+
+
+# A dictionary of correspondence between keyword names and config parameters
+_CDICT = {
+    &#34;polarization&#34;: &#34;mupol&#34;,
+    &#34;field&#34;: &#34;B&#34;,
+    &#34;time&#34;: &#34;t&#34;,
+    &#34;orientation&#34;: &#34;orient&#34;,
+    &#34;temperature&#34;: &#34;T&#34;,
+}
+
+# Same but specifically for coupling types
+_CSDICT = {
+    &#34;zeeman&#34;: &#34;zmn&#34;,
+    &#34;dipolar&#34;: &#34;dip&#34;,
+    &#34;quadrupolar&#34;: &#34;quad&#34;,
+    &#34;hyperfine&#34;: &#34;hfc&#34;,
+    &#34;dissipation&#34;: &#34;dsp&#34;,
+}
+
+# Named tuple for snapshots
+ConfigSnapshot = namedtuple(&#34;ConfigSnapshot&#34;, [&#34;id&#34;, &#34;y&#34;] + list(_CDICT.values()))
+
+
+# A useful decorator
+def _validate_coupling_args(fun):
+    def decorated(self, value, **args):
+        ij = np.array([v for v in args.values() if v is not None])
+        if (ij &lt; 1).any() or (ij &gt; len(self.system)).any():
+            raise MuSpinConfigError(&#34;Out of range indices for coupling&#34;)
+
+        return fun(self, value, **args)
+
+    return decorated
+
+
+def _validate_shape(v, target_shape=(3,), name=&#34;vector&#34;):
+    v = np.array(v)
+    if v.shape != target_shape:
+        raise MuSpinConfigError(&#34;Invalid shape for &#34; &#34;{0} coupling term&#34;.format(name))
+    return v
+
+
+# Another utility function
+
+
+def _elems_from_arrayodict(inds, odict):
+    return {k: v[inds[i]] for i, (k, v) in enumerate(odict.items())}
+
+
+def _log_dictranges(rdict):
+
+    for k, r in rdict.items():
+        logging.info(&#34;\t\t{k} =&gt; {n} points&#34;.format(k=k, n=len(r)))
+
+
+class MuSpinConfigError(Exception):
+    pass
+
+
+class MuSpinConfig(object):
+    &#34;&#34;&#34;A class to store a configuration for a MuSpinSim simulation, including
+    any ranges of parameters as determined by the input file.&#34;&#34;&#34;
+
+    def __init__(self, params={}):
+        &#34;&#34;&#34;Initialise a MuSpinConfig object
+
+        Initialise a MuSpinConfig object from values produced by the
+        .evaluate method of a MuSpinInput object.
+
+        Arguments:
+            params {dict} -- Dictionary of parameters as returned by
+                             MuSpinInput.evaluate
+
+        &#34;&#34;&#34;
+
+        self._constants = {}
+        self._file_ranges = OrderedDict()
+        self._avg_ranges = OrderedDict()
+        self._x_range = OrderedDict()
+
+        if len(params) == 0:
+            return
+
+        # Basic parameters
+        self._name = self.validate(&#34;name&#34;, params[&#34;name&#34;].value)[0]
+        self._spins = self.validate(&#34;spins&#34;, params[&#34;spins&#34;].value[0])
+        self._y_axis = self.validate(&#34;y&#34;, params[&#34;y_axis&#34;].value[0])[0]
+
+        # Identify ranges
+        try:
+            x = _CDICT[params[&#34;x_axis&#34;].value[0][0]]
+        except KeyError:
+            raise MuSpinConfigError(&#34;Invalid x axis name in input file&#34;)
+        self._x_range[x] = None
+
+        for a in params[&#34;average_axes&#34;].value.reshape((-1,)):
+            if a.lower() == &#34;none&#34;:
+                # Special case
+                continue
+            try:
+                self._avg_ranges[_CDICT[a]] = None
+            except KeyError:
+                raise MuSpinConfigError(&#34;Invalid average axis name in &#34; &#34;input file&#34;)
+
+        self._time_N = 0  # Number of time points. This is special
+        self._time_isavg = &#34;t&#34; in self._avg_ranges  # Is time averaged over?
+
+        # Now inspect all parameters
+        for iname, cname in _CDICT.items():
+
+            try:
+                p = params[iname]
+            except KeyError:
+                raise MuSpinConfigError(
+                    &#34;Invalid params object passed to &#34;
+                    &#34;MuSpinConfig: &#34;
+                    &#34;missing {0}&#34;.format(iname)
+                )
+
+            v = self.validate(cname, p.value, p.args)
+
+            # Some additional special case treatment
+            if cname == &#34;t&#34;:
+                if self._y_axis == &#34;integral&#34;:
+                    # Time is useless, might as well remove it
+                    logging.warning(&#34;Ignoring time axis since Y = integral&#34;)
+                    v = [np.inf]
+
+                self._time_N = len(v)
+            elif cname == &#34;orient&#34;:
+                if cname in self._avg_ranges:
+                    # We need to normalize the weights so that they sum to N
+                    norm = len(v) / np.sum(np.array([w for (q, w) in v]))
+                    v = np.array([(q, w * norm) for (q, w) in v])
+                else:
+                    # Ignore the weights
+                    v = np.array([(q, 1.0) for (q, w) in v])
+
+            if len(v) &gt; 1:
+                # It&#39;s a range
+                if cname in self._x_range:
+                    self._x_range[cname] = v
+                elif cname in self._avg_ranges:
+                    self._avg_ranges[cname] = v
+                else:
+                    self._file_ranges[cname] = v
+            else:
+                # It&#39;s a constant
+                self._constants[cname] = v[0]
+
+        # Check that the Y axis and time are consistent
+        if self._y_axis == &#34;integral&#34;:
+            if &#34;t&#34; in self._x_range:
+                raise MuSpinConfigError(
+                    &#34;Can not use time as X axis when &#34; &#34;evaluating integral of signal&#34;
+                )
+
+        # If we&#39;re fitting, we can&#39;t have file ranges
+        finfo = params[&#34;fitting_info&#34;]
+        if finfo[&#34;fit&#34;]:
+            if len(self._file_ranges) &gt; 0:
+                raise MuSpinConfigError(&#34;Can not have file ranges when &#34; &#34;fitting&#34;)
+            # The x axis is overridden, whatever it is
+            xname = list(self._x_range.keys())[0]
+            self._constants.pop(xname, None)  # Just in case it was here
+            self._x_range[xname] = finfo[&#34;data&#34;][:, 0]
+            if xname == &#34;t&#34;:
+                # Special case
+                self._time_N = len(self._x_range[xname])
+
+        # Check that a X axis was found
+        if list(self._x_range.values())[0] is None:
+            raise MuSpinConfigError(&#34;Specified x axis is not a range&#34;)
+
+        # Remove anything that is not a range in averages
+        self._avg_ranges = OrderedDict(
+            **{k: v for k, v in self._avg_ranges.items() if v is not None}
+        )
+
+        logging.info(&#34;Using X axis:&#34;)
+        _log_dictranges(self._x_range)
+        if len(self._avg_ranges) &gt; 0:
+            logging.info(&#34;Averaging over:&#34;)
+            _log_dictranges(self._avg_ranges)
+        if len(self._file_ranges) &gt; 0:
+            logging.info(&#34;Scanning over:&#34;)
+            _log_dictranges(self._file_ranges)
+
+        # Now make the spin system
+        self._system = MuonSpinSystem(self._spins)
+        self._dissip_terms = {}
+
+        for iid, idata in params[&#34;couplings&#34;].items():
+            iname = idata.name
+            try:
+                cname = _CSDICT[iname]
+            except KeyError:
+                raise MuSpinConfigError(
+                    &#34;Invalid params object passed to &#34;
+                    &#34;MuSpinConfig: &#34;
+                    &#34;unknown {0} coupling&#34;.format(iname)
+                )
+
+            cval = self.validate(cname, idata.value, idata.args)[0]
+
+            i = idata.args.get(&#34;i&#34;)
+            j = idata.args.get(&#34;j&#34;)
+
+            # Move back from 1-based to 0-based indexing
+            i = i - 1 if i is not None else None
+            j = j - 1 if j is not None else None
+
+            if cname == &#34;zmn&#34;:
+                # Zeeman coupling
+                self._system.add_zeeman_term(i, cval)
+            elif cname == &#34;dip&#34;:
+                # Dipolar coupling
+                self._system.add_dipolar_term(i, j, cval)
+            elif cname == &#34;hfc&#34;:
+                # Hyperfine coupling
+                self._system.add_hyperfine_term(i, cval, j)
+            elif cname == &#34;quad&#34;:
+                # Quadrupolar coupling
+                self._system.add_quadrupolar_term(i, cval)
+            elif cname == &#34;dsp&#34;:
+                # Dissipation. Special case, this is temperature dependent and
+                # must be set individually
+                self._dissip_terms[i] = cval[0]
+
+        # Now for results, use the shapes of only file and x ranges
+        res_shape = [len(v) for v in self._file_ranges.values()]
+        res_shape += [len(v) for v in self._x_range.values()]
+
+        self._results = np.zeros(res_shape)
+
+        # And define the configurations, individually and collectively
+        def make_configs(od):
+            cfg = []
+            for k, v in od.items():
+                if k == &#34;t&#34;:
+                    cfg.append([slice(None)])
+                else:
+                    cfg.append(np.arange(len(v)))
+            return list(product(*cfg))
+
+        fconfigs = make_configs(self._file_ranges)
+        aconfigs = make_configs(self._avg_ranges)
+        xconfigs = make_configs(self._x_range)
+
+        # Total configurations
+        self._configurations = list(product(*[fconfigs, aconfigs, xconfigs]))
+        # Size of the average
+        self._avg_N = len(aconfigs)
+
+        logging.info(
+            &#34;Total number of configurations to simulate: &#34;
+            &#34;{0}&#34;.format(len(self._configurations))
+        )
+        logging.info(
+            &#34;Total number of configurations to average: &#34; &#34;{0}&#34;.format(self._avg_N)
+        )
+
+        # Define a namedtuple for configurations
+        cfg_keys = list(self._constants.keys())
+        cfg_keys += list(self._file_ranges.keys())
+        cfg_keys += list(self._avg_ranges.keys())
+        cfg_keys += list(self._x_range.keys())
+
+    def validate(self, name, value, args={}):
+        &#34;&#34;&#34;Validate an input parameter with a custom method, if present.
+
+        Arguments:
+            name {str} -- Name of the input parameter
+            value {any} -- Value to validate
+
+        Keyword arguments:
+            args {dict} -- Arguments, if present
+
+        Returns:
+            value -- Validated and normalised value
+        &#34;&#34;&#34;
+
+        vname = &#34;_validate_{0}&#34;.format(name)
+
+        if hasattr(self, vname):
+            vfun = getattr(self, vname)
+            value = [vfun(v, **args) for v in value]
+
+        return value
+
+    def store_time_slice(self, config_id, tslice):
+        &#34;&#34;&#34;Store a time slice of data in this configuration&#39;s results.
+
+        Store a time slice of data, given the configuration snapshot ID, and
+        sum it to pre-existing data according to averaging rules.
+
+
+        Arguments:
+            config_id {tuple} -- ID of the ConfigurationSnapshot with which
+                                 the data was calculated
+            tslice {np.ndarray} -- Time slice of data
+        &#34;&#34;&#34;
+
+        # Check the shape
+        if isinstance(tslice, Iterable) and len(tslice) != self._time_N:
+            raise ValueError(&#34;Time slice has invalid length&#34;)
+
+        if self._time_isavg:
+            tslice = np.average(tslice)
+
+        ii = tuple(list(config_id[0]) + list(config_id[2]))
+        self._results[ii] += tslice / self._avg_N
+
+    def save_output(self, name=None, path=&#34;.&#34;, extension=&#34;.dat&#34;):
+        &#34;&#34;&#34;Save all output files for the gathered results
+
+        Save all output files for the gathered results, using an appropriate
+        output path and seed name.
+
+        Keyword arguments:
+            name {str} -- Root name to use for the files
+            path {str} -- Folder path to save the files in
+            extension {str} -- Extension to save the files with
+        &#34;&#34;&#34;
+
+        from muspinsim import __version__
+
+        if name is None:
+            name = self.name
+
+        # Header format
+        file_header = &#34;&#34;&#34;MUSPINSIM v.{version}
+Output file written on {date}
+Parameters used:
+&#34;&#34;&#34;.format(
+            version=__version__, date=datetime.datetime.now().ctime()
+        )
+
+        for fn in self._file_ranges:
+            file_header = file_header + &#34;\t{0:&lt;20} = {{{0}}}\n&#34;.format(fn)
+
+        indices = [range(len(rng)) for rng in self._file_ranges.values()]
+        indices = product(*indices)
+
+        # File name
+        fid_pattern = &#34;_{}&#34; * len(self._file_ranges)
+        fname_pattern = &#34;{name}{id}{ext}&#34;
+
+        x = self.x_axis_values
+
+        if &#34;B&#34; in self._x_range.keys():
+            x = np.linalg.norm(x, axis=-1)
+
+        # Actually save the files
+        for inds in indices:
+            fid = fid_pattern.format(*inds)
+            fname = fname_pattern.format(name=name, id=fid, ext=extension)
+            fname = os.path.join(path, fname)
+
+            vdict = {}
+            for i, (key, val) in enumerate(self._file_ranges.items()):
+                pname = &#34;_print_{0}&#34;.format(key)
+                v = val[inds[i]]
+                if hasattr(self, pname):
+                    v = getattr(self, pname)(v)
+
+                vdict[key] = v
+
+            header = file_header.format(**vdict)
+
+            data = np.zeros((len(x), 2))
+            data[:, 0] = x
+            data[:, 1] = self._results[inds]
+
+            np.savetxt(fname, data, header=header)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def spins(self):
+        return list(self._spins)
+
+    @property
+    def system(self):
+        return self._system.clone()
+
+    @property
+    def constants(self):
+        return {**self._constants}
+
+    @property
+    def dissipation_terms(self):
+        return {**self._dissip_terms}
+
+    @property
+    def results(self):
+        return np.array(self._results)
+
+    @results.setter
+    def results(self, r):
+        r = np.array(r)
+        if r.shape != self._results.shape:
+            raise ValueError(&#34;Trying to set an invalid results array&#34;)
+        self._results = r
+
+    @property
+    def x_axis(self):
+        return [*self._x_range.keys()][0]
+
+    @property
+    def x_axis_values(self):
+        return np.array([*self._x_range.values()][0])
+
+    @property
+    def y_axis(self):
+        return self._y_axis
+
+    def __len__(self):
+        return len(self._configurations)
+
+    def __getitem__(self, i):
+
+        isint = type(i) == int
+        if isint:
+            i = slice(i, i + 1)
+        elif type(i) != slice:
+            raise TypeError(
+                &#34;Indices must be integer or slices, &#34; &#34;not {0}&#34;.format(type(i))
+            )
+
+        ans = []
+
+        for (fc, ac, xc) in self._configurations[i]:
+
+            fd = _elems_from_arrayodict(fc, self._file_ranges)
+            ad = _elems_from_arrayodict(ac, self._avg_ranges)
+            xd = _elems_from_arrayodict(xc, self._x_range)
+
+            tp = ConfigSnapshot(
+                id=(fc, ac, xc), y=self._y_axis, **self._constants, **fd, **ad, **xd
+            )
+            ans.append(tp)
+
+        if isint:
+            ans = ans[0]
+
+        return ans
+
+    def _validate_name(self, v):
+        if len(v) &gt; 1:
+            raise MuSpinConfigError(&#34;Name must be a word without spaces&#34;)
+        return v[0]
+
+    def _validate_spins(self, v):
+
+        # Find isotopes
+        isore = re.compile(&#34;([0-9]+)([A-Z][a-z]*|e)&#34;)
+        m = isore.match(v)
+        if m is None:
+            return v
+        else:
+            A, el = m.groups()
+            A = int(A)
+            return (el, A)
+
+    def _validate_t(self, v):
+        if len(v) != 1:
+            raise MuSpinConfigError(&#34;Invalid line in time range&#34;)
+        return v[0]
+
+    def _validate_B(self, v):
+
+        if len(v) == 1:
+            v = np.array([0, 0, v[0]])  # The default direction is Z
+        elif len(v) != 3:
+            raise MuSpinConfigError(&#34;Invalid magnetic field value&#34;)
+
+        return v
+
+    def _validate_mupol(self, v):
+        v = np.array(v, dtype=float)
+        if len(v) != 3:
+            raise MuSpinConfigError(&#34;Invalid muon polarization direction&#34;)
+
+        v /= np.linalg.norm(v)
+
+        return v
+
+    def _validate_orient(self, v, mode):
+
+        q = None
+        w = 1.0  # Weight
+        if len(v) == 2:
+            # Interpret them as polar angles
+            q = quat_from_polar(*v)
+        elif len(v) == 3:
+            q = Quaternion.from_euler_angles(*v, mode=mode)
+        elif len(v) == 4:
+            q = Quaternion.from_euler_angles(*v[:3], mode=mode)
+            w = v[3]
+
+        # After computing the rotation, we store the conjugate because it&#39;s a
+        # lot cheaper, instead of rotating the whole system by q, to rotate
+        # only the magnetic field and the polarization (lab frame) by the
+        # inverse of q
+
+        return (q.conjugate(), w)
+
+    def _validate_T(self, v):
+        return v[0]
+
+    @_validate_coupling_args
+    def _validate_zmn(self, v, i):
+        return _validate_shape(v, (3,), &#34;Zeeman&#34;)
+
+    @_validate_coupling_args
+    def _validate_dip(self, v, i, j):
+        return _validate_shape(v, (3,), &#34;dipolar&#34;)
+
+    @_validate_coupling_args
+    def _validate_hfc(self, v, i, j=None):
+        return _validate_shape(v, (3, 3), &#34;hyperfine&#34;)
+
+    @_validate_coupling_args
+    def _validate_quad(self, v, i):
+        return _validate_shape(v, (3, 3), &#34;quadrupolar&#34;)
+
+    @_validate_coupling_args
+    def _validate_dsp(self, v, i):
+        return _validate_shape(v, (1,), &#34;dissipation&#34;)
+
+    def _print_B(self, v):
+        return &#34;{0} T&#34;.format(v)
+
+    def _print_orient(self, v):
+        o, w = v
+        abc = o.euler_angles(&#34;zyz&#34;) * 180 / np.pi
+        ostr = (
+            &#34;[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, &#34; &#34;c = {2:.1f} deg, weight = {3}&#34;
+        ).format(*abc, w)
+        return ostr</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.simconfig.ConfigSnapshot"><code class="flex name class">
+<span>class <span class="ident">ConfigSnapshot</span></span>
+<span>(</span><span>id, y, mupol, B, t, orient, T)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ConfigSnapshot(id, y, mupol, B, t, orient, T)</p></div>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.tuple</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.simconfig.ConfigSnapshot.B"><code class="name">var <span class="ident">B</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 3</p></div>
+</dd>
+<dt id="muspinsim.simconfig.ConfigSnapshot.T"><code class="name">var <span class="ident">T</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 6</p></div>
+</dd>
+<dt id="muspinsim.simconfig.ConfigSnapshot.id"><code class="name">var <span class="ident">id</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 0</p></div>
+</dd>
+<dt id="muspinsim.simconfig.ConfigSnapshot.mupol"><code class="name">var <span class="ident">mupol</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 2</p></div>
+</dd>
+<dt id="muspinsim.simconfig.ConfigSnapshot.orient"><code class="name">var <span class="ident">orient</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 5</p></div>
+</dd>
+<dt id="muspinsim.simconfig.ConfigSnapshot.t"><code class="name">var <span class="ident">t</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 4</p></div>
+</dd>
+<dt id="muspinsim.simconfig.ConfigSnapshot.y"><code class="name">var <span class="ident">y</span></code></dt>
+<dd>
+<div class="desc"><p>Alias for field number 1</p></div>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig"><code class="flex name class">
+<span>class <span class="ident">MuSpinConfig</span></span>
+<span>(</span><span>params={})</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class to store a configuration for a MuSpinSim simulation, including
+any ranges of parameters as determined by the input file.</p>
+<p>Initialise a MuSpinConfig object</p>
+<p>Initialise a MuSpinConfig object from values produced by the
+.evaluate method of a MuSpinInput object.</p>
+<h2 id="arguments">Arguments</h2>
+<p>params {dict} &ndash; Dictionary of parameters as returned by
+MuSpinInput.evaluate</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuSpinConfig(object):
+    &#34;&#34;&#34;A class to store a configuration for a MuSpinSim simulation, including
+    any ranges of parameters as determined by the input file.&#34;&#34;&#34;
+
+    def __init__(self, params={}):
+        &#34;&#34;&#34;Initialise a MuSpinConfig object
+
+        Initialise a MuSpinConfig object from values produced by the
+        .evaluate method of a MuSpinInput object.
+
+        Arguments:
+            params {dict} -- Dictionary of parameters as returned by
+                             MuSpinInput.evaluate
+
+        &#34;&#34;&#34;
+
+        self._constants = {}
+        self._file_ranges = OrderedDict()
+        self._avg_ranges = OrderedDict()
+        self._x_range = OrderedDict()
+
+        if len(params) == 0:
+            return
+
+        # Basic parameters
+        self._name = self.validate(&#34;name&#34;, params[&#34;name&#34;].value)[0]
+        self._spins = self.validate(&#34;spins&#34;, params[&#34;spins&#34;].value[0])
+        self._y_axis = self.validate(&#34;y&#34;, params[&#34;y_axis&#34;].value[0])[0]
+
+        # Identify ranges
+        try:
+            x = _CDICT[params[&#34;x_axis&#34;].value[0][0]]
+        except KeyError:
+            raise MuSpinConfigError(&#34;Invalid x axis name in input file&#34;)
+        self._x_range[x] = None
+
+        for a in params[&#34;average_axes&#34;].value.reshape((-1,)):
+            if a.lower() == &#34;none&#34;:
+                # Special case
+                continue
+            try:
+                self._avg_ranges[_CDICT[a]] = None
+            except KeyError:
+                raise MuSpinConfigError(&#34;Invalid average axis name in &#34; &#34;input file&#34;)
+
+        self._time_N = 0  # Number of time points. This is special
+        self._time_isavg = &#34;t&#34; in self._avg_ranges  # Is time averaged over?
+
+        # Now inspect all parameters
+        for iname, cname in _CDICT.items():
+
+            try:
+                p = params[iname]
+            except KeyError:
+                raise MuSpinConfigError(
+                    &#34;Invalid params object passed to &#34;
+                    &#34;MuSpinConfig: &#34;
+                    &#34;missing {0}&#34;.format(iname)
+                )
+
+            v = self.validate(cname, p.value, p.args)
+
+            # Some additional special case treatment
+            if cname == &#34;t&#34;:
+                if self._y_axis == &#34;integral&#34;:
+                    # Time is useless, might as well remove it
+                    logging.warning(&#34;Ignoring time axis since Y = integral&#34;)
+                    v = [np.inf]
+
+                self._time_N = len(v)
+            elif cname == &#34;orient&#34;:
+                if cname in self._avg_ranges:
+                    # We need to normalize the weights so that they sum to N
+                    norm = len(v) / np.sum(np.array([w for (q, w) in v]))
+                    v = np.array([(q, w * norm) for (q, w) in v])
+                else:
+                    # Ignore the weights
+                    v = np.array([(q, 1.0) for (q, w) in v])
+
+            if len(v) &gt; 1:
+                # It&#39;s a range
+                if cname in self._x_range:
+                    self._x_range[cname] = v
+                elif cname in self._avg_ranges:
+                    self._avg_ranges[cname] = v
+                else:
+                    self._file_ranges[cname] = v
+            else:
+                # It&#39;s a constant
+                self._constants[cname] = v[0]
+
+        # Check that the Y axis and time are consistent
+        if self._y_axis == &#34;integral&#34;:
+            if &#34;t&#34; in self._x_range:
+                raise MuSpinConfigError(
+                    &#34;Can not use time as X axis when &#34; &#34;evaluating integral of signal&#34;
+                )
+
+        # If we&#39;re fitting, we can&#39;t have file ranges
+        finfo = params[&#34;fitting_info&#34;]
+        if finfo[&#34;fit&#34;]:
+            if len(self._file_ranges) &gt; 0:
+                raise MuSpinConfigError(&#34;Can not have file ranges when &#34; &#34;fitting&#34;)
+            # The x axis is overridden, whatever it is
+            xname = list(self._x_range.keys())[0]
+            self._constants.pop(xname, None)  # Just in case it was here
+            self._x_range[xname] = finfo[&#34;data&#34;][:, 0]
+            if xname == &#34;t&#34;:
+                # Special case
+                self._time_N = len(self._x_range[xname])
+
+        # Check that a X axis was found
+        if list(self._x_range.values())[0] is None:
+            raise MuSpinConfigError(&#34;Specified x axis is not a range&#34;)
+
+        # Remove anything that is not a range in averages
+        self._avg_ranges = OrderedDict(
+            **{k: v for k, v in self._avg_ranges.items() if v is not None}
+        )
+
+        logging.info(&#34;Using X axis:&#34;)
+        _log_dictranges(self._x_range)
+        if len(self._avg_ranges) &gt; 0:
+            logging.info(&#34;Averaging over:&#34;)
+            _log_dictranges(self._avg_ranges)
+        if len(self._file_ranges) &gt; 0:
+            logging.info(&#34;Scanning over:&#34;)
+            _log_dictranges(self._file_ranges)
+
+        # Now make the spin system
+        self._system = MuonSpinSystem(self._spins)
+        self._dissip_terms = {}
+
+        for iid, idata in params[&#34;couplings&#34;].items():
+            iname = idata.name
+            try:
+                cname = _CSDICT[iname]
+            except KeyError:
+                raise MuSpinConfigError(
+                    &#34;Invalid params object passed to &#34;
+                    &#34;MuSpinConfig: &#34;
+                    &#34;unknown {0} coupling&#34;.format(iname)
+                )
+
+            cval = self.validate(cname, idata.value, idata.args)[0]
+
+            i = idata.args.get(&#34;i&#34;)
+            j = idata.args.get(&#34;j&#34;)
+
+            # Move back from 1-based to 0-based indexing
+            i = i - 1 if i is not None else None
+            j = j - 1 if j is not None else None
+
+            if cname == &#34;zmn&#34;:
+                # Zeeman coupling
+                self._system.add_zeeman_term(i, cval)
+            elif cname == &#34;dip&#34;:
+                # Dipolar coupling
+                self._system.add_dipolar_term(i, j, cval)
+            elif cname == &#34;hfc&#34;:
+                # Hyperfine coupling
+                self._system.add_hyperfine_term(i, cval, j)
+            elif cname == &#34;quad&#34;:
+                # Quadrupolar coupling
+                self._system.add_quadrupolar_term(i, cval)
+            elif cname == &#34;dsp&#34;:
+                # Dissipation. Special case, this is temperature dependent and
+                # must be set individually
+                self._dissip_terms[i] = cval[0]
+
+        # Now for results, use the shapes of only file and x ranges
+        res_shape = [len(v) for v in self._file_ranges.values()]
+        res_shape += [len(v) for v in self._x_range.values()]
+
+        self._results = np.zeros(res_shape)
+
+        # And define the configurations, individually and collectively
+        def make_configs(od):
+            cfg = []
+            for k, v in od.items():
+                if k == &#34;t&#34;:
+                    cfg.append([slice(None)])
+                else:
+                    cfg.append(np.arange(len(v)))
+            return list(product(*cfg))
+
+        fconfigs = make_configs(self._file_ranges)
+        aconfigs = make_configs(self._avg_ranges)
+        xconfigs = make_configs(self._x_range)
+
+        # Total configurations
+        self._configurations = list(product(*[fconfigs, aconfigs, xconfigs]))
+        # Size of the average
+        self._avg_N = len(aconfigs)
+
+        logging.info(
+            &#34;Total number of configurations to simulate: &#34;
+            &#34;{0}&#34;.format(len(self._configurations))
+        )
+        logging.info(
+            &#34;Total number of configurations to average: &#34; &#34;{0}&#34;.format(self._avg_N)
+        )
+
+        # Define a namedtuple for configurations
+        cfg_keys = list(self._constants.keys())
+        cfg_keys += list(self._file_ranges.keys())
+        cfg_keys += list(self._avg_ranges.keys())
+        cfg_keys += list(self._x_range.keys())
+
+    def validate(self, name, value, args={}):
+        &#34;&#34;&#34;Validate an input parameter with a custom method, if present.
+
+        Arguments:
+            name {str} -- Name of the input parameter
+            value {any} -- Value to validate
+
+        Keyword arguments:
+            args {dict} -- Arguments, if present
+
+        Returns:
+            value -- Validated and normalised value
+        &#34;&#34;&#34;
+
+        vname = &#34;_validate_{0}&#34;.format(name)
+
+        if hasattr(self, vname):
+            vfun = getattr(self, vname)
+            value = [vfun(v, **args) for v in value]
+
+        return value
+
+    def store_time_slice(self, config_id, tslice):
+        &#34;&#34;&#34;Store a time slice of data in this configuration&#39;s results.
+
+        Store a time slice of data, given the configuration snapshot ID, and
+        sum it to pre-existing data according to averaging rules.
+
+
+        Arguments:
+            config_id {tuple} -- ID of the ConfigurationSnapshot with which
+                                 the data was calculated
+            tslice {np.ndarray} -- Time slice of data
+        &#34;&#34;&#34;
+
+        # Check the shape
+        if isinstance(tslice, Iterable) and len(tslice) != self._time_N:
+            raise ValueError(&#34;Time slice has invalid length&#34;)
+
+        if self._time_isavg:
+            tslice = np.average(tslice)
+
+        ii = tuple(list(config_id[0]) + list(config_id[2]))
+        self._results[ii] += tslice / self._avg_N
+
+    def save_output(self, name=None, path=&#34;.&#34;, extension=&#34;.dat&#34;):
+        &#34;&#34;&#34;Save all output files for the gathered results
+
+        Save all output files for the gathered results, using an appropriate
+        output path and seed name.
+
+        Keyword arguments:
+            name {str} -- Root name to use for the files
+            path {str} -- Folder path to save the files in
+            extension {str} -- Extension to save the files with
+        &#34;&#34;&#34;
+
+        from muspinsim import __version__
+
+        if name is None:
+            name = self.name
+
+        # Header format
+        file_header = &#34;&#34;&#34;MUSPINSIM v.{version}
+Output file written on {date}
+Parameters used:
+&#34;&#34;&#34;.format(
+            version=__version__, date=datetime.datetime.now().ctime()
+        )
+
+        for fn in self._file_ranges:
+            file_header = file_header + &#34;\t{0:&lt;20} = {{{0}}}\n&#34;.format(fn)
+
+        indices = [range(len(rng)) for rng in self._file_ranges.values()]
+        indices = product(*indices)
+
+        # File name
+        fid_pattern = &#34;_{}&#34; * len(self._file_ranges)
+        fname_pattern = &#34;{name}{id}{ext}&#34;
+
+        x = self.x_axis_values
+
+        if &#34;B&#34; in self._x_range.keys():
+            x = np.linalg.norm(x, axis=-1)
+
+        # Actually save the files
+        for inds in indices:
+            fid = fid_pattern.format(*inds)
+            fname = fname_pattern.format(name=name, id=fid, ext=extension)
+            fname = os.path.join(path, fname)
+
+            vdict = {}
+            for i, (key, val) in enumerate(self._file_ranges.items()):
+                pname = &#34;_print_{0}&#34;.format(key)
+                v = val[inds[i]]
+                if hasattr(self, pname):
+                    v = getattr(self, pname)(v)
+
+                vdict[key] = v
+
+            header = file_header.format(**vdict)
+
+            data = np.zeros((len(x), 2))
+            data[:, 0] = x
+            data[:, 1] = self._results[inds]
+
+            np.savetxt(fname, data, header=header)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def spins(self):
+        return list(self._spins)
+
+    @property
+    def system(self):
+        return self._system.clone()
+
+    @property
+    def constants(self):
+        return {**self._constants}
+
+    @property
+    def dissipation_terms(self):
+        return {**self._dissip_terms}
+
+    @property
+    def results(self):
+        return np.array(self._results)
+
+    @results.setter
+    def results(self, r):
+        r = np.array(r)
+        if r.shape != self._results.shape:
+            raise ValueError(&#34;Trying to set an invalid results array&#34;)
+        self._results = r
+
+    @property
+    def x_axis(self):
+        return [*self._x_range.keys()][0]
+
+    @property
+    def x_axis_values(self):
+        return np.array([*self._x_range.values()][0])
+
+    @property
+    def y_axis(self):
+        return self._y_axis
+
+    def __len__(self):
+        return len(self._configurations)
+
+    def __getitem__(self, i):
+
+        isint = type(i) == int
+        if isint:
+            i = slice(i, i + 1)
+        elif type(i) != slice:
+            raise TypeError(
+                &#34;Indices must be integer or slices, &#34; &#34;not {0}&#34;.format(type(i))
+            )
+
+        ans = []
+
+        for (fc, ac, xc) in self._configurations[i]:
+
+            fd = _elems_from_arrayodict(fc, self._file_ranges)
+            ad = _elems_from_arrayodict(ac, self._avg_ranges)
+            xd = _elems_from_arrayodict(xc, self._x_range)
+
+            tp = ConfigSnapshot(
+                id=(fc, ac, xc), y=self._y_axis, **self._constants, **fd, **ad, **xd
+            )
+            ans.append(tp)
+
+        if isint:
+            ans = ans[0]
+
+        return ans
+
+    def _validate_name(self, v):
+        if len(v) &gt; 1:
+            raise MuSpinConfigError(&#34;Name must be a word without spaces&#34;)
+        return v[0]
+
+    def _validate_spins(self, v):
+
+        # Find isotopes
+        isore = re.compile(&#34;([0-9]+)([A-Z][a-z]*|e)&#34;)
+        m = isore.match(v)
+        if m is None:
+            return v
+        else:
+            A, el = m.groups()
+            A = int(A)
+            return (el, A)
+
+    def _validate_t(self, v):
+        if len(v) != 1:
+            raise MuSpinConfigError(&#34;Invalid line in time range&#34;)
+        return v[0]
+
+    def _validate_B(self, v):
+
+        if len(v) == 1:
+            v = np.array([0, 0, v[0]])  # The default direction is Z
+        elif len(v) != 3:
+            raise MuSpinConfigError(&#34;Invalid magnetic field value&#34;)
+
+        return v
+
+    def _validate_mupol(self, v):
+        v = np.array(v, dtype=float)
+        if len(v) != 3:
+            raise MuSpinConfigError(&#34;Invalid muon polarization direction&#34;)
+
+        v /= np.linalg.norm(v)
+
+        return v
+
+    def _validate_orient(self, v, mode):
+
+        q = None
+        w = 1.0  # Weight
+        if len(v) == 2:
+            # Interpret them as polar angles
+            q = quat_from_polar(*v)
+        elif len(v) == 3:
+            q = Quaternion.from_euler_angles(*v, mode=mode)
+        elif len(v) == 4:
+            q = Quaternion.from_euler_angles(*v[:3], mode=mode)
+            w = v[3]
+
+        # After computing the rotation, we store the conjugate because it&#39;s a
+        # lot cheaper, instead of rotating the whole system by q, to rotate
+        # only the magnetic field and the polarization (lab frame) by the
+        # inverse of q
+
+        return (q.conjugate(), w)
+
+    def _validate_T(self, v):
+        return v[0]
+
+    @_validate_coupling_args
+    def _validate_zmn(self, v, i):
+        return _validate_shape(v, (3,), &#34;Zeeman&#34;)
+
+    @_validate_coupling_args
+    def _validate_dip(self, v, i, j):
+        return _validate_shape(v, (3,), &#34;dipolar&#34;)
+
+    @_validate_coupling_args
+    def _validate_hfc(self, v, i, j=None):
+        return _validate_shape(v, (3, 3), &#34;hyperfine&#34;)
+
+    @_validate_coupling_args
+    def _validate_quad(self, v, i):
+        return _validate_shape(v, (3, 3), &#34;quadrupolar&#34;)
+
+    @_validate_coupling_args
+    def _validate_dsp(self, v, i):
+        return _validate_shape(v, (1,), &#34;dissipation&#34;)
+
+    def _print_B(self, v):
+        return &#34;{0} T&#34;.format(v)
+
+    def _print_orient(self, v):
+        o, w = v
+        abc = o.euler_angles(&#34;zyz&#34;) * 180 / np.pi
+        ostr = (
+            &#34;[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, &#34; &#34;c = {2:.1f} deg, weight = {3}&#34;
+        ).format(*abc, w)
+        return ostr</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.simconfig.MuSpinConfig.constants"><code class="name">var <span class="ident">constants</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def constants(self):
+    return {**self._constants}</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.dissipation_terms"><code class="name">var <span class="ident">dissipation_terms</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dissipation_terms(self):
+    return {**self._dissip_terms}</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.name"><code class="name">var <span class="ident">name</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self):
+    return self._name</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.results"><code class="name">var <span class="ident">results</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def results(self):
+    return np.array(self._results)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.spins"><code class="name">var <span class="ident">spins</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def spins(self):
+    return list(self._spins)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.system"><code class="name">var <span class="ident">system</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def system(self):
+    return self._system.clone()</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.x_axis"><code class="name">var <span class="ident">x_axis</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def x_axis(self):
+    return [*self._x_range.keys()][0]</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.x_axis_values"><code class="name">var <span class="ident">x_axis_values</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def x_axis_values(self):
+    return np.array([*self._x_range.values()][0])</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.y_axis"><code class="name">var <span class="ident">y_axis</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def y_axis(self):
+    return self._y_axis</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.simconfig.MuSpinConfig.save_output"><code class="name flex">
+<span>def <span class="ident">save_output</span></span>(<span>self, name=None, path='.', extension='.dat')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Save all output files for the gathered results</p>
+<p>Save all output files for the gathered results, using an appropriate
+output path and seed name.</p>
+<p>Keyword arguments:
+name {str} &ndash; Root name to use for the files
+path {str} &ndash; Folder path to save the files in
+extension {str} &ndash; Extension to save the files with</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">    def save_output(self, name=None, path=&#34;.&#34;, extension=&#34;.dat&#34;):
+        &#34;&#34;&#34;Save all output files for the gathered results
+
+        Save all output files for the gathered results, using an appropriate
+        output path and seed name.
+
+        Keyword arguments:
+            name {str} -- Root name to use for the files
+            path {str} -- Folder path to save the files in
+            extension {str} -- Extension to save the files with
+        &#34;&#34;&#34;
+
+        from muspinsim import __version__
+
+        if name is None:
+            name = self.name
+
+        # Header format
+        file_header = &#34;&#34;&#34;MUSPINSIM v.{version}
+Output file written on {date}
+Parameters used:
+&#34;&#34;&#34;.format(
+            version=__version__, date=datetime.datetime.now().ctime()
+        )
+
+        for fn in self._file_ranges:
+            file_header = file_header + &#34;\t{0:&lt;20} = {{{0}}}\n&#34;.format(fn)
+
+        indices = [range(len(rng)) for rng in self._file_ranges.values()]
+        indices = product(*indices)
+
+        # File name
+        fid_pattern = &#34;_{}&#34; * len(self._file_ranges)
+        fname_pattern = &#34;{name}{id}{ext}&#34;
+
+        x = self.x_axis_values
+
+        if &#34;B&#34; in self._x_range.keys():
+            x = np.linalg.norm(x, axis=-1)
+
+        # Actually save the files
+        for inds in indices:
+            fid = fid_pattern.format(*inds)
+            fname = fname_pattern.format(name=name, id=fid, ext=extension)
+            fname = os.path.join(path, fname)
+
+            vdict = {}
+            for i, (key, val) in enumerate(self._file_ranges.items()):
+                pname = &#34;_print_{0}&#34;.format(key)
+                v = val[inds[i]]
+                if hasattr(self, pname):
+                    v = getattr(self, pname)(v)
+
+                vdict[key] = v
+
+            header = file_header.format(**vdict)
+
+            data = np.zeros((len(x), 2))
+            data[:, 0] = x
+            data[:, 1] = self._results[inds]
+
+            np.savetxt(fname, data, header=header)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.store_time_slice"><code class="name flex">
+<span>def <span class="ident">store_time_slice</span></span>(<span>self, config_id, tslice)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Store a time slice of data in this configuration's results.</p>
+<p>Store a time slice of data, given the configuration snapshot ID, and
+sum it to pre-existing data according to averaging rules.</p>
+<h2 id="arguments">Arguments</h2>
+<p>config_id {tuple} &ndash; ID of the ConfigurationSnapshot with which
+the data was calculated
+tslice {np.ndarray} &ndash; Time slice of data</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def store_time_slice(self, config_id, tslice):
+    &#34;&#34;&#34;Store a time slice of data in this configuration&#39;s results.
+
+    Store a time slice of data, given the configuration snapshot ID, and
+    sum it to pre-existing data according to averaging rules.
+
+
+    Arguments:
+        config_id {tuple} -- ID of the ConfigurationSnapshot with which
+                             the data was calculated
+        tslice {np.ndarray} -- Time slice of data
+    &#34;&#34;&#34;
+
+    # Check the shape
+    if isinstance(tslice, Iterable) and len(tslice) != self._time_N:
+        raise ValueError(&#34;Time slice has invalid length&#34;)
+
+    if self._time_isavg:
+        tslice = np.average(tslice)
+
+    ii = tuple(list(config_id[0]) + list(config_id[2]))
+    self._results[ii] += tslice / self._avg_N</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfig.validate"><code class="name flex">
+<span>def <span class="ident">validate</span></span>(<span>self, name, value, args={})</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Validate an input parameter with a custom method, if present.</p>
+<h2 id="arguments">Arguments</h2>
+<p>name {str} &ndash; Name of the input parameter
+value {any} &ndash; Value to validate</p>
+<p>Keyword arguments:
+args {dict} &ndash; Arguments, if present</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>value -- Validated and normalised value</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def validate(self, name, value, args={}):
+    &#34;&#34;&#34;Validate an input parameter with a custom method, if present.
+
+    Arguments:
+        name {str} -- Name of the input parameter
+        value {any} -- Value to validate
+
+    Keyword arguments:
+        args {dict} -- Arguments, if present
+
+    Returns:
+        value -- Validated and normalised value
+    &#34;&#34;&#34;
+
+    vname = &#34;_validate_{0}&#34;.format(name)
+
+    if hasattr(self, vname):
+        vfun = getattr(self, vname)
+        value = [vfun(v, **args) for v in value]
+
+    return value</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.simconfig.MuSpinConfigError"><code class="flex name class">
+<span>class <span class="ident">MuSpinConfigError</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Common base class for all non-exit exceptions.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MuSpinConfigError(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim" href="index.html">muspinsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.simconfig.ConfigSnapshot" href="#muspinsim.simconfig.ConfigSnapshot">ConfigSnapshot</a></code></h4>
+<ul class="two-column">
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.B" href="#muspinsim.simconfig.ConfigSnapshot.B">B</a></code></li>
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.T" href="#muspinsim.simconfig.ConfigSnapshot.T">T</a></code></li>
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.id" href="#muspinsim.simconfig.ConfigSnapshot.id">id</a></code></li>
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.mupol" href="#muspinsim.simconfig.ConfigSnapshot.mupol">mupol</a></code></li>
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.orient" href="#muspinsim.simconfig.ConfigSnapshot.orient">orient</a></code></li>
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.t" href="#muspinsim.simconfig.ConfigSnapshot.t">t</a></code></li>
+<li><code><a title="muspinsim.simconfig.ConfigSnapshot.y" href="#muspinsim.simconfig.ConfigSnapshot.y">y</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.simconfig.MuSpinConfig" href="#muspinsim.simconfig.MuSpinConfig">MuSpinConfig</a></code></h4>
+<ul class="two-column">
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.constants" href="#muspinsim.simconfig.MuSpinConfig.constants">constants</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.dissipation_terms" href="#muspinsim.simconfig.MuSpinConfig.dissipation_terms">dissipation_terms</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.name" href="#muspinsim.simconfig.MuSpinConfig.name">name</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.results" href="#muspinsim.simconfig.MuSpinConfig.results">results</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.save_output" href="#muspinsim.simconfig.MuSpinConfig.save_output">save_output</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.spins" href="#muspinsim.simconfig.MuSpinConfig.spins">spins</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.store_time_slice" href="#muspinsim.simconfig.MuSpinConfig.store_time_slice">store_time_slice</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.system" href="#muspinsim.simconfig.MuSpinConfig.system">system</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.validate" href="#muspinsim.simconfig.MuSpinConfig.validate">validate</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.x_axis" href="#muspinsim.simconfig.MuSpinConfig.x_axis">x_axis</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.x_axis_values" href="#muspinsim.simconfig.MuSpinConfig.x_axis_values">x_axis_values</a></code></li>
+<li><code><a title="muspinsim.simconfig.MuSpinConfig.y_axis" href="#muspinsim.simconfig.MuSpinConfig.y_axis">y_axis</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.simconfig.MuSpinConfigError" href="#muspinsim.simconfig.MuSpinConfigError">MuSpinConfigError</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.utils API documentation</title>
+<meta name="description" content="utils.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.utils</code></h1>
+</header>
+<section id="section-intro">
+<p>utils.py</p>
+<p>Utility functions and classes</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;utils.py
+
+Utility functions and classes&#34;&#34;&#34;
+
+from copy import deepcopy
+from collections.abc import Iterable
+
+import numpy as np
+from ase.quaternions import Quaternion
+from soprano.calculate.powder import ZCW
+
+
+class Clonable(object):
+    &#34;&#34;&#34;A helper class; any object inheriting
+    from this will have a .clone method that copies it easily.&#34;&#34;&#34;
+
+    def clone(self):
+
+        MyClass = self.__class__
+        copy = MyClass.__new__(MyClass)
+        copy.__dict__ = deepcopy(self.__dict__)
+
+        return copy
+
+
+def deepmap(func, obj):
+    &#34;&#34;&#34;Deep traverse obj, and apply func to each of its non-Iterable
+    elements&#34;&#34;&#34;
+
+    if isinstance(obj, Iterable):
+        return [deepmap(func, x) for x in obj]
+    else:
+        return func(obj)
+
+
+def zcw_gen(N, mode=&#34;sphere&#34;):
+    N = int(N)
+    pwd = ZCW(mode)
+    return pwd.get_orient_angles(N)[0]
+
+
+def eulrange_gen(N):
+    # Generate a range of Euler angles and related weights
+    N = int(N)  # Just making sure
+    a = np.linspace(0, 2 * np.pi, N)
+    b = np.linspace(0, np.pi, N + 2)[1:-1]
+    c = np.linspace(0, 2 * np.pi, N)
+
+    a, b, c = np.array(np.meshgrid(a, b, c)).reshape((3, -1))
+    w = np.sin(b)
+
+    return np.array([a, b, c, w]).T
+
+
+def quat_from_polar(theta, phi):
+    &#34;&#34;&#34;Make a Quaternion from two polar angles
+
+    Make a Quaternion from only two polar angles. This only makes the new Z&#39;
+    axis have polar angles theta and phi w.r.t. the old system, but does not
+    care or guarantee anything about the other two angles.
+
+    Arguments:
+        theta {float} -- Zenithal angle
+        phi {float} -- Azimuthal angle
+
+    Returns:
+        q {ase.Quaternion} -- Quaternion
+    &#34;&#34;&#34;
+
+    return Quaternion.from_euler_angles(phi, theta, phi, &#34;zyz&#34;)
+
+
+def get_xy(z):
+    &#34;&#34;&#34;Make two axes x and y orthogonal and correctly oriented with respect
+    to an axis z&#34;&#34;&#34;
+
+    zn = np.linalg.norm(z)
+    if zn == 0:
+        raise ValueError(&#34;Can not find X and Y for null Z vector&#34;)
+    z = np.array(z) / zn
+
+    if z[0] == 0 and z[1] == 0:
+        x = np.array([1.0, 0, 0])
+        y = np.array([0, z[2], 0])
+    else:
+        x = np.array([z[1], -z[0], 0.0]) / (z[0] ** 2 + z[1] ** 2) ** 0.5
+        y = np.array(
+            [
+                z[1] * x[2] - z[2] * x[1],
+                z[2] * x[0] - z[0] * x[2],
+                z[0] * x[1] - z[1] * x[0],
+            ]
+        )
+
+    return x, y</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="muspinsim.utils.deepmap"><code class="name flex">
+<span>def <span class="ident">deepmap</span></span>(<span>func, obj)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deep traverse obj, and apply func to each of its non-Iterable
+elements</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def deepmap(func, obj):
+    &#34;&#34;&#34;Deep traverse obj, and apply func to each of its non-Iterable
+    elements&#34;&#34;&#34;
+
+    if isinstance(obj, Iterable):
+        return [deepmap(func, x) for x in obj]
+    else:
+        return func(obj)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.utils.eulrange_gen"><code class="name flex">
+<span>def <span class="ident">eulrange_gen</span></span>(<span>N)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def eulrange_gen(N):
+    # Generate a range of Euler angles and related weights
+    N = int(N)  # Just making sure
+    a = np.linspace(0, 2 * np.pi, N)
+    b = np.linspace(0, np.pi, N + 2)[1:-1]
+    c = np.linspace(0, 2 * np.pi, N)
+
+    a, b, c = np.array(np.meshgrid(a, b, c)).reshape((3, -1))
+    w = np.sin(b)
+
+    return np.array([a, b, c, w]).T</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.utils.get_xy"><code class="name flex">
+<span>def <span class="ident">get_xy</span></span>(<span>z)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Make two axes x and y orthogonal and correctly oriented with respect
+to an axis z</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_xy(z):
+    &#34;&#34;&#34;Make two axes x and y orthogonal and correctly oriented with respect
+    to an axis z&#34;&#34;&#34;
+
+    zn = np.linalg.norm(z)
+    if zn == 0:
+        raise ValueError(&#34;Can not find X and Y for null Z vector&#34;)
+    z = np.array(z) / zn
+
+    if z[0] == 0 and z[1] == 0:
+        x = np.array([1.0, 0, 0])
+        y = np.array([0, z[2], 0])
+    else:
+        x = np.array([z[1], -z[0], 0.0]) / (z[0] ** 2 + z[1] ** 2) ** 0.5
+        y = np.array(
+            [
+                z[1] * x[2] - z[2] * x[1],
+                z[2] * x[0] - z[0] * x[2],
+                z[0] * x[1] - z[1] * x[0],
+            ]
+        )
+
+    return x, y</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.utils.quat_from_polar"><code class="name flex">
+<span>def <span class="ident">quat_from_polar</span></span>(<span>theta, phi)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Make a Quaternion from two polar angles</p>
+<p>Make a Quaternion from only two polar angles. This only makes the new Z'
+axis have polar angles theta and phi w.r.t. the old system, but does not
+care or guarantee anything about the other two angles.</p>
+<h2 id="arguments">Arguments</h2>
+<p>theta {float} &ndash; Zenithal angle
+phi {float} &ndash; Azimuthal angle</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>q {ase.Quaternion} -- Quaternion</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def quat_from_polar(theta, phi):
+    &#34;&#34;&#34;Make a Quaternion from two polar angles
+
+    Make a Quaternion from only two polar angles. This only makes the new Z&#39;
+    axis have polar angles theta and phi w.r.t. the old system, but does not
+    care or guarantee anything about the other two angles.
+
+    Arguments:
+        theta {float} -- Zenithal angle
+        phi {float} -- Azimuthal angle
+
+    Returns:
+        q {ase.Quaternion} -- Quaternion
+    &#34;&#34;&#34;
+
+    return Quaternion.from_euler_angles(phi, theta, phi, &#34;zyz&#34;)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.utils.zcw_gen"><code class="name flex">
+<span>def <span class="ident">zcw_gen</span></span>(<span>N, mode='sphere')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def zcw_gen(N, mode=&#34;sphere&#34;):
+    N = int(N)
+    pwd = ZCW(mode)
+    return pwd.get_orient_angles(N)[0]</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.utils.Clonable"><code class="flex name class">
+<span>class <span class="ident">Clonable</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Clonable(object):
+    &#34;&#34;&#34;A helper class; any object inheriting
+    from this will have a .clone method that copies it easily.&#34;&#34;&#34;
+
+    def clone(self):
+
+        MyClass = self.__class__
+        copy = MyClass.__new__(MyClass)
+        copy.__dict__ = deepcopy(self.__dict__)
+
+        return copy</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinop.Operator" href="spinop.html#muspinsim.spinop.Operator">Operator</a></li>
+<li><a title="muspinsim.spinsys.DissipationTerm" href="spinsys.html#muspinsim.spinsys.DissipationTerm">DissipationTerm</a></li>
+<li><a title="muspinsim.spinsys.InteractionTerm" href="spinsys.html#muspinsim.spinsys.InteractionTerm">InteractionTerm</a></li>
+<li><a title="muspinsim.spinsys.SpinSystem" href="spinsys.html#muspinsim.spinsys.SpinSystem">SpinSystem</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.utils.Clonable.clone"><code class="name flex">
+<span>def <span class="ident">clone</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clone(self):
+
+    MyClass = self.__class__
+    copy = MyClass.__new__(MyClass)
+    copy.__dict__ = deepcopy(self.__dict__)
+
+    return copy</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim" href="index.html">muspinsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="muspinsim.utils.deepmap" href="#muspinsim.utils.deepmap">deepmap</a></code></li>
+<li><code><a title="muspinsim.utils.eulrange_gen" href="#muspinsim.utils.eulrange_gen">eulrange_gen</a></code></li>
+<li><code><a title="muspinsim.utils.get_xy" href="#muspinsim.utils.get_xy">get_xy</a></code></li>
+<li><code><a title="muspinsim.utils.quat_from_polar" href="#muspinsim.utils.quat_from_polar">quat_from_polar</a></code></li>
+<li><code><a title="muspinsim.utils.zcw_gen" href="#muspinsim.utils.zcw_gen">zcw_gen</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.utils.Clonable" href="#muspinsim.utils.Clonable">Clonable</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.utils.Clonable.clone" href="#muspinsim.utils.Clonable.clone">clone</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

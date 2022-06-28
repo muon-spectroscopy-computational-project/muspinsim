@@ -1,0 +1,1174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.experiment API documentation</title>
+<meta name="description" content="experiment.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.experiment</code></h1>
+</header>
+<section id="section-intro">
+<p>experiment.py</p>
+<p>Classes and functions to perform actual experiments</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;experiment.py
+
+Classes and functions to perform actual experiments&#34;&#34;&#34;
+
+import logging
+import numpy as np
+import scipy.constants as cnst
+
+from muspinsim.constants import MU_TAU
+from muspinsim.utils import get_xy
+from muspinsim.mpi import mpi_controller as mpi
+from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
+from muspinsim.input import MuSpinInput
+from muspinsim.spinop import DensityOperator, SpinOperator
+from muspinsim.hamiltonian import Hamiltonian
+from muspinsim.lindbladian import Lindbladian
+
+
+class ExperimentRunner(object):
+    &#34;&#34;&#34;A class meant to run experiments. Its main purpose as an object is to
+    provide caching for any quantities that might not need to be recalculated
+    between successive snapshots.&#34;&#34;&#34;
+
+    def __init__(self, infile: MuSpinInput, variables: dict = {}):
+        &#34;&#34;&#34;Set up an experiment as defined by a MuSpinInput object
+
+        Prepare a set of calculations (for multiple files and averages) as
+        defined by a MuSpinInput object and a set of variable values. Takes
+        care of parallelism, splitting calculations across nodes etc.
+
+        Arguments:
+            infile {MuSpinInput} -- The input file object defining the
+                                    calculations we need to perform.
+            variables {dict} -- The values of any variables appearing in the input
+                                file
+        &#34;&#34;&#34;
+
+        if mpi.is_root:
+            # On root, we run the evaluation that gives us the actual possible
+            # values for simulation configurations. These are then broadcast
+            # across all nodes, each of which runs its own slice of them, and
+            # finally gathered back together
+            config = MuSpinConfig(infile.evaluate(**variables))
+        else:
+            config = MuSpinConfig()
+
+        mpi.broadcast_object(config)
+
+        self._config = config
+        self._system = config.system
+        # Store single spin operators
+        self._single_spinops = np.array(
+            [
+                [self._system.operator({i: a}).matrix for a in &#34;xyz&#34;]
+                for i in range(len(self._system))
+            ]
+        )
+
+        # Parameters
+        self._B = np.zeros(3)
+        self._p = np.array([1.0, 0, 0])
+        self._T = np.inf
+
+        # Basic Hamiltonian
+        self._Hsys = self._system.hamiltonian
+
+        # Derived quantities
+        self._rho0 = None
+        self._Hz = None
+        self._dops = None
+
+    @property
+    def config(self):
+        return self._config
+
+    @property
+    def system(self):
+        return self._system
+
+    @property
+    def B(self):
+        return self._B
+
+    @B.setter
+    def B(self, x):
+        x = np.array(x)
+        if (x != self._B).any():
+            self._B = x
+            self._rho0 = None
+            self._Hz = None
+            self._dops = None
+
+    @property
+    def p(self):
+        return self._p
+
+    @p.setter
+    def p(self, x):
+        x = np.array(x)
+        if (x != self._p).any():
+            self._p = x
+            self._rho0 = None
+
+    @property
+    def T(self):
+        return self._T
+
+    @T.setter
+    def T(self, x):
+        if x != self._T:
+            self._T = x
+            self._rho0 = None
+            self._dops = None
+
+    @property
+    def rho0(self):
+        &#34;&#34;&#34;Calculate a thermal density matrix in which the system is prepared
+
+        Calculate an approximate thermal density matrix to prepare the system in,
+        with the muon polarised along a given direction and every other spin in a
+        thermal equilibrium decohered state.
+
+        Returns:
+            rho0 {DensityOperator} -- Density matrix at t=0
+        &#34;&#34;&#34;
+
+        if self._rho0 is None:
+            T = self._T
+            muon_axis = self._p
+            B = self._B
+
+            if np.isclose(np.linalg.norm(B), 0.0) and T &lt; np.inf:
+                logging.warning(
+                    &#34;WARNING: initial density matrix is computed&#34;
+                    &#34; with an approximation that can fail&#34;
+                    &#34; at low fields and finite temperature&#34;
+                )
+
+            mu_i = self._system.muon_index
+            rhos = []
+
+            for i, s in enumerate(self._system.spins):
+                I = self._system.I(i)
+                if i == mu_i:
+                    r = DensityOperator.from_vectors(I, muon_axis, 0)
+                else:
+                    # Get the Zeeman Hamiltonian for this field
+                    Hz = np.sum(
+                        [
+                            B[j] * SpinOperator.from_axes(I, e).matrix
+                            for j, e in enumerate(&#34;xyz&#34;)
+                        ],
+                        axis=0,
+                    )
+
+                    evals, evecs = np.linalg.eigh(Hz)
+                    E = evals * 1e6 * self._system.gamma(i)
+
+                    if T &gt; 0:
+                        Z = np.exp(-cnst.h * E / (cnst.k * T))
+                    else:
+                        Z = np.where(E == np.amin(E), 1.0, 0.0)
+                    if np.sum(Z) &gt; 0:
+                        Z /= np.sum(Z)
+                    else:
+                        Z = np.ones(len(E)) / len(E)
+
+                    rhoI = np.sum(
+                        evecs[:, None, :] * evecs[None, :, :].conj() * Z[None, None, :],
+                        axis=-1,
+                    )
+
+                    r = DensityOperator(rhoI)
+
+                rhos.append(r)
+
+            self._rho0 = rhos[0]
+            for r in rhos[1:]:
+                self._rho0 = self._rho0.kron(r)
+
+        return self._rho0
+
+    @property
+    def Hz(self):
+
+        if self._Hz is None:
+            B = self._B
+            g = self._system.gammas
+            Hz = np.sum(
+                B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
+                axis=(0, 1),
+            )
+            self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+
+        return self._Hz
+
+    @property
+    def dissipation_operators(self):
+        if self._dops is None:
+
+            # Create a copy of the system
+            sys = self._system.clone()
+
+            # Clean it up of all terms
+            sys.clear_terms()
+            sys.clear_dissipative_terms()
+
+            T = self._T
+            # We only go by the intensity of the field
+            B = np.linalg.norm(self._B)
+            g = sys.gammas
+            if T &gt; 0:
+                Zu = np.exp(-cnst.h * g * B * 1e6 / (cnst.k * T))
+                if np.isclose(B, 0.0) and T &lt; np.inf:
+                    logging.warning(
+                        &#34;WARNING: dissipation effects are computed&#34;
+                        &#34; with an approximation that can fail&#34;
+                        &#34; at low fields and finite temperature&#34;
+                    )
+            else:
+                Zu = g * 0.0
+
+            if B == 0:
+                x, y = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
+            else:
+                z = self._B / B
+                x, y = get_xy(z)
+
+            self._dops = []
+            for i, a in self._config.dissipation_terms.items():
+
+                op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
+                op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+                op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
+                op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
+
+                # The 1/pi factor here makes sure that the convention is that when
+                # a user inputs a certain value of dissipation for a single spin,
+                # that is exactly the exponential decay factor that is observed.
+
+                self._dops.append((op_p, 1 / np.pi * a * Zu[i] / (1 + Zu[i])))
+                self._dops.append((op_m, 1 / np.pi * a / (1 + Zu[i])))
+
+        return self._dops
+
+    @property
+    def Hsys(self):
+        return self._Hsys
+
+    @property
+    def Htot(self):
+        # Build the total Hamiltonian
+        H = self.Hsys + self.Hz
+
+        # Do we have dissipation?
+        if len(self._config.dissipation_terms) &gt; 0:
+            # Actually use a Lindbladian
+            H = Lindbladian.from_hamiltonian(H, self.dissipation_operators)
+
+        return H
+
+    @property
+    def p_operator(self):
+        return self._system.muon_operator(self.p)
+
+    def run(self):
+        &#34;&#34;&#34;Run the experiment
+
+        Run all calculations in the configuration set, gather the results and
+        return them.
+
+        Returns:
+            results (np.ndarray) -- An array of results, gathered on the root
+                                    node.
+        &#34;&#34;&#34;
+
+        for cfg in self._config[mpi.rank :: mpi.size]:
+            dataslice = self.run_single(cfg)
+            self._config.store_time_slice(cfg.id, dataslice)
+
+        self._config.results = mpi.sum_data(self._config.results)
+
+        return self._config.results
+
+    def load_config(self, cfg_snap: ConfigSnapshot):
+        &#34;&#34;&#34;Load a configuration snapshot in this ExperimentRunner
+
+        Load a configuration snapshot in the ExperimentRunner, assigning field,
+        polarisation and temperature.
+
+        Arguments:
+            cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                         parameters to be used in this calculation.
+
+        Returns:
+            weight {float} -- The weight to assign to this specific simulation
+        &#34;&#34;&#34;
+
+        # Let&#39;s gather the important stuff
+        B = cfg_snap.B  # Magnetic field
+        p = cfg_snap.mupol  # Muon polarization
+        T = cfg_snap.T  # Temperature
+        q, w = cfg_snap.orient  # Quaternion and Weight for orientation
+
+        # Let&#39;s start by rotating things
+        self.B = q.rotate(B)
+        self.p = q.rotate(p)
+        self.T = T
+
+        return w
+
+    def run_single(self, cfg_snap: ConfigSnapshot):
+        &#34;&#34;&#34;Run a muon experiment from a configuration snapshot
+
+        Run a muon experiment using the specific parameters and time axis given in
+        a configuration snapshot.
+
+        Arguments:
+            cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                         parameters to be used in this calculation.
+
+        Returns:
+            result {np.ndarray} -- A 1D array containing the time series of
+                                   required results, or a single value.
+        &#34;&#34;&#34;
+
+        w = self.load_config(cfg_snap)
+
+        # Measurement operator?
+        S = self.p_operator
+
+        H = self.Htot
+
+        if cfg_snap.y == &#34;asymmetry&#34;:
+            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+        elif cfg_snap.y == &#34;integral&#34;:
+            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
+
+        return np.real(data) * w</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.experiment.ExperimentRunner"><code class="flex name class">
+<span>class <span class="ident">ExperimentRunner</span></span>
+<span>(</span><span>infile: <a title="muspinsim.input.input.MuSpinInput" href="input/input.html#muspinsim.input.input.MuSpinInput">MuSpinInput</a>, variables: dict = {})</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A class meant to run experiments. Its main purpose as an object is to
+provide caching for any quantities that might not need to be recalculated
+between successive snapshots.</p>
+<p>Set up an experiment as defined by a MuSpinInput object</p>
+<p>Prepare a set of calculations (for multiple files and averages) as
+defined by a MuSpinInput object and a set of variable values. Takes
+care of parallelism, splitting calculations across nodes etc.</p>
+<h2 id="arguments">Arguments</h2>
+<p>infile {MuSpinInput} &ndash; The input file object defining the
+calculations we need to perform.
+variables {dict} &ndash; The values of any variables appearing in the input
+file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ExperimentRunner(object):
+    &#34;&#34;&#34;A class meant to run experiments. Its main purpose as an object is to
+    provide caching for any quantities that might not need to be recalculated
+    between successive snapshots.&#34;&#34;&#34;
+
+    def __init__(self, infile: MuSpinInput, variables: dict = {}):
+        &#34;&#34;&#34;Set up an experiment as defined by a MuSpinInput object
+
+        Prepare a set of calculations (for multiple files and averages) as
+        defined by a MuSpinInput object and a set of variable values. Takes
+        care of parallelism, splitting calculations across nodes etc.
+
+        Arguments:
+            infile {MuSpinInput} -- The input file object defining the
+                                    calculations we need to perform.
+            variables {dict} -- The values of any variables appearing in the input
+                                file
+        &#34;&#34;&#34;
+
+        if mpi.is_root:
+            # On root, we run the evaluation that gives us the actual possible
+            # values for simulation configurations. These are then broadcast
+            # across all nodes, each of which runs its own slice of them, and
+            # finally gathered back together
+            config = MuSpinConfig(infile.evaluate(**variables))
+        else:
+            config = MuSpinConfig()
+
+        mpi.broadcast_object(config)
+
+        self._config = config
+        self._system = config.system
+        # Store single spin operators
+        self._single_spinops = np.array(
+            [
+                [self._system.operator({i: a}).matrix for a in &#34;xyz&#34;]
+                for i in range(len(self._system))
+            ]
+        )
+
+        # Parameters
+        self._B = np.zeros(3)
+        self._p = np.array([1.0, 0, 0])
+        self._T = np.inf
+
+        # Basic Hamiltonian
+        self._Hsys = self._system.hamiltonian
+
+        # Derived quantities
+        self._rho0 = None
+        self._Hz = None
+        self._dops = None
+
+    @property
+    def config(self):
+        return self._config
+
+    @property
+    def system(self):
+        return self._system
+
+    @property
+    def B(self):
+        return self._B
+
+    @B.setter
+    def B(self, x):
+        x = np.array(x)
+        if (x != self._B).any():
+            self._B = x
+            self._rho0 = None
+            self._Hz = None
+            self._dops = None
+
+    @property
+    def p(self):
+        return self._p
+
+    @p.setter
+    def p(self, x):
+        x = np.array(x)
+        if (x != self._p).any():
+            self._p = x
+            self._rho0 = None
+
+    @property
+    def T(self):
+        return self._T
+
+    @T.setter
+    def T(self, x):
+        if x != self._T:
+            self._T = x
+            self._rho0 = None
+            self._dops = None
+
+    @property
+    def rho0(self):
+        &#34;&#34;&#34;Calculate a thermal density matrix in which the system is prepared
+
+        Calculate an approximate thermal density matrix to prepare the system in,
+        with the muon polarised along a given direction and every other spin in a
+        thermal equilibrium decohered state.
+
+        Returns:
+            rho0 {DensityOperator} -- Density matrix at t=0
+        &#34;&#34;&#34;
+
+        if self._rho0 is None:
+            T = self._T
+            muon_axis = self._p
+            B = self._B
+
+            if np.isclose(np.linalg.norm(B), 0.0) and T &lt; np.inf:
+                logging.warning(
+                    &#34;WARNING: initial density matrix is computed&#34;
+                    &#34; with an approximation that can fail&#34;
+                    &#34; at low fields and finite temperature&#34;
+                )
+
+            mu_i = self._system.muon_index
+            rhos = []
+
+            for i, s in enumerate(self._system.spins):
+                I = self._system.I(i)
+                if i == mu_i:
+                    r = DensityOperator.from_vectors(I, muon_axis, 0)
+                else:
+                    # Get the Zeeman Hamiltonian for this field
+                    Hz = np.sum(
+                        [
+                            B[j] * SpinOperator.from_axes(I, e).matrix
+                            for j, e in enumerate(&#34;xyz&#34;)
+                        ],
+                        axis=0,
+                    )
+
+                    evals, evecs = np.linalg.eigh(Hz)
+                    E = evals * 1e6 * self._system.gamma(i)
+
+                    if T &gt; 0:
+                        Z = np.exp(-cnst.h * E / (cnst.k * T))
+                    else:
+                        Z = np.where(E == np.amin(E), 1.0, 0.0)
+                    if np.sum(Z) &gt; 0:
+                        Z /= np.sum(Z)
+                    else:
+                        Z = np.ones(len(E)) / len(E)
+
+                    rhoI = np.sum(
+                        evecs[:, None, :] * evecs[None, :, :].conj() * Z[None, None, :],
+                        axis=-1,
+                    )
+
+                    r = DensityOperator(rhoI)
+
+                rhos.append(r)
+
+            self._rho0 = rhos[0]
+            for r in rhos[1:]:
+                self._rho0 = self._rho0.kron(r)
+
+        return self._rho0
+
+    @property
+    def Hz(self):
+
+        if self._Hz is None:
+            B = self._B
+            g = self._system.gammas
+            Hz = np.sum(
+                B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
+                axis=(0, 1),
+            )
+            self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+
+        return self._Hz
+
+    @property
+    def dissipation_operators(self):
+        if self._dops is None:
+
+            # Create a copy of the system
+            sys = self._system.clone()
+
+            # Clean it up of all terms
+            sys.clear_terms()
+            sys.clear_dissipative_terms()
+
+            T = self._T
+            # We only go by the intensity of the field
+            B = np.linalg.norm(self._B)
+            g = sys.gammas
+            if T &gt; 0:
+                Zu = np.exp(-cnst.h * g * B * 1e6 / (cnst.k * T))
+                if np.isclose(B, 0.0) and T &lt; np.inf:
+                    logging.warning(
+                        &#34;WARNING: dissipation effects are computed&#34;
+                        &#34; with an approximation that can fail&#34;
+                        &#34; at low fields and finite temperature&#34;
+                    )
+            else:
+                Zu = g * 0.0
+
+            if B == 0:
+                x, y = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
+            else:
+                z = self._B / B
+                x, y = get_xy(z)
+
+            self._dops = []
+            for i, a in self._config.dissipation_terms.items():
+
+                op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
+                op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+                op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
+                op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
+
+                # The 1/pi factor here makes sure that the convention is that when
+                # a user inputs a certain value of dissipation for a single spin,
+                # that is exactly the exponential decay factor that is observed.
+
+                self._dops.append((op_p, 1 / np.pi * a * Zu[i] / (1 + Zu[i])))
+                self._dops.append((op_m, 1 / np.pi * a / (1 + Zu[i])))
+
+        return self._dops
+
+    @property
+    def Hsys(self):
+        return self._Hsys
+
+    @property
+    def Htot(self):
+        # Build the total Hamiltonian
+        H = self.Hsys + self.Hz
+
+        # Do we have dissipation?
+        if len(self._config.dissipation_terms) &gt; 0:
+            # Actually use a Lindbladian
+            H = Lindbladian.from_hamiltonian(H, self.dissipation_operators)
+
+        return H
+
+    @property
+    def p_operator(self):
+        return self._system.muon_operator(self.p)
+
+    def run(self):
+        &#34;&#34;&#34;Run the experiment
+
+        Run all calculations in the configuration set, gather the results and
+        return them.
+
+        Returns:
+            results (np.ndarray) -- An array of results, gathered on the root
+                                    node.
+        &#34;&#34;&#34;
+
+        for cfg in self._config[mpi.rank :: mpi.size]:
+            dataslice = self.run_single(cfg)
+            self._config.store_time_slice(cfg.id, dataslice)
+
+        self._config.results = mpi.sum_data(self._config.results)
+
+        return self._config.results
+
+    def load_config(self, cfg_snap: ConfigSnapshot):
+        &#34;&#34;&#34;Load a configuration snapshot in this ExperimentRunner
+
+        Load a configuration snapshot in the ExperimentRunner, assigning field,
+        polarisation and temperature.
+
+        Arguments:
+            cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                         parameters to be used in this calculation.
+
+        Returns:
+            weight {float} -- The weight to assign to this specific simulation
+        &#34;&#34;&#34;
+
+        # Let&#39;s gather the important stuff
+        B = cfg_snap.B  # Magnetic field
+        p = cfg_snap.mupol  # Muon polarization
+        T = cfg_snap.T  # Temperature
+        q, w = cfg_snap.orient  # Quaternion and Weight for orientation
+
+        # Let&#39;s start by rotating things
+        self.B = q.rotate(B)
+        self.p = q.rotate(p)
+        self.T = T
+
+        return w
+
+    def run_single(self, cfg_snap: ConfigSnapshot):
+        &#34;&#34;&#34;Run a muon experiment from a configuration snapshot
+
+        Run a muon experiment using the specific parameters and time axis given in
+        a configuration snapshot.
+
+        Arguments:
+            cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                         parameters to be used in this calculation.
+
+        Returns:
+            result {np.ndarray} -- A 1D array containing the time series of
+                                   required results, or a single value.
+        &#34;&#34;&#34;
+
+        w = self.load_config(cfg_snap)
+
+        # Measurement operator?
+        S = self.p_operator
+
+        H = self.Htot
+
+        if cfg_snap.y == &#34;asymmetry&#34;:
+            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+        elif cfg_snap.y == &#34;integral&#34;:
+            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
+
+        return np.real(data) * w</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.experiment.ExperimentRunner.B"><code class="name">var <span class="ident">B</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def B(self):
+    return self._B</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.Hsys"><code class="name">var <span class="ident">Hsys</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Hsys(self):
+    return self._Hsys</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.Htot"><code class="name">var <span class="ident">Htot</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Htot(self):
+    # Build the total Hamiltonian
+    H = self.Hsys + self.Hz
+
+    # Do we have dissipation?
+    if len(self._config.dissipation_terms) &gt; 0:
+        # Actually use a Lindbladian
+        H = Lindbladian.from_hamiltonian(H, self.dissipation_operators)
+
+    return H</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.Hz"><code class="name">var <span class="ident">Hz</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Hz(self):
+
+    if self._Hz is None:
+        B = self._B
+        g = self._system.gammas
+        Hz = np.sum(
+            B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
+            axis=(0, 1),
+        )
+        self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+
+    return self._Hz</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.T"><code class="name">var <span class="ident">T</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def T(self):
+    return self._T</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.config"><code class="name">var <span class="ident">config</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def config(self):
+    return self._config</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.dissipation_operators"><code class="name">var <span class="ident">dissipation_operators</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dissipation_operators(self):
+    if self._dops is None:
+
+        # Create a copy of the system
+        sys = self._system.clone()
+
+        # Clean it up of all terms
+        sys.clear_terms()
+        sys.clear_dissipative_terms()
+
+        T = self._T
+        # We only go by the intensity of the field
+        B = np.linalg.norm(self._B)
+        g = sys.gammas
+        if T &gt; 0:
+            Zu = np.exp(-cnst.h * g * B * 1e6 / (cnst.k * T))
+            if np.isclose(B, 0.0) and T &lt; np.inf:
+                logging.warning(
+                    &#34;WARNING: dissipation effects are computed&#34;
+                    &#34; with an approximation that can fail&#34;
+                    &#34; at low fields and finite temperature&#34;
+                )
+        else:
+            Zu = g * 0.0
+
+        if B == 0:
+            x, y = np.array([1.0, 0, 0]), np.array([0, 1.0, 0])
+        else:
+            z = self._B / B
+            x, y = get_xy(z)
+
+        self._dops = []
+        for i, a in self._config.dissipation_terms.items():
+
+            op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
+            op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+            op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
+            op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
+
+            # The 1/pi factor here makes sure that the convention is that when
+            # a user inputs a certain value of dissipation for a single spin,
+            # that is exactly the exponential decay factor that is observed.
+
+            self._dops.append((op_p, 1 / np.pi * a * Zu[i] / (1 + Zu[i])))
+            self._dops.append((op_m, 1 / np.pi * a / (1 + Zu[i])))
+
+    return self._dops</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.p"><code class="name">var <span class="ident">p</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def p(self):
+    return self._p</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.p_operator"><code class="name">var <span class="ident">p_operator</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def p_operator(self):
+    return self._system.muon_operator(self.p)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.rho0"><code class="name">var <span class="ident">rho0</span></code></dt>
+<dd>
+<div class="desc"><p>Calculate a thermal density matrix in which the system is prepared</p>
+<p>Calculate an approximate thermal density matrix to prepare the system in,
+with the muon polarised along a given direction and every other spin in a
+thermal equilibrium decohered state.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>rho0 {DensityOperator} -- Density matrix at t=0</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def rho0(self):
+    &#34;&#34;&#34;Calculate a thermal density matrix in which the system is prepared
+
+    Calculate an approximate thermal density matrix to prepare the system in,
+    with the muon polarised along a given direction and every other spin in a
+    thermal equilibrium decohered state.
+
+    Returns:
+        rho0 {DensityOperator} -- Density matrix at t=0
+    &#34;&#34;&#34;
+
+    if self._rho0 is None:
+        T = self._T
+        muon_axis = self._p
+        B = self._B
+
+        if np.isclose(np.linalg.norm(B), 0.0) and T &lt; np.inf:
+            logging.warning(
+                &#34;WARNING: initial density matrix is computed&#34;
+                &#34; with an approximation that can fail&#34;
+                &#34; at low fields and finite temperature&#34;
+            )
+
+        mu_i = self._system.muon_index
+        rhos = []
+
+        for i, s in enumerate(self._system.spins):
+            I = self._system.I(i)
+            if i == mu_i:
+                r = DensityOperator.from_vectors(I, muon_axis, 0)
+            else:
+                # Get the Zeeman Hamiltonian for this field
+                Hz = np.sum(
+                    [
+                        B[j] * SpinOperator.from_axes(I, e).matrix
+                        for j, e in enumerate(&#34;xyz&#34;)
+                    ],
+                    axis=0,
+                )
+
+                evals, evecs = np.linalg.eigh(Hz)
+                E = evals * 1e6 * self._system.gamma(i)
+
+                if T &gt; 0:
+                    Z = np.exp(-cnst.h * E / (cnst.k * T))
+                else:
+                    Z = np.where(E == np.amin(E), 1.0, 0.0)
+                if np.sum(Z) &gt; 0:
+                    Z /= np.sum(Z)
+                else:
+                    Z = np.ones(len(E)) / len(E)
+
+                rhoI = np.sum(
+                    evecs[:, None, :] * evecs[None, :, :].conj() * Z[None, None, :],
+                    axis=-1,
+                )
+
+                r = DensityOperator(rhoI)
+
+            rhos.append(r)
+
+        self._rho0 = rhos[0]
+        for r in rhos[1:]:
+            self._rho0 = self._rho0.kron(r)
+
+    return self._rho0</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.system"><code class="name">var <span class="ident">system</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def system(self):
+    return self._system</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.experiment.ExperimentRunner.load_config"><code class="name flex">
+<span>def <span class="ident">load_config</span></span>(<span>self, cfg_snap: <a title="muspinsim.simconfig.ConfigSnapshot" href="simconfig.html#muspinsim.simconfig.ConfigSnapshot">ConfigSnapshot</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Load a configuration snapshot in this ExperimentRunner</p>
+<p>Load a configuration snapshot in the ExperimentRunner, assigning field,
+polarisation and temperature.</p>
+<h2 id="arguments">Arguments</h2>
+<p>cfg_snap {ConfigSnapshot} &ndash; A named tuple defining the values of all
+parameters to be used in this calculation.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>weight {float} -- The weight to assign to this specific simulation</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_config(self, cfg_snap: ConfigSnapshot):
+    &#34;&#34;&#34;Load a configuration snapshot in this ExperimentRunner
+
+    Load a configuration snapshot in the ExperimentRunner, assigning field,
+    polarisation and temperature.
+
+    Arguments:
+        cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                     parameters to be used in this calculation.
+
+    Returns:
+        weight {float} -- The weight to assign to this specific simulation
+    &#34;&#34;&#34;
+
+    # Let&#39;s gather the important stuff
+    B = cfg_snap.B  # Magnetic field
+    p = cfg_snap.mupol  # Muon polarization
+    T = cfg_snap.T  # Temperature
+    q, w = cfg_snap.orient  # Quaternion and Weight for orientation
+
+    # Let&#39;s start by rotating things
+    self.B = q.rotate(B)
+    self.p = q.rotate(p)
+    self.T = T
+
+    return w</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.run"><code class="name flex">
+<span>def <span class="ident">run</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run the experiment</p>
+<p>Run all calculations in the configuration set, gather the results and
+return them.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>results (np.ndarray) -- An array</code> of <code>results, gathered on the root</code></dt>
+<dd>node.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run(self):
+    &#34;&#34;&#34;Run the experiment
+
+    Run all calculations in the configuration set, gather the results and
+    return them.
+
+    Returns:
+        results (np.ndarray) -- An array of results, gathered on the root
+                                node.
+    &#34;&#34;&#34;
+
+    for cfg in self._config[mpi.rank :: mpi.size]:
+        dataslice = self.run_single(cfg)
+        self._config.store_time_slice(cfg.id, dataslice)
+
+    self._config.results = mpi.sum_data(self._config.results)
+
+    return self._config.results</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.experiment.ExperimentRunner.run_single"><code class="name flex">
+<span>def <span class="ident">run_single</span></span>(<span>self, cfg_snap: <a title="muspinsim.simconfig.ConfigSnapshot" href="simconfig.html#muspinsim.simconfig.ConfigSnapshot">ConfigSnapshot</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Run a muon experiment from a configuration snapshot</p>
+<p>Run a muon experiment using the specific parameters and time axis given in
+a configuration snapshot.</p>
+<h2 id="arguments">Arguments</h2>
+<p>cfg_snap {ConfigSnapshot} &ndash; A named tuple defining the values of all
+parameters to be used in this calculation.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>result {np.ndarray} -- A 1D array containing the time series of</code></dt>
+<dd>required results, or a single value.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_single(self, cfg_snap: ConfigSnapshot):
+    &#34;&#34;&#34;Run a muon experiment from a configuration snapshot
+
+    Run a muon experiment using the specific parameters and time axis given in
+    a configuration snapshot.
+
+    Arguments:
+        cfg_snap {ConfigSnapshot} -- A named tuple defining the values of all
+                                     parameters to be used in this calculation.
+
+    Returns:
+        result {np.ndarray} -- A 1D array containing the time series of
+                               required results, or a single value.
+    &#34;&#34;&#34;
+
+    w = self.load_config(cfg_snap)
+
+    # Measurement operator?
+    S = self.p_operator
+
+    H = self.Htot
+
+    if cfg_snap.y == &#34;asymmetry&#34;:
+        data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+    elif cfg_snap.y == &#34;integral&#34;:
+        data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
+
+    return np.real(data) * w</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim" href="index.html">muspinsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.experiment.ExperimentRunner" href="#muspinsim.experiment.ExperimentRunner">ExperimentRunner</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.experiment.ExperimentRunner.B" href="#muspinsim.experiment.ExperimentRunner.B">B</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.Hsys" href="#muspinsim.experiment.ExperimentRunner.Hsys">Hsys</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.Htot" href="#muspinsim.experiment.ExperimentRunner.Htot">Htot</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.Hz" href="#muspinsim.experiment.ExperimentRunner.Hz">Hz</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.T" href="#muspinsim.experiment.ExperimentRunner.T">T</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.config" href="#muspinsim.experiment.ExperimentRunner.config">config</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.dissipation_operators" href="#muspinsim.experiment.ExperimentRunner.dissipation_operators">dissipation_operators</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.load_config" href="#muspinsim.experiment.ExperimentRunner.load_config">load_config</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.p" href="#muspinsim.experiment.ExperimentRunner.p">p</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.p_operator" href="#muspinsim.experiment.ExperimentRunner.p_operator">p_operator</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.rho0" href="#muspinsim.experiment.ExperimentRunner.rho0">rho0</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.run" href="#muspinsim.experiment.ExperimentRunner.run">run</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.run_single" href="#muspinsim.experiment.ExperimentRunner.run_single">run_single</a></code></li>
+<li><code><a title="muspinsim.experiment.ExperimentRunner.system" href="#muspinsim.experiment.ExperimentRunner.system">system</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,0 +1,2531 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>muspinsim.spinop API documentation</title>
+<meta name="description" content="spinop.py …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>muspinsim.spinop</code></h1>
+</header>
+<section id="section-intro">
+<p>spinop.py</p>
+<p>Utility class to create and manipulate spin operators</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;spinop.py
+
+Utility class to create and manipulate spin operators
+&#34;&#34;&#34;
+
+import numpy as np
+from numbers import Number
+from muspinsim.utils import Clonable
+
+
+def _mvals(I):
+    return np.linspace(I, -I, int(2 * I + 1))
+
+
+def _Sp(mvals):
+    return 2 * np.diag(0.5 * (np.cumsum(2 * mvals)[:-1] ** 0.5), k=1) + 0.0j
+
+
+def _Sm(mvals):
+    return _Sp(mvals).T
+
+
+def _Sx(mvals):
+    o = _Sp(mvals)
+    return 0.5 * (o + o.T)
+
+
+def _Sy(mvals):
+    o = _Sp(mvals)
+    return 0.5j * (o.T - o)
+
+
+def _Sz(mvals):
+    return np.diag(mvals) + 0.0j
+
+
+def _S0(mvals):
+    return np.eye(len(mvals)) + 0.0j
+
+
+class Hermitian(object):
+    &#34;&#34;&#34;A helper mixin for operators that are also Hermitian&#34;&#34;&#34;
+
+    def __init__(self):
+
+        if not self.is_hermitian:
+            raise ValueError(&#34;Operator must be hermitian&#34;)
+
+    def diag(self):
+        &#34;&#34;&#34;Diagonalise the operator
+
+        Return eigenvalues and corresponding eigenvectors for this operator.
+
+        Returns:
+            (ndarray, ndarray) -- Eigenvalues and eigenvector matrix, as
+                                  returned by numpy.linalg.eigh
+        &#34;&#34;&#34;
+
+        try:
+            dd = self._diagdata
+            if np.all(dd[&#34;matrix&#34;] == self._matrix):
+                return dd[&#34;eigh&#34;]
+        except AttributeError:
+            pass
+
+        eigh = np.linalg.eigh(self._matrix)
+
+        self._diagdata = {&#34;matrix&#34;: self._matrix.copy(), &#34;eigh&#34;: eigh}
+
+        return eigh
+
+
+class Operator(Clonable):
+    def __init__(self, matrix, dim=None, hermtol=1e-6):
+        &#34;&#34;&#34;Create a Operator object
+
+        Create an object representing a spin operator. These can
+        be manipulated by e.g. multiplying them by a scalar or among themselves
+        (equivalent to a dot product), or adding and subtracting them.
+
+        Arguments:
+            matrix {ndarray} -- Matrix describing the operator (must be a
+                                square 2D array)
+
+        Keyword Arguments:
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+                               If not specified, it&#39;s taken from the size of
+                               the matrix (default: {None})
+            hermtol {float} -- Tolerance used to check for hermitianity of the
+                               matrix (default: {1e-6})
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        &#34;&#34;&#34;
+
+        matrix = np.array(matrix) + 0.0j
+
+        if not (matrix.shape[0] == matrix.shape[1]):
+            raise ValueError(&#34;Matrix passed to Operator must be square&#34;)
+
+        if dim is None:
+            dim = (matrix.shape[0],)
+        elif np.prod(dim) != matrix.shape[0]:
+            raise ValueError(&#34;Dimensions are not compatible with matrix&#34;)
+
+        self._dim = tuple(dim)
+        self._matrix = matrix
+        self._htol = hermtol
+
+        super(Operator, self).__init__()
+
+    @property
+    def Is(self):
+        return tuple((d - 1) / 2.0 for d in self._dim)
+
+    @property
+    def dimension(self):
+        return self._dim
+
+    @property
+    def N(self):
+        return np.prod(self._dim)
+
+    @property
+    def matrix(self):
+        return np.array(self._matrix)
+
+    @property
+    def is_hermitian(self):
+        return np.all(np.abs(self._matrix - self._matrix.conj().T) &lt; self._htol)
+
+    def dagger(self):
+        &#34;&#34;&#34;Return the transpose conjugate of this Operator
+
+        Return the transpose conjugate of this Operator
+
+        Returns:
+            Operator -- Transpose conjugate of this operator
+        &#34;&#34;&#34;
+
+        MyClass = self.__class__
+        ans = MyClass.__new__(MyClass)
+        ans._dim = tuple(self._dim)
+        ans._matrix = self.matrix.conj().T
+
+        return ans
+
+    def __add__(self, x):
+
+        if isinstance(x, Operator):
+
+            if self.dimension != x.dimension:
+                raise ArithmeticError(
+                    &#34;Can not add to Operators&#34; &#34; with different dimensions&#34;
+                )
+
+            ans = self.clone()
+            ans._matrix += x._matrix
+
+            return ans
+
+        elif isinstance(x, Number):
+
+            ans = self.clone()
+            ans._matrix += np.eye(ans._matrix.shape[0]) * x
+
+            return ans
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __sub__(self, x):
+
+        if isinstance(x, Operator):
+
+            if self.dimension != x.dimension:
+                raise ArithmeticError(
+                    &#34;Can not subtract to Operators&#34; &#34; with different dimensions&#34;
+                )
+
+            ans = self.clone()
+            ans._matrix -= x._matrix
+
+            return ans
+
+        elif isinstance(x, Number):
+
+            return self + (-x)
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __mul__(self, x):
+
+        if isinstance(x, Operator):
+
+            if self.dimension != x.dimension:
+                raise ArithmeticError(
+                    &#34;Can not multiply to Operators&#34; &#34; with different dimensions&#34;
+                )
+
+            ans = self.clone()
+            ans._matrix = np.dot(ans._matrix, x._matrix)
+
+            return ans
+
+        elif isinstance(x, Number):
+
+            ans = self.clone()
+            ans._matrix *= x
+
+            return ans
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __rmul__(self, x):
+
+        if isinstance(x, Number):
+            return self.__mul__(x)
+        elif isinstance(x, Operator):
+            return x * self
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __truediv__(self, x):
+
+        if isinstance(x, Number):
+            x = 1.0 / x
+            return self * x
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __eq__(self, x):
+
+        if not isinstance(x, Operator):
+            return False
+
+        if self.dimension != x.dimension:
+            return False
+
+        return np.all(self._matrix == x._matrix)
+
+    def kron(self, x):
+        &#34;&#34;&#34;Tensor product between this and another Operator
+
+        Performs a tensor product between this and another Operator,
+        raising the overall rank of the tensor they represent.
+
+        Arguments:
+            x {Operator} -- Other operator
+
+        Returns:
+            Operator -- Result
+
+        Raises:
+            ValueError -- Thrown if x is not the right type of object
+        &#34;&#34;&#34;
+
+        if not isinstance(x, Operator):
+            raise ValueError(
+                &#34;Can only perform Kronecker product with&#34; &#34; another Operator&#34;
+            )
+
+        # Doing it this way saves some time
+        ans = self.__class__.__new__(self.__class__)
+        ans._dim = self._dim + x._dim
+        ans._matrix = np.kron(self._matrix, x._matrix)
+
+        return ans
+
+    def hilbert_schmidt(self, x):
+        &#34;&#34;&#34;Hilbert-Schmidt product between this and another Operator
+
+
+        Performs a Hilbert-Schmidt product between this and another Operator,
+        that acts as an inner product.
+
+        Arguments:
+            x {Operator} -- Other operator
+
+        Returns:
+            number -- Result
+
+        Raises:
+            ValueError -- Thrown if x is not the right type of object
+        &#34;&#34;&#34;
+
+        if not isinstance(x, Operator):
+            raise ValueError(
+                &#34;Can only perform Hilbert-Schmidt product with&#34; &#34; another Operator&#34;
+            )
+
+        if not x.dimension == self.dimension:
+            raise ValueError(
+                &#34;Operators must have the same dimension to &#34;
+                &#34;perform Hilbert-Schmidt product&#34;
+            )
+
+        A = self.matrix
+        B = x.matrix
+
+        return np.trace(np.dot(A.conj().T, B))
+
+    def basis_change(self, basis):
+        &#34;&#34;&#34;Return a version of this Operator with different basis
+
+        Transform this Operator to use a different basis. The basis
+        must be a matrix of orthogonal vectors. Passing as basis
+        the eigenvectors of the operator will diagonalise it.
+
+        Arguments:
+            basis {ndarray} -- Basis to transform the operator to.
+
+        Returns:
+            Operator -- Basis transformed version of this operator
+        &#34;&#34;&#34;
+
+        ans = self.clone()
+        ans._matrix = np.linalg.multi_dot([basis.T.conj(), ans._matrix, basis])
+
+        return ans
+
+
+class SpinOperator(Operator):
+    @classmethod
+    def from_axes(self, Is=0.5, axes=&#34;x&#34;):
+        &#34;&#34;&#34;Construct a SpinOperator from spins and axes
+
+        Construct a SpinOperator from a list of spin values and directions. For
+        example, Is=[0.5, 0.5] axes=[&#39;x&#39;, &#39;z&#39;] will create a SxIz operator between
+        two spin 1/2 particles.
+
+        Keyword Arguments:
+            Is {[number]} -- List of spins (must be half-integers). Can pass a
+                             number if it&#39;s only one value (default: {0.5})
+            axes {[str]} -- List of axes, can pass a single character if it&#39;s
+                            only one value. Each value can be x, y, z, +, -,
+                            or 0 (for the identity operator) (default: {&#39;x&#39;})
+
+        Returns:
+            SpinOperator -- Operator built according to specifications
+
+        Raises:
+            ValueError -- Any of the values passed is invalid
+        &#34;&#34;&#34;
+
+        if isinstance(Is, Number):
+            Is = [Is]
+
+        if len(Is) != len(axes) or len(Is) == 0:
+            raise ValueError(&#34;Arrays of moments and axes must have same length &gt; 0&#34;)
+
+        dim = tuple(int(2 * I + 1) for I in Is)
+        matrices = []
+
+        for I, axis in zip(Is, axes):
+
+            if I % 0.5 or I &lt; 0.5:
+                raise ValueError(&#34;{0} is not a valid spin value&#34;.format(I))
+
+            if not (axis in &#34;xyz+-0&#34;):
+                raise ValueError(&#34;{0} is not a valid spin axis&#34;.format(axis))
+
+            mvals = _mvals(I)
+
+            o = {&#34;x&#34;: _Sx, &#34;y&#34;: _Sy, &#34;z&#34;: _Sz, &#34;+&#34;: _Sp, &#34;-&#34;: _Sm, &#34;0&#34;: _S0}[axis](
+                mvals
+            )
+
+            matrices.append(o)
+
+        M = matrices[0]
+        for m in matrices[1:]:
+            M = np.kron(M, m)
+
+        return self(M, dim=dim)
+
+
+class DensityOperator(Operator):
+    def __init__(self, matrix, dim=None):
+        &#34;&#34;&#34;Create a DensityOperator object
+
+        Create an object representing a density operator. These can
+        be manipulated by e.g. multiplying them by a scalar or among themselves
+        (equivalent to a dot product), or adding and subtracting them.
+
+        Arguments:
+            matrix {ndarray} -- Matrix describing the operator (must be a
+                                square hermitian 2D array and have non-zero
+                                trace; will be normalised to have trace 1)
+
+        Keyword Arguments:
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+                               If not specified, it&#39;s taken from the size of
+                               the matrix (default: {None})
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        &#34;&#34;&#34;
+        super(DensityOperator, self).__init__(matrix, dim)
+        # Enforce unitarity
+        tr = np.trace(self._matrix)
+
+        if tr == 0:
+            raise ValueError(&#34;Can not define a DensityOperator with zero trace&#34;)
+        else:
+            self.normalize()
+
+        if not self.is_hermitian:
+            raise ValueError(&#34;DensityOperator must be hermitian!&#34;)
+
+    @classmethod
+    def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0):
+        &#34;&#34;&#34;Construct a density matrix state from real space vectors
+
+        Construct a density matrix state by specifying a number of spins and
+        real space directions. The state is initialised as the tensor product
+        of independent spin states each pointing in the specified direction.
+        A parameter gamma can be used to include decoherence effects and thus
+        dampen or zero out all off-diagonal elements.
+
+        Keyword Arguments:
+            Is {[number]} -- List of spins (must be half-integers). Can pass a
+                             number if it&#39;s only one value (default: {0.5})
+            vectors {[ndarray]} -- List of vectors. Can pass a single 3D vector
+                                   if it&#39;s only one value (default: {[0, 0, 1]})
+            gammas {[number]} -- List of gamma factors. Can pass a single number
+                                 if it&#39;s only one value. All off-diagonal
+                                 elements for each corresponding density matrix
+                                 will be multiplied by 1-gamma. (default: {0})
+
+        Returns:
+            DensityOperator -- The composite density operator
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        &#34;&#34;&#34;
+
+        if isinstance(Is, Number):
+            Is = [Is]
+
+        if len(np.array(vectors).shape) == 1:
+            vectors = [vectors]
+
+        if isinstance(gammas, Number):
+            gammas = [gammas]
+
+        if len(Is) != len(vectors) or len(Is) != len(gammas) or len(Is) == 0:
+            raise ValueError(
+                &#34;Arrays of moments, axes and gammas must have same length &gt; 0&#34;
+            )
+
+        dim = tuple(int(2 * I + 1) for I in Is)
+        matrices = []
+
+        for I, vec, gamma in zip(Is, vectors, gammas):
+
+            if I % 0.5 or I &lt; 0.5:
+                raise ValueError(&#34;{0} is not a valid spin value&#34;.format(I))
+
+            if not len(vec) == 3:
+                raise ValueError(&#34;{0} is not a valid 3D vector&#34;.format(vec))
+
+            if gamma &lt; 0 or gamma &gt; 1:
+                raise ValueError(&#34;{0} is not a valid gamma value&#34;.format(gamma))
+
+            mvals = _mvals(I)
+
+            S = [_Sx(mvals), _Sy(mvals), _Sz(mvals)]
+
+            o = sum([S[i] * vec[i] for i in range(3)])
+
+            evals, evecs = np.linalg.eigh(o)
+
+            psi = evecs[:, np.argmax(evals)]
+
+            m = psi[:, None] * psi[None, :].conj()
+            m *= (1 - gamma) * np.ones(m.shape) + gamma * np.eye(m.shape[0])
+
+            matrices.append(m)
+
+        M = matrices[0]
+        for m in matrices[1:]:
+            M = np.kron(M, m)
+
+        return self(M, dim=dim)
+
+    @property
+    def trace(self):
+        return np.trace(self._matrix)
+
+    def normalize(self):
+        &#34;&#34;&#34;Normalize this DensityOperator to have trace equal to one.&#34;&#34;&#34;
+        self._matrix /= self.trace
+
+    def partial_trace(self, tracedim=[]):
+        &#34;&#34;&#34;Perform a partial trace operation
+
+        Perform a partial trace over the specified dimensions and return the
+        resulting DensityOperator.
+
+        Keyword Arguments:
+            tracedim {[int]} -- Indices of dimensions to perform the partial
+                                trace over (default: {[]})
+
+        Returns:
+            DensityOperator -- Operator with partial trace
+        &#34;&#34;&#34;
+
+        dim = list(self._dim)
+        tdim = list(sorted(tracedim))
+
+        m = self._matrix.reshape(dim + dim)
+
+        while len(tdim) &gt; 0:
+            td = tdim.pop(-1)
+            # Trace along tdim
+            m = np.trace(m, axis1=td, axis2=td + len(dim))
+            dim.pop(td)  # Reduce dimension accordingly
+
+        return DensityOperator(m, dim)
+
+    def expectation(self, operator):
+        &#34;&#34;&#34;Compute expectation value of one operator
+
+        Compute expectation value of an operator over the state defined by
+        this DensityOperator.
+
+        Arguments:
+            operator {SpinOperator} -- Operator to compute the expectation
+                                       value of
+
+        Returns:
+            number -- Expectation value
+
+        Raises:
+            TypeError -- The argument isn&#39;t a SpinOperator
+            ValueError -- The operator isn&#39;t compatible with this one
+        &#34;&#34;&#34;
+
+        if not isinstance(operator, SpinOperator):
+            raise TypeError(&#34;Argument must be a SpinOperator&#34;)
+
+        if not operator.dimension == self.dimension:
+            raise ValueError(
+                &#34;SpinOperator and DensityOperator do not have&#34; &#34; compatible dimensions&#34;
+            )
+
+        return np.sum(operator.matrix * self.matrix.T)
+
+
+class SuperOperator(Operator):
+    def __init__(self, matrix, dim=None):
+
+        matrix = np.array(matrix)
+        n = matrix.shape[0] ** 0.5
+
+        if int(n) != n:
+            raise ValueError(&#34;Matrix rank should be a perfect square&#34;)
+
+        if dim is None:
+            dim = (n, n)
+
+        super(SuperOperator, self).__init__(matrix, dim)
+
+    @classmethod
+    def left_multiplier(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a left multiplication
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(m, np.eye(m.shape[0]))
+
+        return self(M, d + d)
+
+    @classmethod
+    def right_multiplier(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a right multiplication
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(np.eye(m.shape[0]), m.T)
+
+        return self(M, d + d)
+
+    @classmethod
+    def commutator(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a commutation
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho-rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        return self.left_multiplier(operator) - self.right_multiplier(operator)
+
+    @classmethod
+    def anticommutator(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs an anticommutation
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho+rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        return self.left_multiplier(operator) + self.right_multiplier(operator)
+
+    @classmethod
+    def bracket(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a basis change
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho*O^
+
+        where O^ is the conjugate transpose of O.
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(m, m.conj())
+
+        return self(M, d + d)
+
+    def __add__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__add__(x)
+
+        raise TypeError(&#34;Unsupported operation for SuperOperator&#34;)
+
+    def __sub__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__sub__(x)
+
+        raise TypeError(&#34;Unsupported operation for SuperOperator&#34;)
+
+    def __mul__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__mul__(x)
+        elif isinstance(x, Operator):
+            # Vectorize x
+            m = x.matrix
+            s = m.shape
+            m = m.reshape((-1,))
+            m = np.dot(self.matrix, m).reshape(s)
+            return Operator(m, x.dimension)
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __rmul__(self, x):
+
+        if isinstance(x, Number):
+            return self.__mul__(x)
+        elif isinstance(x, SuperOperator):
+            return x * self
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __truediv__(self, x):
+
+        if isinstance(x, Number):
+            x = 1.0 / x
+            return self * x
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __eq__(self, x):
+
+        if not isinstance(x, Operator):
+            return False
+
+        if self.dimension != x.dimension:
+            return False
+
+        return np.all(self._matrix == x._matrix)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="muspinsim.spinop.DensityOperator"><code class="flex name class">
+<span>class <span class="ident">DensityOperator</span></span>
+<span>(</span><span>matrix, dim=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p>
+<p>Create a DensityOperator object</p>
+<p>Create an object representing a density operator. These can
+be manipulated by e.g. multiplying them by a scalar or among themselves
+(equivalent to a dot product), or adding and subtracting them.</p>
+<h2 id="arguments">Arguments</h2>
+<p>matrix {ndarray} &ndash; Matrix describing the operator (must be a
+square hermitian 2D array and have non-zero
+trace; will be normalised to have trace 1)</p>
+<p>Keyword Arguments:
+dim {(int,&hellip;)} &ndash; Tuple of the dimensions of the operator. For example,
+(2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+If not specified, it's taken from the size of
+the matrix (default: {None})</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Any</code> of <code>the passed values are invalid</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DensityOperator(Operator):
+    def __init__(self, matrix, dim=None):
+        &#34;&#34;&#34;Create a DensityOperator object
+
+        Create an object representing a density operator. These can
+        be manipulated by e.g. multiplying them by a scalar or among themselves
+        (equivalent to a dot product), or adding and subtracting them.
+
+        Arguments:
+            matrix {ndarray} -- Matrix describing the operator (must be a
+                                square hermitian 2D array and have non-zero
+                                trace; will be normalised to have trace 1)
+
+        Keyword Arguments:
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+                               If not specified, it&#39;s taken from the size of
+                               the matrix (default: {None})
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        &#34;&#34;&#34;
+        super(DensityOperator, self).__init__(matrix, dim)
+        # Enforce unitarity
+        tr = np.trace(self._matrix)
+
+        if tr == 0:
+            raise ValueError(&#34;Can not define a DensityOperator with zero trace&#34;)
+        else:
+            self.normalize()
+
+        if not self.is_hermitian:
+            raise ValueError(&#34;DensityOperator must be hermitian!&#34;)
+
+    @classmethod
+    def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0):
+        &#34;&#34;&#34;Construct a density matrix state from real space vectors
+
+        Construct a density matrix state by specifying a number of spins and
+        real space directions. The state is initialised as the tensor product
+        of independent spin states each pointing in the specified direction.
+        A parameter gamma can be used to include decoherence effects and thus
+        dampen or zero out all off-diagonal elements.
+
+        Keyword Arguments:
+            Is {[number]} -- List of spins (must be half-integers). Can pass a
+                             number if it&#39;s only one value (default: {0.5})
+            vectors {[ndarray]} -- List of vectors. Can pass a single 3D vector
+                                   if it&#39;s only one value (default: {[0, 0, 1]})
+            gammas {[number]} -- List of gamma factors. Can pass a single number
+                                 if it&#39;s only one value. All off-diagonal
+                                 elements for each corresponding density matrix
+                                 will be multiplied by 1-gamma. (default: {0})
+
+        Returns:
+            DensityOperator -- The composite density operator
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        &#34;&#34;&#34;
+
+        if isinstance(Is, Number):
+            Is = [Is]
+
+        if len(np.array(vectors).shape) == 1:
+            vectors = [vectors]
+
+        if isinstance(gammas, Number):
+            gammas = [gammas]
+
+        if len(Is) != len(vectors) or len(Is) != len(gammas) or len(Is) == 0:
+            raise ValueError(
+                &#34;Arrays of moments, axes and gammas must have same length &gt; 0&#34;
+            )
+
+        dim = tuple(int(2 * I + 1) for I in Is)
+        matrices = []
+
+        for I, vec, gamma in zip(Is, vectors, gammas):
+
+            if I % 0.5 or I &lt; 0.5:
+                raise ValueError(&#34;{0} is not a valid spin value&#34;.format(I))
+
+            if not len(vec) == 3:
+                raise ValueError(&#34;{0} is not a valid 3D vector&#34;.format(vec))
+
+            if gamma &lt; 0 or gamma &gt; 1:
+                raise ValueError(&#34;{0} is not a valid gamma value&#34;.format(gamma))
+
+            mvals = _mvals(I)
+
+            S = [_Sx(mvals), _Sy(mvals), _Sz(mvals)]
+
+            o = sum([S[i] * vec[i] for i in range(3)])
+
+            evals, evecs = np.linalg.eigh(o)
+
+            psi = evecs[:, np.argmax(evals)]
+
+            m = psi[:, None] * psi[None, :].conj()
+            m *= (1 - gamma) * np.ones(m.shape) + gamma * np.eye(m.shape[0])
+
+            matrices.append(m)
+
+        M = matrices[0]
+        for m in matrices[1:]:
+            M = np.kron(M, m)
+
+        return self(M, dim=dim)
+
+    @property
+    def trace(self):
+        return np.trace(self._matrix)
+
+    def normalize(self):
+        &#34;&#34;&#34;Normalize this DensityOperator to have trace equal to one.&#34;&#34;&#34;
+        self._matrix /= self.trace
+
+    def partial_trace(self, tracedim=[]):
+        &#34;&#34;&#34;Perform a partial trace operation
+
+        Perform a partial trace over the specified dimensions and return the
+        resulting DensityOperator.
+
+        Keyword Arguments:
+            tracedim {[int]} -- Indices of dimensions to perform the partial
+                                trace over (default: {[]})
+
+        Returns:
+            DensityOperator -- Operator with partial trace
+        &#34;&#34;&#34;
+
+        dim = list(self._dim)
+        tdim = list(sorted(tracedim))
+
+        m = self._matrix.reshape(dim + dim)
+
+        while len(tdim) &gt; 0:
+            td = tdim.pop(-1)
+            # Trace along tdim
+            m = np.trace(m, axis1=td, axis2=td + len(dim))
+            dim.pop(td)  # Reduce dimension accordingly
+
+        return DensityOperator(m, dim)
+
+    def expectation(self, operator):
+        &#34;&#34;&#34;Compute expectation value of one operator
+
+        Compute expectation value of an operator over the state defined by
+        this DensityOperator.
+
+        Arguments:
+            operator {SpinOperator} -- Operator to compute the expectation
+                                       value of
+
+        Returns:
+            number -- Expectation value
+
+        Raises:
+            TypeError -- The argument isn&#39;t a SpinOperator
+            ValueError -- The operator isn&#39;t compatible with this one
+        &#34;&#34;&#34;
+
+        if not isinstance(operator, SpinOperator):
+            raise TypeError(&#34;Argument must be a SpinOperator&#34;)
+
+        if not operator.dimension == self.dimension:
+            raise ValueError(
+                &#34;SpinOperator and DensityOperator do not have&#34; &#34; compatible dimensions&#34;
+            )
+
+        return np.sum(operator.matrix * self.matrix.T)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></li>
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="muspinsim.spinop.DensityOperator.from_vectors"><code class="name flex">
+<span>def <span class="ident">from_vectors</span></span>(<span>Is=0.5, vectors=[0, 0, 1], gammas=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construct a density matrix state from real space vectors</p>
+<p>Construct a density matrix state by specifying a number of spins and
+real space directions. The state is initialised as the tensor product
+of independent spin states each pointing in the specified direction.
+A parameter gamma can be used to include decoherence effects and thus
+dampen or zero out all off-diagonal elements.</p>
+<p>Keyword Arguments:
+Is {[number]} &ndash; List of spins (must be half-integers). Can pass a
+number if it's only one value (default: {0.5})
+vectors {[ndarray]} &ndash; List of vectors. Can pass a single 3D vector
+if it's only one value (default: {[0, 0, 1]})
+gammas {[number]} &ndash; List of gamma factors. Can pass a single number
+if it's only one value. All off-diagonal
+elements for each corresponding density matrix
+will be multiplied by 1-gamma. (default: {0})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DensityOperator -- The composite density operator</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Any</code> of <code>the passed values are invalid</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0):
+    &#34;&#34;&#34;Construct a density matrix state from real space vectors
+
+    Construct a density matrix state by specifying a number of spins and
+    real space directions. The state is initialised as the tensor product
+    of independent spin states each pointing in the specified direction.
+    A parameter gamma can be used to include decoherence effects and thus
+    dampen or zero out all off-diagonal elements.
+
+    Keyword Arguments:
+        Is {[number]} -- List of spins (must be half-integers). Can pass a
+                         number if it&#39;s only one value (default: {0.5})
+        vectors {[ndarray]} -- List of vectors. Can pass a single 3D vector
+                               if it&#39;s only one value (default: {[0, 0, 1]})
+        gammas {[number]} -- List of gamma factors. Can pass a single number
+                             if it&#39;s only one value. All off-diagonal
+                             elements for each corresponding density matrix
+                             will be multiplied by 1-gamma. (default: {0})
+
+    Returns:
+        DensityOperator -- The composite density operator
+
+    Raises:
+        ValueError -- Any of the passed values are invalid
+    &#34;&#34;&#34;
+
+    if isinstance(Is, Number):
+        Is = [Is]
+
+    if len(np.array(vectors).shape) == 1:
+        vectors = [vectors]
+
+    if isinstance(gammas, Number):
+        gammas = [gammas]
+
+    if len(Is) != len(vectors) or len(Is) != len(gammas) or len(Is) == 0:
+        raise ValueError(
+            &#34;Arrays of moments, axes and gammas must have same length &gt; 0&#34;
+        )
+
+    dim = tuple(int(2 * I + 1) for I in Is)
+    matrices = []
+
+    for I, vec, gamma in zip(Is, vectors, gammas):
+
+        if I % 0.5 or I &lt; 0.5:
+            raise ValueError(&#34;{0} is not a valid spin value&#34;.format(I))
+
+        if not len(vec) == 3:
+            raise ValueError(&#34;{0} is not a valid 3D vector&#34;.format(vec))
+
+        if gamma &lt; 0 or gamma &gt; 1:
+            raise ValueError(&#34;{0} is not a valid gamma value&#34;.format(gamma))
+
+        mvals = _mvals(I)
+
+        S = [_Sx(mvals), _Sy(mvals), _Sz(mvals)]
+
+        o = sum([S[i] * vec[i] for i in range(3)])
+
+        evals, evecs = np.linalg.eigh(o)
+
+        psi = evecs[:, np.argmax(evals)]
+
+        m = psi[:, None] * psi[None, :].conj()
+        m *= (1 - gamma) * np.ones(m.shape) + gamma * np.eye(m.shape[0])
+
+        matrices.append(m)
+
+    M = matrices[0]
+    for m in matrices[1:]:
+        M = np.kron(M, m)
+
+    return self(M, dim=dim)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinop.DensityOperator.trace"><code class="name">var <span class="ident">trace</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def trace(self):
+    return np.trace(self._matrix)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinop.DensityOperator.expectation"><code class="name flex">
+<span>def <span class="ident">expectation</span></span>(<span>self, operator)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Compute expectation value of one operator</p>
+<p>Compute expectation value of an operator over the state defined by
+this DensityOperator.</p>
+<h2 id="arguments">Arguments</h2>
+<p>operator {SpinOperator} &ndash; Operator to compute the expectation
+value of</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>number -- Expectation value</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError -- The argument isn't a SpinOperator</code></dt>
+<dd>&nbsp;</dd>
+<dt><code>ValueError -- The operator isn't compatible with this one</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def expectation(self, operator):
+    &#34;&#34;&#34;Compute expectation value of one operator
+
+    Compute expectation value of an operator over the state defined by
+    this DensityOperator.
+
+    Arguments:
+        operator {SpinOperator} -- Operator to compute the expectation
+                                   value of
+
+    Returns:
+        number -- Expectation value
+
+    Raises:
+        TypeError -- The argument isn&#39;t a SpinOperator
+        ValueError -- The operator isn&#39;t compatible with this one
+    &#34;&#34;&#34;
+
+    if not isinstance(operator, SpinOperator):
+        raise TypeError(&#34;Argument must be a SpinOperator&#34;)
+
+    if not operator.dimension == self.dimension:
+        raise ValueError(
+            &#34;SpinOperator and DensityOperator do not have&#34; &#34; compatible dimensions&#34;
+        )
+
+    return np.sum(operator.matrix * self.matrix.T)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.DensityOperator.normalize"><code class="name flex">
+<span>def <span class="ident">normalize</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Normalize this DensityOperator to have trace equal to one.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalize(self):
+    &#34;&#34;&#34;Normalize this DensityOperator to have trace equal to one.&#34;&#34;&#34;
+    self._matrix /= self.trace</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.DensityOperator.partial_trace"><code class="name flex">
+<span>def <span class="ident">partial_trace</span></span>(<span>self, tracedim=[])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Perform a partial trace operation</p>
+<p>Perform a partial trace over the specified dimensions and return the
+resulting DensityOperator.</p>
+<p>Keyword Arguments:
+tracedim {[int]} &ndash; Indices of dimensions to perform the partial
+trace over (default: {[]})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DensityOperator -- Operator with partial trace</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def partial_trace(self, tracedim=[]):
+    &#34;&#34;&#34;Perform a partial trace operation
+
+    Perform a partial trace over the specified dimensions and return the
+    resulting DensityOperator.
+
+    Keyword Arguments:
+        tracedim {[int]} -- Indices of dimensions to perform the partial
+                            trace over (default: {[]})
+
+    Returns:
+        DensityOperator -- Operator with partial trace
+    &#34;&#34;&#34;
+
+    dim = list(self._dim)
+    tdim = list(sorted(tracedim))
+
+    m = self._matrix.reshape(dim + dim)
+
+    while len(tdim) &gt; 0:
+        td = tdim.pop(-1)
+        # Trace along tdim
+        m = np.trace(m, axis1=td, axis2=td + len(dim))
+        dim.pop(td)  # Reduce dimension accordingly
+
+    return DensityOperator(m, dim)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.spinop.Operator.basis_change" href="#muspinsim.spinop.Operator.basis_change">basis_change</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.dagger" href="#muspinsim.spinop.Operator.dagger">dagger</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.hilbert_schmidt" href="#muspinsim.spinop.Operator.hilbert_schmidt">hilbert_schmidt</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.kron" href="#muspinsim.spinop.Operator.kron">kron</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.spinop.Hermitian"><code class="flex name class">
+<span>class <span class="ident">Hermitian</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper mixin for operators that are also Hermitian</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Hermitian(object):
+    &#34;&#34;&#34;A helper mixin for operators that are also Hermitian&#34;&#34;&#34;
+
+    def __init__(self):
+
+        if not self.is_hermitian:
+            raise ValueError(&#34;Operator must be hermitian&#34;)
+
+    def diag(self):
+        &#34;&#34;&#34;Diagonalise the operator
+
+        Return eigenvalues and corresponding eigenvectors for this operator.
+
+        Returns:
+            (ndarray, ndarray) -- Eigenvalues and eigenvector matrix, as
+                                  returned by numpy.linalg.eigh
+        &#34;&#34;&#34;
+
+        try:
+            dd = self._diagdata
+            if np.all(dd[&#34;matrix&#34;] == self._matrix):
+                return dd[&#34;eigh&#34;]
+        except AttributeError:
+            pass
+
+        eigh = np.linalg.eigh(self._matrix)
+
+        self._diagdata = {&#34;matrix&#34;: self._matrix.copy(), &#34;eigh&#34;: eigh}
+
+        return eigh</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.hamiltonian.Hamiltonian" href="hamiltonian.html#muspinsim.hamiltonian.Hamiltonian">Hamiltonian</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinop.Hermitian.diag"><code class="name flex">
+<span>def <span class="ident">diag</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Diagonalise the operator</p>
+<p>Return eigenvalues and corresponding eigenvectors for this operator.</p>
+<h2 id="returns">Returns</h2>
+<p>(ndarray, ndarray) &ndash; Eigenvalues and eigenvector matrix, as
+returned by numpy.linalg.eigh</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def diag(self):
+    &#34;&#34;&#34;Diagonalise the operator
+
+    Return eigenvalues and corresponding eigenvectors for this operator.
+
+    Returns:
+        (ndarray, ndarray) -- Eigenvalues and eigenvector matrix, as
+                              returned by numpy.linalg.eigh
+    &#34;&#34;&#34;
+
+    try:
+        dd = self._diagdata
+        if np.all(dd[&#34;matrix&#34;] == self._matrix):
+            return dd[&#34;eigh&#34;]
+    except AttributeError:
+        pass
+
+    eigh = np.linalg.eigh(self._matrix)
+
+    self._diagdata = {&#34;matrix&#34;: self._matrix.copy(), &#34;eigh&#34;: eigh}
+
+    return eigh</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.spinop.Operator"><code class="flex name class">
+<span>class <span class="ident">Operator</span></span>
+<span>(</span><span>matrix, dim=None, hermtol=1e-06)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p>
+<p>Create a Operator object</p>
+<p>Create an object representing a spin operator. These can
+be manipulated by e.g. multiplying them by a scalar or among themselves
+(equivalent to a dot product), or adding and subtracting them.</p>
+<h2 id="arguments">Arguments</h2>
+<p>matrix {ndarray} &ndash; Matrix describing the operator (must be a
+square 2D array)</p>
+<p>Keyword Arguments:
+dim {(int,&hellip;)} &ndash; Tuple of the dimensions of the operator. For example,
+(2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+If not specified, it's taken from the size of
+the matrix (default: {None})
+hermtol {float} &ndash; Tolerance used to check for hermitianity of the
+matrix (default: {1e-6})</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Any</code> of <code>the passed values are invalid</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Operator(Clonable):
+    def __init__(self, matrix, dim=None, hermtol=1e-6):
+        &#34;&#34;&#34;Create a Operator object
+
+        Create an object representing a spin operator. These can
+        be manipulated by e.g. multiplying them by a scalar or among themselves
+        (equivalent to a dot product), or adding and subtracting them.
+
+        Arguments:
+            matrix {ndarray} -- Matrix describing the operator (must be a
+                                square 2D array)
+
+        Keyword Arguments:
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+                               If not specified, it&#39;s taken from the size of
+                               the matrix (default: {None})
+            hermtol {float} -- Tolerance used to check for hermitianity of the
+                               matrix (default: {1e-6})
+
+        Raises:
+            ValueError -- Any of the passed values are invalid
+        &#34;&#34;&#34;
+
+        matrix = np.array(matrix) + 0.0j
+
+        if not (matrix.shape[0] == matrix.shape[1]):
+            raise ValueError(&#34;Matrix passed to Operator must be square&#34;)
+
+        if dim is None:
+            dim = (matrix.shape[0],)
+        elif np.prod(dim) != matrix.shape[0]:
+            raise ValueError(&#34;Dimensions are not compatible with matrix&#34;)
+
+        self._dim = tuple(dim)
+        self._matrix = matrix
+        self._htol = hermtol
+
+        super(Operator, self).__init__()
+
+    @property
+    def Is(self):
+        return tuple((d - 1) / 2.0 for d in self._dim)
+
+    @property
+    def dimension(self):
+        return self._dim
+
+    @property
+    def N(self):
+        return np.prod(self._dim)
+
+    @property
+    def matrix(self):
+        return np.array(self._matrix)
+
+    @property
+    def is_hermitian(self):
+        return np.all(np.abs(self._matrix - self._matrix.conj().T) &lt; self._htol)
+
+    def dagger(self):
+        &#34;&#34;&#34;Return the transpose conjugate of this Operator
+
+        Return the transpose conjugate of this Operator
+
+        Returns:
+            Operator -- Transpose conjugate of this operator
+        &#34;&#34;&#34;
+
+        MyClass = self.__class__
+        ans = MyClass.__new__(MyClass)
+        ans._dim = tuple(self._dim)
+        ans._matrix = self.matrix.conj().T
+
+        return ans
+
+    def __add__(self, x):
+
+        if isinstance(x, Operator):
+
+            if self.dimension != x.dimension:
+                raise ArithmeticError(
+                    &#34;Can not add to Operators&#34; &#34; with different dimensions&#34;
+                )
+
+            ans = self.clone()
+            ans._matrix += x._matrix
+
+            return ans
+
+        elif isinstance(x, Number):
+
+            ans = self.clone()
+            ans._matrix += np.eye(ans._matrix.shape[0]) * x
+
+            return ans
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __sub__(self, x):
+
+        if isinstance(x, Operator):
+
+            if self.dimension != x.dimension:
+                raise ArithmeticError(
+                    &#34;Can not subtract to Operators&#34; &#34; with different dimensions&#34;
+                )
+
+            ans = self.clone()
+            ans._matrix -= x._matrix
+
+            return ans
+
+        elif isinstance(x, Number):
+
+            return self + (-x)
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __mul__(self, x):
+
+        if isinstance(x, Operator):
+
+            if self.dimension != x.dimension:
+                raise ArithmeticError(
+                    &#34;Can not multiply to Operators&#34; &#34; with different dimensions&#34;
+                )
+
+            ans = self.clone()
+            ans._matrix = np.dot(ans._matrix, x._matrix)
+
+            return ans
+
+        elif isinstance(x, Number):
+
+            ans = self.clone()
+            ans._matrix *= x
+
+            return ans
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __rmul__(self, x):
+
+        if isinstance(x, Number):
+            return self.__mul__(x)
+        elif isinstance(x, Operator):
+            return x * self
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __truediv__(self, x):
+
+        if isinstance(x, Number):
+            x = 1.0 / x
+            return self * x
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __eq__(self, x):
+
+        if not isinstance(x, Operator):
+            return False
+
+        if self.dimension != x.dimension:
+            return False
+
+        return np.all(self._matrix == x._matrix)
+
+    def kron(self, x):
+        &#34;&#34;&#34;Tensor product between this and another Operator
+
+        Performs a tensor product between this and another Operator,
+        raising the overall rank of the tensor they represent.
+
+        Arguments:
+            x {Operator} -- Other operator
+
+        Returns:
+            Operator -- Result
+
+        Raises:
+            ValueError -- Thrown if x is not the right type of object
+        &#34;&#34;&#34;
+
+        if not isinstance(x, Operator):
+            raise ValueError(
+                &#34;Can only perform Kronecker product with&#34; &#34; another Operator&#34;
+            )
+
+        # Doing it this way saves some time
+        ans = self.__class__.__new__(self.__class__)
+        ans._dim = self._dim + x._dim
+        ans._matrix = np.kron(self._matrix, x._matrix)
+
+        return ans
+
+    def hilbert_schmidt(self, x):
+        &#34;&#34;&#34;Hilbert-Schmidt product between this and another Operator
+
+
+        Performs a Hilbert-Schmidt product between this and another Operator,
+        that acts as an inner product.
+
+        Arguments:
+            x {Operator} -- Other operator
+
+        Returns:
+            number -- Result
+
+        Raises:
+            ValueError -- Thrown if x is not the right type of object
+        &#34;&#34;&#34;
+
+        if not isinstance(x, Operator):
+            raise ValueError(
+                &#34;Can only perform Hilbert-Schmidt product with&#34; &#34; another Operator&#34;
+            )
+
+        if not x.dimension == self.dimension:
+            raise ValueError(
+                &#34;Operators must have the same dimension to &#34;
+                &#34;perform Hilbert-Schmidt product&#34;
+            )
+
+        A = self.matrix
+        B = x.matrix
+
+        return np.trace(np.dot(A.conj().T, B))
+
+    def basis_change(self, basis):
+        &#34;&#34;&#34;Return a version of this Operator with different basis
+
+        Transform this Operator to use a different basis. The basis
+        must be a matrix of orthogonal vectors. Passing as basis
+        the eigenvectors of the operator will diagonalise it.
+
+        Arguments:
+            basis {ndarray} -- Basis to transform the operator to.
+
+        Returns:
+            Operator -- Basis transformed version of this operator
+        &#34;&#34;&#34;
+
+        ans = self.clone()
+        ans._matrix = np.linalg.multi_dot([basis.T.conj(), ans._matrix, basis])
+
+        return ans</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.hamiltonian.Hamiltonian" href="hamiltonian.html#muspinsim.hamiltonian.Hamiltonian">Hamiltonian</a></li>
+<li><a title="muspinsim.spinop.DensityOperator" href="#muspinsim.spinop.DensityOperator">DensityOperator</a></li>
+<li><a title="muspinsim.spinop.SpinOperator" href="#muspinsim.spinop.SpinOperator">SpinOperator</a></li>
+<li><a title="muspinsim.spinop.SuperOperator" href="#muspinsim.spinop.SuperOperator">SuperOperator</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="muspinsim.spinop.Operator.Is"><code class="name">var <span class="ident">Is</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def Is(self):
+    return tuple((d - 1) / 2.0 for d in self._dim)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.N"><code class="name">var <span class="ident">N</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def N(self):
+    return np.prod(self._dim)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.dimension"><code class="name">var <span class="ident">dimension</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dimension(self):
+    return self._dim</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.is_hermitian"><code class="name">var <span class="ident">is_hermitian</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def is_hermitian(self):
+    return np.all(np.abs(self._matrix - self._matrix.conj().T) &lt; self._htol)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.matrix"><code class="name">var <span class="ident">matrix</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def matrix(self):
+    return np.array(self._matrix)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="muspinsim.spinop.Operator.basis_change"><code class="name flex">
+<span>def <span class="ident">basis_change</span></span>(<span>self, basis)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return a version of this Operator with different basis</p>
+<p>Transform this Operator to use a different basis. The basis
+must be a matrix of orthogonal vectors. Passing as basis
+the eigenvectors of the operator will diagonalise it.</p>
+<h2 id="arguments">Arguments</h2>
+<p>basis {ndarray} &ndash; Basis to transform the operator to.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Operator -- Basis transformed version</code> of <code>this operator</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def basis_change(self, basis):
+    &#34;&#34;&#34;Return a version of this Operator with different basis
+
+    Transform this Operator to use a different basis. The basis
+    must be a matrix of orthogonal vectors. Passing as basis
+    the eigenvectors of the operator will diagonalise it.
+
+    Arguments:
+        basis {ndarray} -- Basis to transform the operator to.
+
+    Returns:
+        Operator -- Basis transformed version of this operator
+    &#34;&#34;&#34;
+
+    ans = self.clone()
+    ans._matrix = np.linalg.multi_dot([basis.T.conj(), ans._matrix, basis])
+
+    return ans</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.dagger"><code class="name flex">
+<span>def <span class="ident">dagger</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return the transpose conjugate of this Operator</p>
+<p>Return the transpose conjugate of this Operator</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Operator -- Transpose conjugate</code> of <code>this operator</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dagger(self):
+    &#34;&#34;&#34;Return the transpose conjugate of this Operator
+
+    Return the transpose conjugate of this Operator
+
+    Returns:
+        Operator -- Transpose conjugate of this operator
+    &#34;&#34;&#34;
+
+    MyClass = self.__class__
+    ans = MyClass.__new__(MyClass)
+    ans._dim = tuple(self._dim)
+    ans._matrix = self.matrix.conj().T
+
+    return ans</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.hilbert_schmidt"><code class="name flex">
+<span>def <span class="ident">hilbert_schmidt</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Hilbert-Schmidt product between this and another Operator</p>
+<p>Performs a Hilbert-Schmidt product between this and another Operator,
+that acts as an inner product.</p>
+<h2 id="arguments">Arguments</h2>
+<p>x {Operator} &ndash; Other operator</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>number -- Result</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Thrown if x is not the right type</code> of <code>object</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hilbert_schmidt(self, x):
+    &#34;&#34;&#34;Hilbert-Schmidt product between this and another Operator
+
+
+    Performs a Hilbert-Schmidt product between this and another Operator,
+    that acts as an inner product.
+
+    Arguments:
+        x {Operator} -- Other operator
+
+    Returns:
+        number -- Result
+
+    Raises:
+        ValueError -- Thrown if x is not the right type of object
+    &#34;&#34;&#34;
+
+    if not isinstance(x, Operator):
+        raise ValueError(
+            &#34;Can only perform Hilbert-Schmidt product with&#34; &#34; another Operator&#34;
+        )
+
+    if not x.dimension == self.dimension:
+        raise ValueError(
+            &#34;Operators must have the same dimension to &#34;
+            &#34;perform Hilbert-Schmidt product&#34;
+        )
+
+    A = self.matrix
+    B = x.matrix
+
+    return np.trace(np.dot(A.conj().T, B))</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.Operator.kron"><code class="name flex">
+<span>def <span class="ident">kron</span></span>(<span>self, x)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Tensor product between this and another Operator</p>
+<p>Performs a tensor product between this and another Operator,
+raising the overall rank of the tensor they represent.</p>
+<h2 id="arguments">Arguments</h2>
+<p>x {Operator} &ndash; Other operator</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>Operator -- Result</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Thrown if x is not the right type</code> of <code>object</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def kron(self, x):
+    &#34;&#34;&#34;Tensor product between this and another Operator
+
+    Performs a tensor product between this and another Operator,
+    raising the overall rank of the tensor they represent.
+
+    Arguments:
+        x {Operator} -- Other operator
+
+    Returns:
+        Operator -- Result
+
+    Raises:
+        ValueError -- Thrown if x is not the right type of object
+    &#34;&#34;&#34;
+
+    if not isinstance(x, Operator):
+        raise ValueError(
+            &#34;Can only perform Kronecker product with&#34; &#34; another Operator&#34;
+        )
+
+    # Doing it this way saves some time
+    ans = self.__class__.__new__(self.__class__)
+    ans._dim = self._dim + x._dim
+    ans._matrix = np.kron(self._matrix, x._matrix)
+
+    return ans</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="muspinsim.spinop.SpinOperator"><code class="flex name class">
+<span>class <span class="ident">SpinOperator</span></span>
+<span>(</span><span>matrix, dim=None, hermtol=1e-06)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p>
+<p>Create a Operator object</p>
+<p>Create an object representing a spin operator. These can
+be manipulated by e.g. multiplying them by a scalar or among themselves
+(equivalent to a dot product), or adding and subtracting them.</p>
+<h2 id="arguments">Arguments</h2>
+<p>matrix {ndarray} &ndash; Matrix describing the operator (must be a
+square 2D array)</p>
+<p>Keyword Arguments:
+dim {(int,&hellip;)} &ndash; Tuple of the dimensions of the operator. For example,
+(2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+If not specified, it's taken from the size of
+the matrix (default: {None})
+hermtol {float} &ndash; Tolerance used to check for hermitianity of the
+matrix (default: {1e-6})</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Any</code> of <code>the passed values are invalid</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SpinOperator(Operator):
+    @classmethod
+    def from_axes(self, Is=0.5, axes=&#34;x&#34;):
+        &#34;&#34;&#34;Construct a SpinOperator from spins and axes
+
+        Construct a SpinOperator from a list of spin values and directions. For
+        example, Is=[0.5, 0.5] axes=[&#39;x&#39;, &#39;z&#39;] will create a SxIz operator between
+        two spin 1/2 particles.
+
+        Keyword Arguments:
+            Is {[number]} -- List of spins (must be half-integers). Can pass a
+                             number if it&#39;s only one value (default: {0.5})
+            axes {[str]} -- List of axes, can pass a single character if it&#39;s
+                            only one value. Each value can be x, y, z, +, -,
+                            or 0 (for the identity operator) (default: {&#39;x&#39;})
+
+        Returns:
+            SpinOperator -- Operator built according to specifications
+
+        Raises:
+            ValueError -- Any of the values passed is invalid
+        &#34;&#34;&#34;
+
+        if isinstance(Is, Number):
+            Is = [Is]
+
+        if len(Is) != len(axes) or len(Is) == 0:
+            raise ValueError(&#34;Arrays of moments and axes must have same length &gt; 0&#34;)
+
+        dim = tuple(int(2 * I + 1) for I in Is)
+        matrices = []
+
+        for I, axis in zip(Is, axes):
+
+            if I % 0.5 or I &lt; 0.5:
+                raise ValueError(&#34;{0} is not a valid spin value&#34;.format(I))
+
+            if not (axis in &#34;xyz+-0&#34;):
+                raise ValueError(&#34;{0} is not a valid spin axis&#34;.format(axis))
+
+            mvals = _mvals(I)
+
+            o = {&#34;x&#34;: _Sx, &#34;y&#34;: _Sy, &#34;z&#34;: _Sz, &#34;+&#34;: _Sp, &#34;-&#34;: _Sm, &#34;0&#34;: _S0}[axis](
+                mvals
+            )
+
+            matrices.append(o)
+
+        M = matrices[0]
+        for m in matrices[1:]:
+            M = np.kron(M, m)
+
+        return self(M, dim=dim)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></li>
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="muspinsim.spinop.SpinOperator.from_axes"><code class="name flex">
+<span>def <span class="ident">from_axes</span></span>(<span>Is=0.5, axes='x')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Construct a SpinOperator from spins and axes</p>
+<p>Construct a SpinOperator from a list of spin values and directions. For
+example, Is=[0.5, 0.5] axes=['x', 'z'] will create a SxIz operator between
+two spin 1/2 particles.</p>
+<p>Keyword Arguments:
+Is {[number]} &ndash; List of spins (must be half-integers). Can pass a
+number if it's only one value (default: {0.5})
+axes {[str]} &ndash; List of axes, can pass a single character if it's
+only one value. Each value can be x, y, z, +, -,
+or 0 (for the identity operator) (default: {'x'})</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SpinOperator -- Operator built according to specifications</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Any</code> of <code>the values passed is invalid</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def from_axes(self, Is=0.5, axes=&#34;x&#34;):
+    &#34;&#34;&#34;Construct a SpinOperator from spins and axes
+
+    Construct a SpinOperator from a list of spin values and directions. For
+    example, Is=[0.5, 0.5] axes=[&#39;x&#39;, &#39;z&#39;] will create a SxIz operator between
+    two spin 1/2 particles.
+
+    Keyword Arguments:
+        Is {[number]} -- List of spins (must be half-integers). Can pass a
+                         number if it&#39;s only one value (default: {0.5})
+        axes {[str]} -- List of axes, can pass a single character if it&#39;s
+                        only one value. Each value can be x, y, z, +, -,
+                        or 0 (for the identity operator) (default: {&#39;x&#39;})
+
+    Returns:
+        SpinOperator -- Operator built according to specifications
+
+    Raises:
+        ValueError -- Any of the values passed is invalid
+    &#34;&#34;&#34;
+
+    if isinstance(Is, Number):
+        Is = [Is]
+
+    if len(Is) != len(axes) or len(Is) == 0:
+        raise ValueError(&#34;Arrays of moments and axes must have same length &gt; 0&#34;)
+
+    dim = tuple(int(2 * I + 1) for I in Is)
+    matrices = []
+
+    for I, axis in zip(Is, axes):
+
+        if I % 0.5 or I &lt; 0.5:
+            raise ValueError(&#34;{0} is not a valid spin value&#34;.format(I))
+
+        if not (axis in &#34;xyz+-0&#34;):
+            raise ValueError(&#34;{0} is not a valid spin axis&#34;.format(axis))
+
+        mvals = _mvals(I)
+
+        o = {&#34;x&#34;: _Sx, &#34;y&#34;: _Sy, &#34;z&#34;: _Sz, &#34;+&#34;: _Sp, &#34;-&#34;: _Sm, &#34;0&#34;: _S0}[axis](
+            mvals
+        )
+
+        matrices.append(o)
+
+    M = matrices[0]
+    for m in matrices[1:]:
+        M = np.kron(M, m)
+
+    return self(M, dim=dim)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.spinop.Operator.basis_change" href="#muspinsim.spinop.Operator.basis_change">basis_change</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.dagger" href="#muspinsim.spinop.Operator.dagger">dagger</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.hilbert_schmidt" href="#muspinsim.spinop.Operator.hilbert_schmidt">hilbert_schmidt</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.kron" href="#muspinsim.spinop.Operator.kron">kron</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="muspinsim.spinop.SuperOperator"><code class="flex name class">
+<span>class <span class="ident">SuperOperator</span></span>
+<span>(</span><span>matrix, dim=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A helper class; any object inheriting
+from this will have a .clone method that copies it easily.</p>
+<p>Create a Operator object</p>
+<p>Create an object representing a spin operator. These can
+be manipulated by e.g. multiplying them by a scalar or among themselves
+(equivalent to a dot product), or adding and subtracting them.</p>
+<h2 id="arguments">Arguments</h2>
+<p>matrix {ndarray} &ndash; Matrix describing the operator (must be a
+square 2D array)</p>
+<p>Keyword Arguments:
+dim {(int,&hellip;)} &ndash; Tuple of the dimensions of the operator. For example,
+(2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+If not specified, it's taken from the size of
+the matrix (default: {None})
+hermtol {float} &ndash; Tolerance used to check for hermitianity of the
+matrix (default: {1e-6})</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError -- Any</code> of <code>the passed values are invalid</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SuperOperator(Operator):
+    def __init__(self, matrix, dim=None):
+
+        matrix = np.array(matrix)
+        n = matrix.shape[0] ** 0.5
+
+        if int(n) != n:
+            raise ValueError(&#34;Matrix rank should be a perfect square&#34;)
+
+        if dim is None:
+            dim = (n, n)
+
+        super(SuperOperator, self).__init__(matrix, dim)
+
+    @classmethod
+    def left_multiplier(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a left multiplication
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(m, np.eye(m.shape[0]))
+
+        return self(M, d + d)
+
+    @classmethod
+    def right_multiplier(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a right multiplication
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(np.eye(m.shape[0]), m.T)
+
+        return self(M, d + d)
+
+    @classmethod
+    def commutator(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a commutation
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho-rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        return self.left_multiplier(operator) - self.right_multiplier(operator)
+
+    @classmethod
+    def anticommutator(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs an anticommutation
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho+rho*O
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        return self.left_multiplier(operator) + self.right_multiplier(operator)
+
+    @classmethod
+    def bracket(self, operator):
+        &#34;&#34;&#34;Create a SuperOperator that performs a basis change
+
+        Create a superoperator L from an operator O such that
+
+        L*rho = O*rho*O^
+
+        where O^ is the conjugate transpose of O.
+
+        Arguments:
+            operator {Operator} -- Operator O
+
+        Returns:
+            SuperOperator -- SuperOperator L
+        &#34;&#34;&#34;
+
+        m = operator.matrix
+        d = operator.dimension
+
+        M = np.kron(m, m.conj())
+
+        return self(M, d + d)
+
+    def __add__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__add__(x)
+
+        raise TypeError(&#34;Unsupported operation for SuperOperator&#34;)
+
+    def __sub__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__sub__(x)
+
+        raise TypeError(&#34;Unsupported operation for SuperOperator&#34;)
+
+    def __mul__(self, x):
+
+        if isinstance(x, SuperOperator) or isinstance(x, Number):
+            return super(SuperOperator, self).__mul__(x)
+        elif isinstance(x, Operator):
+            # Vectorize x
+            m = x.matrix
+            s = m.shape
+            m = m.reshape((-1,))
+            m = np.dot(self.matrix, m).reshape(s)
+            return Operator(m, x.dimension)
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __rmul__(self, x):
+
+        if isinstance(x, Number):
+            return self.__mul__(x)
+        elif isinstance(x, SuperOperator):
+            return x * self
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __truediv__(self, x):
+
+        if isinstance(x, Number):
+            x = 1.0 / x
+            return self * x
+
+        raise TypeError(&#34;Unsupported operation for Operator&#34;)
+
+    def __eq__(self, x):
+
+        if not isinstance(x, Operator):
+            return False
+
+        if self.dimension != x.dimension:
+            return False
+
+        return np.all(self._matrix == x._matrix)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></li>
+<li><a title="muspinsim.utils.Clonable" href="utils.html#muspinsim.utils.Clonable">Clonable</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="muspinsim.lindbladian.Lindbladian" href="lindbladian.html#muspinsim.lindbladian.Lindbladian">Lindbladian</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="muspinsim.spinop.SuperOperator.anticommutator"><code class="name flex">
+<span>def <span class="ident">anticommutator</span></span>(<span>operator)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a SuperOperator that performs an anticommutation</p>
+<p>Create a superoperator L from an operator O such that</p>
+<p>L<em>rho = O</em>rho+rho*O</p>
+<h2 id="arguments">Arguments</h2>
+<p>operator {Operator} &ndash; Operator O</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SuperOperator -- SuperOperator L</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def anticommutator(self, operator):
+    &#34;&#34;&#34;Create a SuperOperator that performs an anticommutation
+
+    Create a superoperator L from an operator O such that
+
+    L*rho = O*rho+rho*O
+
+    Arguments:
+        operator {Operator} -- Operator O
+
+    Returns:
+        SuperOperator -- SuperOperator L
+    &#34;&#34;&#34;
+
+    return self.left_multiplier(operator) + self.right_multiplier(operator)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.SuperOperator.bracket"><code class="name flex">
+<span>def <span class="ident">bracket</span></span>(<span>operator)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a SuperOperator that performs a basis change</p>
+<p>Create a superoperator L from an operator O such that</p>
+<p>L<em>rho = O</em>rho*O^</p>
+<p>where O^ is the conjugate transpose of O.</p>
+<h2 id="arguments">Arguments</h2>
+<p>operator {Operator} &ndash; Operator O</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SuperOperator -- SuperOperator L</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def bracket(self, operator):
+    &#34;&#34;&#34;Create a SuperOperator that performs a basis change
+
+    Create a superoperator L from an operator O such that
+
+    L*rho = O*rho*O^
+
+    where O^ is the conjugate transpose of O.
+
+    Arguments:
+        operator {Operator} -- Operator O
+
+    Returns:
+        SuperOperator -- SuperOperator L
+    &#34;&#34;&#34;
+
+    m = operator.matrix
+    d = operator.dimension
+
+    M = np.kron(m, m.conj())
+
+    return self(M, d + d)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.SuperOperator.commutator"><code class="name flex">
+<span>def <span class="ident">commutator</span></span>(<span>operator)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a SuperOperator that performs a commutation</p>
+<p>Create a superoperator L from an operator O such that</p>
+<p>L<em>rho = O</em>rho-rho*O</p>
+<h2 id="arguments">Arguments</h2>
+<p>operator {Operator} &ndash; Operator O</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SuperOperator -- SuperOperator L</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def commutator(self, operator):
+    &#34;&#34;&#34;Create a SuperOperator that performs a commutation
+
+    Create a superoperator L from an operator O such that
+
+    L*rho = O*rho-rho*O
+
+    Arguments:
+        operator {Operator} -- Operator O
+
+    Returns:
+        SuperOperator -- SuperOperator L
+    &#34;&#34;&#34;
+
+    return self.left_multiplier(operator) - self.right_multiplier(operator)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.SuperOperator.left_multiplier"><code class="name flex">
+<span>def <span class="ident">left_multiplier</span></span>(<span>operator)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a SuperOperator that performs a left multiplication</p>
+<p>Create a superoperator L from an operator O such that</p>
+<p>L<em>rho = O</em>rho</p>
+<h2 id="arguments">Arguments</h2>
+<p>operator {Operator} &ndash; Operator O</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SuperOperator -- SuperOperator L</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def left_multiplier(self, operator):
+    &#34;&#34;&#34;Create a SuperOperator that performs a left multiplication
+
+    Create a superoperator L from an operator O such that
+
+    L*rho = O*rho
+
+    Arguments:
+        operator {Operator} -- Operator O
+
+    Returns:
+        SuperOperator -- SuperOperator L
+    &#34;&#34;&#34;
+
+    m = operator.matrix
+    d = operator.dimension
+
+    M = np.kron(m, np.eye(m.shape[0]))
+
+    return self(M, d + d)</code></pre>
+</details>
+</dd>
+<dt id="muspinsim.spinop.SuperOperator.right_multiplier"><code class="name flex">
+<span>def <span class="ident">right_multiplier</span></span>(<span>operator)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a SuperOperator that performs a right multiplication</p>
+<p>Create a superoperator L from an operator O such that</p>
+<p>L<em>rho = rho</em>O</p>
+<h2 id="arguments">Arguments</h2>
+<p>operator {Operator} &ndash; Operator O</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>SuperOperator -- SuperOperator L</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def right_multiplier(self, operator):
+    &#34;&#34;&#34;Create a SuperOperator that performs a right multiplication
+
+    Create a superoperator L from an operator O such that
+
+    L*rho = rho*O
+
+    Arguments:
+        operator {Operator} -- Operator O
+
+    Returns:
+        SuperOperator -- SuperOperator L
+    &#34;&#34;&#34;
+
+    m = operator.matrix
+    d = operator.dimension
+
+    M = np.kron(np.eye(m.shape[0]), m.T)
+
+    return self(M, d + d)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></b></code>:
+<ul class="hlist">
+<li><code><a title="muspinsim.spinop.Operator.basis_change" href="#muspinsim.spinop.Operator.basis_change">basis_change</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.dagger" href="#muspinsim.spinop.Operator.dagger">dagger</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.hilbert_schmidt" href="#muspinsim.spinop.Operator.hilbert_schmidt">hilbert_schmidt</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.kron" href="#muspinsim.spinop.Operator.kron">kron</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="muspinsim" href="index.html">muspinsim</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="muspinsim.spinop.DensityOperator" href="#muspinsim.spinop.DensityOperator">DensityOperator</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinop.DensityOperator.expectation" href="#muspinsim.spinop.DensityOperator.expectation">expectation</a></code></li>
+<li><code><a title="muspinsim.spinop.DensityOperator.from_vectors" href="#muspinsim.spinop.DensityOperator.from_vectors">from_vectors</a></code></li>
+<li><code><a title="muspinsim.spinop.DensityOperator.normalize" href="#muspinsim.spinop.DensityOperator.normalize">normalize</a></code></li>
+<li><code><a title="muspinsim.spinop.DensityOperator.partial_trace" href="#muspinsim.spinop.DensityOperator.partial_trace">partial_trace</a></code></li>
+<li><code><a title="muspinsim.spinop.DensityOperator.trace" href="#muspinsim.spinop.DensityOperator.trace">trace</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinop.Hermitian" href="#muspinsim.spinop.Hermitian">Hermitian</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinop.Hermitian.diag" href="#muspinsim.spinop.Hermitian.diag">diag</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinop.Operator" href="#muspinsim.spinop.Operator">Operator</a></code></h4>
+<ul class="two-column">
+<li><code><a title="muspinsim.spinop.Operator.Is" href="#muspinsim.spinop.Operator.Is">Is</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.N" href="#muspinsim.spinop.Operator.N">N</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.basis_change" href="#muspinsim.spinop.Operator.basis_change">basis_change</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.dagger" href="#muspinsim.spinop.Operator.dagger">dagger</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.dimension" href="#muspinsim.spinop.Operator.dimension">dimension</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.hilbert_schmidt" href="#muspinsim.spinop.Operator.hilbert_schmidt">hilbert_schmidt</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.is_hermitian" href="#muspinsim.spinop.Operator.is_hermitian">is_hermitian</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.kron" href="#muspinsim.spinop.Operator.kron">kron</a></code></li>
+<li><code><a title="muspinsim.spinop.Operator.matrix" href="#muspinsim.spinop.Operator.matrix">matrix</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinop.SpinOperator" href="#muspinsim.spinop.SpinOperator">SpinOperator</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinop.SpinOperator.from_axes" href="#muspinsim.spinop.SpinOperator.from_axes">from_axes</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="muspinsim.spinop.SuperOperator" href="#muspinsim.spinop.SuperOperator">SuperOperator</a></code></h4>
+<ul class="">
+<li><code><a title="muspinsim.spinop.SuperOperator.anticommutator" href="#muspinsim.spinop.SuperOperator.anticommutator">anticommutator</a></code></li>
+<li><code><a title="muspinsim.spinop.SuperOperator.bracket" href="#muspinsim.spinop.SuperOperator.bracket">bracket</a></code></li>
+<li><code><a title="muspinsim.spinop.SuperOperator.commutator" href="#muspinsim.spinop.SuperOperator.commutator">commutator</a></code></li>
+<li><code><a title="muspinsim.spinop.SuperOperator.left_multiplier" href="#muspinsim.spinop.SuperOperator.left_multiplier">left_multiplier</a></code></li>
+<li><code><a title="muspinsim.spinop.SuperOperator.right_multiplier" href="#muspinsim.spinop.SuperOperator.right_multiplier">right_multiplier</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
