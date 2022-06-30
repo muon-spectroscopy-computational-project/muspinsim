@@ -58,20 +58,23 @@ class MPIController(object):
 
         return var
 
-    def broadcast_object(self, obj, only=None):
+    def broadcast_object(self, obj, selected_attrs=None):
         # A function to broadcast an object's members
 
         if self.comm is None:
             return  # Nothing to do
 
-        if only is None:
-            only = list(obj.__dict__.keys())
+        if selected_attrs is None:
+            selected_attrs = list(obj.__dict__.keys())
 
-        only = self.comm.bcast(only, root=0)
+        selected_attrs = self.comm.bcast(selected_attrs, root=0)
 
-        for k in only:
+        for k in selected_attrs:
             v = obj.__dict__.get(k, None)
-            v = self.comm.bcast(v, root=0)
+            try:
+                v = self.comm.bcast(v, root=0)
+            except OverflowError as e:
+                raise OverflowError ("Overflow error on: {0}, {1}: {2}".format(k, v, str(e)))
             obj.__setattr__(k, v)
 
     def sum_data(self, data):
