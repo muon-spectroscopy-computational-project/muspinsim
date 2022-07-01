@@ -47,26 +47,26 @@ class ExperimentRunner(object):
 
         # broadcast config object without _system attribute
         attrs = list(config.__dict__.keys())
-        for x in ['_system', 'system']:
+        for x in ["_system", "system"]:
             if x in attrs:
                 attrs.remove(x)
         mpi.broadcast_object(config, attrs)
 
         # broadcast _system attribute without _terms attribute
-        system = config.__dict__.get('_system', MuonSpinSystem())
+        system = config.__dict__.get("_system", MuonSpinSystem())
         attrs = list(system.__dict__.keys())
-        if '_terms' in attrs:
-            attrs.remove('_terms')
+        if "_terms" in attrs:
+            attrs.remove("_terms")
         mpi.broadcast_object(system, attrs)
 
         # broadcast _terms attribute sequentially
-        terms = system.__dict__.get('_terms', [])
+        terms = system.__dict__.get("_terms", [])
         terms = mpi.broadcast_terms(terms)
 
         for i in terms:
-            i.__setattr__('_spinsys', system)
-        system.__setattr__('_terms', terms)
-        config.__setattr__('_system', system)
+            i.__setattr__("_spinsys", system)
+        system.__setattr__("_terms", terms)
+        config.__setattr__("_system", system)
 
         self._config = config
         self._system = config.system

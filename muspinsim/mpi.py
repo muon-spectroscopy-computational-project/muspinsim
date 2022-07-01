@@ -74,7 +74,9 @@ class MPIController(object):
             try:
                 v = self.comm.bcast(v, root=0)
             except OverflowError as e:
-                raise OverflowError ("Overflow error on: {0}, {1}: {2}".format(k, v, str(e)))
+                raise OverflowError(
+                    "Overflow error on: {0}, {1}: {2}".format(k, v, str(e))
+                )
             obj.__setattr__(k, v)
 
     def broadcast_terms(self, lst):
@@ -89,7 +91,7 @@ class MPIController(object):
             # broadcast object attributes
             if self.is_root:
                 # spinsys cannot be broadcast - issue with recursive object references?
-                lst[i].__setattr__('_spinsys', None)
+                lst[i].__setattr__("_spinsys", None)
                 val = lst[i]
             else:
                 val = None
@@ -97,7 +99,9 @@ class MPIController(object):
             try:
                 val = self.comm.bcast(val, root=0)
             except OverflowError as e:
-                raise OverflowError("Overflow error broadcasting term {0}: {1}".format(val, str(e)))
+                raise OverflowError(
+                    "Overflow error broadcasting term {0}: {1}".format(val, str(e))
+                )
             n_list.append(val)
         return n_list
 

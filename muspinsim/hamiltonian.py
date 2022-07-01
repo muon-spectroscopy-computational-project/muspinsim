@@ -91,7 +91,9 @@ class Hamiltonian(Operator, Hermitian):
             result = None
             for i in range(times.shape[0]):
                 rho = calc_single_rho(i)
-                single_res = np.sum(rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3))
+                single_res = np.sum(
+                    rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
+                )
                 if result is None:
                     result = single_res
                 else:
@@ -100,7 +102,10 @@ class Hamiltonian(Operator, Hermitian):
             sceve = evecs.T.conj()
             for i in range(times.shape[0]):
                 # Just return density matrices
-                result = [DensityOperator(calc_single_rho(i), dim).basis_change(sceve) for i in range(times.shape[0])]
+                result = [
+                    DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
+                    for i in range(times.shape[0])
+                ]
         return result
 
     def integrate_decaying(self, rho0, tau, operators=[]):
