@@ -54,6 +54,44 @@ def write_error(keyword, block_line_num, err):
     )
 
 
+def _make_blocks(fs):
+    lines = fs.readlines()
+
+    # Split lines in blocks
+    raw_blocks = {}
+    curr_block = None
+    block_line_nums = {}
+
+    indre = re.compile("(\\s+)[^\\s]")
+    indent = None
+
+    for i, l in enumerate(lines):
+
+        # Remove any comments
+        l = l.split("#", 1)[0]
+
+        if l.strip() == "":
+            continue  # It's a comment
+        m = indre.match(l)
+        if m:
+            if indent is None:
+                indent = m.groups()[0]
+            if m.groups()[0] != indent:
+                raise RuntimeError("Invalid indent in input file")
+            else:
+                try:
+                    raw_blocks[curr_block].append(l.strip())
+                except KeyError:
+                    raise RuntimeError("Badly formatted input file")
+        else:
+            curr_block = l.strip()
+            raw_blocks[curr_block] = []
+            block_line_nums[curr_block] = i + 1
+            indent = None  # Reset for each block
+
+    return raw_blocks, block_line_nums
+
+
 class MuSpinInput(object):
     def __init__(self, fs=None):
         """Read in an input file
@@ -70,50 +108,7 @@ class MuSpinInput(object):
 
         if fs is not None:
 
-            lines = fs.readlines()
-
-            # Split lines in blocks
-            raw_blocks = {}
-            curr_block = None
-            block_line_nums = {}
-
-            indre = re.compile("(\\s+)[^\\s]")
-            indent = None
-
-            for i, l in enumerate(lines):
-
-                # Remove any comments
-                l = l.split("#", 1)[0]
-
-                if l.strip() == "":
-                    continue  # It's a comment
-                m = indre.match(l)
-                if m:
-                    if indent is None:
-                        indent = m.groups()[0]
-                    if m.groups()[0] != indent:
-                        raise RuntimeError(
-                            "Invalid indent found for keyword '{0}' "
-                            "near line {1}".format(curr_block, i + 1)
-                        )
-                    else:
-                        try:
-                            raw_blocks[curr_block].append(l.strip())
-                        except KeyError:
-                            raise RuntimeError(
-                                "Invalid indent found near line {0}".format(i + 1)
-                            )
-                else:
-                    curr_block = l.strip()
-                    if curr_block in raw_blocks.keys():
-                        raise RuntimeError(
-                            "Duplicate entry found for keyword: '{0}' on line {1}, "
-                            "please delete or merge entries".format(curr_block, i + 1)
-                        )
-                    raw_blocks[curr_block] = []
-                    block_line_nums[curr_block] = i + 1
-                    indent = None  # Reset for each block
-
+            raw_blocks, block_line_nums = _make_blocks(fs)
             # A special case: if there are fitting variables, we need to know
             # right away
             errors_found = []
@@ -128,8 +123,8 @@ class MuSpinInput(object):
                 kw = InputKeywords["experiment"](block)
                 exptype = kw.evaluate()[0]
                 try:
-                    mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
-                    self._keywords.update(mock_i._keywords)
+                    exp_kw, _ = _make_blocks(StringIO(_exp_defaults[exptype[0]]))
+                    raw_blocks.update(exp_kw)
                 except KeyError:
                     err = (
                         "Invalid experiment type '{0}' defined, "
