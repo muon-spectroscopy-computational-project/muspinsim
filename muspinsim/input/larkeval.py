@@ -83,6 +83,9 @@ class LarkExpression(object):
 
         # Start by parsing the expression
         self._source = source
+        # check if source empty
+        if source == "":
+            raise LarkExpressionError("Empty String")
         try:
             self._tree = _expr_parser.parse(source)
         except UnexpectedToken:
@@ -99,7 +102,7 @@ class LarkExpression(object):
         for v in self._variables:
             if v not in self._all_variables:
                 raise LarkExpressionError(
-                    "Invalid variable: '{0}', valid functions are ['{1}']".format(
+                    "Invalid variable: '{0}', valid variables are ['{1}']".format(
                         v, "', '".join(self._all_variables)
                     )
                 )

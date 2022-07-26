@@ -10,16 +10,43 @@ from muspinsim.input.keyword import (
     MuSpinExpandKeyword,
     InputKeywords,
 )
-from muspinsim.input import MuSpinInput
-
+from muspinsim.input.input import MuSpinInput, MuSpinInputError
 
 class TestInput(unittest.TestCase):
     def test_larkexpr(self):
+        """ Lark expression unit test """
 
-        # Start by testing proper precedence order
-        e1 = LarkExpression("3+2*6^2/9")
+        def double(x):
+            return 2 * x
 
-        self.assertEqual(e1.evaluate(), 11)
+        larktests = [
+            # read expression
+            {"larkexpr": "3+2*6^2/9", "funcs": {}, "invalid":False, "out":11},
+            # read function - double
+            {"larkexpr": "double(2)", "funcs": {"double": double}, "invalid":False, "out": 4},
+            # read expression within function
+            {"larkexpr": "double(3+2*6^2/9)", "funcs": {"double": double}, "invalid":False, "out": 22},
+            # read expression composed of multiple functions
+            {"larkexpr": "double(3+2* 6^2/9) - double(2 *5)", "funcs": {"double": double}, "invalid": False, "out": 2},
+            # invalid function
+            {"larkexpr": "notafunc(123)", "funcs": {"double": double}, "invalid": True, "out": "Invalid function: 'notafunc()', valid functions are ['double()']"},
+            # invalid expression
+            {"larkexpr": "3*", "funcs": {}, "invalid": True, "out": "Invalid characters in LarkExpression"},
+            # empty expression
+            {"larkexpr": "", "funcs": {}, "invalid": True, "out": "Empty String"}
+        ]
+
+        for test in larktests:
+
+            if not test["invalid"]:
+                e1 = LarkExpression(test["larkexpr"], functions=test["funcs"])
+                self.assertTrue(e1.evaluate() == test["out"])
+            else:
+                with self.assertRaises(LarkExpressionError) as err:
+                    e1 = LarkExpression(test["larkexpr"], functions=test["funcs"])
+                self.assertEqual(str(err.exception), test["out"])
+
+    def test_larkexpr_var(self):
 
         # Simple expressions
         e2 = LarkExpression("x+y+1", variables="xy")
@@ -37,25 +64,25 @@ class TestInput(unittest.TestCase):
         self.assertEqual(e3.functions, {"double"})
         self.assertEqual(e3.evaluate(x=2), 4)
 
-        # Check that it evaluates when possible
-        e4 = LarkExpression("double(4)", functions={"double": double})
-        self.assertEqual(e4._store_eval, 8)
+        # lark expression does not contain variable given
+        with self.assertRaises(LarkExpressionError) as err:
+            e4 = LarkExpression("x+1", variables="y")
+        self.assertEqual(str(err.exception), "Invalid variable: 'x', valid variables are ['y']")
 
-        # Errors
-        with self.assertRaises(LarkExpressionError):
-            e5 = LarkExpression("print(666)")
+        # value of variable not given when evaluating
+        with self.assertRaises(LarkExpressionError) as err:
+            e5 = LarkExpression("x+1", variables="x")
+            e5.evaluate()
+        self.assertEqual(str(err.exception), "Some necessary variables have not been defined when evaluating LarkExpression")
 
-        with self.assertRaises(LarkExpressionError):
-            e6 = LarkExpression("x+1", variables="y")
+        # invalid variable value given when evaluating
+        with self.assertRaises(LarkExpressionError) as err:
+            e5 = LarkExpression("x+1", variables="x")
+            e5.evaluate(x=1, y=1)
+        self.assertEqual(str(err.exception), "Some invalid variables have been defined when evaluating LarkExpression")
 
-        with self.assertRaises(LarkExpressionError):
-            e2.evaluate()
-
-        with self.assertRaises(LarkExpressionError):
-            LarkExpression("3x%5")
-
-        # Test tokenization
-        tokens = lark_tokenize("3.4 2.3 sin(x) atan2(3, 4)")
+    def test_tokenization(self):
+        tokens = lark_tokenize("3+0.4 2.3 sin(x) atan2(3, 4)")
         lark_tokens = [
             LarkExpression(
                 tk, variables="x", functions={"sin": np.sin, "atan2": np.arctan2}
@@ -108,8 +135,9 @@ class TestInput(unittest.TestCase):
         self.assertTrue((rkw.evaluate()[0] == [1, 1, 1]).all())
 
         # Some failure cases
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(RuntimeError) as err:
             MuSpinKeyword([], args=["a"])  # One argument too much
+        self.assertEqual(str(err.exception), "Wrong number of arguments passed to keyword keyword")
 
     def test_input_keywords(self):
 
@@ -125,6 +153,14 @@ class TestInput(unittest.TestCase):
 
         self.assertTrue((pkw.evaluate()[0] == [1, 0, 0]).all())
 
+        pkw = InputKeywords["polarization"]("longitudinal")
+
+        self.assertTrue((pkw.evaluate()[0] == [0, 0, 1.0]).all())
+
+        pkw = InputKeywords["polarization"]("transverse")
+
+        self.assertTrue((pkw.evaluate()[0] == [1.0, 0, 0]).all())
+
         fkw = InputKeywords["field"](["500*MHz"])
 
         self.assertTrue(np.isclose(fkw.evaluate()[0][0], 1.84449))
@@ -136,13 +172,18 @@ class TestInput(unittest.TestCase):
             (np.array([b[0] for b in fkw.evaluate()]) == np.arange(21)).all()
         )
 
+        fkw = InputKeywords["field"]()
+
+        self.assertTrue(fkw.evaluate()[0] == 0.0)
+
         tkw = InputKeywords["time"]()
 
         self.assertEqual(len(tkw.evaluate()), 101)
         self.assertEqual(tkw.evaluate()[-1][0], 10.0)
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValueError) as err:
             ykw = InputKeywords["y_axis"](["something"])
+        self.assertEqual(str(err.exception), "Invalid block for keyword y_axis: Invalid value")
 
         ykw = InputKeywords["y_axis"](["asymmetry"])
 
@@ -171,33 +212,69 @@ class TestInput(unittest.TestCase):
         self.assertTrue(np.isclose(qkw.evaluate()[0], np.eye(3)).all())
 
         # Failure case (wrong argument type)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(RuntimeError) as err:
             InputKeywords["zeeman"]([], args=["wrong"])
+        self.assertEqual(str(err.exception), "Invalid argument type passed to keyword zeeman")
 
-    def test_input(self):
+    def test_read_block(self):
+            """test read input file unit test"""
 
-        s1 = StringIO(
-            """
+            # read valid file
+            e1 = MuSpinInput(StringIO("""
 name
     test_1
 spins
     mu H
 zeeman 1
     1 0 0
-"""
-        )
+""")).evaluate()
 
-        i1 = MuSpinInput(s1)
-        e1 = i1.evaluate()
+            self.assertEqual(e1["name"].value[0], "test_1")
+            self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
+            self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
 
-        self.assertEqual(e1["name"].value[0], "test_1")
-        self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
-        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+            # read improperly formatted file
+            with self.assertRaises(RuntimeError) as err:
+                e2 = MuSpinInput(StringIO("""
+    name
+        test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+""")).evaluate()
+            self.assertEqual(str(err.exception), "Badly formatted input file")
+
+            # indent in between keyword values does not match
+            with self.assertRaises(RuntimeError) as err:
+                e4 = MuSpinInput(StringIO("""
+name
+    test_1
+spins
+    mu H
+hyperfine 1
+    1 0 0
+     2 0 0
+    3 0 0
+""")).evaluate()
+            self.assertEqual(str(err.exception), "Invalid indent in input file")
+
+            # incorrect keyword name given
+            with self.assertRaises(MuSpinInputError) as err:
+                e5 = MuSpinInput(StringIO("""
+name
+    test_1
+spins
+    mu H
+notakeyword 1
+    1 0 0
+""")).evaluate()
+            self.assertEqual(str(err.exception), "Invalid keyword notakeyword found in input file")
 
     def test_fitting(self):
         # Test input focused around fitting
 
-        s1 = StringIO(
+        i1 = MuSpinInput(StringIO(
             """
 fitting_variables
     x 1.0 0.0 2.0
@@ -211,8 +288,7 @@ field
 zeeman 1
     x x 0
 """
-        )
-        i1 = MuSpinInput(s1)
+        ))
 
         self.assertTrue(i1.fitting_info["fit"])
 
@@ -228,17 +304,6 @@ zeeman 1
         self.assertEqual(variables["x"].value, 1.0)
         self.assertEqual(variables["x"].bounds, (0.0, 2.0))
 
-        # Invalid variable range
-        s2 = StringIO(
-            """
-fitting_variables
-    x 1.0 0.0 -5.0
-"""
-        )
-
-        with self.assertRaises(ValueError):
-            MuSpinInput(s2)
-
         # Let's test loading from a file
         tdata = np.zeros((10, 2))
         tdata[:, 0] = np.linspace(0, 1, 10)
@@ -251,25 +316,70 @@ fitting_variables
         tfile.flush()
         tfile.close()
 
-        s3 = StringIO(
-            """
+        i2 = MuSpinInput(StringIO("""
 fitting_variables
     x
 fitting_data
     load("{fname}")
 fitting_method
     nelder-mead
-""".format(
-                fname=tfile.name
-            )
-        )
+""".format(fname=tfile.name)
+        ))
 
-        i3 = MuSpinInput(s3)
-
-        finfo = i3.fitting_info
+        finfo = i2.fitting_info
 
         data = finfo["data"]
         self.assertTrue(finfo["fit"])
         self.assertTrue((data == tdata).all())
         self.assertEqual(finfo["method"], "nelder-mead")
         self.assertAlmostEqual(finfo["rtol"], 1e-3)
+
+        # invalid cases
+
+        # invalid no data given
+        with self.assertRaises(MuSpinInputError) as err:
+            i3 = MuSpinInput(StringIO("""
+fitting_variables
+    x 1.0 0.0 5.0
+"""
+            ))
+        self.assertEqual(str(err.exception), "Fitting variables defined without defining a set of data to fit")
+
+        # invalid variable range
+        with self.assertRaises(ValueError) as err:
+            i4 = MuSpinInput(StringIO("""
+fitting_variables
+    x 1.0 0.0 -5.0
+fitting_data
+    load("{fname}")
+fitting_method
+    nelder-mead
+field
+    2*x
+zeeman 1
+    x x 0
+""".format(fname=tfile.name)
+            ))
+        self.assertEqual(str(err.exception),
+                "Variable x has invalid range: "
+                "(max value -5.0 cannot be less than or equal to min value 0.0)\n"
+                "Variable x has invalid starting value: "
+                "(starting value 1.0 cannot be greater than max value -5.0)"
+        )
+
+        # variable name clashes with constant
+        with self.assertRaises(ValueError) as err:
+            i5 = MuSpinInput(StringIO("""
+fitting_variables
+    MHz 1.0 0.0 5.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*x
+zeeman 1
+    MHz 0 0
+"""))
+        self.assertEqual(str(err.exception), "Variable names {'MHz'} conflict with existing constants")
