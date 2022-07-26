@@ -49,7 +49,7 @@ y_axis
 
 def write_error(keyword, block_line_num, err):
     return (
-        "Error occurred when parsing keyword {0} "
+        "Error occurred when parsing keyword '{0}' "
         "(block starting at line {1}):\n{2}".format(keyword, block_line_num, str(err))
     )
 
@@ -249,7 +249,7 @@ class MuSpinInput(object):
                 write_error(
                     "fitting_variables",
                     block_line_nums["fitting_variables"],
-                    str("Fitting variables defined without defining any data to fit"),
+                    "Fitting variables defined without defining any data to fit",
                 )
             ]
         except (RuntimeError, ValueError, LarkExpressionError, IOError) as e:
