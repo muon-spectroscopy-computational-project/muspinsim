@@ -115,21 +115,22 @@ def main(use_mpi=False):
 
     is_fitting = mpi.broadcast(is_fitting)
 
+    if args.out_dir:
+        out_path = check_dir_path(args.out_dir)
+    else:
+        out_path = "./"
+
     if not is_fitting:
         # No fitting
         runner = ExperimentRunner(infile, {})
         runner.run()
 
         if mpi.is_root:
-            if args.out_dir:
-                out_path = check_dir_path(args.out_dir)
-            else:
-                out_path = "./"
             # Output
             runner.config.save_output(name=None, path=out_path)
     else:
         fitter = FittingRunner(infile)
-        fitter.run()
+        fitter.run(name=None, path=out_path)
 
         if mpi.is_root:
             if args.fitreport_path:
