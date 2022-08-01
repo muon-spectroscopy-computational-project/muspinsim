@@ -42,29 +42,36 @@ def main(use_mpi=False):
 
     if mpi.is_root:
         # Entry point for script
-        parser = ap.ArgumentParser(description="Muspinsim arguments")
+        parser = ap.ArgumentParser(
+            description="Muspinsim - A program designed to carry out "
+            "spin dynamics calculations for muon science experiments"
+        )
         parser.add_argument(
             "-o",
             "--out-dir",
             type=str,
             default=None,
-            help="""destination folder to store output .dat files""",
+            help="""folder to store the output .dat files""",
         )
         parser.add_argument(
-            "-l", "--log-path", type=str, default=None, help="""set log output path"""
+            "-l",
+            "--log-path",
+            type=str,
+            default=None,
+            help="""filepath to store simulation logs """,
         )
         parser.add_argument(
             "-f",
             "--fitreport-path",
             type=str,
             default=None,
-            help="""set fit report output path""",
+            help="""filepath to store fit report if fitting parameters given""",
         )
         parser.add_argument(
             "input_file",
             type=ap.FileType("r"),
             default=None,
-            help="""muspinsim formatted file with input parameters.""",
+            help="""filepath to muspinsim specially formatted text file specifying simulation input parameters.""",
         )
         args = parser.parse_args()
         inp_filepath = args.input_file.name
