@@ -71,7 +71,8 @@ def main(use_mpi=False):
             "input_file",
             type=ap.FileType("r"),
             default=None,
-            help="""filepath to muspinsim specially formatted text file specifying simulation input parameters.""",
+            help="""filepath to muspinsim specially formatted text
+            file specifying simulation input parameters.""",
         )
         args = parser.parse_args()
         inp_filepath = args.input_file.name
