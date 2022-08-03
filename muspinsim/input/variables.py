@@ -15,14 +15,25 @@ class FittingVariable(object):
 
         invalid = ""
         if self._max <= self._min:
-            invalid += "Variable {0} has invalid range: " \
-                       "(max value {1} cannot be less than or equal to min value {2})\n".format(name, self._max, self._min)
+            invalid += (
+                "Variable {0} has invalid range: "
+                "(max value {1} cannot be less than or equal to min value {2}"
+                ")\n".format(name, self._max, self._min)
+            )
         if self._value > self._max:
-            invalid += "Variable {0} has invalid starting value: " \
-                        "(starting value {1} cannot be greater than max value {2})".format(name, self._value, self._max)
+            invalid += (
+                "Variable {0} has invalid starting value: "
+                "(starting value {1} cannot be greater than max value {2})".format(
+                    name, self._value, self._max
+                )
+            )
         if self._value < self._min:
-            invalid += "Variable {0} has invalid starting value: " \
-                        "(starting value {1} cannot be less than min value {2})".format(name, self._value, self._min)
+            invalid += (
+                "Variable {0} has invalid starting value: "
+                "(starting value {1} cannot be less than min value {2})".format(
+                    name, self._value, self._min
+                )
+            )
 
         if invalid != "":
             raise ValueError(invalid)
