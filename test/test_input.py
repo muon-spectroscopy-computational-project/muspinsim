@@ -10,7 +10,8 @@ from muspinsim.input.keyword import (
     MuSpinExpandKeyword,
     InputKeywords,
 )
-from muspinsim.input.input import MuSpinInput, MuSpinInputError
+from muspinsim.input.input import MuSpinInputError
+from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):

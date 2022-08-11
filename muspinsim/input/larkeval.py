@@ -3,7 +3,7 @@
 Evaluation functions and classes based off the Lark grammar parser"""
 
 from lark import Lark
-from lark.exceptions import UnexpectedToken
+from lark.exceptions import UnexpectedToken, UnexpectedInput
 
 _expr_parser = Lark(
     """
@@ -51,12 +51,16 @@ def lark_tokenize(line):
             try:
                 _expr_parser.parse(tk)
                 valid = True
-            except UnexpectedToken:
+            except UnexpectedToken as e:
                 if len(ls) == 0:
                     raise RuntimeError(
-                        "Line can not be tokenized into valid expressions"
+                        "Line can not be tokenized into valid expressions: {0}".format(
+                            str(e)
+                        )
                     )
                 tk = tk + ls.pop(0)
+            except UnexpectedInput as e:
+                raise LarkExpressionError("Could not parse input: {0}".format(e))
         tokens.append(tk)
 
     return tokens
@@ -88,8 +92,10 @@ class LarkExpression(object):
             raise LarkExpressionError("Empty String")
         try:
             self._tree = _expr_parser.parse(source)
-        except UnexpectedToken:
-            raise LarkExpressionError("Invalid characters in LarkExpression")
+        except UnexpectedToken as e:
+            raise LarkExpressionError(
+                "Invalid characters in LarkExpression: " "{0}".format(e)
+            )
 
         # Find the variables and the function calls
         found_vars, found_funcs = self._analyse_tree(self._tree)
@@ -102,7 +108,8 @@ class LarkExpression(object):
         for v in self._variables:
             if v not in self._all_variables:
                 raise LarkExpressionError(
-                    "Invalid variable: '{0}', valid variables are ['{1}']".format(
+                    "Invalid variable/constant: '{0}', "
+                    "valid variables/constants are ['{1}']".format(
                         v, "', '".join(self._all_variables)
                     )
                 )
@@ -195,13 +202,15 @@ class LarkExpression(object):
         vset = set(variables.keys())
         if len(self.variables - vset) > 0:
             raise LarkExpressionError(
-                "Some necessary variables have not been "
-                "defined when evaluating LarkExpression"
+                "Some necessary variable(s) {0} have not been "
+                "defined when evaluating LarkExpression".format(self.variables - vset)
             )
         elif len(vset - self._all_variables) > 0:
             raise LarkExpressionError(
-                "Some invalid variables have been "
-                "defined when evaluating LarkExpression"
+                "Some invalid variable(s) {0} have been "
+                "defined when evaluating LarkExpression".format(
+                    vset - self._all_variables
+                )
             )
 
         if self._store_eval is not None:
