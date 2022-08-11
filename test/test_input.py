@@ -58,7 +58,7 @@ class TestInput(unittest.TestCase):
                 "larkexpr": "3*",
                 "funcs": {},
                 "invalid": True,
-                "out": "Invalid characters in LarkExpression",
+                "out": "Invalid characters in LarkExpression: Unexpected token"
             },
             # empty expression
             {"larkexpr": "", "funcs": {}, "invalid": True, "out": "Empty String"},
@@ -72,7 +72,7 @@ class TestInput(unittest.TestCase):
             else:
                 with self.assertRaises(LarkExpressionError) as err:
                     e1 = LarkExpression(test["larkexpr"], functions=test["funcs"])
-                self.assertEqual(str(err.exception), test["out"])
+                self.assertTrue(test["out"] in str(err.exception))
 
     def test_larkexpr_var(self):
 
@@ -176,7 +176,7 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(RuntimeError) as err:
             MuSpinKeyword([], args=["a"])  # One argument too much
         self.assertEqual(
-            str(err.exception), "Wrong number of arguments passed to keyword keyword"
+            str(err.exception), "Wrong number of in-line arguments given 'a', expected 0, got 1"
         )
 
     def test_input_keywords(self):
@@ -224,7 +224,8 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(ValueError) as err:
             ykw = InputKeywords["y_axis"](["something"])
         self.assertEqual(
-            str(err.exception), "Invalid block for keyword y_axis: Invalid value"
+            str(err.exception), "Invalid block for keyword y_axis: Invalid value, accepted values "
+                                "['asymmetry', 'integral']"
         )
 
         ykw = InputKeywords["y_axis"](["asymmetry"])
@@ -257,7 +258,9 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(RuntimeError) as err:
             InputKeywords["zeeman"]([], args=["wrong"])
         self.assertEqual(
-            str(err.exception), "Invalid argument type passed to keyword zeeman"
+            str(err.exception), "Error parsing keyword argument(s) 'zeeman': "
+                                "invalid literal for int() with "
+                                "base 10: 'wrong'"
         )
 
     def test_read_block(self):
@@ -330,7 +333,9 @@ notakeyword 1
                 )
             ).evaluate()
         self.assertEqual(
-            str(err.exception), "Invalid keyword notakeyword found in input file"
+            str(err.exception), "Found 1 Error(s) whilst trying to parse keywords: \n\n"
+                                "Error occurred when parsing keyword 'notakeyword' (block starting at line 6):\n"
+                                "Invalid keyword notakeyword found in input file"
         )
 
     def test_fitting(self):
@@ -417,11 +422,13 @@ fitting_variables
             )
         self.assertEqual(
             str(err.exception),
-            "Fitting variables defined without defining a set of data to fit",
+            "Found 1 Error(s) whilst trying to parse fitting keywords: \n\n"
+            "Error occurred when parsing keyword 'fitting_variables' (block starting at line 2):\n"
+            "Fitting variables defined without defining any data to fit",
         )
 
         # invalid variable range
-        with self.assertRaises(ValueError) as err:
+        with self.assertRaises(MuSpinInputError) as err:
             MuSpinInput(
                 StringIO(
                     """
@@ -440,16 +447,15 @@ zeeman 1
                     )
                 )
             )
-        self.assertEqual(
-            str(err.exception),
+        self.assertTrue(
             "Variable x has invalid range: "
             "(max value -5.0 cannot be less than or equal to min value 0.0)\n"
             "Variable x has invalid starting value: "
-            "(starting value 1.0 cannot be greater than max value -5.0)",
+            "(starting value 1.0 cannot be greater than max value -5.0)" in str(err.exception)
         )
 
         # variable name clashes with constant
-        with self.assertRaises(ValueError) as err:
+        with self.assertRaises(MuSpinInputError) as err:
             MuSpinInput(
                 StringIO(
                     """
@@ -467,7 +473,6 @@ zeeman 1
 """
                 )
             )
-        self.assertEqual(
-            str(err.exception),
-            "Variable names {'MHz'} conflict with existing constants",
+        self.assertTrue(
+            "Variable names {'MHz'} conflict with existing constants" in str(err.exception)
         )

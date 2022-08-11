@@ -111,13 +111,19 @@ class MuSpinInput(object):
             raw_blocks, block_line_nums = _make_blocks(fs)
             # A special case: if there are fitting variables, we need to know
             # right away
-            errors_found = []
+
+            # if we find errors when parsing fitting variables, we post an error immediately
+            # so we don't propagate invalid variables when parsing keywords down the line
             failed_status, errors = self._load_fitting_kw(raw_blocks, block_line_nums)
             if failed_status:
-                errors_found.extend(errors)
+                raise MuSpinInputError(
+                    "Found {0} Error(s) whilst trying to parse fitting keywords: "
+                    "\n\n{1}".format(len(errors), "\n\n".join(errors))
+                )
 
             # Another special case: if the "experiment" keyword is present,
             # use it to set some defaults
+            errors_found = []
             try:
                 block = raw_blocks.pop("experiment")
                 kw = InputKeywords["experiment"](block)
@@ -172,7 +178,7 @@ class MuSpinInput(object):
 
             if errors_found:
                 raise MuSpinInputError(
-                    "Found {0} Error(s) whilst trying to parse input file: "
+                    "Found {0} Error(s) whilst trying to parse keywords: "
                     "\n\n{1}".format(len(errors_found), "\n\n".join(errors_found))
                 )
 
