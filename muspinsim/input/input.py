@@ -112,8 +112,8 @@ class MuSpinInput(object):
             # A special case: if there are fitting variables, we need to know
             # right away
 
-            # if we find errors when parsing fitting variables, we post an error immediately
-            # so we don't propagate invalid variables when parsing keywords down the line
+            # if we find errors when parsing fitting variables, we post an error
+            # so we don't propagate invalid variables when parsing keywords later
             failed_status, errors = self._load_fitting_kw(raw_blocks, block_line_nums)
             if failed_status:
                 raise MuSpinInputError(

@@ -375,8 +375,9 @@ class KWXAxis(MuSpinKeyword):
     accept_range = False
     default = "time"
     _validators = [
-        lambda s:
-        "Invalid value {0}, accepts {1}".format(s[0], [i for i in InputKeywords if InputKeywords[i].accept_as_x])
+        lambda s: "Invalid value {0}, accepts {1}".format(
+            s[0], [i for i in InputKeywords if InputKeywords[i].accept_as_x]
+        )
         if s[0] not in InputKeywords or not InputKeywords[s[0]].accept_as_x
         else ""
     ]
@@ -394,6 +395,7 @@ class KWYAxis(MuSpinKeyword):
         else ""
     ]
 
+
 class KWAverageAxes(MuSpinKeyword):
 
     name = "average_axes"
@@ -403,7 +405,7 @@ class KWAverageAxes(MuSpinKeyword):
     _validators = [
         lambda s: "Invalid value(s) '{0}': accepts {1}".format(
             [w for w in s if (w not in InputKeywords) or w.lower() == "None"],
-            InputKeywords
+            InputKeywords,
         )
         if not all((w in InputKeywords or w.lower() == "none") for w in s)
         else ""
@@ -502,11 +504,13 @@ class KWFittingVariables(MuSpinKeyword):
     default = ""
     _constants = {**_math_constants, **_phys_constants}
     _validators = [
-        lambda s:
-        "Invalid value '{0}': variable name conflicts with a constant".format(s.name)
+        lambda s: "Invalid value '{0}': variable name conflicts with a constant".format(
+            s.name
+        )
         if s.name in {**_math_constants, **_phys_constants}
         else ""
     ]
+
     def _store_values(self, block):
 
         variables = list(self._constants.keys())
@@ -550,10 +554,10 @@ class KWFittingMethod(MuSpinKeyword):
     accept_range = False
     default = "nelder-mead"
     _validators = [
-        lambda s:
-        "Invalid value {0}, accepted values {1}".format(
-            s[0].lower(), ['nelder-mead', 'lbfgs'])
-        if s[0].lower() not in ['nelder-mead', 'lbfgs']
+        lambda s: "Invalid value {0}, accepted values {1}".format(
+            s[0].lower(), ["nelder-mead", "lbfgs"]
+        )
+        if s[0].lower() not in ["nelder-mead", "lbfgs"]
         else ""
     ]
 
@@ -565,8 +569,7 @@ class KWFittingTolerance(MuSpinKeyword):
     accept_range = False
     default = "1e-3"
     _validators = [
-        lambda s:
-        "Invalid value '{0}', accepts only single float value".format(s[0])
+        lambda s: "Invalid value '{0}', accepts only single float value".format(s[0])
         if not float(s[0])
         else "",
     ]
