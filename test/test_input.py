@@ -96,7 +96,7 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(LarkExpressionError) as err:
             e4 = LarkExpression("x+1", variables="y")
         self.assertEqual(
-            str(err.exception), "Invalid variable: 'x', valid variables are ['y']"
+            str(err.exception), "Invalid variable/constant: 'x', valid variables/constants are ['y']"
         )
 
         # value of variable not given when evaluating
@@ -105,8 +105,8 @@ class TestInput(unittest.TestCase):
             e5.evaluate()
         self.assertEqual(
             str(err.exception),
-            "Some necessary variables have not been defined when "
-            "evaluating LarkExpression",
+            "Some necessary variable(s) {'x'} have not been defined "
+            "when evaluating LarkExpression"
         )
 
         # invalid variable value given when evaluating
@@ -115,7 +115,7 @@ class TestInput(unittest.TestCase):
             e5.evaluate(x=1, y=1)
         self.assertEqual(
             str(err.exception),
-            "Some invalid variables have been defined when "
+            "Some invalid variable(s) {'y'} have been defined when "
             "evaluating LarkExpression",
         )
 
@@ -224,8 +224,7 @@ class TestInput(unittest.TestCase):
         with self.assertRaises(ValueError) as err:
             ykw = InputKeywords["y_axis"](["something"])
         self.assertEqual(
-            str(err.exception), "Invalid block for keyword y_axis: Invalid value, accepted values "
-                                "['asymmetry', 'integral']"
+            str(err.exception), "Invalid value '['something']', accepts ['asymmetry', 'integral']"
         )
 
         ykw = InputKeywords["y_axis"](["asymmetry"])
@@ -473,6 +472,9 @@ zeeman 1
 """
                 )
             )
-        self.assertTrue(
-            "Variable names {'MHz'} conflict with existing constants" in str(err.exception)
+        self.assertEqual(
+            str(err.exception),
+            "Found 1 Error(s) whilst trying to parse fitting keywords: \n\n"
+            "Error occurred when parsing keyword 'fitting_variables' (block starting at line 2):\n"
+            "Invalid value 'MHz': variable name conflicts with a constant"
         )
