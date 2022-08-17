@@ -76,20 +76,20 @@ def main(use_mpi=False):
         )
         args = parser.parse_args()
         inp_filepath = args.input_file.name
+        inp_dir = "{0}.log".format(os.path.splitext(inp_filepath)[0])
 
         fs = open(inp_filepath)
         infile = MuSpinInput(fs)
         is_fitting = len(infile.variables) > 0
 
         # Open logfile
+        logfile = inp_dir
         if args.log_path:
             # check if directory exists, if not create it
             logfile = "{0}/{1}".format(
                 check_dir_path(os.path.dirname(args.log_path)),
                 os.path.basename(args.log_path),
             )
-        else:
-            logfile = "{0}.log".format(os.path.splitext(inp_filepath)[0])
 
         logging.basicConfig(
             filename=logfile,
@@ -119,7 +119,7 @@ def main(use_mpi=False):
     if args.out_dir:
         out_path = check_dir_path(args.out_dir)
     else:
-        out_path = "./"
+        out_path = inp_dir
 
     if not is_fitting:
         # No fitting
@@ -134,11 +134,13 @@ def main(use_mpi=False):
         fitter.run(name=None, path=out_path)
 
         if mpi.is_root:
+            rep_path = inp_dir
+            rep_fname = None
             if args.fitreport_path:
                 rep_path = check_dir_path(os.path.dirname(args.fitreport_path))
+                # default to creating it with outputs
                 rep_fname = os.path.basename(args.fitreport_path)
-            else:
-                rep_path = "./"
+
             fitter.write_report(fname=rep_fname, path=rep_path)
 
     if mpi.is_root:
