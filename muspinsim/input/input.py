@@ -206,7 +206,11 @@ class MuSpinInput(object):
                         )
                         result["couplings"][kwid] = val
             else:
-                if name in self._keywords:
+                # remove unnecessary keywords - stored in fitting_info
+                if name in ["fitting_data", "fitting_tolerance",
+                            "fitting_variables", "fitting_method"]:
+                    pass
+                elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}
                     val = kw.evaluate(**v)
