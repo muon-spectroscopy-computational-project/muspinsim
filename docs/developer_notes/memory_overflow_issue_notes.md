@@ -94,4 +94,5 @@ we need to calculate `self.operator` whenever we add any interaction term which 
 
 1. What is the purpose of having "xyz+-0"?
 
-2. Why do we only care about "0" when we execute `self.operator`?
+2. Is it possible to use Sparse Matrices when performing Kronecker product
+    - the matrix is used in many places - need to ensure compatibility
