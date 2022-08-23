@@ -30,7 +30,7 @@ zeeman 1
         ertest.B = np.array([0, 0, 1.0])
 
         self.assertTrue((ertest.Hsys.matrix == np.diag([0.5 * gmu, -0.5 * gmu])).all())
-        self.assertTrue(ertest.Hsys == ertest.Hz)
+        self.assertTrue(np.allclose(ertest.Hz.matrix.data, ertest.Hsys.matrix.data))
 
         stest = StringIO(
             """
@@ -53,7 +53,7 @@ spins
 
         self.assertTrue(
             np.all(
-                ertest.Hz.matrix
+                ertest.Hz.matrix.toarray()
                 == np.diag(
                     [
                         0.5 * (ge + gmu),
@@ -88,7 +88,7 @@ spins
         self.assertTrue(
             np.all(
                 np.isclose(
-                    rho0.matrix,
+                    rho0.matrix.toarray(),
                     [
                         [0.25, 0.25, 0, 0],
                         [0.25, 0.25, 0, 0],
@@ -112,7 +112,7 @@ spins
         Z = np.exp([-1, 1])
         Z /= np.sum(Z)
 
-        self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix), [Z[0], 0, Z[1], 0])))
+        self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix.toarray()), [Z[0], 0, Z[1], 0])))
 
     def test_run(self):
 
