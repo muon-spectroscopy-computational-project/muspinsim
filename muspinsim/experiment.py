@@ -5,6 +5,7 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
+from scipy import sparse
 
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
@@ -71,12 +72,11 @@ class ExperimentRunner(object):
         self._config = config
         self._system = config.system
         # Store single spin operators
-        self._single_spinops = np.array(
-            [
-                [self._system.operator({i: a}).matrix for a in "xyz"]
-                for i in range(len(self._system))
-            ]
-        )
+
+        self._single_spinops = np.array([
+            [self._system.operator({i: a}).matrix for a in "xyz"]
+            for i in range(len(self._system))
+        ])
 
         # Parameters
         self._B = np.zeros(3)
@@ -175,7 +175,7 @@ class ExperimentRunner(object):
                         axis=0,
                     )
 
-                    evals, evecs = np.linalg.eigh(Hz)
+                    evals, evecs = np.linalg.eigh(Hz.toarray())
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
@@ -208,10 +208,13 @@ class ExperimentRunner(object):
         if self._Hz is None:
             B = self._B
             g = self._system.gammas
-            Hz = np.sum(
-                B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
-                axis=(0, 1),
-            )
+            Bg = B[None, :] * g[:, None]
+
+            Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+            Hz = Hz_sp_list.pop()
+            for sp_mat in Hz_sp_list:
+                Hz += sp_mat
+
             self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
 
         return self._Hz
@@ -248,11 +251,18 @@ class ExperimentRunner(object):
                 z = self._B / B
                 x, y = get_xy(z)
 
+            def sparse_sum(sp_mat_list):
+                sp_mat_list = sp_mat_list.flatten().tolist()
+                res = sp_mat_list.pop()
+                for sp_mat in sp_mat_list:
+                    res += sp_mat
+                return res
+
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
 
-                op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
-                op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+                op_x = sparse_sum(self._single_spinops[i, :, None] * x[:, None])
+                op_y = sparse_sum(self._single_spinops[i, :, None] * y[:, None])
                 op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
                 op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
 

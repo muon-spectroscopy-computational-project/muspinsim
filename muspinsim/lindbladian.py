@@ -5,6 +5,8 @@ SuperOperator class for Lindbladian, used in open quantum dynamics
 
 import numpy as np
 from numbers import Number
+from scipy import sparse
+from scipy.sparse import linalg
 
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.spinop import SuperOperator, SpinOperator, DensityOperator
@@ -84,17 +86,17 @@ class Lindbladian(SuperOperator):
             raise ValueError("Incompatible measure operator dimension")
 
         # Start by building the matrix
-        L = self.matrix
+        L = self.matrix.toarray()
 
         # Diagonalize it
         evals, revecs = np.linalg.eig(L)
 
         # Vec-ing the density matrix
-        rho0 = rho0.matrix.reshape((-1,))
+        rho0 = rho0.matrix.toarray().reshape(-1,)
         rho0 = np.linalg.solve(revecs, rho0)
         # And the operators
         operatorsT = np.array(
-            [np.dot(o.matrix.T.reshape((-1,)), revecs) for o in operators]
+            [np.dot(o.matrix.T.toarray().reshape((-1,)), revecs) for o in operators]
         )
 
         rho = np.exp(2.0 * np.pi * evals[None, :] * times[:, None]) * rho0[None, :]
@@ -153,16 +155,25 @@ class Lindbladian(SuperOperator):
         L = self.matrix
 
         # Diagonalize it
-        evals, revecs = np.linalg.eig(L)
+
+        # sparse matricies
+
+        # need to convert this to use sparse matrices instead
+        evals, revecs = np.linalg.eig(L.toarray())
+
+        # evals, revecs = linalg.eigsh(self._matrix, k=self._matrix.shape[0]-2)
+        # idx = evals.argsort()
+        # evals = eigval[idx]
+        # revecs = eigvec[:,idx]
 
         # Vec-ing the density matrix
-        rho0 = rho0.matrix.reshape((-1,))
+        rho0 = rho0.matrix.toarray().reshape((-1,))
         rho0 = np.linalg.solve(revecs, rho0)
 
         # And the operators
         intops = np.array(
             [
-                np.dot(o.matrix.T.reshape((-1,)), revecs)
+                np.dot(o.matrix.T.toarray().reshape((-1,)), revecs)
                 / (1.0 / tau - 2.0 * np.pi * evals)
                 for o in operators
             ]
