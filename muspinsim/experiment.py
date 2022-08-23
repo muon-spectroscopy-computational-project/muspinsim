@@ -5,7 +5,6 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
-from scipy import sparse
 
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy

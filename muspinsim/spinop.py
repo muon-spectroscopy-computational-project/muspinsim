@@ -7,7 +7,6 @@ import numpy as np
 from numbers import Number
 from muspinsim.utils import Clonable
 from scipy import sparse
-from scipy.sparse import linalg
 
 
 def _mvals(I):

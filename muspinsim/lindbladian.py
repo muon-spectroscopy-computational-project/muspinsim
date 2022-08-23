@@ -5,8 +5,6 @@ SuperOperator class for Lindbladian, used in open quantum dynamics
 
 import numpy as np
 from numbers import Number
-from scipy import sparse
-from scipy.sparse import linalg
 
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.spinop import SuperOperator, SpinOperator, DensityOperator
