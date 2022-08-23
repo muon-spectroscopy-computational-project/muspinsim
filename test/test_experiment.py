@@ -112,7 +112,9 @@ spins
         Z = np.exp([-1, 1])
         Z /= np.sum(Z)
 
-        self.assertTrue(np.all(np.isclose(np.diag(rho0.matrix.toarray()), [Z[0], 0, Z[1], 0])))
+        self.assertTrue(
+            np.all(np.isclose(np.diag(rho0.matrix.toarray()), [Z[0], 0, Z[1], 0]))
+        )
 
     def test_run(self):
 

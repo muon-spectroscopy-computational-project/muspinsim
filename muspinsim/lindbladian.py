@@ -92,7 +92,9 @@ class Lindbladian(SuperOperator):
         evals, revecs = np.linalg.eig(L)
 
         # Vec-ing the density matrix
-        rho0 = rho0.matrix.toarray().reshape(-1,)
+        rho0 = rho0.matrix.toarray().reshape(
+            -1,
+        )
         rho0 = np.linalg.solve(revecs, rho0)
         # And the operators
         operatorsT = np.array(

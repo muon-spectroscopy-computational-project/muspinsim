@@ -77,15 +77,23 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(np.all((sx / 2).matrix.toarray() == [[0, 0.25], [0.25, 0]]))
 
         # Operators (test commutation relations)
-        self.assertTrue(np.all((sx * sy - sy * sx).matrix.toarray() == (1.0j * sz).matrix))
-        self.assertTrue(np.all((sy * sz - sz * sy).matrix.toarray() == (1.0j * sx).matrix))
-        self.assertTrue(np.all((sz * sx - sx * sz).matrix.toarray() == (1.0j * sy).matrix))
+        self.assertTrue(
+            np.all((sx * sy - sy * sx).matrix.toarray() == (1.0j * sz).matrix)
+        )
+        self.assertTrue(
+            np.all((sy * sz - sz * sy).matrix.toarray() == (1.0j * sx).matrix)
+        )
+        self.assertTrue(
+            np.all((sz * sx - sx * sz).matrix.toarray() == (1.0j * sy).matrix)
+        )
 
         self.assertTrue(np.all((sx + 0.5).matrix.toarray() == 0.5 * np.ones((2, 2))))
         self.assertTrue(np.all((sz - 0.5).matrix.toarray() == np.diag([0, -1])))
 
         # Test equality
-        self.assertTrue(np.allclose(sx.matrix.data, SpinOperator.from_axes(0.5, "x").matrix.data))
+        self.assertTrue(
+            np.allclose(sx.matrix.data, SpinOperator.from_axes(0.5, "x").matrix.data)
+        )
         self.assertFalse(SpinOperator(np.eye(4)) == SpinOperator(np.eye(4), (2, 2)))
 
         # Test Kronecker product
@@ -116,7 +124,9 @@ class TestSpinOperator(unittest.TestCase):
         with self.assertRaises(ArithmeticError):
             _ = Sx * SxIx
 
-        self.assertTrue(np.allclose((16 * SxSx * SySy).matrix.toarray(), np.diag([-1, 1, 1, -1])))
+        self.assertTrue(
+            np.allclose((16 * SxSx * SySy).matrix.toarray(), np.diag([-1, 1, 1, -1]))
+        )
 
     def test_density(self):
 
@@ -139,7 +149,11 @@ class TestSpinOperator(unittest.TestCase):
         rho = DensityOperator.from_vectors(0.5, [0, 1, 0], 0.5)
 
         self.assertTrue(
-            np.all(np.isclose(rho.matrix.toarray(), np.array([[0.5, -0.25j], [0.25j, 0.5]])))
+            np.all(
+                np.isclose(
+                    rho.matrix.toarray(), np.array([[0.5, -0.25j], [0.25j, 0.5]])
+                )
+            )
         )
 
     def test_superoperator(self):
@@ -152,19 +166,15 @@ class TestSpinOperator(unittest.TestCase):
         acsx = SuperOperator.anticommutator(sx)
         bksx = SuperOperator.bracket(sx)
 
-        self.assertTrue(np.allclose(
-            (sx * rho0).matrix.data,
-            (lsx * rho0).matrix.data
-        ))
-        self.assertTrue(np.allclose(
-            (sx * rho0 - rho0 * sx).matrix.data,
-            (csx * rho0).matrix.data
-        ))
-        self.assertTrue(np.allclose(
-            (sx * rho0 + rho0 * sx).matrix.data,
-            (acsx * rho0).matrix.data
-        ))
-        self.assertTrue(np.allclose(
-            (sx * rho0 * sx.dagger()).matrix.data,
-            (bksx * rho0).matrix.data
-        ))
+        self.assertTrue(np.allclose((sx * rho0).matrix.data, (lsx * rho0).matrix.data))
+        self.assertTrue(
+            np.allclose((sx * rho0 - rho0 * sx).matrix.data, (csx * rho0).matrix.data)
+        )
+        self.assertTrue(
+            np.allclose((sx * rho0 + rho0 * sx).matrix.data, (acsx * rho0).matrix.data)
+        )
+        self.assertTrue(
+            np.allclose(
+                (sx * rho0 * sx.dagger()).matrix.data, (bksx * rho0).matrix.data
+            )
+        )

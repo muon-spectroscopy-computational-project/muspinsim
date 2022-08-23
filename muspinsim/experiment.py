@@ -73,10 +73,12 @@ class ExperimentRunner(object):
         self._system = config.system
         # Store single spin operators
 
-        self._single_spinops = np.array([
-            [self._system.operator({i: a}).matrix for a in "xyz"]
-            for i in range(len(self._system))
-        ])
+        self._single_spinops = np.array(
+            [
+                [self._system.operator({i: a}).matrix for a in "xyz"]
+                for i in range(len(self._system))
+            ]
+        )
 
         # Parameters
         self._B = np.zeros(3)

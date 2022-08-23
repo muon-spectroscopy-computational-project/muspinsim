@@ -72,11 +72,11 @@ class Hermitian(object):
         # setting k is important
         # too big will cause memory issues
         # too small = inaccurate results
-        #eigval, eigvec = linalg.eigsh(self._matrix, k=self._matrix.shape[0]-2)
-        #idx = eigval.argsort()
-        #eigval = eigval[idx]
-        #eigvec = eigvec[:,idx]
-        #eigh = (eigval, eigvec)
+        # eigval, eigvec = linalg.eigsh(self._matrix, k=self._matrix.shape[0]-2)
+        # idx = eigval.argsort()
+        # eigval = eigval[idx]
+        # eigvec = eigvec[:,idx]
+        # eigh = (eigval, eigvec)
 
         self._diagdata = {"matrix": self._matrix.copy(), "eigh": eigh}
 
@@ -509,7 +509,7 @@ class DensityOperator(Operator):
 
     def normalize(self):
         """Normalize this DensityOperator to have trace equal to one."""
-        self._matrix = self._matrix.multiply(1/self.trace)
+        self._matrix = self._matrix.multiply(1 / self.trace)
 
     def partial_trace(self, tracedim=[]):
         """Perform a partial trace operation
