@@ -109,8 +109,6 @@ class MuSpinInput(object):
         if fs is not None:
 
             raw_blocks, block_line_nums = _make_blocks(fs)
-            # A special case: if there are fitting variables, we need to know
-            # right away
 
             # if we find errors when parsing fitting variables, we post an error
             # so we don't propagate invalid variables when parsing keywords later
