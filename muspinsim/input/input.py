@@ -205,8 +205,12 @@ class MuSpinInput(object):
                         result["couplings"][kwid] = val
             else:
                 # remove unnecessary keywords - stored in fitting_info
-                if name in ["fitting_data", "fitting_tolerance",
-                            "fitting_variables", "fitting_method"]:
+                if name in [
+                    "fitting_data",
+                    "fitting_tolerance",
+                    "fitting_variables",
+                    "fitting_method",
+                ]:
                     pass
                 elif name in self._keywords:
                     kw = self._keywords[name]

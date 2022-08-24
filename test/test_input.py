@@ -15,7 +15,6 @@ from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):
-
     def test_basic_keyword(self):
         # Basic keyword
         kw = MuSpinKeyword(["a b c", "d e f"])
@@ -69,125 +68,152 @@ class TestInput(unittest.TestCase):
         self.assertTrue((kw.evaluate() == test["out"]).all())
 
         self.assertEqual(
-            kw.id,
-            test["kw"] + "".join(["_{0}".format(i) for i in test["args"]])
+            kw.id, test["kw"] + "".join(["_{0}".format(i) for i in test["args"]])
         )
 
     def test_keyword_name(self):
-        self._eval_kw({
-            "kw": "name",
-            "args": [],
-            "in": ["othername"],
-            "out": "othername",
-        })
+        self._eval_kw(
+            {
+                "kw": "name",
+                "args": [],
+                "in": ["othername"],
+                "out": "othername",
+            }
+        )
 
     def test_keyword_name_defaults(self):
-        self._eval_kw({
-            "kw": "name",
-            "args": [],
-            "in": [],
-            "out": "muspinsim",
-        })
+        self._eval_kw(
+            {
+                "kw": "name",
+                "args": [],
+                "in": [],
+                "out": "muspinsim",
+            }
+        )
 
     def test_keyword_spins(self):
-        self._eval_kw({
-            "kw": "spins",
-            "args": [],
-            "in": ["F mu F"],
-            "out": np.array(["F", "mu", "F"]),
-        })
+        self._eval_kw(
+            {
+                "kw": "spins",
+                "args": [],
+                "in": ["F mu F"],
+                "out": np.array(["F", "mu", "F"]),
+            }
+        )
 
     def test_keyword_spins_defaults(self):
-        self._eval_kw({
-            "kw": "spins",
-            "args": [],
-            "in": [],
-            "out": np.array(["mu", "e"]),
-        })
+        self._eval_kw(
+            {
+                "kw": "spins",
+                "args": [],
+                "in": [],
+                "out": np.array(["mu", "e"]),
+            }
+        )
 
     def test_keyword_polarization(self):
-        self._eval_kw({
-            "kw": "polarization",
-            "args": [],
-            "in": ["0 1 1"],
-            "out": np.array([0, 1, 1]),
-        })
+        self._eval_kw(
+            {
+                "kw": "polarization",
+                "args": [],
+                "in": ["0 1 1"],
+                "out": np.array([0, 1, 1]),
+            }
+        )
 
     def test_keyword_polarization_defaults(self):
-        self._eval_kw({
-            "kw": "polarization",
-            "args": [],
-            "in": [],
-            "out": np.array([1, 0, 0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "polarization",
+                "args": [],
+                "in": [],
+                "out": np.array([1, 0, 0]),
+            }
+        )
 
     def test_keyword_polarization_longditudinal(self):
-        self._eval_kw({
-            "kw": "polarization",
-            "args": [],
-            "in": ["longitudinal"],
-            "out": np.array([0, 0, 1.0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "polarization",
+                "args": [],
+                "in": ["longitudinal"],
+                "out": np.array([0, 0, 1.0]),
+            }
+        )
 
     def test_keyword_polarization_transverse(self):
-        self._eval_kw({
-            "kw": "polarization",
-            "args": [],
-            "in": ["transverse"],
-            "out": np.array([1.0, 0, 0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "polarization",
+                "args": [],
+                "in": ["transverse"],
+                "out": np.array([1.0, 0, 0]),
+            }
+        )
 
     def test_keyword_field_range(self):
-        self._eval_kw({
-            "kw": "field",
-            "args": [],
-            "in": ["range(0, 20, 21)"],
-            "out": np.arange(21)[:, None],
-        })
+        self._eval_kw(
+            {
+                "kw": "field",
+                "args": [],
+                "in": ["range(0, 20, 21)"],
+                "out": np.arange(21)[:, None],
+            }
+        )
 
     def test_keyword_field_mhz(self):
         kw = InputKeywords["field"](["500*MHz"])
         self.assertTrue(np.isclose(kw.evaluate()[0][0], 1.84449016))
 
     def test_keyword_field_defaults(self):
-        self._eval_kw({
-            "kw": "field",
-            "args": [],
-            "in": [],
-            "out": np.array([0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "field",
+                "args": [],
+                "in": [],
+                "out": np.array([0]),
+            }
+        )
 
     def test_keyword_time_defaults(self):
-        self._eval_kw({
-            "kw": "time",
-            "args": [],
-            "in": [],
-            "out": np.linspace(0, 10, 101)[:, None],
-        })
+        self._eval_kw(
+            {
+                "kw": "time",
+                "args": [],
+                "in": [],
+                "out": np.linspace(0, 10, 101)[:, None],
+            }
+        )
 
     def test_keyword_time_range(self):
-        self._eval_kw({
-            "kw": "time",
-            "args": [],
-            "in": ["range(0, 10, 5)"],
-            "out": np.array([0, 2.5, 5, 7.5, 10])[:, None],
-        })
+        self._eval_kw(
+            {
+                "kw": "time",
+                "args": [],
+                "in": ["range(0, 10, 5)"],
+                "out": np.array([0, 2.5, 5, 7.5, 10])[:, None],
+            }
+        )
 
     def test_keyword_time_multi_line(self):
-        self._eval_kw({
-            "kw": "time",
-            "args": [],
-            "in": ["10", "20", "30", "range(0, 10, 5)"],
-            "out": np.array([10, 20, 30, 0, 2.5, 5, 7.5, 10])[:, None],
-        })
+        self._eval_kw(
+            {
+                "kw": "time",
+                "args": [],
+                "in": ["10", "20", "30", "range(0, 10, 5)"],
+                "out": np.array([10, 20, 30, 0, 2.5, 5, 7.5, 10])[:, None],
+            }
+        )
 
     def test_keyword_y_axis(self):
-        self._eval_kw({
-            "kw": "y_axis",
-            "args": [],
-            "in": ["asymmetry"],
-            "out": np.array(["asymmetry"]),
-        })
+        self._eval_kw(
+            {
+                "kw": "y_axis",
+                "args": [],
+                "in": ["asymmetry"],
+                "out": np.array(["asymmetry"]),
+            }
+        )
 
     def test_keyword_y_axis_invalid(self):
         with self.assertRaises(ValueError) as err:
@@ -198,72 +224,88 @@ class TestInput(unittest.TestCase):
         )
 
     def test_keyword_y_axis_defaults(self):
-        self._eval_kw({
-            "kw": "y_axis",
-            "args": [],
-            "in": [],
-            "out": np.array(["asymmetry"]),
-        })
+        self._eval_kw(
+            {
+                "kw": "y_axis",
+                "args": [],
+                "in": [],
+                "out": np.array(["asymmetry"]),
+            }
+        )
 
     def test_keyword_orientation_zcw(self):
         kw = InputKeywords["orientation"](["zcw(20)"])
         self.assertTrue(len(kw.evaluate()) >= 20)
 
     def test_keyword_orientation_defaults(self):
-        self._eval_kw({
-            "kw": "orientation",
-            "args": [],
-            "in": [],
-            "out": np.array([0, 0, 0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "orientation",
+                "args": [],
+                "in": [],
+                "out": np.array([0, 0, 0]),
+            }
+        )
 
     def test_keyword_zeeman(self):
-        self._eval_kw({
-            "kw": "zeeman",
-            "args": ["1"],
-            "in": ["0 0 1"],
-            "out": np.array([0, 0, 1]),
-        })
+        self._eval_kw(
+            {
+                "kw": "zeeman",
+                "args": ["1"],
+                "in": ["0 0 1"],
+                "out": np.array([0, 0, 1]),
+            }
+        )
 
     def test_keyword_zeeman_defaults(self):
-        self._eval_kw({
-            "kw": "zeeman",
-            "args": ["1"],
-            "in": [],
-            "out": np.array([0, 0, 0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "zeeman",
+                "args": ["1"],
+                "in": [],
+                "out": np.array([0, 0, 0]),
+            }
+        )
 
     def test_keyword_hyperfine(self):
-        self._eval_kw({
-            "kw": "hyperfine",
-            "args": ["1"],
-            "in": ["1 0 0", "0 1 0", "0 0 1"],
-            "out": np.array([[1, 0, 0],[0, 1, 0],[0, 0, 1]]),
-        })
+        self._eval_kw(
+            {
+                "kw": "hyperfine",
+                "args": ["1"],
+                "in": ["1 0 0", "0 1 0", "0 0 1"],
+                "out": np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+            }
+        )
 
     def test_keyword_hyperfine_defaults(self):
-        self._eval_kw({
-            "kw": "hyperfine",
-            "args": ["1"],
-            "in": [],
-            "out": np.zeros((3, 3)),
-        })
+        self._eval_kw(
+            {
+                "kw": "hyperfine",
+                "args": ["1"],
+                "in": [],
+                "out": np.zeros((3, 3)),
+            }
+        )
 
     def test_keyword_dipolar(self):
-        self._eval_kw({
-            "kw": "dipolar",
-            "args": ["1", "2"],
-            "in": ["0 0 1"],
-            "out": np.array([0, 0, 1]),
-        })
+        self._eval_kw(
+            {
+                "kw": "dipolar",
+                "args": ["1", "2"],
+                "in": ["0 0 1"],
+                "out": np.array([0, 0, 1]),
+            }
+        )
 
     def test_keyword_dipolar_defaults(self):
-        self._eval_kw({
-            "kw": "dipolar",
-            "args": ["1", "2"],
-            "in": [],
-            "out": np.array([0, 0, 0]),
-        })
+        self._eval_kw(
+            {
+                "kw": "dipolar",
+                "args": ["1", "2"],
+                "in": [],
+                "out": np.array([0, 0, 0]),
+            }
+        )
 
     def test_keyword_quadrupolar(self):
         kw = InputKeywords["quadrupolar"](
@@ -274,13 +316,14 @@ class TestInput(unittest.TestCase):
 
     def test_keyword_quadrupolar_defaults(self):
 
-        self._eval_kw({
-            "kw": "zeeman",
-            "args": ["1"],
-            "in": [],
-            "out": np.array([0, 0, 0]),
-        })
-
+        self._eval_kw(
+            {
+                "kw": "zeeman",
+                "args": ["1"],
+                "in": [],
+                "out": np.array([0, 0, 0]),
+            }
+        )
 
     def test_input_valid(self):
         # read valid file
@@ -433,7 +476,6 @@ fitting_method
         self.assertTrue((data == tdata).all())
         self.assertEqual(finfo["method"], "nelder-mead")
         self.assertAlmostEqual(finfo["rtol"], 1e-3)
-
 
     def test_fitting_no_data(self):
         # invalid no data given
