@@ -89,7 +89,7 @@ class MuSpinKeyword(object):
             )
 
         use_default = False
-        if len(block) == 0 and self.has_default:
+        if len(block) == 0 or (len(block) == 1 and not type(block[0] is np.ndarray) and block[0] in ("", None)):
             block = np.array([self.default.split("\n")])
             use_default = True
 
