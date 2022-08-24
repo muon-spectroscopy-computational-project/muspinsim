@@ -3,7 +3,6 @@ import numpy as np
 from io import StringIO
 from tempfile import NamedTemporaryFile
 
-from muspinsim.input.larkeval import LarkExpression, LarkExpressionError, lark_tokenize
 from muspinsim.input.keyword import (
     MuSpinKeyword,
     MuSpinEvaluateKeyword,
@@ -15,126 +14,8 @@ from muspinsim.input import MuSpinInput
 
 
 class TestInput(unittest.TestCase):
-    def test_larkexpr(self):
-        """Lark expression unit test"""
 
         def double(x):
-            return 2 * x
-
-        larktests = [
-            # read expression
-            {"larkexpr": "3+2*6^2/9", "funcs": {}, "invalid": False, "out": 11},
-            # read function - double
-            {
-                "larkexpr": "double(2)",
-                "funcs": {"double": double},
-                "invalid": False,
-                "out": 4,
-            },
-            # read expression within function
-            {
-                "larkexpr": "double(3+2*6^2/9)",
-                "funcs": {"double": double},
-                "invalid": False,
-                "out": 22,
-            },
-            # read expression composed of multiple functions
-            {
-                "larkexpr": "double(3+2* 6^2/9) - double(2 *5)",
-                "funcs": {"double": double},
-                "invalid": False,
-                "out": 2,
-            },
-            # invalid function
-            {
-                "larkexpr": "notafunc(123)",
-                "funcs": {"double": double},
-                "invalid": True,
-                "out": "Invalid function: 'notafunc()', "
-                "valid functions are ['double()']",
-            },
-            # invalid expression
-            {
-                "larkexpr": "3*",
-                "funcs": {},
-                "invalid": True,
-                "out": "Invalid characters in LarkExpression: Unexpected token",
-            },
-            # empty expression
-            {"larkexpr": "", "funcs": {}, "invalid": True, "out": "Empty String"},
-        ]
-
-        for test in larktests:
-
-            if not test["invalid"]:
-                e1 = LarkExpression(test["larkexpr"], functions=test["funcs"])
-                self.assertTrue(e1.evaluate() == test["out"])
-            else:
-                with self.assertRaises(LarkExpressionError) as err:
-                    e1 = LarkExpression(test["larkexpr"], functions=test["funcs"])
-                self.assertTrue(test["out"] in str(err.exception))
-
-    def test_larkexpr_var(self):
-
-        # Simple expressions
-        e2 = LarkExpression("x+y+1", variables="xy")
-
-        self.assertEqual(e2.variables, {"x", "y"})
-        self.assertEqual(e2.evaluate(x=2, y=5), 8)
-
-        # Try using a function
-        def double(x):
-            return 2 * x
-
-        e3 = LarkExpression("double(x)", variables="x", functions={"double": double})
-
-        self.assertEqual(e3.variables, {"x"})
-        self.assertEqual(e3.functions, {"double"})
-        self.assertEqual(e3.evaluate(x=2), 4)
-
-        # lark expression does not contain variable given
-        with self.assertRaises(LarkExpressionError) as err:
-            e4 = LarkExpression("x+1", variables="y")
-        self.assertEqual(
-            str(err.exception),
-            "Invalid variable/constant: 'x', valid variables/constants are ['y']",
-        )
-
-        # value of variable not given when evaluating
-        with self.assertRaises(LarkExpressionError) as err:
-            e5 = LarkExpression("x+1", variables="x")
-            e5.evaluate()
-        self.assertEqual(
-            str(err.exception),
-            "Some necessary variable(s) {'x'} have not been defined "
-            "when evaluating LarkExpression",
-        )
-
-        # invalid variable value given when evaluating
-        with self.assertRaises(LarkExpressionError) as err:
-            e5 = LarkExpression("x+1", variables="x")
-            e5.evaluate(x=1, y=1)
-        self.assertEqual(
-            str(err.exception),
-            "Some invalid variable(s) {'y'} have been defined when "
-            "evaluating LarkExpression",
-        )
-
-    def test_tokenization(self):
-        tokens = lark_tokenize("3+0.4 2.3 sin(x) atan2(3, 4)")
-        lark_tokens = [
-            LarkExpression(
-                tk, variables="x", functions={"sin": np.sin, "atan2": np.arctan2}
-            )
-            for tk in tokens
-        ]
-
-        self.assertEqual(len(tokens), 4)
-        self.assertEqual(lark_tokens[0].evaluate(), 3.4)
-        self.assertEqual(lark_tokens[1].evaluate(), 2.3)
-        self.assertAlmostEqual(lark_tokens[2].evaluate(x=np.pi / 2.0), 1.0)
-        self.assertAlmostEqual(lark_tokens[3].evaluate(), np.arctan2(3.0, 4.0))
-
     def test_keyword(self):
 
         # Basic keyword

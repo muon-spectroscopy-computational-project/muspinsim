@@ -102,7 +102,7 @@ class LarkExpression(object):
 
         self._variables = set(found_vars)
         self._functions = set(found_funcs)
-        self._all_variables = set(variables)
+        self._all_variables = set([variables] if isinstance(variables, str) else variables)
 
         # Check if they are valid
         for v in self._variables:
