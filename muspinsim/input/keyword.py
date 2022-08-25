@@ -52,7 +52,7 @@ class MuSpinKeyword(object):
     accept_as_x = False
     default = None
     expr_size_bounds = (1, np.inf)
-    _validators = {}
+    _validators = []
 
     def __init__(self, block=[], args=[]):
         """Create an instance of a given keyword, passing the raw block of
@@ -89,9 +89,19 @@ class MuSpinKeyword(object):
             )
 
         use_default = False
-        if len(block) == 0 and self.has_default:
-            block = np.array([self.default.split("\n")])
-            use_default = True
+        if len(block) == 0 or (
+            len(block) == 1
+            and not type(block[0] is np.ndarray)
+            and block[0] in ("", None)
+        ):
+            if self.has_default:
+                block = np.array([self.default.split("\n")])
+                use_default = True
+            else:
+                raise RuntimeError(
+                    "Input is empty and keyword '{0}' "
+                    "doesn't have a default value".format(self.name)
+                )
 
         self._store_values(block)
 
@@ -176,14 +186,12 @@ class MuSpinKeyword(object):
         self._values = np.array(self._values)
 
     def _validate_values(self):
+        errs = ""
+        for vfunc in self._validators:
+            errs += "\n".join([vfunc(b) for b in self._values if vfunc(b) != ""])
 
-        for rule, vfunc in self._validators.items():
-            ans = all([vfunc(b) for b in self._values])
-
-            if not ans:
-                raise ValueError(
-                    "Invalid block for " "keyword {0}: {1}".format(self.name, rule)
-                )
+        if errs:
+            raise ValueError(errs)
 
     @property
     def arguments(self):
@@ -376,11 +384,13 @@ class KWXAxis(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "time"
-    _validators = {
-        "Invalid value given, accepts input keywords only": lambda s: (
-            s[0] in InputKeywords and InputKeywords[s[0]].accept_as_x
+    _validators = [
+        lambda s: "Invalid value {0}, accepts {1}".format(
+            s[0], [i for i in InputKeywords if InputKeywords[i].accept_as_x]
         )
-    }
+        if s[0] not in InputKeywords or not InputKeywords[s[0]].accept_as_x
+        else ""
+    ]
 
 
 class KWYAxis(MuSpinKeyword):
@@ -389,11 +399,11 @@ class KWYAxis(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "asymmetry"
-    _validators = {
-        "Invalid value, "
-        "accepted values ['asymmetry', 'integral']": lambda s: s
-        in ("asymmetry", "integral")
-    }
+    _validators = [
+        lambda s: "Invalid value '{0}', accepts ['asymmetry', 'integral']".format(s)
+        if s not in ["asymmetry", "integral"]
+        else ""
+    ]
 
 
 class KWAverageAxes(MuSpinKeyword):
@@ -402,11 +412,14 @@ class KWAverageAxes(MuSpinKeyword):
     block_size = 1
     accept_range = True
     default = "orientation"
-    _validators = {
-        "Invalid value given, accepts keyword names": lambda s: all(
-            (w in InputKeywords or w.lower() == "none") for w in s
+    _validators = [
+        lambda s: "Invalid value(s) '{0}': accepts {1}".format(
+            [w for w in s if (w not in InputKeywords) or w.lower() == "None"],
+            InputKeywords,
         )
-    }
+        if not all((w in InputKeywords or w.lower() == "none") for w in s)
+        else ""
+    ]
 
 
 class KWOrientation(MuSpinExpandKeyword):
@@ -500,6 +513,13 @@ class KWFittingVariables(MuSpinKeyword):
     accept_range = True
     default = ""
     _constants = {**_math_constants, **_phys_constants}
+    _validators = [
+        lambda s: "Invalid value '{0}': variable name conflicts with a constant".format(
+            s.name
+        )
+        if s.name in {**_math_constants, **_phys_constants}
+        else ""
+    ]
 
     def _store_values(self, block):
 
@@ -543,12 +563,13 @@ class KWFittingMethod(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "nelder-mead"
-    _validators = {
-        "Invalid value, "
-        "accepted values ['nelder-mead', 'lbfgs']": lambda s: (
-            (s[0].lower() in ("nelder-mead", "lbfgs")) and len(s) == 1
+    _validators = [
+        lambda s: "Invalid value {0}, accepted values {1}".format(
+            s[0].lower(), ["nelder-mead", "lbfgs"]
         )
-    }
+        if s[0].lower() not in ["nelder-mead", "lbfgs"]
+        else ""
+    ]
 
 
 class KWFittingTolerance(MuSpinKeyword):
@@ -557,10 +578,11 @@ class KWFittingTolerance(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "1e-3"
-    _validators = {
-        "Invalid value, "
-        "accepts single float value": lambda s: (float(s[0]) and len(s) == 1)
-    }
+    _validators = [
+        lambda s: "Invalid value '{0}', accepts only single float value".format(s[0])
+        if not float(s[0])
+        else "",
+    ]
 
 
 # Special configuration keyword

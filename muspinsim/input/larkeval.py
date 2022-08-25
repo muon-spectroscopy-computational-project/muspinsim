@@ -87,6 +87,9 @@ class LarkExpression(object):
 
         # Start by parsing the expression
         self._source = source
+        # check if source empty
+        if source == "":
+            raise LarkExpressionError("Empty String")
         try:
             self._tree = _expr_parser.parse(source)
         except UnexpectedToken as e:
@@ -99,7 +102,9 @@ class LarkExpression(object):
 
         self._variables = set(found_vars)
         self._functions = set(found_funcs)
-        self._all_variables = set(variables)
+        self._all_variables = set(
+            [variables] if isinstance(variables, str) else variables
+        )
 
         # Check if they are valid
         for v in self._variables:
