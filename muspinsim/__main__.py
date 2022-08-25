@@ -24,15 +24,15 @@ from muspinsim.fitting import FittingRunner
 LOGFORMAT = "[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s"
 
 
-def check_dir_path(string):
-    if os.path.isdir(string):
-        return string
+def ensure_dir_path_exists(path_string):
+    if os.path.isdir(path_string):
+        return path_string
     else:
         try:
-            os.makedirs(string)
+            os.makedirs(path_string)
         except OSError:
-            raise NotADirectoryError(string)
-    return string
+            raise NotADirectoryError(path_string)
+    return path_string
 
 
 def main(use_mpi=False):
@@ -87,7 +87,7 @@ def main(use_mpi=False):
         if args.log_path:
             # check if directory exists, if not create it
             logfile = "{0}/{1}".format(
-                check_dir_path(os.path.dirname(args.log_path)),
+                ensure_dir_path_exists(os.path.dirname(args.log_path)),
                 os.path.basename(args.log_path),
             )
 
@@ -116,10 +116,9 @@ def main(use_mpi=False):
 
     is_fitting = mpi.broadcast(is_fitting)
 
+    out_path = inp_dir
     if args.out_dir:
-        out_path = check_dir_path(args.out_dir)
-    else:
-        out_path = inp_dir
+        out_path = ensure_dir_path_exists(args.out_dir)
 
     if not is_fitting:
         # No fitting
@@ -137,7 +136,7 @@ def main(use_mpi=False):
             rep_path = inp_dir
             rep_fname = None
             if args.fitreport_path:
-                rep_path = check_dir_path(os.path.dirname(args.fitreport_path))
+                rep_path = ensure_dir_path_exists(os.path.dirname(args.fit_report_path))
                 # default to creating it with outputs
                 rep_fname = os.path.basename(args.fitreport_path)
 
