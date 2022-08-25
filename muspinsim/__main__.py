@@ -76,14 +76,17 @@ def main(use_mpi=False):
         )
         args = parser.parse_args()
         inp_filepath = args.input_file.name
-        inp_dir = "{0}.log".format(os.path.splitext(inp_filepath)[0])
+
+        # get input file name and directory - to be used as defaults
+        inp_file_name = os.path.basename(inp_filepath).split(".")[0]
+        inp_dir = os.path.dirname(inp_filepath)
 
         fs = open(inp_filepath)
         infile = MuSpinInput(fs)
         is_fitting = len(infile.variables) > 0
 
         # Open logfile
-        logfile = inp_dir
+        logfile = "{0}/{1}.log".format(inp_dir, inp_file_name)
         if args.log_path:
             # check if directory exists, if not create it
             logfile = "{0}/{1}".format(
@@ -134,11 +137,11 @@ def main(use_mpi=False):
 
         if mpi.is_root:
             rep_path = inp_dir
-            rep_fname = None
+            rep_fname = "{0}_fit_report.txt".format(inp_file_name)
             if args.fit_report_path:
                 rep_path = ensure_dir_path_exists(os.path.dirname(args.fit_report_path))
                 # default to creating it with outputs
-                rep_fname = os.path.basename(args.fit_report_path)
+                rep_fname = os.path.basename(rep_path)
 
             fitter.write_report(fname=rep_fname, path=rep_path)
 
