@@ -64,7 +64,7 @@ class TestInput(unittest.TestCase):
 
     def test_invalid_args(self):
         with self.assertRaises(RuntimeError) as err:
-            MuSpinCouplingKeyword([], args=["a"])  # One argument too much
+            MuSpinCouplingKeyword([], args=["a"])  # Wrong argument type
         self.assertEqual(
             str(err.exception),
             "Error parsing keyword argument(s) 'coupling_keyword': invalid literal for "
@@ -225,7 +225,7 @@ class TestInput(unittest.TestCase):
 
     def test_keyword_y_axis_invalid(self):
         with self.assertRaises(ValueError) as err:
-            InputKeywords["y_axis"](["something"], args=[])  # One argument too much
+            InputKeywords["y_axis"](["something"], args=[])  # Invalid value for argument
         self.assertEqual(
             str(err.exception),
             "Invalid value '['something']', accepts ['asymmetry', 'integral']",
