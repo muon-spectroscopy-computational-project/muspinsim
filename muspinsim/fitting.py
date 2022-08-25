@@ -130,7 +130,7 @@ class FittingRunner(object):
             config = MuSpinConfig(self._input.evaluate(**variables))
 
             if fname is None:
-                fname = config.name + "_fitreport.txt"
+                fname = config.name + "_fit_report.txt"
 
             with open(os.path.join(path, fname), "w") as f:
                 f.write("Fitting process for {0} completed\n".format(config.name))

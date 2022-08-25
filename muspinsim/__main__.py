@@ -62,7 +62,7 @@ def main(use_mpi=False):
         )
         parser.add_argument(
             "-f",
-            "--fitreport-path",
+            "--fit-report-path",
             type=str,
             default=None,
             help="""filepath to store fit report if fitting parameters given""",
@@ -135,10 +135,10 @@ def main(use_mpi=False):
         if mpi.is_root:
             rep_path = inp_dir
             rep_fname = None
-            if args.fitreport_path:
+            if args.fit_report_path:
                 rep_path = ensure_dir_path_exists(os.path.dirname(args.fit_report_path))
                 # default to creating it with outputs
-                rep_fname = os.path.basename(args.fitreport_path)
+                rep_fname = os.path.basename(args.fit_report_path)
 
             fitter.write_report(fname=rep_fname, path=rep_path)
 
