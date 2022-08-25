@@ -29,6 +29,14 @@ class TestInput(unittest.TestCase):
 
         self.assertEqual(DefKeyword().evaluate()[0][0], "1")
 
+    def test_no_defaults(self):
+        with self.assertRaises(RuntimeError) as err:
+            MuSpinKeyword()
+        self.assertEqual(
+            str(err.exception),
+            "Input is empty and keyword " "'keyword' doesn't have a default value",
+        )
+
     def test_evaluate_keyword(self):
         nkw = MuSpinEvaluateKeyword(["exp(0) 1+1 2^2"])
         self.assertTrue((nkw.evaluate()[0] == [1, 2, 4]).all())

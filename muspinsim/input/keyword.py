@@ -94,8 +94,14 @@ class MuSpinKeyword(object):
             and not type(block[0] is np.ndarray)
             and block[0] in ("", None)
         ):
-            block = np.array([self.default.split("\n")])
-            use_default = True
+            if self.has_default:
+                block = np.array([self.default.split("\n")])
+                use_default = True
+            else:
+                raise RuntimeError(
+                    "Input is empty and keyword '{0}' "
+                    "doesn't have a default value".format(self.name)
+                )
 
         self._store_values(block)
 
