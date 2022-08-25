@@ -88,10 +88,17 @@ def main(use_mpi=False):
         # Open logfile
         logfile = "{0}/{1}.log".format(inp_dir, inp_file_name)
         if args.log_path:
+
+            try:
+                log_path = ensure_dir_path_exists(os.path.dirname(args.log_path))
+            # in case it was just a filename given - default directory is input directory
+            except NotADirectoryError:
+                log_path = ensure_dir_path_exists(os.path.dirname("{0}/{1}".format(inp_dir, args.log_path)))
+
             # check if directory exists, if not create it
             logfile = "{0}/{1}".format(
-                ensure_dir_path_exists(os.path.dirname(args.log_path)),
-                os.path.basename(args.log_path),
+                ensure_dir_path_exists(os.path.dirname(log_path)),
+                os.path.basename(log_path),
             )
 
         logging.basicConfig(
@@ -136,14 +143,24 @@ def main(use_mpi=False):
         fitter.run(name=None, path=out_path)
 
         if mpi.is_root:
-            rep_path = inp_dir
+            rep_dname = inp_dir
             rep_fname = "{0}_fit_report.txt".format(inp_file_name)
             if args.fit_report_path:
-                rep_path = ensure_dir_path_exists(os.path.dirname(args.fit_report_path))
-                # default to creating it with outputs
-                rep_fname = os.path.basename(rep_path)
+                try:
+                    ensure_dir_path_exists(
+                        os.path.dirname(args.fit_report_path)
+                    )
+                    rep_fname = os.path.basename(args.fit_report_path)
+                    rep_dname = os.path.dirname(args.fit_report_path)
 
-            fitter.write_report(fname=rep_fname, path=rep_path)
+                # in case it was just a filename given
+                # - default directory is input dir
+                except NotADirectoryError:
+                    rep_fname = args.fit_report_path
+                    rep_dname = inp_dir
+
+                # default to creating it with outputs
+            fitter.write_report(fname=rep_fname, path=rep_dname)
 
     if mpi.is_root:
         tend = datetime.now()

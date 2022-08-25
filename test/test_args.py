@@ -89,6 +89,36 @@ dissipation 1
             self.assertTrue(os.path.exists('{0}/test_fitting.dat'.format(tmp_dir)))
             self.assertTrue(os.path.exists('{0}/fitting_default_args_fit_report.txt'.format(tmp_dir)))
 
+    def test_main_filenames_as_input(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            cmd_args = [
+                '-l', 'new_test.log',
+                '-f', 'new_fit_report.txt'
+            ]
+            inp_file_path = os.path.join(tmp_dir, 'fitting_default_args.in')
+            run_experiment("""
+name
+    test_fitting
+spins
+    mu
+field
+    1.0/muon_gyr
+fitting_data
+    0 1
+    1 2
+fitting_variables
+    g 0.1 0.0 inf
+dissipation 1
+    g
+""",
+                           inp_file_path,
+                           cmd_args
+                           )
+
+            # self.assertTrue(os.path.exists("{0}/fitting_default_args.log".format(tmp_dir)))
+            self.assertTrue(os.path.exists('{0}/test_fitting.dat'.format(tmp_dir)))
+            self.assertTrue(os.path.exists('{0}/new_fit_report.txt'.format(tmp_dir)))
+
     def test_main_fitting_custom_args(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             with tempfile.TemporaryDirectory() as out_tmp_dir:
