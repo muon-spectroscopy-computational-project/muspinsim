@@ -18,12 +18,12 @@ def run_experiment(inp_string, inp_file_path, cmd_args):
 
 
 class TestCommandLineArgs(unittest.TestCase):
-
     def test_main_default_args(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             cmd_args = []
-            inp_file_path = os.path.join(tmp_dir, 'custom_args.in')
-            run_experiment("""
+            inp_file_path = os.path.join(tmp_dir, "custom_args.in")
+            run_experiment(
+                """
 name
     test_1
 spins
@@ -31,9 +31,9 @@ spins
 zeeman 1
     1 0 0
 """,
-                           inp_file_path,
-                           cmd_args
-                           )
+                inp_file_path,
+                cmd_args,
+            )
 
             # self.assertTrue(os.path.exists("{0}/custom_args.log".format(tmp_dir)))
             self.assertTrue(os.path.exists("{0}/test_1.dat".format(tmp_dir)))
@@ -42,11 +42,14 @@ zeeman 1
         with tempfile.TemporaryDirectory() as tmp_dir:
             with tempfile.TemporaryDirectory() as out_tmp_dir:
                 cmd_args = [
-                    '-o', '{0}'.format(out_tmp_dir),
-                    '-l', '{0}/new_test.log'.format(out_tmp_dir),
+                    "-o",
+                    "{0}".format(out_tmp_dir),
+                    "-l",
+                    "{0}/new_test.log".format(out_tmp_dir),
                 ]
-                inp_file_path = os.path.join(tmp_dir, 'custom_args.in')
-                run_experiment("""
+                inp_file_path = os.path.join(tmp_dir, "custom_args.in")
+                run_experiment(
+                    """
 name
     test_2
 spins
@@ -54,19 +57,19 @@ spins
 zeeman 1
     1 0 0
 """,
-                               inp_file_path,
-                               cmd_args
-                               )
+                    inp_file_path,
+                    cmd_args,
+                )
 
                 # self.assertTrue(os.path.exists("{0}/new_test.log".format(out_tmp_dir)))
-                self.assertTrue(os.path.exists('{0}/test_2.dat'.format(out_tmp_dir)))
+                self.assertTrue(os.path.exists("{0}/test_2.dat".format(out_tmp_dir)))
 
     def test_main_fitting_default_args(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            cmd_args = [
-            ]
-            inp_file_path = os.path.join(tmp_dir, 'fitting_default_args.in')
-            run_experiment("""
+            cmd_args = []
+            inp_file_path = os.path.join(tmp_dir, "fitting_default_args.in")
+            run_experiment(
+                """
 name
     test_fitting
 spins
@@ -81,22 +84,24 @@ fitting_variables
 dissipation 1
     g
 """,
-                           inp_file_path,
-                           cmd_args
-                           )
+                inp_file_path,
+                cmd_args,
+            )
 
             # self.assertTrue(os.path.exists("{0}/fitting_default_args.log".format(tmp_dir)))
-            self.assertTrue(os.path.exists('{0}/test_fitting.dat'.format(tmp_dir)))
-            self.assertTrue(os.path.exists('{0}/fitting_default_args_fit_report.txt'.format(tmp_dir)))
+            self.assertTrue(os.path.exists("{0}/test_fitting.dat".format(tmp_dir)))
+            self.assertTrue(
+                os.path.exists(
+                    "{0}/fitting_default_args_fit_report.txt".format(tmp_dir)
+                )
+            )
 
     def test_main_filenames_as_input(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            cmd_args = [
-                '-l', 'new_test.log',
-                '-f', 'new_fit_report.txt'
-            ]
-            inp_file_path = os.path.join(tmp_dir, 'fitting_default_args.in')
-            run_experiment("""
+            cmd_args = ["-l", "new_test.log", "-f", "new_fit_report.txt"]
+            inp_file_path = os.path.join(tmp_dir, "fitting_default_args.in")
+            run_experiment(
+                """
 name
     test_fitting
 spins
@@ -111,24 +116,28 @@ fitting_variables
 dissipation 1
     g
 """,
-                           inp_file_path,
-                           cmd_args
-                           )
+                inp_file_path,
+                cmd_args,
+            )
 
             # self.assertTrue(os.path.exists("{0}/fitting_default_args.log".format(tmp_dir)))
-            self.assertTrue(os.path.exists('{0}/test_fitting.dat'.format(tmp_dir)))
-            self.assertTrue(os.path.exists('{0}/new_fit_report.txt'.format(tmp_dir)))
+            self.assertTrue(os.path.exists("{0}/test_fitting.dat".format(tmp_dir)))
+            self.assertTrue(os.path.exists("{0}/new_fit_report.txt".format(tmp_dir)))
 
     def test_main_fitting_custom_args(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             with tempfile.TemporaryDirectory() as out_tmp_dir:
                 cmd_args = [
-                    '-o', '{0}'.format(out_tmp_dir),
-                    '-l', '{0}/new_test.log'.format(out_tmp_dir),
-                    '-f', '{0}/new_fit_report.txt'.format(out_tmp_dir)
+                    "-o",
+                    "{0}".format(out_tmp_dir),
+                    "-l",
+                    "{0}/new_test.log".format(out_tmp_dir),
+                    "-f",
+                    "{0}/new_fit_report.txt".format(out_tmp_dir),
                 ]
-                inp_file_path = os.path.join(tmp_dir, 'test.in')
-                run_experiment("""
+                inp_file_path = os.path.join(tmp_dir, "test.in")
+                run_experiment(
+                    """
 name
     test_fitting
 spins
@@ -143,10 +152,14 @@ fitting_variables
 dissipation 1
     g
 """,
-                               inp_file_path,
-                               cmd_args
-                               )
+                    inp_file_path,
+                    cmd_args,
+                )
 
                 # self.assertTrue(os.path.exists("{0}/new_test.log".format(out_tmp_dir)))
-                self.assertTrue(os.path.exists('{0}/test_fitting.dat'.format(out_tmp_dir)))
-                self.assertTrue(os.path.exists('{0}/new_fit_report.txt'.format(out_tmp_dir)))
+                self.assertTrue(
+                    os.path.exists("{0}/test_fitting.dat".format(out_tmp_dir))
+                )
+                self.assertTrue(
+                    os.path.exists("{0}/new_fit_report.txt".format(out_tmp_dir))
+                )

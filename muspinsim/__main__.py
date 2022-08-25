@@ -91,9 +91,12 @@ def main(use_mpi=False):
 
             try:
                 log_path = ensure_dir_path_exists(os.path.dirname(args.log_path))
-            # in case it was just a filename given - default directory is input directory
+            # in case it was just a filename given
+            # - default directory is input dir
             except NotADirectoryError:
-                log_path = ensure_dir_path_exists(os.path.dirname("{0}/{1}".format(inp_dir, args.log_path)))
+                log_path = ensure_dir_path_exists(
+                    os.path.dirname("{0}/{1}".format(inp_dir, args.log_path))
+                )
 
             # check if directory exists, if not create it
             logfile = "{0}/{1}".format(
@@ -147,9 +150,7 @@ def main(use_mpi=False):
             rep_fname = "{0}_fit_report.txt".format(inp_file_name)
             if args.fit_report_path:
                 try:
-                    ensure_dir_path_exists(
-                        os.path.dirname(args.fit_report_path)
-                    )
+                    ensure_dir_path_exists(os.path.dirname(args.fit_report_path))
                     rep_fname = os.path.basename(args.fit_report_path)
                     rep_dname = os.path.dirname(args.fit_report_path)
 
