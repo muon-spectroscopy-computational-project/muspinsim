@@ -225,7 +225,9 @@ class TestInput(unittest.TestCase):
 
     def test_keyword_y_axis_invalid(self):
         with self.assertRaises(ValueError) as err:
-            InputKeywords["y_axis"](["something"], args=[])  # Invalid value for argument
+            InputKeywords["y_axis"](
+                ["something"], args=[]
+            )  # Invalid value for argument
         self.assertEqual(
             str(err.exception),
             "Invalid value '['something']', accepts ['asymmetry', 'integral']",
