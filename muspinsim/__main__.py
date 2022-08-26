@@ -165,6 +165,8 @@ def main(use_mpi=False):
         simtime = (tend - tstart).total_seconds()
         logging.info("Simulation completed in " "{0:.3f} seconds".format(simtime))
 
+    logging.shutdown()
+
 
 def main_mpi():
     main(use_mpi=True)
