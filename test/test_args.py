@@ -35,7 +35,7 @@ zeeman 1
                 cmd_args,
             )
 
-            # self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, 'custom_args.log')))
+            self.assertTrue(os.path.exists(os.path.join(tmp_dir, "custom_args.log")))
             self.assertTrue(os.path.exists("{0}/test_1.dat".format(tmp_dir)))
 
     def test_main_custom_args(self):
@@ -61,7 +61,9 @@ zeeman 1
                     cmd_args,
                 )
 
-                # self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, 'new_test.log')))
+                self.assertTrue(
+                    os.path.exists(os.path.join(out_tmp_dir, "new_test.log"))
+                )
                 self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, "test_2.dat")))
 
     def test_main_fitting_default_args(self):
@@ -88,7 +90,9 @@ dissipation 1
                 cmd_args,
             )
 
-            # self.assertTrue(os.path.exists(os.path.join(tmp_dir, 'fitting_default_args.log')))
+            self.assertTrue(
+                os.path.exists(os.path.join(tmp_dir, "fitting_default_args.log"))
+            )
             self.assertTrue(os.path.exists(os.path.join(tmp_dir, "test_fitting.dat")))
             self.assertTrue(
                 os.path.exists(
@@ -120,7 +124,7 @@ dissipation 1
                 cmd_args,
             )
 
-            # self.assertTrue(os.path.exists("{0}/fitting_default_args.log".format(tmp_dir)))
+            self.assertTrue(os.path.exists("{0}/new_test.log".format(tmp_dir)))
             self.assertTrue(os.path.exists("{0}/test_fitting.dat".format(tmp_dir)))
             self.assertTrue(os.path.exists("{0}/new_fit_report.txt".format(tmp_dir)))
 
@@ -156,7 +160,9 @@ dissipation 1
                     cmd_args,
                 )
 
-                # self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, 'new_test.log')))
+                self.assertTrue(
+                    os.path.exists(os.path.join(out_tmp_dir, "new_test.log"))
+                )
                 self.assertTrue(
                     os.path.exists(os.path.join(out_tmp_dir, "test_fitting.dat"))
                 )

@@ -105,6 +105,7 @@ def main(use_mpi=False):
             level=logging.INFO,
             format=LOGFORMAT,
             datefmt="%Y-%m-%d %H:%M:%S",
+            force=True,
         )
 
         logging.info(
