@@ -86,7 +86,7 @@ def main(use_mpi=False):
         is_fitting = len(infile.variables) > 0
 
         # Open logfile
-        logfile = "{0}/{1}.log".format(inp_dir, inp_file_name)
+        logfile = os.path.join(inp_dir, inp_file_name + ".log")
         if args.log_path:
 
             try:
@@ -94,15 +94,10 @@ def main(use_mpi=False):
             # in case it was just a filename given
             # - default directory is input dir
             except NotADirectoryError:
-                log_path = ensure_dir_path_exists(
-                    os.path.dirname("{0}/{1}".format(inp_dir, args.log_path))
-                )
+                log_path = inp_dir
 
             # check if directory exists, if not create it
-            logfile = "{0}/{1}".format(
-                ensure_dir_path_exists(os.path.dirname(log_path)),
-                os.path.basename(log_path),
-            )
+            logfile = os.path.join(log_path, os.path.basename(args.log_path))
 
         logging.basicConfig(
             filename=logfile,
@@ -160,7 +155,6 @@ def main(use_mpi=False):
                     rep_fname = args.fit_report_path
                     rep_dname = inp_dir
 
-                # default to creating it with outputs
             fitter.write_report(fname=rep_fname, path=rep_dname)
 
     if mpi.is_root:
