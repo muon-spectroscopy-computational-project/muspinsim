@@ -47,11 +47,11 @@ def main(use_mpi=False):
             "spin dynamics calculations for muon science experiments"
         )
         parser.add_argument(
-            "-o",
-            "--out-dir",
+            "-f",
+            "--fit-report-path",
             type=str,
             default=None,
-            help="""folder to store the output .dat files""",
+            help="""filepath to store fit report if fitting parameters given""",
         )
         parser.add_argument(
             "-l",
@@ -61,11 +61,11 @@ def main(use_mpi=False):
             help="""filepath to store simulation logs """,
         )
         parser.add_argument(
-            "-f",
-            "--fit-report-path",
+            "-o",
+            "--out-dir",
             type=str,
             default=None,
-            help="""filepath to store fit report if fitting parameters given""",
+            help="""folder to store the output .dat files""",
         )
         parser.add_argument(
             "input_file",
