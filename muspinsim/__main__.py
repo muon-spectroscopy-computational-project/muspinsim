@@ -91,13 +91,15 @@ def main(use_mpi=False):
 
             try:
                 log_path = ensure_dir_path_exists(os.path.dirname(args.log_path))
+                log_fname = os.path.basename(args.log_path)
             # in case it was just a filename given
             # - default directory is input dir
             except NotADirectoryError:
                 log_path = inp_dir
+                log_fname = args.log_path
 
             # check if directory exists, if not create it
-            logfile = os.path.join(log_path, os.path.basename(args.log_path))
+            logfile = os.path.join(log_path, log_fname)
 
         logging.basicConfig(
             filename=logfile,
