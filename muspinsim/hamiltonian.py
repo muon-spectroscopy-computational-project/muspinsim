@@ -75,24 +75,39 @@ class Hamiltonian(Operator, Hermitian):
 
         # Turn the density matrix in the right basis
         dim = rho0.dimension
-        rho0 = rho0.basis_change(evecs).matrix
+        rho0 = rho0.basis_change(evecs).matrix.toarray()
 
         # Same for operators
-        operatorsT = np.array([o.basis_change(evecs).matrix.T for o in operators])
+        operatorsT = np.array(
+            [o.basis_change(evecs).matrix.T.toarray() for o in operators]
+        )
 
         # Matrix of evolution operators
         ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
-        rho = np.exp(ll[None, :, :] * times[:, None, None]) * rho0[None, :, :]
 
-        # Now, return values
+        def calc_single_rho(i):
+            return np.exp(ll[None, :, :] * times[i, None, None]) * rho0[None, :, :]
+
+        result = None
         if len(operators) > 0:
-            # Actually compute expectation values
-            result = np.sum(rho[:, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3))
+            # Actually compute expectation values one at a time
+            for i in range(times.shape[0]):
+                rho = calc_single_rho(i)
+                single_res = np.sum(
+                    rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
+                )
+                if result is None:
+                    result = single_res
+                else:
+                    result = np.concatenate(([result, single_res]), axis=0)
         else:
-            # Just return density matrices
             sceve = evecs.T.conj()
-            result = [DensityOperator(r, dim).basis_change(sceve) for r in rho]
-
+            for i in range(times.shape[0]):
+                # Just return density matrices
+                result = [
+                    DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
+                    for i in range(times.shape[0])
+                ]
         return result
 
     def integrate_decaying(self, rho0, tau, operators=[]):
@@ -137,13 +152,16 @@ class Hamiltonian(Operator, Hermitian):
         evals, evecs = self.diag()
 
         # Turn the density matrix in the right basis
-        rho0 = rho0.basis_change(evecs).matrix
+        rho0 = rho0.basis_change(evecs).matrix.toarray()
 
         ll = 2.0j * np.pi * (evals[:, None] - evals[None, :])
 
         # Integral operators
         intops = np.array(
-            [(-o.basis_change(evecs).matrix / (ll - 1.0 / tau)).T for o in operators]
+            [
+                (-o.basis_change(evecs).matrix.toarray() / (ll - 1.0 / tau)).T
+                for o in operators
+            ]
         )
 
         result = np.sum(rho0[None, :, :] * intops[:, :, :], axis=(1, 2))

@@ -45,5 +45,5 @@ setuptools.setup(
             "muspinsim.mpi = muspinsim.__main__:main_mpi",
         ]
     },
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 )

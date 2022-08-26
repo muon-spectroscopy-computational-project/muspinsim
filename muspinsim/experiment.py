@@ -10,6 +10,7 @@ from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
+from muspinsim.spinsys import MuonSpinSystem
 from muspinsim.input import MuSpinInput
 from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
@@ -44,11 +45,33 @@ class ExperimentRunner(object):
         else:
             config = MuSpinConfig()
 
-        mpi.broadcast_object(config)
+        # broadcast config object without _system attribute
+        attrs = list(config.__dict__.keys())
+        for x in ["_system", "system"]:
+            if x in attrs:
+                attrs.remove(x)
+        mpi.broadcast_object(config, attrs)
+
+        # broadcast _system attribute without _terms attribute
+        system = config.__dict__.get("_system", MuonSpinSystem())
+        attrs = list(system.__dict__.keys())
+        if "_terms" in attrs:
+            attrs.remove("_terms")
+        mpi.broadcast_object(system, attrs)
+
+        # broadcast _terms attribute sequentially
+        terms = system.__dict__.get("_terms", [])
+        terms = mpi.broadcast_terms(terms)
+
+        for i in terms:
+            i.__setattr__("_spinsys", system)
+        system.__setattr__("_terms", terms)
+        config.__setattr__("_system", system)
 
         self._config = config
         self._system = config.system
         # Store single spin operators
+
         self._single_spinops = np.array(
             [
                 [self._system.operator({i: a}).matrix for a in "xyz"]
@@ -153,7 +176,7 @@ class ExperimentRunner(object):
                         axis=0,
                     )
 
-                    evals, evecs = np.linalg.eigh(Hz)
+                    evals, evecs = np.linalg.eigh(Hz.toarray())
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
@@ -186,10 +209,13 @@ class ExperimentRunner(object):
         if self._Hz is None:
             B = self._B
             g = self._system.gammas
-            Hz = np.sum(
-                B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
-                axis=(0, 1),
-            )
+            Bg = B[None, :] * g[:, None]
+
+            Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+            Hz = Hz_sp_list.pop()
+            for sp_mat in Hz_sp_list:
+                Hz += sp_mat
+
             self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
 
         return self._Hz
@@ -226,11 +252,18 @@ class ExperimentRunner(object):
                 z = self._B / B
                 x, y = get_xy(z)
 
+            def sparse_sum(sp_mat_list):
+                sp_mat_list = sp_mat_list.flatten().tolist()
+                res = sp_mat_list.pop()
+                for sp_mat in sp_mat_list:
+                    res += sp_mat
+                return res
+
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
 
-                op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
-                op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+                op_x = sparse_sum(self._single_spinops[i, :, None] * x[:, None])
+                op_y = sparse_sum(self._single_spinops[i, :, None] * y[:, None])
                 op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
                 op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
 
