@@ -35,7 +35,7 @@ zeeman 1
                 cmd_args,
             )
 
-            # self.assertTrue(os.path.exists("{0}/custom_args.log".format(tmp_dir)))
+            # self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, 'custom_args.log')))
             self.assertTrue(os.path.exists("{0}/test_1.dat".format(tmp_dir)))
 
     def test_main_custom_args(self):
@@ -43,9 +43,9 @@ zeeman 1
             with tempfile.TemporaryDirectory() as out_tmp_dir:
                 cmd_args = [
                     "-o",
-                    "{0}".format(out_tmp_dir),
+                    f"{out_tmp_dir}",
                     "-l",
-                    "{0}/new_test.log".format(out_tmp_dir),
+                    f"{out_tmp_dir}/new_test.log",
                 ]
                 inp_file_path = os.path.join(tmp_dir, "custom_args.in")
                 run_experiment(
@@ -61,8 +61,8 @@ zeeman 1
                     cmd_args,
                 )
 
-                # self.assertTrue(os.path.exists("{0}/new_test.log".format(out_tmp_dir)))
-                self.assertTrue(os.path.exists("{0}/test_2.dat".format(out_tmp_dir)))
+                # self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, 'new_test.log')))
+                self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, "test_2.dat")))
 
     def test_main_fitting_default_args(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -88,11 +88,11 @@ dissipation 1
                 cmd_args,
             )
 
-            # self.assertTrue(os.path.exists("{0}/fitting_default_args.log".format(tmp_dir)))
-            self.assertTrue(os.path.exists("{0}/test_fitting.dat".format(tmp_dir)))
+            # self.assertTrue(os.path.exists(os.path.join(tmp_dir, 'fitting_default_args.log')))
+            self.assertTrue(os.path.exists(os.path.join(tmp_dir, "test_fitting.dat")))
             self.assertTrue(
                 os.path.exists(
-                    "{0}/fitting_default_args_fit_report.txt".format(tmp_dir)
+                    os.path.join(tmp_dir, "fitting_default_args_fit_report.txt")
                 )
             )
 
@@ -129,11 +129,11 @@ dissipation 1
             with tempfile.TemporaryDirectory() as out_tmp_dir:
                 cmd_args = [
                     "-o",
-                    "{0}".format(out_tmp_dir),
+                    f"{out_tmp_dir}",
                     "-l",
-                    "{0}/new_test.log".format(out_tmp_dir),
+                    f"{out_tmp_dir}/new_test.log",
                     "-f",
-                    "{0}/new_fit_report.txt".format(out_tmp_dir),
+                    f"{out_tmp_dir}/new_fit_report.txt",
                 ]
                 inp_file_path = os.path.join(tmp_dir, "test.in")
                 run_experiment(
@@ -156,10 +156,10 @@ dissipation 1
                     cmd_args,
                 )
 
-                # self.assertTrue(os.path.exists("{0}/new_test.log".format(out_tmp_dir)))
+                # self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, 'new_test.log')))
                 self.assertTrue(
-                    os.path.exists("{0}/test_fitting.dat".format(out_tmp_dir))
+                    os.path.exists(os.path.join(out_tmp_dir, "test_fitting.dat"))
                 )
                 self.assertTrue(
-                    os.path.exists("{0}/new_fit_report.txt".format(out_tmp_dir))
+                    os.path.exists(os.path.join(out_tmp_dir, "new_fit_report.txt"))
                 )
