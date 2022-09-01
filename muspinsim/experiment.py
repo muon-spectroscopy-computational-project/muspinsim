@@ -212,9 +212,7 @@ class ExperimentRunner(object):
             Bg = B[None, :] * g[:, None]
 
             Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
-            Hz = Hz_sp_list.pop()
-            for sp_mat in Hz_sp_list:
-                Hz += sp_mat
+            Hz = np.sum(Hz_sp_list)
 
             self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
 
@@ -254,10 +252,7 @@ class ExperimentRunner(object):
 
             def sparse_sum(sp_mat_list):
                 sp_mat_list = sp_mat_list.flatten().tolist()
-                res = sp_mat_list.pop()
-                for sp_mat in sp_mat_list:
-                    res += sp_mat
-                return res
+                return np.sum(sp_mat_list)
 
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
