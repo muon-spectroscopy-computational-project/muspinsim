@@ -17,10 +17,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-defaults:
-  run:
-    working-directory: docs
-
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build-deploy:
@@ -42,9 +38,11 @@ jobs:
       # Build the docs
       - name: Build docs
         run: mkdocs build
+        working-directory: docs
       # Deploy docs only if this is an update to main
       - name: Deploy docs
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: mkdocs gh-deploy
+        working-directory: docs
         env:
           GITHUB_TOKEN: ${{ env.gh_token }}
