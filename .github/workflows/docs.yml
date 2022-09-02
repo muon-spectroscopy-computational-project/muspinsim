@@ -8,17 +8,16 @@ on:
   push:
     paths:
       - "docs/**"
-      - .github/workflows/build-docs.yml
+      - .github/workflows/docs.yml
   pull_request:
     paths:
       - "docs/**"
-      - .github/workflows/build-docs.yml
+      - .github/workflows/docs.yml
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 defaults:
-  runs-on: ubuntu-latest
   run:
     working-directory: docs
 
@@ -26,6 +25,7 @@ defaults:
 jobs:
   build-deploy:
     name: Build and deploy docs
+    runs-on: ubuntu-latest
     env:
       gh_token: ${{ secrets.GITHUB_TOKEN }} # Created by GitHub at start of workflow
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -44,7 +44,7 @@ jobs:
         run: mkdocs build
       # Deploy docs only if this is an update to main
       - name: Deploy docs
-        if: ${{ success() && github.event_name == "push" && github.ref == "refs/heads/main" }}
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: mkdocs gh-deploy
         env:
           GITHUB_TOKEN: ${{ env.gh_token }}
