@@ -8,6 +8,7 @@ import logging
 import numpy as np
 from numbers import Number
 import scipy.constants as cnst
+from scipy import sparse
 
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
@@ -571,7 +572,7 @@ class SpinSystem(Clonable):
 
         if len(self._terms) == 0:
             n = np.prod(self.dimension)
-            H = np.zeros((n, n))
+            H = sparse.csr_matrix((n, n))
         else:
             H = np.sum([t.matrix for t in self._terms], axis=0)
         H = Hamiltonian(H, dim=self.dimension)
