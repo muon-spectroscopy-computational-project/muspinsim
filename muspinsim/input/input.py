@@ -47,6 +47,51 @@ y_axis
 }
 
 
+def write_error(keyword, block_line_num, err):
+    return (
+        "Error occurred when parsing keyword '{0}' "
+        "(block starting at line {1}):\n{2}".format(keyword, block_line_num, str(err))
+    )
+
+
+def _make_blocks(fs):
+    lines = fs.readlines()
+
+    # Split lines in blocks
+    raw_blocks = {}
+    curr_block = None
+    block_line_nums = {}
+
+    indre = re.compile("(\\s+)[^\\s]")
+    indent = None
+
+    for i, l in enumerate(lines):
+
+        # Remove any comments
+        l = l.split("#", 1)[0]
+
+        if l.strip() == "":
+            continue  # It's a comment
+        m = indre.match(l)
+        if m:
+            if indent is None:
+                indent = m.groups()[0]
+            if m.groups()[0] != indent:
+                raise RuntimeError("Invalid indent in input file")
+            else:
+                try:
+                    raw_blocks[curr_block].append(l.strip())
+                except KeyError:
+                    raise RuntimeError("Badly formatted input file")
+        else:
+            curr_block = l.strip()
+            raw_blocks[curr_block] = []
+            block_line_nums[curr_block] = i + 1
+            indent = None  # Reset for each block
+
+    return raw_blocks, block_line_nums
+
+
 class MuSpinInput(object):
     def __init__(self, fs=None):
         """Read in an input file
@@ -63,75 +108,54 @@ class MuSpinInput(object):
 
         if fs is not None:
 
-            lines = fs.readlines()
+            raw_blocks, block_line_nums = _make_blocks(fs)
 
-            # Split lines in blocks
-            raw_blocks = {}
-            curr_block = None
-            block_line_nums = {}
-
-            indre = re.compile("(\\s+)[^\\s]")
-            indent = None
-
-            for i, l in enumerate(lines):
-
-                # Remove any comments
-                l = l.split("#", 1)[0]
-
-                if l.strip() == "":
-                    continue  # It's a comment
-                m = indre.match(l)
-                if m:
-                    if indent is None:
-                        indent = m.groups()[0]
-                    if m.groups()[0] != indent:
-                        raise RuntimeError("Invalid indent in input file")
-                    else:
-                        try:
-                            raw_blocks[curr_block].append(l.strip())
-                        except KeyError:
-                            raise RuntimeError("Badly formatted input file")
-                else:
-                    curr_block = l.strip()
-                    raw_blocks[curr_block] = []
-                    block_line_nums[curr_block] = i + 1
-                    indent = None  # Reset for each block
-
-            # A special case: if there are fitting variables, we need to know
-            # right away
-            self._load_fitting_kw(raw_blocks)
+            # if we find errors when parsing fitting variables, we post an error
+            # so we don't propagate invalid variables when parsing keywords later
+            failed_status, errors = self._load_fitting_kw(raw_blocks, block_line_nums)
+            if failed_status:
+                raise MuSpinInputError(
+                    "Found {0} Error(s) whilst trying to parse fitting keywords: "
+                    "\n\n{1}".format(len(errors), "\n\n".join(errors))
+                )
 
             # Another special case: if the "experiment" keyword is present,
             # use it to set some defaults
+            errors_found = []
             try:
                 block = raw_blocks.pop("experiment")
                 kw = InputKeywords["experiment"](block)
                 exptype = kw.evaluate()[0]
-                if len(exptype) > 1:
-                    raise MuSpinInputError(
-                        "Can not define more than one experiment type"
+                try:
+                    exp_kw, _ = _make_blocks(StringIO(_exp_defaults[exptype[0]]))
+                    raw_blocks.update(exp_kw)
+                except KeyError:
+                    err = (
+                        "Invalid experiment type '{0}' defined, "
+                        "possible types include {1}".format(
+                            exptype[0], list(_exp_defaults.keys())
+                        )
                     )
-                elif len(exptype) == 1:
-                    try:
-                        mock_i = MuSpinInput(StringIO(_exp_defaults[exptype[0]]))
-                        self._keywords.update(mock_i._keywords)
-                    except KeyError:
-                        raise MuSpinInputError("Invalid experiment type defined")
+                    errors_found += [
+                        write_error("experiment", block_line_nums["experiment"], err)
+                    ]
+            except RuntimeError as e:
+                errors_found += [
+                    write_error("experiment", block_line_nums["experiment"], str(e))
+                ]
             except KeyError:
                 pass
 
             # Now parse
-            errors_found = []
             for header, block in raw_blocks.items():
+                hsplit = header.split()
+                name = hsplit[0]
+                args = hsplit[1:]
                 try:
-                    hsplit = header.split()
-                    name = hsplit[0]
-                    args = hsplit[1:]
-
                     try:
                         KWClass = InputKeywords[name]
                     except KeyError:
-                        raise MuSpinInputError(
+                        raise RuntimeError(
                             "Invalid keyword {0} found in input file".format(name)
                         )
 
@@ -147,17 +171,12 @@ class MuSpinInput(object):
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
-                except LarkExpressionError as e:
-                    errors_found += [
-                        "Error occurred when parsing keyword {0}"
-                        " (block starting at line {1}):\n{2}".format(
-                            name, block_line_nums[header], str(e)
-                        )
-                    ]
+                except (ValueError, LarkExpressionError, RuntimeError) as e:
+                    errors_found += [write_error(name, block_line_nums[header], str(e))]
 
             if errors_found:
                 raise MuSpinInputError(
-                    "Found {0} Errors whilst trying to parse input file: "
+                    "Found {0} Error(s) whilst trying to parse keywords: "
                     "\n\n{1}".format(len(errors_found), "\n\n".join(errors_found))
                 )
 
@@ -185,7 +204,15 @@ class MuSpinInput(object):
                         )
                         result["couplings"][kwid] = val
             else:
-                if name in self._keywords:
+                # remove unnecessary keywords - stored in fitting_info
+                if name in [
+                    "fitting_data",
+                    "fitting_tolerance",
+                    "fitting_variables",
+                    "fitting_method",
+                ]:
+                    pass
+                elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}
                     val = kw.evaluate(**v)
@@ -200,19 +227,28 @@ class MuSpinInput(object):
 
         return result
 
-    def _load_fitting_kw(self, raw_blocks):
+    def _load_fitting_kw(self, raw_blocks, block_line_nums):
         """Special case: handling of all the fitting related keywords and
         information."""
-
+        errors_found = []
         try:
             block = raw_blocks.pop("fitting_variables")
             kw = InputKeywords["fitting_variables"](block)
             self._variables = {v.name: v for v in kw.evaluate()}
         except KeyError:
             pass
+        except (RuntimeError, ValueError, LarkExpressionError) as e:
+            errors_found += [
+                write_error(
+                    "fitting_variables", block_line_nums["fitting_variables"], str(e)
+                )
+            ]
+
+        if errors_found:
+            return 1, errors_found
 
         if len(self._variables) == 0:
-            return
+            return 0, None
 
         self._fitting_info["fit"] = True
 
@@ -221,14 +257,38 @@ class MuSpinInput(object):
             kw = InputKeywords["fitting_data"](block)
             self._fitting_info["data"] = np.array(kw.evaluate())
         except KeyError:
-            raise MuSpinInputError(
-                "Fitting variables defined without defining" " a set of data to fit"
-            )
+            errors_found += [
+                write_error(
+                    "fitting_variables",
+                    block_line_nums["fitting_variables"],
+                    "Fitting variables defined without defining any data to fit",
+                )
+            ]
+        except (RuntimeError, ValueError, LarkExpressionError, IOError) as e:
+            errors_found += [
+                write_error("fitting_data", block_line_nums["fitting_data"], str(e))
+            ]
 
-        block = raw_blocks.pop("fitting_tolerance", [])
-        kw = InputKeywords["fitting_tolerance"](block)
-        self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
+        try:
+            block = raw_blocks.pop("fitting_tolerance", [])
+            kw = InputKeywords["fitting_tolerance"](block)
+            self._fitting_info["rtol"] = float(kw.evaluate()[0][0])
+        except (RuntimeError, ValueError) as e:
+            errors_found += [
+                write_error(
+                    "fitting_tolerance", block_line_nums["fitting_tolerance"], str(e)
+                )
+            ]
 
-        block = raw_blocks.pop("fitting_method", [])
-        kw = InputKeywords["fitting_method"](block)
-        self._fitting_info["method"] = kw.evaluate()[0][0]
+        try:
+            block = raw_blocks.pop("fitting_method", [])
+            kw = InputKeywords["fitting_method"](block)
+            self._fitting_info["method"] = kw.evaluate()[0][0]
+        except (RuntimeError, ValueError) as e:
+            errors_found += [
+                write_error("fitting_method", block_line_nums["fitting_method"], str(e))
+            ]
+
+        if errors_found:
+            return 1, errors_found
+        return 0, None

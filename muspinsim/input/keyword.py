@@ -51,7 +51,8 @@ class MuSpinKeyword(object):
     accept_range = True
     accept_as_x = False
     default = None
-    _validators = {}
+    expr_size_bounds = (1, np.inf)
+    _validators = []
 
     def __init__(self, block=[], args=[]):
         """Create an instance of a given keyword, passing the raw block of
@@ -78,19 +79,73 @@ class MuSpinKeyword(object):
             block = block.reshape((-1, self.block_size))
         except ValueError:
             raise RuntimeError(
-                "Invalid block length for " "keyword {0}".format(self.name)
+                "Invalid number of entries for block, expected {0}, got {1}".format(
+                    self.block_size, len(block)
+                )
             )
         if not self.accept_range and len(block) > 1:
             raise RuntimeError(
                 "Can not accept range of values for " "keyword {0}".format(self.name)
             )
 
-        if len(block) == 0 and self.has_default:
-            block = np.array([self.default.split("\n")])
+        use_default = False
+        if len(block) == 0 or (
+            len(block) == 1
+            and not type(block[0] is np.ndarray)
+            and block[0] in ("", None)
+        ):
+            if self.has_default:
+                block = np.array([self.default.split("\n")])
+                use_default = True
+            else:
+                raise RuntimeError(
+                    "Input is empty and keyword '{0}' "
+                    "doesn't have a default value".format(self.name)
+                )
 
         self._store_values(block)
 
         self._validate_values()
+
+        # check each line of block to make sure number of
+        # expressions are within bounds (if not using defaults)
+        # need to check after parsing to account for expressions and functions
+        if not use_default:
+            if type(self._values) is np.ndarray:
+                entry_lengths = [
+                    np.shape(self._values)[1] for _ in range(np.shape(self._values)[0])
+                ]
+            else:
+                # traverse nested lists
+                nested_val = self._values
+
+                while isinstance(nested_val[0], list) and len(nested_val) == 1:
+                    nested_val = nested_val[0]
+
+                entry_lengths = (
+                    [len(entry) for entry in nested_val]
+                    if isinstance(nested_val[0], list)
+                    else [len(nested_val)]
+                )
+
+            for i, length in enumerate(entry_lengths):
+                if (
+                    length < self.expr_size_bounds[0]
+                    or length > self.expr_size_bounds[1]
+                ):
+                    raise RuntimeError(
+                        "Incorrect number of args for entry '{0}', "
+                        "expected {1}, got {2}".format(
+                            block[i][0],
+                            "between {0} and {1}".format(
+                                self.expr_size_bounds[0],
+                                self.expr_size_bounds[1],
+                            )
+                            if self.expr_size_bounds[0] != self.expr_size_bounds[1]
+                            else self.expr_size_bounds[0],
+                            length,
+                        )
+                    )
 
     def _default_args(self):
         # Dummy function, used for type signature and processing of arguments
@@ -100,12 +155,24 @@ class MuSpinKeyword(object):
         try:
             self._args = self._default_args(*args)
         except TypeError:
+            if args:
+                raise RuntimeError(
+                    "Wrong number of in-line arguments given '{0}', "
+                    "expected {1}, got {2}".format(
+                        " ".join(args),
+                        len(inspect.signature(self._default_args).parameters),
+                        len(args),
+                    )
+                )
+            else:
+                raise RuntimeError(
+                    "This keyword requires {0} in-line arguments".format(
+                        len(inspect.signature(self._default_args).parameters),
+                    )
+                )
+        except ValueError as e:
             raise RuntimeError(
-                "Wrong number of arguments passed to " "keyword {0}".format(self.name)
-            )
-        except ValueError:
-            raise RuntimeError(
-                "Invalid argument type passed to " "keyword {0}".format(self.name)
+                "Error parsing keyword argument(s) '{0}': {1}".format(self.name, str(e))
             )
 
     def _store_values(self, block):
@@ -119,14 +186,12 @@ class MuSpinKeyword(object):
         self._values = np.array(self._values)
 
     def _validate_values(self):
+        errs = ""
+        for vfunc in self._validators:
+            errs += "\n".join([vfunc(b) for b in self._values if vfunc(b) != ""])
 
-        for rule, vfunc in self._validators.items():
-            ans = all([vfunc(b) for b in self._values])
-
-            if not ans:
-                raise ValueError(
-                    "Invalid block for " "keyword {0}: {1}".format(self.name, rule)
-                )
+        if errs:
+            raise ValueError(errs)
 
     @property
     def arguments(self):
@@ -274,6 +339,7 @@ class KWName(MuSpinKeyword):
 class KWSpins(MuSpinKeyword):
 
     name = "spins"
+    expr_size_bounds = (1, np.inf)
     block_size = 1
     accept_range = False
     default = "mu e"
@@ -282,6 +348,7 @@ class KWSpins(MuSpinKeyword):
 class KWPolarization(MuSpinExpandKeyword):
 
     name = "polarization"
+    expr_size_bounds = (1, 3)
     block_size = 1
     default = "transverse"
     _constants = {
@@ -317,11 +384,13 @@ class KWXAxis(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "time"
-    _validators = {
-        "Invalid value": lambda s: (
-            s[0] in InputKeywords and InputKeywords[s[0]].accept_as_x
+    _validators = [
+        lambda s: "Invalid value {0}, accepts {1}".format(
+            s[0], [i for i in InputKeywords if InputKeywords[i].accept_as_x]
         )
-    }
+        if s[0] not in InputKeywords or not InputKeywords[s[0]].accept_as_x
+        else ""
+    ]
 
 
 class KWYAxis(MuSpinKeyword):
@@ -330,7 +399,11 @@ class KWYAxis(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "asymmetry"
-    _validators = {"Invalid value": lambda s: s in ("asymmetry", "integral")}
+    _validators = [
+        lambda s: "Invalid value '{0}', accepts ['asymmetry', 'integral']".format(s)
+        if s not in ["asymmetry", "integral"]
+        else ""
+    ]
 
 
 class KWAverageAxes(MuSpinKeyword):
@@ -339,16 +412,20 @@ class KWAverageAxes(MuSpinKeyword):
     block_size = 1
     accept_range = True
     default = "orientation"
-    _validators = {
-        "Invalid value": lambda s: all(
-            (w in InputKeywords or w.lower() == "none") for w in s
+    _validators = [
+        lambda s: "Invalid value(s) '{0}': accepts {1}".format(
+            [w for w in s if (w not in InputKeywords) or w.lower() == "None"],
+            InputKeywords,
         )
-    }
+        if not all((w in InputKeywords or w.lower() == "none") for w in s)
+        else ""
+    ]
 
 
 class KWOrientation(MuSpinExpandKeyword):
 
     name = "orientation"
+    expr_size_bounds = (1, 4)
     block_size = 1
     accept_range = True
     default = "0 0 0"
@@ -372,6 +449,7 @@ class KWTemperature(MuSpinExpandKeyword):
 class KWZeeman(MuSpinCouplingKeyword):
 
     name = "zeeman"
+    expr_size_bounds = (3, 3)
     block_size = 1
     _constants = {**_math_constants, **_phys_constants}
 
@@ -384,6 +462,7 @@ class KWDipolar(MuSpinCouplingKeyword):
 
     name = "dipolar"
     block_size = 1
+    expr_size_bounds = (3, 3)
 
     def _default_args(self, i, j):
         args = {"i": int(i), "j": int(j)}
@@ -394,6 +473,7 @@ class KWHyperfine(MuSpinCouplingKeyword):
 
     name = "hyperfine"
     block_size = 3
+    expr_size_bounds = (3, 3)
 
     def _default_args(self, i, j=None):
         args = {"i": int(i), "j": int(j) if j is not None else None}
@@ -404,6 +484,7 @@ class KWQuadrupolar(MuSpinCouplingKeyword):
 
     name = "quadrupolar"
     block_size = 3
+    expr_size_bounds = (3, 3)
 
     def _default_args(self, i):
         args = {
@@ -416,6 +497,7 @@ class KWDissipation(MuSpinCouplingKeyword):
 
     name = "dissipation"
     block_size = 1
+    expr_size_bounds = (1, 1)
 
     def _default_args(self, i):
         args = {"i": int(i)}
@@ -427,9 +509,17 @@ class KWFittingVariables(MuSpinKeyword):
 
     name = "fitting_variables"
     block_size = 1
+    expr_size_bounds = (1, 4)
     accept_range = True
     default = ""
     _constants = {**_math_constants, **_phys_constants}
+    _validators = [
+        lambda s: "Invalid value '{0}': variable name conflicts with a constant".format(
+            s.name
+        )
+        if s.name in {**_math_constants, **_phys_constants}
+        else ""
+    ]
 
     def _store_values(self, block):
 
@@ -460,6 +550,7 @@ class KWFittingData(MuSpinExpandKeyword):
 
     name = "fitting_data"
     block_size = 1
+    expr_size_bounds = (1, 2)
     accept_range = True
     default = ""
     _constants = {}
@@ -472,11 +563,13 @@ class KWFittingMethod(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "nelder-mead"
-    _validators = {
-        "Invalid value": lambda s: (
-            (s[0].lower() in ("nelder-mead", "lbfgs")) and len(s) == 1
+    _validators = [
+        lambda s: "Invalid value {0}, accepted values {1}".format(
+            s[0].lower(), ["nelder-mead", "lbfgs"]
         )
-    }
+        if s[0].lower() not in ["nelder-mead", "lbfgs"]
+        else ""
+    ]
 
 
 class KWFittingTolerance(MuSpinKeyword):
@@ -485,7 +578,11 @@ class KWFittingTolerance(MuSpinKeyword):
     block_size = 1
     accept_range = False
     default = "1e-3"
-    _validators = {"Invalid value": lambda s: (float(s[0]) and len(s) == 1)}
+    _validators = [
+        lambda s: "Invalid value '{0}', accepts only single float value".format(s[0])
+        if not float(s[0])
+        else "",
+    ]
 
 
 # Special configuration keyword

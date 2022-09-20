@@ -4,6 +4,7 @@ from io import StringIO
 from ase.quaternions import Quaternion
 
 from muspinsim.input import MuSpinInput
+from muspinsim.input.input import MuSpinInputError
 from muspinsim.simconfig import MuSpinConfig, MuSpinConfigError
 
 
@@ -100,10 +101,8 @@ zeeman 1
     2 0
 """
         )
-
-        itest = MuSpinInput(stest)
-
-        with self.assertRaises(MuSpinConfigError):
+        with self.assertRaises(MuSpinInputError):
+            itest = MuSpinInput(stest)
             cfg = MuSpinConfig(itest.evaluate())
 
         stest = StringIO(
