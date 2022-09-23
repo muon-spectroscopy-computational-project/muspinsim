@@ -32,7 +32,7 @@ where `<number of cores>` is replaced by the number of desired cores on the give
 
 ## Usage as a library
 
-MuSpinSim can also be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the `MuSpinInput` class, then use it to create a `MuonExperimentalSetup` that runs the actual experiment. The minimal script is:
+MuSpinSim can also be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the `MuSpinInput` class, then use it to create a `ExperimentRunner` that runs the actual experiment. The minimal script is:
 
 ```python
 from muspinsim import MuSpinInput, ExperimentRunner
@@ -58,7 +58,7 @@ For parallel use, it's recommended to stick to using the provided `muspinsim.mpi
 
 ## Theory
 
-The way MuSpinSim operates is quite simple, and based on the principles of similar software for NMR, in particular [Simpson](https://pdfs.semanticscholar.org/c391/6ccc8f32ee3cad4820d73ecde101a268b9a3.pdf). A Hamiltonian of the system is built by combining the various terms specified in the input file; hyperfine, dipolar and quadrupolar terms are tied to the orientation of the 'crystallite' of the system we're observing, whereas muon polarization and applied external field are in an absolute reference frame (the one of the laboratory). The density matrix of the system is then made to evolve in time under this Hamiltonian, and the muon polarization is observed by standard quantum mechanical methods to compute expectation values. A slightly different approach is used when saving the integral of the expectation value, as in that case the integration is performed analytically to compute an "integral operator" whose expectation value is then computed. The biggest part of the computational load is tied to the diagonalization of the Hamiltonian, which is currently performed by using the library Numpy. This limits the usefulness of the program right now to matrices smaller than 1000x1000, corresponding roughly to ten spins with I=1/2. Bigger systems might take a while to run or run out of memory on personal computers.
+The way MuSpinSim operates is based on the principles of similar software for NMR, in particular [Simpson](https://pdfs.semanticscholar.org/c391/6ccc8f32ee3cad4820d73ecde101a268b9a3.pdf). A Hamiltonian of the system is built by combining the various terms specified in the input file; hyperfine, dipolar and quadrupolar terms are tied to the orientation of the 'crystallite' of the system we're observing, whereas muon polarization and applied external field are in an absolute reference frame (the one of the laboratory). The density matrix of the system is then made to evolve in time under this Hamiltonian, and the muon polarization is observed by standard quantum mechanical methods to compute expectation values. A slightly different approach is used when saving the integral of the expectation value, as in that case the integration is performed analytically to compute an "integral operator" whose expectation value is then computed. The biggest part of the computational load is tied to the diagonalization of the Hamiltonian, which is currently performed by using the library Numpy. This limits the usefulness of the program right now to matrices smaller than 1000x1000, corresponding roughly to ten spins with I=1/2. Bigger systems might take a while to run or run out of memory on personal computers.
 
 ## Input files and other information
 
