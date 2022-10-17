@@ -71,7 +71,7 @@ class Hermitian(object):
         # setting k is important
         # too big will cause memory issues
         # too small = inaccurate results
-        # eigval, eigvec = linalg.eigsh(self._matrix, k=self._matrix.shape[0]-2)
+        # eigval, eigvec = sparse.linalg.eigsh(self._matrix, k=self._matrix.shape[0]-2)
         # idx = eigval.argsort()
         # eigval = eigval[idx]
         # eigvec = eigvec[:,idx]
@@ -277,7 +277,7 @@ class Operator(Clonable):
         # Doing it this way saves some time
         ans = self.__class__.__new__(self.__class__)
         ans._dim = self._dim + x._dim
-        ans._matrix = sparse.kron(self._matrix, x._matrix)
+        ans._matrix = sparse.kron(self._matrix, x._matrix, format="csr")
 
         return ans
 
