@@ -109,15 +109,19 @@ class MuSpinInput(object):
         if fs is not None:
 
             raw_blocks, block_line_nums = _make_blocks(fs)
-            # A special case: if there are fitting variables, we need to know
-            # right away
-            errors_found = []
+
+            # if we find errors when parsing fitting variables, we post an error
+            # so we don't propagate invalid variables when parsing keywords later
             failed_status, errors = self._load_fitting_kw(raw_blocks, block_line_nums)
             if failed_status:
-                errors_found.extend(errors)
+                raise MuSpinInputError(
+                    "Found {0} Error(s) whilst trying to parse fitting keywords: "
+                    "\n\n{1}".format(len(errors), "\n\n".join(errors))
+                )
 
             # Another special case: if the "experiment" keyword is present,
             # use it to set some defaults
+            errors_found = []
             try:
                 block = raw_blocks.pop("experiment")
                 kw = InputKeywords["experiment"](block)
@@ -172,7 +176,7 @@ class MuSpinInput(object):
 
             if errors_found:
                 raise MuSpinInputError(
-                    "Found {0} Error(s) whilst trying to parse input file: "
+                    "Found {0} Error(s) whilst trying to parse keywords: "
                     "\n\n{1}".format(len(errors_found), "\n\n".join(errors_found))
                 )
 
@@ -200,7 +204,15 @@ class MuSpinInput(object):
                         )
                         result["couplings"][kwid] = val
             else:
-                if name in self._keywords:
+                # remove unnecessary keywords - stored in fitting_info
+                if name in [
+                    "fitting_data",
+                    "fitting_tolerance",
+                    "fitting_variables",
+                    "fitting_method",
+                ]:
+                    pass
+                elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}
                     val = kw.evaluate(**v)

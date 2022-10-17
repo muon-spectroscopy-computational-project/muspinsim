@@ -15,8 +15,8 @@ class TestHamiltonian(unittest.TestCase):
         self.assertEqual(H.dimension, (2,))
 
         # Error if not Hermitian
-        with self.assertRaises(ValueError):
-            Hamiltonian([[1, 1], [0, 1]])
+        with self.assertRaises(ValueError) as e:
+            Hamiltonian(np.array([[1, 1], [0, 1]]))
 
     def test_diag(self):
 
@@ -31,7 +31,7 @@ class TestHamiltonian(unittest.TestCase):
 
         Hrot = H.basis_change(evecs)
 
-        self.assertTrue(np.all(np.isclose(Hrot.matrix, np.diag(evals))))
+        self.assertTrue(np.all(np.isclose(Hrot.matrix.toarray(), np.diag(evals))))
 
     def test_evolve(self):
 

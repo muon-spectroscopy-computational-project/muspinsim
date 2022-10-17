@@ -279,12 +279,6 @@ class MuSpinConfig(object):
             "Total number of configurations to average: " "{0}".format(self._avg_N)
         )
 
-        # Define a namedtuple for configurations
-        cfg_keys = list(self._constants.keys())
-        cfg_keys += list(self._file_ranges.keys())
-        cfg_keys += list(self._avg_ranges.keys())
-        cfg_keys += list(self._x_range.keys())
-
     def validate(self, name, value, args={}):
         """Validate an input parameter with a custom method, if present.
 

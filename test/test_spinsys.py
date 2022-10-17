@@ -15,8 +15,6 @@ from muspinsim.spinsys import (
 class TestSpinSystem(unittest.TestCase):
     def test_create(self):
 
-        ssys = SpinSystem(["mu", "e"])
-
         ssys = SpinSystem(["mu", ("H", 2)])
 
         # Test cloning
@@ -34,11 +32,15 @@ class TestSpinSystem(unittest.TestCase):
 
         # A scalar term
         term = InteractionTerm(ssys, [], 2.0)
-        self.assertEqual(term.operator, ssys.operator({}) * 2)
+        self.assertTrue(
+            np.allclose(term.operator.matrix.data, (ssys.operator({}) * 2).matrix.data)
+        )
 
         # Linear term
         term = SingleTerm(ssys, 0, [0, 0, 1])
-        self.assertEqual(term.operator, ssys.operator({0: "z"}))
+        self.assertTrue(
+            np.allclose(term.operator.matrix.data, ssys.operator({0: "z"}).matrix.data)
+        )
 
         # Test copy
         copy = term.clone()
@@ -49,21 +51,29 @@ class TestSpinSystem(unittest.TestCase):
 
         # Bilinear term
         term = DoubleTerm(ssys, 0, 1, np.diag([1, 1, 2]))
-        self.assertEqual(
-            term.operator,
-            ssys.operator({0: "x", 1: "x"})
-            + ssys.operator({0: "y", 1: "y"})
-            + 2 * ssys.operator({0: "z", 1: "z"}),
+        self.assertTrue(
+            np.allclose(
+                term.operator.matrix.data,
+                (
+                    ssys.operator({0: "x", 1: "x"})
+                    + ssys.operator({0: "y", 1: "y"})
+                    + 2 * ssys.operator({0: "z", 1: "z"})
+                ).matrix.data,
+            )
         )
 
         # Rotation matrix
         R = np.array([[1, 0, 0], [0, 0, 1], [0, -1, 0]])
         rotterm = term.rotate(R)
-        self.assertEqual(
-            rotterm.operator,
-            ssys.operator({0: "x", 1: "x"})
-            + 2 * ssys.operator({0: "y", 1: "y"})
-            + ssys.operator({0: "z", 1: "z"}),
+        self.assertTrue(
+            np.allclose(
+                rotterm.operator.matrix.data,
+                (
+                    ssys.operator({0: "x", 1: "x"})
+                    + 2 * ssys.operator({0: "y", 1: "y"})
+                    + ssys.operator({0: "z", 1: "z"})
+                ).matrix.data,
+            )
         )
 
     def test_check(self):
@@ -80,12 +90,20 @@ class TestSpinSystem(unittest.TestCase):
 
         ssys = SpinSystem(["mu", "e"])
 
-        self.assertEqual(
-            ssys.operator({0: "x"}), SpinOperator.from_axes([0.5, 0.5], "x0")
+        self.assertTrue(
+            np.allclose(
+                ssys.operator({0: "x"}).matrix.toarray(),
+                SpinOperator.from_axes([0.5, 0.5], "x0").matrix.toarray(),
+            )
         )
-        self.assertEqual(
-            ssys.operator({0: "z", 1: "y"}), SpinOperator.from_axes([0.5, 0.5], "zy")
+
+        self.assertTrue(
+            np.allclose(
+                ssys.operator({0: "z", 1: "y"}).matrix.toarray(),
+                SpinOperator.from_axes([0.5, 0.5], "zy").matrix.toarray(),
+            )
         )
+
         self.assertEqual(ssys.dimension, (2, 2))
 
     def test_addterms(self):
@@ -95,16 +113,26 @@ class TestSpinSystem(unittest.TestCase):
         t1 = ssys.add_linear_term(0, [1, 0, 1])
 
         self.assertEqual(t1.label, "Single")
-        self.assertEqual(t1.operator, ssys.operator({0: "x"}) + ssys.operator({0: "z"}))
+
+        self.assertTrue(
+            np.allclose(
+                t1.operator.matrix.data,
+                (ssys.operator({0: "x"}) + ssys.operator({0: "z"})).matrix.data,
+            )
+        )
 
         t2 = ssys.add_bilinear_term(0, 1, np.eye(3))
 
         self.assertEqual(t2.label, "Double")
-        self.assertEqual(
-            t2.operator,
-            ssys.operator({0: "x", 1: "x"})
-            + ssys.operator({0: "y", 1: "y"})
-            + ssys.operator({0: "z", 1: "z"}),
+        self.assertTrue(
+            np.allclose(
+                t2.operator.matrix.data,
+                (
+                    ssys.operator({0: "x", 1: "x"})
+                    + ssys.operator({0: "y", 1: "y"})
+                    + ssys.operator({0: "z", 1: "z"})
+                ).matrix.data,
+            )
         )
 
         H = ssys.hamiltonian
@@ -112,7 +140,7 @@ class TestSpinSystem(unittest.TestCase):
         self.assertTrue(
             np.all(
                 np.isclose(
-                    H.matrix,
+                    H.matrix.toarray(),
                     np.array(
                         [
                             [0.75, 0, 0.5, 0.0],
@@ -133,18 +161,17 @@ class TestSpinSystem(unittest.TestCase):
 
         H = ssys.hamiltonian
 
-        self.assertTrue(np.all(np.isclose(H.matrix, np.zeros((4, 4)))))
+        self.assertTrue(np.all(np.isclose(H.matrix.toarray(), np.zeros((4, 4)))))
 
     def test_lindbladian(self):
 
         ssys = SpinSystem(["mu"])
         ssys.add_linear_term(0, [0, 0, 1])
 
-        H = ssys.hamiltonian
         L = ssys.lindbladian
         L0 = -1.0j * SuperOperator.commutator(ssys.operator({0: "z"}))
 
-        self.assertTrue(np.all(np.isclose(L.matrix, L0.matrix)))
+        self.assertTrue(np.all(np.isclose(L.matrix.toarray(), L0.matrix.toarray())))
 
         sx = ssys.operator({0: "x"})
         d = 2.0
@@ -155,7 +182,7 @@ class TestSpinSystem(unittest.TestCase):
         )
 
         L = ssys.lindbladian
-        self.assertTrue(np.all(np.isclose(L.matrix, L1.matrix)))
+        self.assertTrue(np.all(np.isclose(L.matrix.toarray(), L1.matrix.toarray())))
 
 
 class TestMuonSpinSystem(unittest.TestCase):
@@ -174,7 +201,7 @@ class TestMuonSpinSystem(unittest.TestCase):
         z1 = mSsys.add_zeeman_term(1, 1.0)
         h01 = mSsys.add_hyperfine_term(1, np.eye(3) * 100)
 
-        H = mSsys.hamiltonian.matrix
+        H = mSsys.hamiltonian.matrix.toarray()
 
         self.assertTrue(
             np.all(
@@ -192,7 +219,7 @@ class TestMuonSpinSystem(unittest.TestCase):
 
         mSsys.remove_term(h01)
 
-        H = mSsys.hamiltonian.matrix
+        H = mSsys.hamiltonian.matrix.toarray()
 
         self.assertTrue(
             np.all(
