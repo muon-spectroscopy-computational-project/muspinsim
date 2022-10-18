@@ -43,7 +43,7 @@ class InteractionTerm(Clonable):
         for ii in index_tuples:
             op = (
                 self._spinsys.operator(
-                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)}
+                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)}, include_only_given=self._spinsys.celios
                 )
                 * self._tensor[tuple(ii)]
             )
@@ -192,6 +192,8 @@ class SpinSystem(Clonable):
 
         self._terms = []
         self._dissip_terms = []
+
+        self.celios = True
 
         snames = [
             "{1}{0}".format(*s) if (type(s) == tuple) else str(s) for s in self._spins
@@ -522,7 +524,7 @@ class SpinSystem(Clonable):
 
         return self._Is[i]
 
-    def operator(self, terms={}):
+    def operator(self, terms={}, include_only_given=False):
         """Return an operator for this spin system
 
         Return a SpinOperator for this system containing the specified terms.
@@ -533,12 +535,20 @@ class SpinSystem(Clonable):
                             symbols indicating one spin operator (either x, y,
                             z, +, - or 0). Wherever not specified, the identity
                             operaror is applied (default: {{}})
+            include_only_given -- When True only the requested terms will be included
+                                  otherwise the result will include the kronecker
+                                  product with identity matrices for the partcles
+                                  not present in the terms
 
         Returns:
             SpinOperator -- The requested operator
         """
 
-        ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
+        if include_only_given:
+            # For Celio's method wont need all of the 0's, just the ones relevant to the interaction itself
+            ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self)) if terms.get(i, "0") != "0"]
+        else:
+            ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
 
         M = ops[0]
 
@@ -574,6 +584,7 @@ class SpinSystem(Clonable):
             n = np.prod(self.dimension)
             H = sparse.csr_matrix((n, n))
         else:
+            print(self._terms)
             H = np.sum([t.matrix for t in self._terms], axis=0)
         H = Hamiltonian(H, dim=self.dimension)
 
@@ -686,3 +697,66 @@ class MuonSpinSystem(SpinSystem):
         op = sum(op[1:], op[0])
 
         return op
+
+    @property
+    def celios_hamiltonians(self):
+        """Get Hamiltonians of particles for Celio's method
+
+        Returns the Hamiltonains of particles excluding the muon defined such that
+        their total is the total Hamiltonian of the system
+        """
+
+        print("START")
+
+        if self.muon_index != 0:
+            raise ValueError("The muon must be the first spin")
+        
+        non_muon_indices = [i for i, x in enumerate(self._spins) if x != "mu"]
+        print(self._spins)
+        print(non_muon_indices)
+
+        # Find interactions that only refer to the muon (a fraction of it needs to be included in each
+        # hamiltonian returned)
+        muon_only_ints, other_ints = [], []
+        for term in self._terms:
+            if term.indices == (self.muon_index):
+                muon_only_ints.append(term)
+            else:
+                other_ints.append(term)
+        
+        # Compute contributions of interactions with the muon only
+        muon_H_contribs = np.array([term.matrix for term in muon_only_ints]) / len(non_muon_indices)
+        muon_H_contribs = np.sum(muon_H_contribs)
+
+        #muon_H_contribs = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]]) / len(non_muon_indices)
+
+        hamiltonians = []
+
+        print(muon_only_ints)
+        print(other_ints)
+        print(muon_H_contribs)
+
+        # For now we will assume all interactions include the muon and a maximum of one other particle
+        # Will also assume swap gates aren't needed yet - i.e. can only have interactions of the muon and
+        # the particle that is defined directly after it
+
+        for i in non_muon_indices:
+            # Find the terms that involve the current particle
+            particle_int_mats = [term.matrix for term in other_ints if i in term.indices]
+
+            print(f"Particle index{i}")
+            print(particle_int_mats)
+
+            particle_H = muon_H_contribs + np.sum(particle_int_mats)
+
+            print(type(particle_H))
+            print(particle_H.shape)
+            print("------")
+
+            hamiltonians.append(particle_H)
+
+        print("END")
+
+        # sys.exit()
+
+        return hamiltonians

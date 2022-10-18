@@ -5,6 +5,7 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
+from scipy import sparse
 
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
@@ -79,13 +80,16 @@ class ExperimentRunner(object):
             ]
         )
 
+        self.celios = True
+
         # Parameters
         self._B = np.zeros(3)
         self._p = np.array([1.0, 0, 0])
         self._T = np.inf
 
         # Basic Hamiltonian
-        self._Hsys = self._system.hamiltonian
+        if not self.celios:
+            self._Hsys = self._system.hamiltonian
 
         # Derived quantities
         self._rho0 = None
@@ -175,7 +179,6 @@ class ExperimentRunner(object):
                         ],
                         axis=0,
                     )
-
                     evals, evecs = np.linalg.eigh(Hz.toarray())
                     E = evals * 1e6 * self._system.gamma(i)
 
@@ -357,11 +360,94 @@ class ExperimentRunner(object):
         # Measurement operator?
         S = self.p_operator
 
-        H = self.Htot
+        if not self.celios:
+            H = self.Htot
 
-        if cfg_snap.y == "asymmetry":
-            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
-        elif cfg_snap.y == "integral":
-            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
+            if cfg_snap.y == "asymmetry":
+                data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+            elif cfg_snap.y == "integral":
+                data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
+        else:
+            k = 4
+            hamiltonians = self._system.celios_hamiltonians
+            time_step = cfg_snap.t[1] - cfg_snap.t[0]
+
+            dUs = []
+            for i, H_i in enumerate(hamiltonians):
+                evol_op = sparse.linalg.expm(-1j * H_i * time_step / k)
+                other_spins = np.array([self.system.Is[j] for j in range(0, len(self.system.Is)) if j != 0 and j != i + 1])
+                other_spins = (2*(2*other_spins + 1)).astype(int)
+                print(other_spins)
+
+                if len(other_spins) > 0:
+                    mat = np.eye(other_spins[i])
+                    for dim in other_spins[1:]:
+                        mat = sparse.kron(mat, np.eye(dim))
+                    evol_op = sparse.kron(evol_op, mat)
+                    
+                evol_op = evol_op.power(k)
+
+                dUs.append(evol_op)
+
+            print(dUs[0].shape)
+            print(np.product(dUs))
+
+            rho0 = self.rho0
+            times = cfg_snap.t
+            operators=[S]
+
+            # The below is copied from Hamiltonian's evolve method
+            if not isinstance(rho0, DensityOperator):
+                raise TypeError("rho0 must be a valid DensityOperator")
+
+            times = np.array(times)
+
+            if len(times.shape) != 1:
+                raise ValueError("times must be an array of values in microseconds")
+
+            if isinstance(operators, SpinOperator):
+                operators = [operators]
+            if not all([isinstance(o, SpinOperator) for o in operators]):
+                raise ValueError(
+                    "operators must be a SpinOperator or a list" " of SpinOperator objects"
+                )
+
+            # Diagonalize self
+            # evals, evecs = self.diag()
+
+            # Turn the density matrix in the right basis
+            dim = rho0.dimension
+            print(rho0.dimension)
+            # rho0 = rho0.basis_change(evecs).matrix.toarray()
+            rho0 = rho0.matrix.toarray()
+
+            # Same for operators
+            operatorsT = np.array(
+                # [o.basis_change(evecs).matrix.T.toarray() for o in operators]
+                [o.matrix.T.toarray() for o in operators]
+            )
+
+            result = None
+            if len(operators) > 0:
+                rho = rho0[None, :, :]
+                print(rho)
+
+                # Actually compute expectation values one at a time
+                for i in range(times.shape[0]):
+
+                    single_res = np.sum(
+                        rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
+                    )
+                    if result is None:
+                        result = single_res
+                    else:
+                        result = np.concatenate(([result, single_res]), axis=0)
+
+                    rho = np.product(dUs).toarray()[None, :, :] * rho
+                print(rho)
+
+            data = result[:, 0]
+
+
 
         return np.real(data) * w
