@@ -411,47 +411,34 @@ class ExperimentRunner(object):
                     "operators must be a SpinOperator or a list" " of SpinOperator objects"
                 )
 
-            # Diagonalize self
-            # evals, evecs = self.diag()
-            # evals, evecs = np.linalg.eigh(S.matrix.toarray())
+            rho0 = rho0.matrix
 
-            # Turn the density matrix in the right basis
-            dim = rho0.dimension
+            # Time evolution step that will modify the trotter_hamiltonian below
+            trotter_hamiltonian_dt = np.product(dUs)
+            trotter_hamiltonian = sparse.identity(trotter_hamiltonian_dt.shape[0], format="csr")
 
-            # rho0 = rho0.basis_change(evecs).matrix.toarray()
-            rho0 = rho0.matrix.toarray()
+            # Avoid using append as assignment should be faster
+            results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
 
-            trotter_hamiltonian = np.product(dUs)
-            trotter_hamiltonian_dt = trotter_hamiltonian
-
-            # Same for operators
-            operatorsT = np.array(
-                # [o.basis_change(evecs).matrix.T.toarray() for o in operators]
-                [o.matrix.T.toarray() for o in operators]
-            )
-
-            result = None
             if len(operators) > 0:
-                rho = rho0[None, :, :]
-
-                # Actually compute expectation values one at a time
+                # Compute expectation values one at a time
                 for i in range(times.shape[0]):
 
-                    single_res = np.sum(
-                        rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
-                    )
-                    if result is None:
-                        result = single_res
-                    else:
-                        result = np.concatenate(([result, single_res]), axis=0)
-
+                    # When passing multiple operators we want to return results for each
+                    for j, op in enumerate(operators):
+                        op = op.basis_change(trotter_hamiltonian).matrix.T
+                        
+                        # Sparse matrices dont allow axis as a tuple, so have to use sum twice
+                        results[i][j] = np.sum(
+                            np.sum(
+                                rho0.multiply(op), axis=1
+                            ),
+                            axis=0
+                        )
+                        
+                    # Evolution step
                     trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt
-                    operatorsT = np.array(
-                        [o.basis_change(trotter_hamiltonian).matrix.T.toarray() for o in operators]
-                    )
-                    # print(rho.toarray())
-                    # sys.exit()
 
-            data = result[:, 0]
+            data = results[:, 0]
 
         return np.real(data) * w
