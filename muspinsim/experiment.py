@@ -427,14 +427,9 @@ class ExperimentRunner(object):
                     # When passing multiple operators we want to return results for each
                     for j, op in enumerate(operators):
                         op = op.basis_change(trotter_hamiltonian).matrix.T
+
+                        results[i][j] = (rho0 * op).trace()
                         
-                        # Sparse matrices dont allow axis as a tuple, so have to use sum twice
-                        results[i][j] = np.sum(
-                            np.sum(
-                                rho0.multiply(op), axis=1
-                            ),
-                            axis=0
-                        )
                         
                     # Evolution step
                     trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt
