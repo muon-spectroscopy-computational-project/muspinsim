@@ -2,6 +2,7 @@ import sys
 import os
 import unittest
 import tempfile
+import logging
 
 from muspinsim.__main__ import main
 
@@ -18,6 +19,13 @@ def run_experiment(inp_string, inp_file_path, cmd_args):
 
 
 class TestCommandLineArgs(unittest.TestCase):
+    @classmethod
+    def tearDownClass(self):
+        # The tests in this class setup the logger to use a temporary folder but for
+        # other tests that run afterwards this may no longer exist so revert to the
+        # default again and print to stdout to avoid FileNotFound errors
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, force=True)
+
     def test_main_default_args(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             cmd_args = []
