@@ -368,29 +368,28 @@ class ExperimentRunner(object):
             elif cfg_snap.y == "integral":
                 data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
         else:
-            k = 4
+            k = 10^6
             hamiltonians = self._system.celios_hamiltonians
             time_step = cfg_snap.t[1] - cfg_snap.t[0]
 
             dUs = []
+
             for i, H_i in enumerate(hamiltonians):
-                evol_op = sparse.linalg.expm(-1j * H_i * time_step / k)
+                # H_i is currently stored in csr format, but expm wants it in csc so convert here
+                evol_op = sparse.linalg.expm(-2j * np.pi * H_i.tocsc() * time_step / k).tocsr()
+
                 other_spins = np.array([self.system.Is[j] for j in range(0, len(self.system.Is)) if j != 0 and j != i + 1])
                 other_spins = (2*(2*other_spins + 1)).astype(int)
-                print(other_spins)
 
                 if len(other_spins) > 0:
-                    mat = np.eye(other_spins[i])
+                    mat = sparse.identity(other_spins[i], format="csr")
                     for dim in other_spins[1:]:
-                        mat = sparse.kron(mat, np.eye(dim))
+                        mat = sparse.kron(mat, sparse.identity(dim, format="csr"))
                     evol_op = sparse.kron(evol_op, mat)
-                    
-                evol_op = evol_op.power(k)
+
+                evol_op = evol_op ** k
 
                 dUs.append(evol_op)
-
-            print(dUs[0].shape)
-            print(np.product(dUs))
 
             rho0 = self.rho0
             times = cfg_snap.t
@@ -414,12 +413,16 @@ class ExperimentRunner(object):
 
             # Diagonalize self
             # evals, evecs = self.diag()
+            # evals, evecs = np.linalg.eigh(S.matrix.toarray())
 
             # Turn the density matrix in the right basis
             dim = rho0.dimension
-            print(rho0.dimension)
+
             # rho0 = rho0.basis_change(evecs).matrix.toarray()
             rho0 = rho0.matrix.toarray()
+
+            trotter_hamiltonian = np.product(dUs)
+            trotter_hamiltonian_dt = trotter_hamiltonian
 
             # Same for operators
             operatorsT = np.array(
@@ -430,7 +433,6 @@ class ExperimentRunner(object):
             result = None
             if len(operators) > 0:
                 rho = rho0[None, :, :]
-                print(rho)
 
                 # Actually compute expectation values one at a time
                 for i in range(times.shape[0]):
@@ -443,11 +445,13 @@ class ExperimentRunner(object):
                     else:
                         result = np.concatenate(([result, single_res]), axis=0)
 
-                    rho = np.product(dUs).toarray()[None, :, :] * rho
-                print(rho)
+                    trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt
+                    operatorsT = np.array(
+                        [o.basis_change(trotter_hamiltonian).matrix.T.toarray() for o in operators]
+                    )
+                    # print(rho.toarray())
+                    # sys.exit()
 
             data = result[:, 0]
-
-
 
         return np.real(data) * w
