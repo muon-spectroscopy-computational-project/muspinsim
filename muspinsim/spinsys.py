@@ -698,12 +698,17 @@ class MuonSpinSystem(SpinSystem):
 
         return op
 
-    @property
-    def celios_hamiltonians(self):
-        """Get Hamiltonians of particles for Celio's method
+    def calc_celios_hamiltonians(self):
+        """Calculates and returns Hamiltonians of particles for Celio's method
 
         Returns the Hamiltonains of particles excluding the muon defined such that
         their total is the total Hamiltonian of the system
+
+        Returns:
+            hamiltonians {[matrix]} -- List of matrices representing the H_i's refered to in Celio's method.
+                                       There is one for each particle.
+            dimensions {[int]} -- List of dimensions for the particles that were not included in the construction
+                                  of the Hamiltonians
         """
 
         print("START")
@@ -726,11 +731,10 @@ class MuonSpinSystem(SpinSystem):
         
         # Compute contributions of interactions with the muon only
         muon_H_contribs = np.array([term.matrix for term in muon_only_ints]) / len(non_muon_indices)
-        muon_H_contribs = np.sum(muon_H_contribs)
-
-        #muon_H_contribs = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]]) / len(non_muon_indices)
+        muon_H_contribs = np.sum(muon_H_contribs, axis=0)
 
         hamiltonians = []
+        dimensions = []
 
         print(muon_only_ints)
         print(other_ints)
@@ -742,13 +746,28 @@ class MuonSpinSystem(SpinSystem):
 
         for i in non_muon_indices:
             # Find the terms that involve the current particle
-            particle_int_mats = [term.matrix for term in other_ints if i in term.indices]
+            particle_ints = [term for term in other_ints if i in term.indices]
+            particle_int_mats = [term.matrix for term in particle_ints]
+
+            # Want dimensions of particles not included here or in the interactions
+            other_particles = list(range(0, len(self.spins)))
+            other_particles.remove(i)
+            for term in particle_ints:
+                for j in term.indices:
+                    if j in other_particles:
+                        other_particles.remove(j)
+            dimensions.append(np.product([2*self.Is[j] + 1 for j in other_particles]))
 
             print(f"Particle index{i}")
             print(particle_int_mats)
 
-            particle_H = muon_H_contribs + np.sum(particle_int_mats)
+            if len(particle_int_mats) == 0 and len(muon_only_ints) == 0:
+                # Nothing to populate the hamiltonian with, just use identity
+                particle_H = sparse.identity(2*self.Is[i] + 1, format="csr")
+            else:
+                particle_H = muon_H_contribs + np.sum(particle_int_mats)
 
+            print(type(muon_H_contribs))
             print(type(particle_H))
             print(particle_H.shape)
             print("------")
@@ -757,6 +776,8 @@ class MuonSpinSystem(SpinSystem):
 
         print("END")
 
+        print("DimArray", dimensions)
+
         # sys.exit()
 
-        return hamiltonians
+        return hamiltonians, dimensions

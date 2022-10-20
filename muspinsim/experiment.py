@@ -369,7 +369,7 @@ class ExperimentRunner(object):
                 data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
         else:
             k = 10^6
-            hamiltonians = self._system.celios_hamiltonians
+            hamiltonians, dimensions = self._system.calc_celios_hamiltonians()
             time_step = cfg_snap.t[1] - cfg_snap.t[0]
 
             dUs = []
@@ -381,11 +381,8 @@ class ExperimentRunner(object):
                 other_spins = np.array([self.system.Is[j] for j in range(0, len(self.system.Is)) if j != 0 and j != i + 1])
                 other_spins = (2*(2*other_spins + 1)).astype(int)
 
-                if len(other_spins) > 0:
-                    mat = sparse.identity(other_spins[i], format="csr")
-                    for dim in other_spins[1:]:
-                        mat = sparse.kron(mat, sparse.identity(dim, format="csr"))
-                    evol_op = sparse.kron(evol_op, mat)
+                if dimensions[i] > 0:
+                    evol_op = sparse.kron(evol_op, sparse.identity(dimensions[i], format="csr"))
 
                 evol_op = evol_op ** k
 
@@ -419,6 +416,8 @@ class ExperimentRunner(object):
 
             # Avoid using append as assignment should be faster
             results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
+
+            print("Size of mat", trotter_hamiltonian.shape)
 
             if len(operators) > 0:
                 # Compute expectation values one at a time
