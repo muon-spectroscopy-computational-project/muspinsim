@@ -380,32 +380,12 @@ class ExperimentRunner(object):
                 # H_i is currently stored in csr format, but expm wants it in csc so convert here
                 evol_op = sparse.linalg.expm(-2j * np.pi * H_i.tocsc() * time_step / k).tocsr()
 
-                all_spins = list((2*self.system.Is + 1).astype(int))
-
-                other_spins = np.array([self.system.Is[j] for j in range(0, len(self.system.Is)) if j != 0 and j != i + 1])
-                other_spins = (2*(2*other_spins + 1)).astype(int)
+                all_dims = list(self.system.dimension)
 
                 if dimensions[i] > 0:
                     evol_op = sparse.kron(evol_op, sparse.identity(dimensions[i], format="csr"))
-                
-                # Temporary attempt at swap gate
-                # if i == 1:
-                #     evol_op = sparse.kron(sparse.identity(2, format="csr"), sparse.csr_matrix([[1,0,0,0],[0,0,1,0],[0,1,0,0],[0,0,0,1]])) * evol_op
-                #     print(sparse.kron(sparse.identity(2, format="csr"), sparse.csr_matrix([[1,0,0,0],[0,0,1,0],[0,1,0,0],[0,0,0,1]])).toarray())
 
-                # Attempt to use QuTiP
-                # if i == 1:
-                #     def swap(total_spins, s1, s2):
-                #         new_order = list(range(0, l))
-                #         new_order[s1], new_order[s2] = new_order[s2], new_order[s1]
-                #         return new_order
-
-                #     # test2 = tensor([qeye(2), qeye(2), qeye(2)])
-                #     # print(test2.dims)
-
-                #     test = Qobj(inpt=evol_op, dims=[[2, 2, 2], [2, 2, 2]])
-                #     test = test.permute(swap(3, 1, 2))
-                #     evol_op = test.data
+                print("H_i shape and dimensions", H_i.shape, dimensions)
                 
                 # For particle interactions that are not neighbours to the muon we must use a swap gate
                 if i != 0:
@@ -414,8 +394,8 @@ class ExperimentRunner(object):
                         new_order[s1], new_order[s2] = new_order[s2], new_order[s1]
                         return new_order
 
-                    qtip_obj = Qobj(inpt=evol_op, dims=[all_spins, all_spins])
-                    qtip_obj = qtip_obj.permute(swap(len(all_spins), 1, i + 1))
+                    qtip_obj = Qobj(inpt=evol_op, dims=[all_dims, all_dims])
+                    qtip_obj = qtip_obj.permute(swap(len(all_dims), 1, i + 1))
                     evol_op = qtip_obj.data
                     
 

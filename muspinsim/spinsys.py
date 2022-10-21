@@ -724,7 +724,7 @@ class MuonSpinSystem(SpinSystem):
         # hamiltonian returned)
         muon_only_ints, other_ints = [], []
         for term in self._terms:
-            if term.indices == (self.muon_index):
+            if term.indices == (self.muon_index,):
                 muon_only_ints.append(term)
             else:
                 other_ints.append(term)
@@ -752,20 +752,28 @@ class MuonSpinSystem(SpinSystem):
             # Want dimensions of particles not included here or in the interactions
             other_particles = list(range(0, len(self.spins)))
             other_particles.remove(i)
+
+            # Remove muon index if we are including in the interactions
+            if len(muon_only_ints) > 0:
+                other_particles.remove(self.muon_index)
+
             for term in particle_ints:
                 for j in term.indices:
                     if j in other_particles:
                         other_particles.remove(j)
-            dimensions.append(np.product([2*self.Is[j] + 1 for j in other_particles]))
+            dimensions.append(np.product([self.dimension[j] for j in other_particles]))
 
             print(f"Particle index{i}")
             print(particle_int_mats)
 
             if len(particle_int_mats) == 0 and len(muon_only_ints) == 0:
                 # Nothing to populate the hamiltonian with, just use identity
-                particle_H = sparse.identity(2*self.Is[i] + 1, format="csr")
+                particle_H = sparse.identity(self.dimension[i], format="csr")
             else:
-                particle_H = muon_H_contribs + np.sum(particle_int_mats)
+                particle_H = np.sum(particle_int_mats)
+
+                if len(muon_only_ints) > 0:
+                    particle_H = sparse.kron(muon_H_contribs, sparse.identity(self.dimension[i], format="csr")) + particle_H
 
             print(type(muon_H_contribs))
             print(type(particle_H))
