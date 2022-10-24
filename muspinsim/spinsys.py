@@ -43,7 +43,7 @@ class InteractionTerm(Clonable):
         for ii in index_tuples:
             op = (
                 self._spinsys.operator(
-                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)}, include_only_given=self._spinsys.celios
+                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)}, include_only_given=self._spinsys.celio
                 )
                 * self._tensor[tuple(ii)]
             )
@@ -150,7 +150,7 @@ class DissipationTerm(Clonable):
 
 
 class SpinSystem(Clonable):
-    def __init__(self, spins=[]):
+    def __init__(self, spins=[], celio=0):
         """Create a SpinSystem object
 
         Create an object representing a system of particles with spins (muons,
@@ -161,6 +161,9 @@ class SpinSystem(Clonable):
                             Each element can be 'e' (electron), 'mu' (muon) a
                             chemical symbol, or a (str, int) tuple with a
                             chemical symbol and an isotope (default: {[]})
+            celio {int} -- Factor for the Trotter approximation if Celio's
+                           method is to be used. When this is 0, Celio's method
+                           is not used.
         """
 
         gammas = []
@@ -193,7 +196,7 @@ class SpinSystem(Clonable):
         self._terms = []
         self._dissip_terms = []
 
-        self.celios = True
+        self._celio = celio
 
         snames = [
             "{1}{0}".format(*s) if (type(s) == tuple) else str(s) for s in self._spins
@@ -204,6 +207,10 @@ class SpinSystem(Clonable):
     @property
     def spins(self):
         return list(self._spins)
+
+    @property
+    def celio(self):
+        return self._celio
 
     @property
     def gammas(self):
@@ -604,9 +611,9 @@ class SpinSystem(Clonable):
 
 
 class MuonSpinSystem(SpinSystem):
-    def __init__(self, spins=["mu", "e"]):
+    def __init__(self, spins=["mu", "e"], celio=0):
 
-        super(MuonSpinSystem, self).__init__(spins)
+        super(MuonSpinSystem, self).__init__(spins, celio)
 
         # Identify the muon index
         if self._spins.count("mu") != 1:

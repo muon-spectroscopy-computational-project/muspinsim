@@ -82,15 +82,13 @@ class ExperimentRunner(object):
             ]
         )
 
-        self.celios = True
-
         # Parameters
         self._B = np.zeros(3)
         self._p = np.array([1.0, 0, 0])
         self._T = np.inf
 
-        # Basic Hamiltonian
-        if not self.celios:
+        # Basic Hamiltonian - only needed when not using Celio's
+        if not self._config.celio:
             self._Hsys = self._system.hamiltonian
 
         # Derived quantities
@@ -362,7 +360,7 @@ class ExperimentRunner(object):
         # Measurement operator?
         S = self.p_operator
 
-        if not self.celios:
+        if not self._config.celio:
             H = self.Htot
 
             if cfg_snap.y == "asymmetry":
@@ -370,7 +368,7 @@ class ExperimentRunner(object):
             elif cfg_snap.y == "integral":
                 data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
         else:
-            k = 10^6
+            k = self._config.celio
             hamiltonians, dimensions = self._system.calc_celios_hamiltonians()
             time_step = cfg_snap.t[1] - cfg_snap.t[0]
 
@@ -386,12 +384,14 @@ class ExperimentRunner(object):
                     evol_op = sparse.kron(evol_op, sparse.identity(dimensions[i], format="csr"))
 
                 print("H_i shape and dimensions", H_i.shape, dimensions)
+                print(all_dims)
                 
                 # For particle interactions that are not neighbours to the muon we must use a swap gate
                 if i != 0:
                     def swap(total_spins, s1, s2):
                         new_order = list(range(0, total_spins))
                         new_order[s1], new_order[s2] = new_order[s2], new_order[s1]
+                        print(new_order)
                         return new_order
 
                     qtip_obj = Qobj(inpt=evol_op, dims=[all_dims, all_dims])
@@ -435,7 +435,6 @@ class ExperimentRunner(object):
             if len(operators) > 0:
                 # Compute expectation values one at a time
                 for i in range(times.shape[0]):
-
                     # When passing multiple operators we want to return results for each
                     for j, op in enumerate(operators):
                         op = op.basis_change(trotter_hamiltonian).matrix.T

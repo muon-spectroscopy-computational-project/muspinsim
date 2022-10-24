@@ -103,6 +103,7 @@ class MuSpinConfig(object):
         # Basic parameters
         self._name = self.validate("name", params["name"].value)[0]
         self._spins = self.validate("spins", params["spins"].value[0])
+        self._celio = self.validate("celio", params["celio"].value[0])[0]
         self._y_axis = self.validate("y", params["y_axis"].value[0])[0]
 
         # Identify ranges
@@ -206,7 +207,7 @@ class MuSpinConfig(object):
             _log_dictranges(self._file_ranges)
 
         # Now make the spin system
-        self._system = MuonSpinSystem(self._spins)
+        self._system = MuonSpinSystem(self._spins, self._celio)
         self._dissip_terms = {}
 
         for iid, idata in params["couplings"].items():
@@ -396,6 +397,10 @@ Parameters used:
         return list(self._spins)
 
     @property
+    def celio(self):
+        return self._celio
+
+    @property
     def system(self):
         return self._system.clone()
 
@@ -477,6 +482,16 @@ Parameters used:
             A, el = m.groups()
             A = int(A)
             return (el, A)
+
+    def _validate_celio(self, v):
+        trotter_k = 0
+        try:
+            trotter_k = int(v)
+            if trotter_k < 0:
+                raise MuSpinConfigError("Value of k for Celio's method must a postive integer or 0")
+        except ValueError:
+            raise MuSpinConfigError("Value of k for Celio's method must be an integer") from ValueError
+        return trotter_k
 
     def _validate_t(self, v):
         if len(v) != 1:
