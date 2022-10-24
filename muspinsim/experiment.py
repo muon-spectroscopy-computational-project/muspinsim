@@ -388,16 +388,17 @@ class ExperimentRunner(object):
                 
                 # For particle interactions that are not neighbours to the muon we must use a swap gate
                 if i != 0:
+                    all_dims[1], all_dims[i + 1] = all_dims[i + 1], all_dims[1]
+                    print(all_dims)
+
                     def swap(total_spins, s1, s2):
                         new_order = list(range(0, total_spins))
                         new_order[s1], new_order[s2] = new_order[s2], new_order[s1]
-                        print(new_order)
                         return new_order
 
                     qtip_obj = Qobj(inpt=evol_op, dims=[all_dims, all_dims])
                     qtip_obj = qtip_obj.permute(swap(len(all_dims), 1, i + 1))
                     evol_op = qtip_obj.data
-                    
 
                 dUs.append(evol_op)
 
@@ -440,7 +441,6 @@ class ExperimentRunner(object):
                         op = op.basis_change(trotter_hamiltonian).matrix.T
 
                         results[i][j] = (rho0 * op).trace()
-                        
                         
                     # Evolution step
                     trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt

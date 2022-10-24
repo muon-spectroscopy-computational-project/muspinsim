@@ -748,9 +748,6 @@ class MuonSpinSystem(SpinSystem):
         print(muon_H_contribs)
 
         # For now we will assume all interactions include the muon and a maximum of one other particle
-        # Will also assume swap gates aren't needed yet - i.e. can only have interactions of the muon and
-        # the particle that is defined directly after it
-
         for i in non_muon_indices:
             # Find the terms that involve the current particle
             particle_ints = [term for term in other_ints if i in term.indices]
@@ -789,9 +786,9 @@ class MuonSpinSystem(SpinSystem):
 
             hamiltonians.append(particle_H)
 
-        print("END")
-
         print("DimArray", dimensions)
+
+        print("END")
 
         # sys.exit()
 
