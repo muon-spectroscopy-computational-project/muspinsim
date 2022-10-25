@@ -3,6 +3,7 @@
 A class to hold a given spin system, defined by specific nuclei
 """
 
+import itertools
 import logging
 
 import numpy as np
@@ -718,78 +719,49 @@ class MuonSpinSystem(SpinSystem):
                                   of the Hamiltonians
         """
 
-        print("START")
-
         if self.muon_index != 0:
             raise ValueError("The muon must be the first spin")
         
-        non_muon_indices = [i for i, x in enumerate(self._spins) if x != "mu"]
-        print(self._spins)
-        print(non_muon_indices)
-
-        # Find interactions that only refer to the muon (a fraction of it needs to be included in each
-        # hamiltonian returned)
-        muon_only_ints, other_ints = [], []
-        for term in self._terms:
-            if term.indices == (self.muon_index,):
-                muon_only_ints.append(term)
-            else:
-                other_ints.append(term)
-        
-        # Compute contributions of interactions with the muon only
-        muon_H_contribs = np.array([term.matrix for term in muon_only_ints]) / len(non_muon_indices)
-        muon_H_contribs = np.sum(muon_H_contribs, axis=0)
+        spin_indices = range(0, len(self.spins))
 
         hamiltonians = []
         dimensions = []
 
-        print(muon_only_ints)
-        print(other_ints)
-        print(muon_H_contribs)
+        # TODO: Make this more general so can have single index interactions and double ones, not just one or the other
+        for i in spin_indices:
+            # Only want to include each interaction once, will make the choice here to
+            # only add it to the H_i for the first particle listed in the interactions
 
-        # For now we will assume all interactions include the muon and a maximum of one other particle
-        for i in non_muon_indices:
-            # Find the terms that involve the current particle
-            particle_ints = [term for term in other_ints if i in term.indices]
-            particle_int_mats = [term.matrix for term in particle_ints]
+            # Find the terms that have the current spin as its first or only index
+            spin_ints = [term for term in self._terms if i == term.indices[0]]
 
-            # Want dimensions of particles not included here or in the interactions
-            other_particles = list(range(0, len(self.spins)))
-            other_particles.remove(i)
+            # List of spin indices not included here
+            other_spins = list(range(0, len(self.spins)))
+            other_spins.remove(i)
 
-            # Remove muon index if we are including in the interactions
-            if len(muon_only_ints) > 0:
-                other_particles.remove(self.muon_index)
+            # if len(spin_ints) == 0:
+            #     # Nothing to populate the hamiltonian with, just use identity
+            #     hamiltonians.append(sparse.identity(self.dimension[i], format="csr"))
+            #     dimensions.append(np.product([self.dimension[j] for j in other_spins if j != i]))
+            # Only include necessary terms
+            if len(spin_ints) != 0:
+                # Sum matrices with the same indices so we avoid lots of matrix exponentials
+                for indices, group in itertools.groupby(spin_ints, lambda term: term.indices):
+                    grouped_spin_ints = list(group)
 
-            for term in particle_ints:
-                for j in term.indices:
-                    if j in other_particles:
-                        other_particles.remove(j)
-            dimensions.append(np.product([self.dimension[j] for j in other_particles]))
+                    print(f"Grouping for spin {i}, indices {indices}, ints {grouped_spin_ints}")
 
-            print(f"Particle index{i}")
-            print(particle_int_mats)
+                    H_contrib = np.sum([term.matrix for term in grouped_spin_ints])
 
-            if len(particle_int_mats) == 0 and len(muon_only_ints) == 0:
-                # Nothing to populate the hamiltonian with, just use identity
-                particle_H = sparse.identity(self.dimension[i], format="csr")
-            else:
-                particle_H = np.sum(particle_int_mats)
+                    # Find indices of spins not involved in the current interactions
+                    other_spins_copy = other_spins.copy()
+                    for term in grouped_spin_ints:
+                        for j in term.indices:
+                            if j in other_spins_copy:
+                                other_spins_copy.remove(j)
 
-                if len(muon_only_ints) > 0:
-                    particle_H = sparse.kron(muon_H_contribs, sparse.identity(self.dimension[i], format="csr")) + particle_H
-
-            print(type(muon_H_contribs))
-            print(type(particle_H))
-            print(particle_H.shape)
-            print("------")
-
-            hamiltonians.append(particle_H)
-
-        print("DimArray", dimensions)
-
-        print("END")
-
-        # sys.exit()
+                    print(f"Other spins {other_spins_copy}")
+                    dimensions.append(np.product([self.dimension[j] for j in other_spins_copy]))
+                    hamiltonians.append(H_contrib)
 
         return hamiltonians, dimensions
