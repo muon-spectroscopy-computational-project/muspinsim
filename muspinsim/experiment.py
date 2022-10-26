@@ -369,36 +369,22 @@ class ExperimentRunner(object):
                 data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
         else:
             k = self._config.celio
-            hamiltonians, dimensions = self._system.calc_celios_hamiltonians()
+            H_contribs = self._system.calc_celios_H_contribs()
             time_step = cfg_snap.t[1] - cfg_snap.t[0]
 
             dUs = []
 
-            for i, H_i in enumerate(hamiltonians):
-                # H_i is currently stored in csr format, but expm wants it in csc so convert here
-                evol_op = sparse.linalg.expm(-2j * np.pi * H_i.tocsc() * time_step / k).tocsr()
+            for H_contrib in H_contribs:
+                # The matrix is currently stored in csr format, but expm wants it in csc so convert here
+                evol_op = sparse.linalg.expm(-2j * np.pi * H_contrib.matrix.tocsc() * time_step / k).tocsr()
 
-                all_dims = list(self.system.dimension)
-
-                if dimensions[i] > 0:
-                    evol_op = sparse.kron(evol_op, sparse.identity(dimensions[i], format="csr"))
-
-                print("H_i shape and dimensions", H_i.shape, dimensions)
-                print(all_dims)
+                if H_contrib.other_dimension > 1:
+                    evol_op = sparse.kron(evol_op, sparse.identity(H_contrib.other_dimension, format="csr"))
                 
-                # For particle interactions that are not neighbours to the muon we must use a swap gate
-                # if i != 0:
-                #     all_dims[1], all_dims[i + 1] = all_dims[i + 1], all_dims[1]
-                #     print(all_dims)
-
-                #     def swap(total_spins, s1, s2):
-                #         new_order = list(range(0, total_spins))
-                #         new_order[s1], new_order[s2] = new_order[s2], new_order[s1]
-                #         return new_order
-
-                #     qtip_obj = Qobj(inpt=evol_op, dims=[all_dims, all_dims])
-                #     qtip_obj = qtip_obj.permute(swap(len(all_dims), 1, i + 1))
-                #     evol_op = qtip_obj.data
+                # For particle interactions that are not neighbours we must use a swap gate
+                qtip_obj = Qobj(inpt=evol_op, dims=[H_contrib.permute_dimensions, H_contrib.permute_dimensions])
+                qtip_obj = qtip_obj.permute(H_contrib.permute_order)
+                evol_op = qtip_obj.data
 
                 dUs.append(evol_op)
 

@@ -3,8 +3,10 @@
 A class to hold a given spin system, defined by specific nuclei
 """
 
+from dataclasses import dataclass
 import itertools
 import logging
+from typing import List
 
 import numpy as np
 from numbers import Number
@@ -611,6 +613,26 @@ class SpinSystem(Clonable):
         return len(self._gammas)
 
 
+@dataclass
+class CelioHContrib:
+    """
+    Stores a Hamiltonian contribution term for use with Celio's method
+
+    Arguments:
+            matrix {matrix} -- Sparse matrix representing a contribution to the hamiltonian
+            other_dimension {int} -- Defines the product of the matrix sizes of any remaining spins that
+                               are not included in this hamiltonian contribution
+            permutation_order {[int]} -- Defines the order of permutations that will be needed
+                                         when constructing the contributioin to the trotter hamiltonian
+                                         after the matrix exponential
+            permutation_dimensions {[int]} -- Defines the size of the matrices involved in the kronecker
+                                              products that make up this contribution to the Hamiltonian
+    """
+    matrix: sparse.csr_matrix
+    other_dimension: int
+    permute_order: List[int]
+    permute_dimensions: List[int]
+
 class MuonSpinSystem(SpinSystem):
     def __init__(self, spins=["mu", "e"], celio=0):
 
@@ -706,17 +728,15 @@ class MuonSpinSystem(SpinSystem):
 
         return op
 
-    def calc_celios_hamiltonians(self):
-        """Calculates and returns Hamiltonians of particles for Celio's method
+    def calc_celios_H_contribs(self) -> List[CelioHContrib]:
+        """Calculates and returns the hamiltonian contributions required for Celio's method
 
-        Returns the Hamiltonains of particles excluding the muon defined such that
-        their total is the total Hamiltonian of the system
+        Returns the hamiltonian contributions defined by this system of spins and the given interactions. In general
+        these are split up per group of indices defined in interactions to minimise the need of matrix exponentials.
 
         Returns:
-            hamiltonians {[matrix]} -- List of matrices representing the H_i's refered to in Celio's method.
-                                       There is one for each particle.
-            dimensions {[int]} -- List of dimensions for the particles that were not included in the construction
-                                  of the Hamiltonians
+            H_contribs {[CelioHContrib]} -- List of matrices representing contributions to the total system hamiltonians
+                                            refered to in Celio's method as H_i
         """
 
         if self.muon_index != 0:
@@ -724,8 +744,7 @@ class MuonSpinSystem(SpinSystem):
         
         spin_indices = range(0, len(self.spins))
 
-        hamiltonians = []
-        dimensions = []
+        H_contribs = []
 
         # TODO: Make this more general so can have single index interactions and double ones, not just one or the other
         for i in spin_indices:
@@ -739,10 +758,6 @@ class MuonSpinSystem(SpinSystem):
             other_spins = list(range(0, len(self.spins)))
             other_spins.remove(i)
 
-            # if len(spin_ints) == 0:
-            #     # Nothing to populate the hamiltonian with, just use identity
-            #     hamiltonians.append(sparse.identity(self.dimension[i], format="csr"))
-            #     dimensions.append(np.product([self.dimension[j] for j in other_spins if j != i]))
             # Only include necessary terms
             if len(spin_ints) != 0:
                 # Sum matrices with the same indices so we avoid lots of matrix exponentials
@@ -759,9 +774,24 @@ class MuonSpinSystem(SpinSystem):
                         for j in term.indices:
                             if j in other_spins_copy:
                                 other_spins_copy.remove(j)
-
+                    
                     print(f"Other spins {other_spins_copy}")
-                    dimensions.append(np.product([self.dimension[j] for j in other_spins_copy]))
-                    hamiltonians.append(H_contrib)
+                    other_dimension = np.product([self.dimension[j] for j in other_spins_copy])
+                    print(f"Other dimension {other_dimension}")
 
-        return hamiltonians, dimensions
+                    # Order in which kronecker products will be performed in Celio's method
+                    spin_order = list(indices) + other_spins_copy
+                    print(f"Spin order {spin_order}")
+
+                    # Order we will need to permute in order to obtain the same order as was given in the input
+                    permute_order = np.zeros(len(spin_order), dtype=np.int32)
+                    for i, value in enumerate(spin_order):
+                        permute_order[value] = i
+                    print(f"Permute order {permute_order}")
+
+                    permute_dimensions = [self.dimension[i] for i in spin_order]
+                    print(f"Permute dimensions {permute_dimensions}")
+
+                    H_contribs.append(CelioHContrib(H_contrib, other_dimension, permute_order, permute_dimensions))
+
+        return H_contribs
