@@ -729,7 +729,7 @@ class MuonSpinSystem(SpinSystem):
 
         return op
 
-    def calc_celios_H_contribs(self) -> List[CelioHContrib]:
+    def calc_celios_H_contribs(self, extra_terms) -> List[CelioHContrib]:
         """Calculates and returns the hamiltonian contributions required for Celio's method
 
         Returns the hamiltonian contributions defined by this system of spins and the given interactions. In general
@@ -751,7 +751,7 @@ class MuonSpinSystem(SpinSystem):
             # only add it to the H_i for the first particle listed in the interactions
 
             # Find the terms that have the current spin as its first or only index
-            spin_ints = [term for term in self._terms if i == term.indices[0]]
+            spin_ints = [term for term in (self._terms + extra_terms) if i == term.indices[0]]
 
             # List of spin indices not included here
             other_spins = list(range(0, len(self.spins)))

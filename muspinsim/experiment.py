@@ -11,7 +11,7 @@ from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
-from muspinsim.spinsys import MuonSpinSystem
+from muspinsim.spinsys import MuonSpinSystem, SingleTerm
 from muspinsim.input import MuSpinInput
 from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
@@ -368,8 +368,15 @@ class ExperimentRunner(object):
             elif cfg_snap.y == "integral":
                 data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
         else:
+            # Quick hacky solution to add zeeman terms in
+            extra_terms = []
+            if self._Hz is None:
+                for i in range(len(self._system.spins)):
+                    extra_terms.append(SingleTerm(self._system, i, self._B * self._system.gammas[i], label="Zeeman"))
+                self._Hz = 1
+
             k = self._config.celio
-            H_contribs = self._system.calc_celios_H_contribs()
+            H_contribs = self._system.calc_celios_H_contribs(extra_terms)
             time_step = cfg_snap.t[1] - cfg_snap.t[0]
 
             dUs = []
@@ -390,12 +397,6 @@ class ExperimentRunner(object):
                 print(f"dU Matrix density: {evol_op.getnnz() / np.prod(evol_op.shape)}")
 
                 dUs.append(evol_op)
-
-            # Quick hacky solution to add zeeman terms in
-            if self._Hz is None:
-                for i in range(len(self._system.spins)):
-                    self._system.add_zeeman_term(i, self.B)
-                self._Hz = 1
 
             rho0 = self.rho0
             times = cfg_snap.t
