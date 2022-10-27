@@ -96,6 +96,7 @@ class Hamiltonian(Operator, Hermitian):
                 
                 # This element wise multiplication then sum gives the equivalent
                 # as the trace of the matrix product since the matrices are symmetric
+                # and is also faster
                 single_res = np.sum(
                     rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
                 )

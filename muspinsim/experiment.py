@@ -3,6 +3,7 @@
 Classes and functions to perform actual experiments"""
 
 import logging
+import time
 import numpy as np
 import scipy.constants as cnst
 from scipy import sparse
@@ -374,19 +375,33 @@ class ExperimentRunner(object):
 
             dUs = []
 
+            t_start_dUs = time.time()
+
             for H_contrib in H_contribs:
+                t_start = time.time()
+
                 # The matrix is currently stored in csr format, but expm wants it in csc so convert here
                 evol_op = sparse.linalg.expm(-2j * np.pi * H_contrib.matrix.tocsc() * time_step / k).tocsr()
+
+                print(f"Time computing matrix exponential {time.time() - t_start}")
 
                 if H_contrib.other_dimension > 1:
                     evol_op = sparse.kron(evol_op, sparse.identity(H_contrib.other_dimension, format="csr"))
                 
+                t_start = time.time()
+
                 # For particle interactions that are not neighbours we must use a swap gate
                 qtip_obj = Qobj(inpt=evol_op, dims=[H_contrib.permute_dimensions, H_contrib.permute_dimensions])
                 qtip_obj = qtip_obj.permute(H_contrib.permute_order)
                 evol_op = qtip_obj.data
 
+                print(f"Time for swap {time.time() - t_start}")
+
+                print(f"dU Matrix density: {evol_op.getnnz() / np.prod(evol_op.shape)}")
+
                 dUs.append(evol_op)
+
+            print(f"Time computing dUs {time.time() - t_start_dUs}")
 
             rho0 = self.rho0
             times = cfg_snap.t
@@ -410,26 +425,58 @@ class ExperimentRunner(object):
 
             rho0 = rho0.matrix
 
+            t_start = time.time()
+
             # Time evolution step that will modify the trotter_hamiltonian below
             trotter_hamiltonian_dt = np.product(dUs)**k
-            trotter_hamiltonian = sparse.identity(trotter_hamiltonian_dt.shape[0], format="csr")
+            trotter_hamiltonian = sparse.identity(trotter_hamiltonian_dt.shape[0], format="csc")
+
+            print(f"Matrix density: {trotter_hamiltonian_dt.getnnz() / np.prod(trotter_hamiltonian_dt.shape)}")
+            print(f"Op Matrix density: {S.matrix.getnnz() / np.prod(S.matrix.shape)}")
+            print(f"Rho0 Matrix density: {rho0.getnnz() / np.prod(rho0.shape)}")
+
+            print(f"Time computing trotter_hamiltonian {time.time() - t_start}")
 
             # Avoid using append as assignment should be faster
             results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
 
             print("Size of mat", trotter_hamiltonian.shape)
 
+            # t_start_evolve = time.time()
+
+            # time_computing_result = np.zeros(times.shape[0], dtype=np.float64)
+
             if len(operators) > 0:
                 # Compute expectation values one at a time
                 for i in range(times.shape[0]):
                     # When passing multiple operators we want to return results for each
                     for j, op in enumerate(operators):
-                        op = op.basis_change(trotter_hamiltonian).matrix.T
+                        #time_t = time.time()
+                        #conj = trotter_hamiltonian.conj().T.tocsr()
+                        #print(f"Time finding conjugate transpose {time.time() - time_t}")
+                        # time_t = time.time()
+                        # print(f"{type(trotter_hamiltonian.conj().T)}   {type((op.matrix * trotter_hamiltonian).tocsc())}     {type(op.matrix)}      {type(trotter_hamiltonian)}")
+                        op = trotter_hamiltonian.conj().T * (op.matrix * trotter_hamiltonian).tocsr()
+                        # print(f"Time evolving operator {time.time() - time_t}")
 
-                        results[i][j] = (rho0 * op).trace()
+                        # time_t = time.time()
+                        # This element wise multiplication then sum gives the equivalent
+                        # as the trace of the matrix product since the matrices are symmetric
+                        # and is also faster
+                        results[i][j] = np.sum(
+                            np.sum(
+                                rho0.multiply(op), axis=1
+                            ),
+                            axis=0
+                        )
+                        # time_computing_result[i] = time.time() - time_t
+                        # print(f"Time computing result {time.time() - time_t}")
                         
                     # Evolution step
                     trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt
+            
+            # print(f"Time evolving {time.time() - t_start_evolve}")
+            # print(f"Average time computing result {np.average(time_computing_result)}")
 
             data = results[:, 0]
 

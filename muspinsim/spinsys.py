@@ -6,6 +6,7 @@ A class to hold a given spin system, defined by specific nuclei
 from dataclasses import dataclass
 import itertools
 import logging
+import time
 from typing import List
 
 import numpy as np
@@ -746,7 +747,8 @@ class MuonSpinSystem(SpinSystem):
 
         H_contribs = []
 
-        # TODO: Make this more general so can have single index interactions and double ones, not just one or the other
+        t_start = time.time()
+
         for i in spin_indices:
             # Only want to include each interaction once, will make the choice here to
             # only add it to the H_i for the first particle listed in the interactions
@@ -793,5 +795,7 @@ class MuonSpinSystem(SpinSystem):
                     print(f"Permute dimensions {permute_dimensions}")
 
                     H_contribs.append(CelioHContrib(H_contrib, other_dimension, permute_order, permute_dimensions))
+
+        print(f"Time computing H_contribs {time.time() - t_start}")
 
         return H_contribs
