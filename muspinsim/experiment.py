@@ -3,7 +3,6 @@
 Classes and functions to perform actual experiments"""
 
 import logging
-import time
 import numpy as np
 import scipy.constants as cnst
 from scipy import sparse
@@ -74,8 +73,8 @@ class ExperimentRunner(object):
 
         self._config = config
         self._system = config.system
+        
         # Store single spin operators
-
         self._single_spinops = np.array(
             [
                 [self._system.operator({i: a}).matrix for a in "xyz"]
@@ -375,33 +374,28 @@ class ExperimentRunner(object):
 
             dUs = []
 
-            t_start_dUs = time.time()
-
             for H_contrib in H_contribs:
-                t_start = time.time()
-
                 # The matrix is currently stored in csr format, but expm wants it in csc so convert here
                 evol_op = sparse.linalg.expm(-2j * np.pi * H_contrib.matrix.tocsc() * time_step / k).tocsr()
 
-                print(f"Time computing matrix exponential {time.time() - t_start}")
 
                 if H_contrib.other_dimension > 1:
                     evol_op = sparse.kron(evol_op, sparse.identity(H_contrib.other_dimension, format="csr"))
-                
-                t_start = time.time()
 
                 # For particle interactions that are not neighbours we must use a swap gate
                 qtip_obj = Qobj(inpt=evol_op, dims=[H_contrib.permute_dimensions, H_contrib.permute_dimensions])
                 qtip_obj = qtip_obj.permute(H_contrib.permute_order)
                 evol_op = qtip_obj.data
 
-                print(f"Time for swap {time.time() - t_start}")
-
                 print(f"dU Matrix density: {evol_op.getnnz() / np.prod(evol_op.shape)}")
 
                 dUs.append(evol_op)
 
-            print(f"Time computing dUs {time.time() - t_start_dUs}")
+            # Quick hacky solution to add zeeman terms in
+            if self._Hz is None:
+                for i in range(len(self._system.spins)):
+                    self._system.add_zeeman_term(i, self.B)
+                self._Hz = 1
 
             rho0 = self.rho0
             times = cfg_snap.t
@@ -425,41 +419,35 @@ class ExperimentRunner(object):
 
             rho0 = rho0.matrix
 
-            t_start = time.time()
-
             # Time evolution step that will modify the trotter_hamiltonian below
             trotter_hamiltonian_dt = np.product(dUs)**k
             trotter_hamiltonian = sparse.identity(trotter_hamiltonian_dt.shape[0], format="csc")
 
-            print(f"Matrix density: {trotter_hamiltonian_dt.getnnz() / np.prod(trotter_hamiltonian_dt.shape)}")
-            print(f"Op Matrix density: {S.matrix.getnnz() / np.prod(S.matrix.shape)}")
-            print(f"Rho0 Matrix density: {rho0.getnnz() / np.prod(rho0.shape)}")
+            mat_density = trotter_hamiltonian_dt.getnnz() / np.prod(trotter_hamiltonian_dt.shape)
 
-            print(f"Time computing trotter_hamiltonian {time.time() - t_start}")
+            print(f"Matrix density: {mat_density}")
+
+            if (mat_density >= 0.08):
+                logging.warning("Matrix density is %s >= 0.08 and so Celio's method is not suitable, consider switching. "
+                                "Now using dense matrices to accelerate at the cost of memory usage.", mat_density)
+                # Matrix products with trotter_hamiltonian_dt is very likely to be slower with sparse
+                # matrices than dense
+
+                # We can still save some memory over Hamiltonian's evolve method at the cost of performance
+                # by using dense matrices for trotter_hamiltonian trotter_hamiltonian_dt but the improvement
+                # is minimal and as the problem gets bigger the reduction in memory usage decreases and increase
+                # in time increases so does not appear worth it
 
             # Avoid using append as assignment should be faster
             results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
-
-            print("Size of mat", trotter_hamiltonian.shape)
-
-            # t_start_evolve = time.time()
-
-            # time_computing_result = np.zeros(times.shape[0], dtype=np.float64)
 
             if len(operators) > 0:
                 # Compute expectation values one at a time
                 for i in range(times.shape[0]):
                     # When passing multiple operators we want to return results for each
                     for j, op in enumerate(operators):
-                        #time_t = time.time()
-                        #conj = trotter_hamiltonian.conj().T.tocsr()
-                        #print(f"Time finding conjugate transpose {time.time() - time_t}")
-                        # time_t = time.time()
-                        # print(f"{type(trotter_hamiltonian.conj().T)}   {type((op.matrix * trotter_hamiltonian).tocsc())}     {type(op.matrix)}      {type(trotter_hamiltonian)}")
                         op = trotter_hamiltonian.conj().T * (op.matrix * trotter_hamiltonian).tocsr()
-                        # print(f"Time evolving operator {time.time() - time_t}")
 
-                        # time_t = time.time()
                         # This element wise multiplication then sum gives the equivalent
                         # as the trace of the matrix product since the matrices are symmetric
                         # and is also faster
@@ -469,14 +457,9 @@ class ExperimentRunner(object):
                             ),
                             axis=0
                         )
-                        # time_computing_result[i] = time.time() - time_t
-                        # print(f"Time computing result {time.time() - time_t}")
                         
                     # Evolution step
                     trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt
-            
-            # print(f"Time evolving {time.time() - t_start_evolve}")
-            # print(f"Average time computing result {np.average(time_computing_result)}")
 
             data = results[:, 0]
 

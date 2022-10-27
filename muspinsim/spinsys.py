@@ -739,9 +739,6 @@ class MuonSpinSystem(SpinSystem):
             H_contribs {[CelioHContrib]} -- List of matrices representing contributions to the total system hamiltonians
                                             refered to in Celio's method as H_i
         """
-
-        if self.muon_index != 0:
-            raise ValueError("The muon must be the first spin")
         
         spin_indices = range(0, len(self.spins))
 
