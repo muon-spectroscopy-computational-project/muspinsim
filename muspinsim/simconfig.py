@@ -488,9 +488,13 @@ Parameters used:
         try:
             trotter_k = int(v)
             if trotter_k < 0:
-                raise MuSpinConfigError("Value of k for Celio's method must a postive integer or 0")
+                raise MuSpinConfigError(
+                    "Value of k for Celio's method must a postive " "integer or 0"
+                )
         except ValueError:
-            raise MuSpinConfigError("Value of k for Celio's method must be an integer") from ValueError
+            raise MuSpinConfigError(
+                "Value of k for Celio's method must be an " "integer"
+            ) from ValueError
         return trotter_k
 
     def _validate_t(self, v):

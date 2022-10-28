@@ -44,7 +44,8 @@ class InteractionTerm(Clonable):
         for ii in index_tuples:
             op = (
                 self._spinsys.operator(
-                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)}, include_only_given=self._spinsys.celio
+                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)},
+                    include_only_given=self._spinsys.celio,
                 )
                 * self._tensor[tuple(ii)]
             )
@@ -553,8 +554,13 @@ class SpinSystem(Clonable):
         """
 
         if include_only_given:
-            # For Celio's method wont need all of the 0's, just the ones relevant to the interaction itself
-            ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self)) if terms.get(i, "0") != "0"]
+            # For Celio's method wont need all of the 0's, just the ones relevant to
+            # the interaction itself
+            ops = [
+                self._operators[i][terms.get(i, "0")]
+                for i in range(len(self))
+                if terms.get(i, "0") != "0"
+            ]
         else:
             ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
 
@@ -611,6 +617,7 @@ class SpinSystem(Clonable):
 
     def __len__(self):
         return len(self._gammas)
+
 
 class MuonSpinSystem(SpinSystem):
     def __init__(self, spins=["mu", "e"], celio=0):

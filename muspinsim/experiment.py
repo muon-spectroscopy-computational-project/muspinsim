@@ -71,7 +71,7 @@ class ExperimentRunner(object):
 
         self._config = config
         self._system = config.system
-        
+
         # Store single spin operators
         self._single_spinops = np.array(
             [
@@ -219,8 +219,17 @@ class ExperimentRunner(object):
             else:
                 extra_terms = []
                 for i in range(len(self._system.spins)):
-                    extra_terms.append(SingleTerm(self._system, i, self._B * self._system.gammas[i], label="Zeeman"))
-                self._Hz = CelioHamiltonian(extra_terms, self.config.celio, self._system)
+                    extra_terms.append(
+                        SingleTerm(
+                            self._system,
+                            i,
+                            self._B * self._system.gammas[i],
+                            label="Zeeman",
+                        )
+                    )
+                self._Hz = CelioHamiltonian(
+                    extra_terms, self.config.celio, self._system
+                )
 
         return self._Hz
 

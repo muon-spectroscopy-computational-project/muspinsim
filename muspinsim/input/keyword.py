@@ -335,6 +335,7 @@ class KWName(MuSpinKeyword):
     accept_range = False
     default = "muspinsim"
 
+
 class KWSpins(MuSpinKeyword):
 
     name = "spins"
@@ -343,12 +344,14 @@ class KWSpins(MuSpinKeyword):
     accept_range = False
     default = "mu e"
 
+
 class KWCelio(MuSpinKeyword):
 
     name = "celio"
     block_size = 1
     accept_range = False
     default = "0"
+
 
 class KWPolarization(MuSpinExpandKeyword):
 
