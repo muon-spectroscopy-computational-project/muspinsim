@@ -3,16 +3,13 @@
 A class to hold a given spin system, defined by specific nuclei
 """
 
-from dataclasses import dataclass
-import itertools
 import logging
-import time
-from typing import List
 
 import numpy as np
 from numbers import Number
 import scipy.constants as cnst
 from scipy import sparse
+from muspinsim.celio import CelioHamiltonian
 
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
@@ -590,14 +587,16 @@ class SpinSystem(Clonable):
 
     @property
     def hamiltonian(self):
-
-        if len(self._terms) == 0:
-            n = np.prod(self.dimension)
-            H = sparse.csr_matrix((n, n))
+        H = None
+        if not self._celio:
+            if len(self._terms) == 0:
+                n = np.prod(self.dimension)
+                H = sparse.csr_matrix((n, n))
+            else:
+                H = np.sum([t.matrix for t in self._terms], axis=0)
+            H = Hamiltonian(H, dim=self.dimension)
         else:
-            print(self._terms)
-            H = np.sum([t.matrix for t in self._terms], axis=0)
-        H = Hamiltonian(H, dim=self.dimension)
+            H = CelioHamiltonian(self._terms, self._celio, self)
 
         return H
 
@@ -612,27 +611,6 @@ class SpinSystem(Clonable):
 
     def __len__(self):
         return len(self._gammas)
-
-
-@dataclass
-class CelioHContrib:
-    """
-    Stores a Hamiltonian contribution term for use with Celio's method
-
-    Arguments:
-            matrix {matrix} -- Sparse matrix representing a contribution to the hamiltonian
-            other_dimension {int} -- Defines the product of the matrix sizes of any remaining spins that
-                               are not included in this hamiltonian contribution
-            permutation_order {[int]} -- Defines the order of permutations that will be needed
-                                         when constructing the contributioin to the trotter hamiltonian
-                                         after the matrix exponential
-            permutation_dimensions {[int]} -- Defines the size of the matrices involved in the kronecker
-                                              products that make up this contribution to the Hamiltonian
-    """
-    matrix: sparse.csr_matrix
-    other_dimension: int
-    permute_order: List[int]
-    permute_dimensions: List[int]
 
 class MuonSpinSystem(SpinSystem):
     def __init__(self, spins=["mu", "e"], celio=0):
@@ -728,71 +706,3 @@ class MuonSpinSystem(SpinSystem):
         op = sum(op[1:], op[0])
 
         return op
-
-    def calc_celios_H_contribs(self, extra_terms) -> List[CelioHContrib]:
-        """Calculates and returns the hamiltonian contributions required for Celio's method
-
-        Returns the hamiltonian contributions defined by this system of spins and the given interactions. In general
-        these are split up per group of indices defined in interactions to minimise the need of matrix exponentials.
-
-        Returns:
-            H_contribs {[CelioHContrib]} -- List of matrices representing contributions to the total system hamiltonians
-                                            refered to in Celio's method as H_i
-        """
-        
-        spin_indices = range(0, len(self.spins))
-
-        H_contribs = []
-
-        t_start = time.time()
-
-        for i in spin_indices:
-            # Only want to include each interaction once, will make the choice here to
-            # only add it to the H_i for the first particle listed in the interactions
-
-            # Find the terms that have the current spin as its first or only index
-            spin_ints = [term for term in (self._terms + extra_terms) if i == term.indices[0]]
-
-            # List of spin indices not included here
-            other_spins = list(range(0, len(self.spins)))
-            other_spins.remove(i)
-
-            # Only include necessary terms
-            if len(spin_ints) != 0:
-                # Sum matrices with the same indices so we avoid lots of matrix exponentials
-                for indices, group in itertools.groupby(spin_ints, lambda term: term.indices):
-                    grouped_spin_ints = list(group)
-
-                    print(f"Grouping for spin {i}, indices {indices}, ints {grouped_spin_ints}")
-
-                    H_contrib = np.sum([term.matrix for term in grouped_spin_ints])
-
-                    # Find indices of spins not involved in the current interactions
-                    other_spins_copy = other_spins.copy()
-                    for term in grouped_spin_ints:
-                        for j in term.indices:
-                            if j in other_spins_copy:
-                                other_spins_copy.remove(j)
-                    
-                    print(f"Other spins {other_spins_copy}")
-                    other_dimension = np.product([self.dimension[j] for j in other_spins_copy])
-                    print(f"Other dimension {other_dimension}")
-
-                    # Order in which kronecker products will be performed in Celio's method
-                    spin_order = list(indices) + other_spins_copy
-                    print(f"Spin order {spin_order}")
-
-                    # Order we will need to permute in order to obtain the same order as was given in the input
-                    permute_order = np.zeros(len(spin_order), dtype=np.int32)
-                    for i, value in enumerate(spin_order):
-                        permute_order[value] = i
-                    print(f"Permute order {permute_order}")
-
-                    permute_dimensions = [self.dimension[i] for i in spin_order]
-                    print(f"Permute dimensions {permute_dimensions}")
-
-                    H_contribs.append(CelioHContrib(H_contrib, other_dimension, permute_order, permute_dimensions))
-
-        print(f"Time computing H_contribs {time.time() - t_start}")
-
-        return H_contribs

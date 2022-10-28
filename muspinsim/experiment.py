@@ -5,8 +5,8 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
-from scipy import sparse
 
+from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
@@ -16,8 +16,6 @@ from muspinsim.input import MuSpinInput
 from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.lindbladian import Lindbladian
-
-from qutip import Qobj
 
 
 class ExperimentRunner(object):
@@ -87,9 +85,8 @@ class ExperimentRunner(object):
         self._p = np.array([1.0, 0, 0])
         self._T = np.inf
 
-        # Basic Hamiltonian - only needed when not using Celio's
-        if not self._config.celio:
-            self._Hsys = self._system.hamiltonian
+        # Basic Hamiltonian
+        self._Hsys = self._system.hamiltonian
 
         # Derived quantities
         self._rho0 = None
@@ -208,16 +205,22 @@ class ExperimentRunner(object):
 
     @property
     def Hz(self):
-
         if self._Hz is None:
-            B = self._B
-            g = self._system.gammas
-            Bg = B[None, :] * g[:, None]
+            # Compute Zeeman Hamiltonian contribution
+            if not self._config.celio:
+                B = self._B
+                g = self._system.gammas
+                Bg = B[None, :] * g[:, None]
 
-            Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
-            Hz = np.sum(Hz_sp_list)
+                Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+                Hz = np.sum(Hz_sp_list)
 
-            self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+                self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+            else:
+                extra_terms = []
+                for i in range(len(self._system.spins)):
+                    extra_terms.append(SingleTerm(self._system, i, self._B * self._system.gammas[i], label="Zeeman"))
+                self._Hz = CelioHamiltonian(extra_terms, self.config.celio, self._system)
 
         return self._Hz
 
@@ -360,108 +363,11 @@ class ExperimentRunner(object):
         # Measurement operator?
         S = self.p_operator
 
-        if not self._config.celio:
-            H = self.Htot
+        H = self.Htot
 
-            if cfg_snap.y == "asymmetry":
-                data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
-            elif cfg_snap.y == "integral":
-                data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
-        else:
-            # Quick hacky solution to add zeeman terms in
-            extra_terms = []
-            if self._Hz is None:
-                for i in range(len(self._system.spins)):
-                    extra_terms.append(SingleTerm(self._system, i, self._B * self._system.gammas[i], label="Zeeman"))
-                self._Hz = 1
-
-            k = self._config.celio
-            H_contribs = self._system.calc_celios_H_contribs(extra_terms)
-            time_step = cfg_snap.t[1] - cfg_snap.t[0]
-
-            dUs = []
-
-            for H_contrib in H_contribs:
-                # The matrix is currently stored in csr format, but expm wants it in csc so convert here
-                evol_op = sparse.linalg.expm(-2j * np.pi * H_contrib.matrix.tocsc() * time_step / k).tocsr()
-
-
-                if H_contrib.other_dimension > 1:
-                    evol_op = sparse.kron(evol_op, sparse.identity(H_contrib.other_dimension, format="csr"))
-
-                # For particle interactions that are not neighbours we must use a swap gate
-                qtip_obj = Qobj(inpt=evol_op, dims=[H_contrib.permute_dimensions, H_contrib.permute_dimensions])
-                qtip_obj = qtip_obj.permute(H_contrib.permute_order)
-                evol_op = qtip_obj.data
-
-                print(f"dU Matrix density: {evol_op.getnnz() / np.prod(evol_op.shape)}")
-
-                dUs.append(evol_op)
-
-            rho0 = self.rho0
-            times = cfg_snap.t
-            operators=[S]
-
-            # The below is copied from Hamiltonian's evolve method
-            if not isinstance(rho0, DensityOperator):
-                raise TypeError("rho0 must be a valid DensityOperator")
-
-            times = np.array(times)
-
-            if len(times.shape) != 1:
-                raise ValueError("times must be an array of values in microseconds")
-
-            if isinstance(operators, SpinOperator):
-                operators = [operators]
-            if not all([isinstance(o, SpinOperator) for o in operators]):
-                raise ValueError(
-                    "operators must be a SpinOperator or a list" " of SpinOperator objects"
-                )
-
-            rho0 = rho0.matrix
-
-            # Time evolution step that will modify the trotter_hamiltonian below
-            trotter_hamiltonian_dt = np.product(dUs)**k
-            trotter_hamiltonian = sparse.identity(trotter_hamiltonian_dt.shape[0], format="csc")
-
-            mat_density = trotter_hamiltonian_dt.getnnz() / np.prod(trotter_hamiltonian_dt.shape)
-
-            print(f"Matrix density: {mat_density}")
-
-            if (mat_density >= 0.08):
-                logging.warning("Matrix density is %s >= 0.08 and so Celio's method is not suitable, consider switching. "
-                                "Now using dense matrices to accelerate at the cost of memory usage.", mat_density)
-                # Matrix products with trotter_hamiltonian_dt is very likely to be slower with sparse
-                # matrices than dense
-
-                # We can still save some memory over Hamiltonian's evolve method at the cost of performance
-                # by using dense matrices for trotter_hamiltonian trotter_hamiltonian_dt but the improvement
-                # is minimal and as the problem gets bigger the reduction in memory usage decreases and increase
-                # in time increases so does not appear worth it
-
-            # Avoid using append as assignment should be faster
-            results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
-
-            if len(operators) > 0:
-                # Compute expectation values one at a time
-                for i in range(times.shape[0]):
-                    # When passing multiple operators we want to return results for each
-                    for j, op in enumerate(operators):
-                        op = trotter_hamiltonian.conj().T * (op.matrix * trotter_hamiltonian).tocsr()
-
-                        # This element wise multiplication then sum gives the equivalent
-                        # as the trace of the matrix product since the matrices are symmetric
-                        # and is also faster
-                        results[i][j] = np.sum(
-                            np.sum(
-                                rho0.multiply(op), axis=1
-                            ),
-                            axis=0
-                        )
-                        
-                    # Evolution step
-                    trotter_hamiltonian = trotter_hamiltonian * trotter_hamiltonian_dt
-
-            data = results[:, 0]
+        if cfg_snap.y == "asymmetry":
+            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+        elif cfg_snap.y == "integral":
+            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 
         return np.real(data) * w
