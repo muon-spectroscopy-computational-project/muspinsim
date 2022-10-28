@@ -5,6 +5,7 @@ SuperOperator class for Lindbladian, used in open quantum dynamics
 
 import numpy as np
 from numbers import Number
+from muspinsim.celio import CelioHamiltonian
 
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.spinop import SuperOperator, SpinOperator, DensityOperator
@@ -14,6 +15,10 @@ class Lindbladian(SuperOperator):
     @classmethod
     def from_hamiltonian(self, H, dissipators=[]):
 
+        if isinstance(H, CelioHamiltonian):
+            raise NotImplementedError(
+                "Linbladian is not implemented for Celio's method"
+            )
         if not isinstance(H, Hamiltonian):
             raise ValueError("Must use Hamiltonian to create Lindbladian")
 

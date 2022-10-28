@@ -271,3 +271,13 @@ class CelioHamiltonian:
                 total_evol_op = total_evol_op * evol_op
 
         return results
+
+    def integrate_decaying(self, rho0, tau, operators=[]):
+        """Called to integrate one or more expectation values in time with decay
+
+        Raises:
+            NotImplementedError
+        """
+        raise NotImplementedError(
+            "integrate_decaying is not implemented for Celio's method"
+        )
