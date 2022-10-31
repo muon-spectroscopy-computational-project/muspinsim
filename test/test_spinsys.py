@@ -163,6 +163,82 @@ class TestSpinSystem(unittest.TestCase):
 
         self.assertTrue(np.all(np.isclose(H.matrix.toarray(), np.zeros((4, 4)))))
 
+    def test_addterms_celio(self):
+
+        ssys = SpinSystem(["mu", "e"], celio=10)
+
+        t1 = ssys.add_linear_term(0, [1, 0, 1])
+
+        self.assertEqual(t1.label, "Single")
+
+        self.assertTrue(
+            np.allclose(
+                t1.operator.matrix.data,
+                (
+                    ssys.operator({0: "x"}, True) + ssys.operator({0: "z"}, True)
+                ).matrix.data,
+            )
+        )
+
+        t2 = ssys.add_bilinear_term(0, 1, np.eye(3))
+
+        self.assertEqual(t2.label, "Double")
+        self.assertTrue(
+            np.allclose(
+                t2.operator.matrix.data,
+                (
+                    ssys.operator({0: "x", 1: "x"}, True)
+                    + ssys.operator({0: "y", 1: "y"}, True)
+                    + ssys.operator({0: "z", 1: "z"}, True)
+                ).matrix.data,
+            )
+        )
+
+        evol_op = ssys.hamiltonian._calc_trotter_evol_op(1)
+
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    evol_op.toarray(),
+                    np.array(
+                        [
+                            [
+                                0.57470166 + 0.35450902j,
+                                0.66911902 - 0.01630097j,
+                                0.22622372 - 0.16020638j,
+                                0.10688036 - 0.08825368j,
+                            ],
+                            [
+                                0.66911902 - 0.16020638j,
+                                -0.33601494 + 0.53101637j,
+                                -0.32064108 + 0.05565173j,
+                                0.012463 + 0.16020638j,
+                            ],
+                            [
+                                0.22622372 - 0.01630097j,
+                                -0.32064108 - 0.23215908j,
+                                0.54977566 + 0.53101637j,
+                                0.4553583 + 0.01630097j,
+                            ],
+                            [
+                                0.10688036 - 0.08825368j,
+                                0.012463 + 0.01630097j,
+                                0.4553583 + 0.16020638j,
+                                -0.78846238 + 0.35450902j,
+                            ],
+                        ]
+                    ),
+                )
+            )
+        )
+
+        # Now test clearing them
+        ssys.clear_terms()
+
+        evol_op = ssys.hamiltonian._calc_trotter_evol_op(1)
+
+        self.assertTrue(np.isclose(evol_op, 1))
+
     def test_lindbladian(self):
 
         ssys = SpinSystem(["mu"])
@@ -183,6 +259,14 @@ class TestSpinSystem(unittest.TestCase):
 
         L = ssys.lindbladian
         self.assertTrue(np.all(np.isclose(L.matrix.toarray(), L1.matrix.toarray())))
+
+    def test_lindbladian_celio(self):
+
+        ssys = SpinSystem(["mu"], 10)
+        ssys.add_linear_term(0, [0, 0, 1])
+
+        with self.assertRaises(NotImplementedError):
+            L = ssys.lindbladian
 
 
 class TestMuonSpinSystem(unittest.TestCase):
