@@ -179,6 +179,47 @@ field
 
         self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi**2 * tau**2))
 
+    def test_run_celio(self):
+
+        # Empty system
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+celio
+    10
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+
+        self.assertTrue(np.all(results == 0.5))
+
+        # Simple system
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+celio
+    10
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
+
     def test_dissipation(self):
 
         # Simple system
