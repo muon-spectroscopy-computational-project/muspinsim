@@ -2,6 +2,8 @@
 
 A class for handling the computation of hamiltonian for Celio's method via a
 trotter expansion
+
+See Phys. Rev. Lett. 56 2720 (1986)
 """
 
 from dataclasses import dataclass
@@ -98,7 +100,6 @@ class CelioHamiltonian:
                 ):
 
                     grouped_spin_ints = list(group)
-
                     H_contrib = np.sum([term.matrix for term in grouped_spin_ints])
 
                     # Find indices of spins not involved in the current interactions
@@ -226,7 +227,7 @@ class CelioHamiltonian:
 
         # Time evolution step that will modify the trotter_hamiltonian below
         evol_op = self._calc_trotter_evol_op(time_step)
-        total_evol_op = sparse.identity(evol_op.shape[0], format="csc")
+        total_evol_op = sparse.identity(evol_op.shape[0], format="csr")
 
         mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
 
@@ -248,23 +249,22 @@ class CelioHamiltonian:
         # Avoid using append as assignment should be faster
         results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
 
+        # Obtain transpose of operators
+        operatorsT = np.array([o.matrix.T.toarray() for o in operators])
+
         if len(operators) > 0:
             # Compute expectation values one at a time
             for i in range(times.shape[0]):
-                # When passing multiple operators we want to return results for each
-                for j, operator in enumerate(operators):
-                    # Using csc matrix for total_evol_op so that this operation is
-                    # more efficient
-                    operator = (
-                        total_evol_op.conj().T
-                        * (operator.matrix * total_evol_op).tocsr()
-                    )
+                # Evolve rho0
+                rho = total_evol_op.conj().T * (rho0 * total_evol_op)
 
+                # When passing multiple operators we want to return results for each
+                for j, operatorT in enumerate(operatorsT):
                     # This element wise multiplication then sum gives the equivalent
-                    # as the trace of the matrix product since the matrices are
-                    # symmetric and is also faster
+                    # as the trace of the matrix product (without the transpose) and
+                    # and is faster
                     results[i][j] = np.sum(
-                        np.sum(rho0.multiply(operator), axis=1), axis=0
+                        np.sum(rho.multiply(operatorT), axis=1), axis=0
                     )
 
                 # Evolution step
