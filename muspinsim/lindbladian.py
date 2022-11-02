@@ -34,7 +34,7 @@ class Lindbladian(SuperOperator):
 
         self._matrix += Ld.matrix
 
-    def evolve(self, rho0, times, operators=[]):
+    def evolve(self, rho0, times, operators=[], T_inf_speedup=False):
         """Time evolution of a state under this Lindbladian
 
         Perform an evolution of a state described by a DensityOperator under

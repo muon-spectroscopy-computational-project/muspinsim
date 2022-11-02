@@ -6,6 +6,8 @@ A class describing a spin Hamiltonian with various terms
 import numpy as np
 from numbers import Number
 
+from scipy import sparse
+
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
@@ -28,7 +30,7 @@ class Hamiltonian(Operator, Hermitian):
     def from_spin_operator(self, spinop):
         return self(spinop.matrix, spinop.dimension)
 
-    def evolve(self, rho0, times, operators=[]):
+    def evolve(self, rho0, times, operators=[], T_inf_speedup=False):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
@@ -55,8 +57,8 @@ class Hamiltonian(Operator, Hermitian):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
+        # if not isinstance(rho0, DensityOperator):
+        #     raise TypeError("rho0 must be a valid DensityOperator")
 
         times = np.array(times)
 
@@ -70,44 +72,76 @@ class Hamiltonian(Operator, Hermitian):
                 "operators must be a SpinOperator or a list" " of SpinOperator objects"
             )
 
-        # Diagonalize self
-        evals, evecs = self.diag()
+        if T_inf_speedup:
+            # rho0 is actually sigma_mu here
+            sigma_mu = rho0
 
-        # Turn the density matrix in the right basis
-        dim = rho0.dimension
-        rho0 = rho0.basis_change(evecs).matrix.toarray()
+            # Diagonalize self
+            evals, evecs = self.diag()
 
-        # Same for operators
-        operatorsT = np.array(
-            [o.basis_change(evecs).matrix.T.toarray() for o in operators]
-        )
+            # A = evecs.T.conjugate() * sigma_mu * evecs
 
-        # Matrix of evolution operators
-        ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
+            # basis = sparse.csr_matrix(evecs)
+            # x = basis.T.conjugate()
+            # A = x.dot(sigma_mu).dot(basis)
+            A = np.dot(evecs.T.conjugate(), np.dot(sigma_mu.toarray(), evecs))
 
-        def calc_single_rho(i):
-            return np.exp(ll[None, :, :] * times[i, None, None]) * rho0[None, :, :]
+            # Mod square
+            # Potential better method: https://stackoverflow.com/questions/30437947/most-memory-efficient-way-to-compute-abs2-of-complex-numpy-ndarray
+            A = np.power(np.abs(A), 2)
 
-        result = None
-        if len(operators) > 0:
-            # Actually compute expectation values one at a time
+            W = np.subtract.outer(evals, evals)
+
+            # Avoid using append as assignment should be faster
+            result = np.zeros((times.shape[0], 1), dtype=np.float64)
+
+            d = 4
+
+            # Will assume only want results for p_operator
             for i in range(times.shape[0]):
-                rho = calc_single_rho(i)
-                single_res = np.sum(
-                    rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
-                )
-                if result is None:
-                    result = single_res
-                else:
-                    result = np.concatenate(([result, single_res]), axis=0)
+                for j in range(A.shape[0]):
+                    for k in range(0, j + 1):
+                        result[i, 0] += A[j, k] * np.cos(2 * np.pi * W[j, k] * times[i])
+                result[i, 0] /= d
         else:
-            sceve = evecs.T.conj()
-            for i in range(times.shape[0]):
-                # Just return density matrices
-                result = [
-                    DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
-                    for i in range(times.shape[0])
-                ]
+            # Diagonalize self
+            evals, evecs = self.diag()
+
+            # Turn the density matrix in the right basis
+            dim = rho0.dimension
+            rho0 = rho0.basis_change(evecs).matrix.toarray()
+
+            # Same for operators
+            operatorsT = np.array(
+                [o.basis_change(evecs).matrix.T.toarray() for o in operators]
+            )
+
+            # Matrix of evolution operators
+            ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
+
+            def calc_single_rho(i):
+                return np.exp(ll[None, :, :] * times[i, None, None]) * rho0[None, :, :]
+
+            result = None
+            if len(operators) > 0:
+                # Actually compute expectation values one at a time
+                for i in range(times.shape[0]):
+                    rho = calc_single_rho(i)
+                    single_res = np.sum(
+                        rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
+                    )
+                    if result is None:
+                        result = single_res
+                    else:
+                        result = np.concatenate(([result, single_res]), axis=0)
+            else:
+                sceve = evecs.T.conj()
+                for i in range(times.shape[0]):
+                    # Just return density matrices
+                    result = [
+                        DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
+                        for i in range(times.shape[0])
+                    ]
         return result
 
     def integrate_decaying(self, rho0, tau, operators=[]):
