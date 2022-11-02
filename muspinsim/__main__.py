@@ -25,9 +25,7 @@ LOGFORMAT = "[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s"
 
 
 def ensure_dir_path_exists(path_string):
-    if os.path.isdir(path_string):
-        return path_string
-    else:
+    if not os.path.isdir(path_string):
         try:
             os.makedirs(path_string)
         except OSError:
@@ -51,28 +49,30 @@ def main(use_mpi=False):
             "--fit-report-path",
             type=str,
             default=None,
-            help="""filepath to store fit report if fitting parameters given""",
+            help="filepath to store fit report if fitting parameters given",
         )
         parser.add_argument(
             "-l",
             "--log-path",
             type=str,
             default=None,
-            help="""filepath to store simulation logs """,
+            help="filepath to store simulation logs",
         )
         parser.add_argument(
             "-o",
             "--out-dir",
             type=str,
             default=None,
-            help="""folder to store the output .dat files""",
+            help="folder to store the output .dat files",
         )
         parser.add_argument(
             "input_file",
             type=ap.FileType("r"),
             default=None,
-            help="""filepath to muspinsim specially formatted text
-            file specifying simulation input parameters.""",
+            help="path to file specifying simulation input parameters. "
+            "For formatting and keywords, see https://"
+            "muon-spectroscopy-computational-project.github.io"
+            "/muspinsim/input/.",
         )
         args = parser.parse_args()
         inp_filepath = args.input_file.name
@@ -88,17 +88,14 @@ def main(use_mpi=False):
         # Open logfile
         logfile = os.path.join(inp_dir, inp_file_name + ".log")
         if args.log_path:
-
             try:
+                # check if directory exists, if not create it
                 log_path = ensure_dir_path_exists(os.path.dirname(args.log_path))
                 log_fname = os.path.basename(args.log_path)
-            # in case it was just a filename given
-            # - default directory is input dir
             except NotADirectoryError:
+                # if log_path was just a filename use inp_dir as a default
                 log_path = inp_dir
                 log_fname = args.log_path
-
-            # check if directory exists, if not create it
             logfile = os.path.join(log_path, log_fname)
 
         logging.basicConfig(
@@ -148,13 +145,12 @@ def main(use_mpi=False):
             rep_fname = "{0}_fit_report.txt".format(inp_file_name)
             if args.fit_report_path:
                 try:
+                    # check if directory exists, if not create it
                     ensure_dir_path_exists(os.path.dirname(args.fit_report_path))
                     rep_fname = os.path.basename(args.fit_report_path)
                     rep_dname = os.path.dirname(args.fit_report_path)
-
-                # in case it was just a filename given
-                # - default directory is input dir
                 except NotADirectoryError:
+                    # if fit_report_path was just a filename use inp_dir as a default
                     rep_fname = args.fit_report_path
                     rep_dname = inp_dir
 
