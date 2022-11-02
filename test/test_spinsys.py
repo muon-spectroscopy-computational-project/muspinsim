@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+from scipy import sparse
 
 from muspinsim import constants
 from muspinsim.spinop import SpinOperator, SuperOperator
@@ -100,6 +101,31 @@ class TestSpinSystem(unittest.TestCase):
         self.assertTrue(
             np.allclose(
                 ssys.operator({0: "z", 1: "y"}).matrix.toarray(),
+                SpinOperator.from_axes([0.5, 0.5], "zy").matrix.toarray(),
+            )
+        )
+
+        self.assertEqual(ssys.dimension, (2, 2))
+
+    def test_operator_include_only_given(self):
+
+        ssys = SpinSystem(["mu", "e"])
+
+        print(ssys.operator({0: "x"}, True).matrix.toarray())
+        print(SpinOperator.from_axes([0.5, 0.5], "x0").matrix.toarray())
+
+        self.assertTrue(
+            np.allclose(
+                sparse.kron(
+                    ssys.operator({0: "x"}, True).matrix, sparse.identity(2)
+                ).toarray(),
+                SpinOperator.from_axes([0.5, 0.5], "x0").matrix.toarray(),
+            )
+        )
+
+        self.assertTrue(
+            np.allclose(
+                ssys.operator({0: "z", 1: "y"}, True).matrix.toarray(),
                 SpinOperator.from_axes([0.5, 0.5], "zy").matrix.toarray(),
             )
         )
