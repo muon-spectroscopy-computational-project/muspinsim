@@ -375,7 +375,7 @@ class ExperimentRunner(object):
                 mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
                 sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
 
-                data = H.fast_evolve(sigma_mu, cfg_snap.t, other_dimension)[:, 0]
+                data = H.fast_evolve(sigma_mu, cfg_snap.t, other_dimension)
             else:
                 data = H.evolve(
                     self.rho0,

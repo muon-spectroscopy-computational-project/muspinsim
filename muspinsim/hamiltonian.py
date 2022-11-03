@@ -200,7 +200,9 @@ class Hamiltonian(Operator, Hermitian):
             raise ValueError("times must be an array of values in microseconds")
 
         # Diagonalize self
+        t_start = time.time()
         evals, evecs = self.diag()
+        print("Eigenvalue time: ", time.time() - t_start)
 
         # Expand to correct size
         sigma_mu = sparse.kron(sigma_mu, sparse.identity(other_dimension, format="csr"))
@@ -208,13 +210,17 @@ class Hamiltonian(Operator, Hermitian):
         # Compute the value of R^dagger * sigma * R
         # evecs = sparse.csr_matrix(sigma_mu)
         # A = evecs.T.conjugate() * (sigma_mu * evecs)
+        t_start = time.time()
         A = np.dot(evecs.T.conjugate(), np.dot(sigma_mu.toarray(), evecs))
 
         # Mod square
         # Potential better method: https://stackoverflow.com/questions/30437947/most-memory-efficient-way-to-compute-abs2-of-complex-numpy-ndarray
         A = np.power(np.abs(A), 2)
+        print("Amplitudes time: ", time.time() - t_start)
 
+        t_start = time.time()
         W = 2 * np.pi * np.subtract.outer(evals, evals)
+        print("W time ", time.time() - t_start)
 
         # No idea why we need to divide by 2 here - without it values go
         # up to 0.25 instead of 0.5
@@ -230,6 +236,7 @@ class Hamiltonian(Operator, Hermitian):
         #             result[i, 0] += A[j, k] * np.cos(W[j, k] * times[i])
         #     result[i, 0] /= other_dimension
 
-        result = cython_utils.calc_time_evolve(times, other_dimension, A, W)
+        # result = cython_utils.calc_time_evolve(times, other_dimension, A, W)
+        result = cython_utils.calc_time_evolve_parallel(times, other_dimension, A, W)
         print("Evolve time: ", time.time() - t_start)
         return result

@@ -48,7 +48,14 @@ setuptools.setup(
     },
     python_requires=">=3.8",
     ext_modules=cythonize(
-        ["muspinsim/cython_utils.pyx"],
+        [
+            setuptools.Extension(
+                "muspinsim.cython_utils",
+                ["muspinsim/cython_utils.pyx"],
+                extra_compile_args=["-fopenmp"],
+                extra_link_args=["-fopenmp"],
+            )
+        ],
         compiler_directives={"language_level": "3str"},
         annotate=True,
     ),

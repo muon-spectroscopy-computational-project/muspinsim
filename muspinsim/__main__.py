@@ -34,7 +34,6 @@ def ensure_dir_path_exists(path_string):
 
 
 def main(use_mpi=False):
-
     if use_mpi:
         mpi.connect()
 
