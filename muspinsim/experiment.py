@@ -95,7 +95,6 @@ class ExperimentRunner(object):
         self._dops = None
 
         self._T_inf_speedup = True
-        self._sigma_mu = None
 
     @property
     def config(self):
@@ -364,50 +363,26 @@ class ExperimentRunner(object):
 
         H = self.Htot
 
-        if self._T_inf_speedup:
-            # muon_axis = self._p
-            # I = self._system.I(self._system.muon_index)
-            # self._sigma_mu = DensityOperator.from_vectors(I, muon_axis, 0.0)
-            # d = 4
-            # rho0 = sparse.kron(
-            #     self._sigma_mu.matrix,
-            #     sparse.identity(d, format="csr"),
-            # )
-
-            # muon_axis = self._p
-            # mu_ops = [
-            #     self._system.operator(
-            #         {self._system.muon_index: e}, include_only_given=True
-            #     )
-            #     for e in "xyz"
-            # ]
-            # self._sigma_mu = sparse.csr_matrix(
-            #     np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)]).matrix
-            # )
-            # d = 4
-            # self._sigma_mu = sparse.kron(self._sigma_mu, sparse.identity(d, format="csr"))
-            # rho0 = self._sigma_mu
-
-            muon_axis = self._p
-            mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
-            self._sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
-            print(self._sigma_mu.toarray())
-            d = 4
-            self._sigma_mu = sparse.kron(
-                self._sigma_mu, sparse.identity(d, format="csr")
-            )
-            rho0 = self._sigma_mu
-
-            # self._sigma_mu = self.p_operator
-            # rho0 = self._sigma_mu.matrix
-        else:
-            rho0 = self.rho0
-
         if cfg_snap.y == "asymmetry":
-            data = H.evolve(
-                rho0, cfg_snap.t, operators=[S], T_inf_speedup=self._T_inf_speedup
-            )[:, 0]
+            if self._T_inf_speedup:
+                other_spins = list(range(0, len(self._system.spins)))
+                other_spins.remove(self._system.muon_index)
+                other_dimension = np.prod(
+                    [self._system.dimension[i] for i in other_spins]
+                )
+
+                muon_axis = self._p
+                mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
+                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
+
+                data = H.fast_evolve(sigma_mu, cfg_snap.t, other_dimension)[:, 0]
+            else:
+                data = H.evolve(
+                    self.rho0,
+                    cfg_snap.t,
+                    operators=[S],
+                )[:, 0]
         elif cfg_snap.y == "integral":
-            data = H.integrate_decaying(rho0, MU_TAU, operators=[S])[0] / MU_TAU
+            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 
         return np.real(data) * w

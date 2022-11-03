@@ -30,7 +30,7 @@ class Hamiltonian(Operator, Hermitian):
     def from_spin_operator(self, spinop):
         return self(spinop.matrix, spinop.dimension)
 
-    def evolve(self, rho0, times, operators=[], T_inf_speedup=False):
+    def evolve(self, rho0, times, operators=[]):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
@@ -57,8 +57,8 @@ class Hamiltonian(Operator, Hermitian):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        # if not isinstance(rho0, DensityOperator):
-        #     raise TypeError("rho0 must be a valid DensityOperator")
+        if not isinstance(rho0, DensityOperator):
+            raise TypeError("rho0 must be a valid DensityOperator")
 
         times = np.array(times)
 
@@ -72,76 +72,44 @@ class Hamiltonian(Operator, Hermitian):
                 "operators must be a SpinOperator or a list" " of SpinOperator objects"
             )
 
-        if T_inf_speedup:
-            # rho0 is actually sigma_mu here
-            sigma_mu = rho0
+        # Diagonalize self
+        evals, evecs = self.diag()
 
-            # Diagonalize self
-            evals, evecs = self.diag()
+        # Turn the density matrix in the right basis
+        dim = rho0.dimension
+        rho0 = rho0.basis_change(evecs).matrix.toarray()
 
-            # A = evecs.T.conjugate() * sigma_mu * evecs
+        # Same for operators
+        operatorsT = np.array(
+            [o.basis_change(evecs).matrix.T.toarray() for o in operators]
+        )
 
-            # basis = sparse.csr_matrix(evecs)
-            # x = basis.T.conjugate()
-            # A = x.dot(sigma_mu).dot(basis)
-            A = np.dot(evecs.T.conjugate(), np.dot(sigma_mu.toarray(), evecs))
+        # Matrix of evolution operators
+        ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
 
-            # Mod square
-            # Potential better method: https://stackoverflow.com/questions/30437947/most-memory-efficient-way-to-compute-abs2-of-complex-numpy-ndarray
-            A = np.power(np.abs(A), 2)
+        def calc_single_rho(i):
+            return np.exp(ll[None, :, :] * times[i, None, None]) * rho0[None, :, :]
 
-            W = np.subtract.outer(evals, evals)
-
-            # Avoid using append as assignment should be faster
-            result = np.zeros((times.shape[0], 1), dtype=np.float64)
-
-            d = 4
-
-            # Will assume only want results for p_operator
+        result = None
+        if len(operators) > 0:
+            # Actually compute expectation values one at a time
             for i in range(times.shape[0]):
-                for j in range(A.shape[0]):
-                    for k in range(0, j + 1):
-                        result[i, 0] += A[j, k] * np.cos(2 * np.pi * W[j, k] * times[i])
-                result[i, 0] /= d
+                rho = calc_single_rho(i)
+                single_res = np.sum(
+                    rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
+                )
+                if result is None:
+                    result = single_res
+                else:
+                    result = np.concatenate(([result, single_res]), axis=0)
         else:
-            # Diagonalize self
-            evals, evecs = self.diag()
-
-            # Turn the density matrix in the right basis
-            dim = rho0.dimension
-            rho0 = rho0.basis_change(evecs).matrix.toarray()
-
-            # Same for operators
-            operatorsT = np.array(
-                [o.basis_change(evecs).matrix.T.toarray() for o in operators]
-            )
-
-            # Matrix of evolution operators
-            ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
-
-            def calc_single_rho(i):
-                return np.exp(ll[None, :, :] * times[i, None, None]) * rho0[None, :, :]
-
-            result = None
-            if len(operators) > 0:
-                # Actually compute expectation values one at a time
-                for i in range(times.shape[0]):
-                    rho = calc_single_rho(i)
-                    single_res = np.sum(
-                        rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
-                    )
-                    if result is None:
-                        result = single_res
-                    else:
-                        result = np.concatenate(([result, single_res]), axis=0)
-            else:
-                sceve = evecs.T.conj()
-                for i in range(times.shape[0]):
-                    # Just return density matrices
-                    result = [
-                        DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
-                        for i in range(times.shape[0])
-                    ]
+            sceve = evecs.T.conj()
+            for i in range(times.shape[0]):
+                # Just return density matrices
+                result = [
+                    DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
+                    for i in range(times.shape[0])
+                ]
         return result
 
     def integrate_decaying(self, rho0, tau, operators=[]):
@@ -200,4 +168,62 @@ class Hamiltonian(Operator, Hermitian):
 
         result = np.sum(rho0[None, :, :] * intops[:, :, :], axis=(1, 2))
 
+        return result
+
+    def fast_evolve(self, sigma_mu, times, other_dimension):
+        """Compute time evolution of a muon polarisation state using this
+           Hamiltonian
+
+        Computes the evolution of a muon polarisation state under this
+        Hamiltonian and return either a sequence of expectation values
+        for the given SpinOperator.
+
+        Arguments:
+            sigma_mu {matrix} -- Spin matrix of the muon
+            times {ndarray} -- Times to compute the evolution for, in microseconds
+            other_dimension {int} -- Combined dimension of all non-muons in the
+                                     system
+
+        Returns:
+            [ndarray] -- Expectation values
+
+        Raises:
+            ValueError -- Invalid values of times
+            RuntimeError -- Hamiltonian is not hermitian
+        """
+
+        times = np.array(times)
+
+        if len(times.shape) != 1:
+            raise ValueError("times must be an array of values in microseconds")
+
+        # Diagonalize self
+        evals, evecs = self.diag()
+
+        # Expand to correct size
+        sigma_mu = sparse.kron(sigma_mu, sparse.identity(other_dimension, format="csr"))
+
+        # Compute the value of R^dagger * sigma * R
+        # evecs = sparse.csr_matrix(sigma_mu)
+        # A = evecs.T.conjugate() * (sigma_mu * evecs)
+        A = np.dot(evecs.T.conjugate(), np.dot(sigma_mu.toarray(), evecs))
+
+        # Mod square
+        # Potential better method: https://stackoverflow.com/questions/30437947/most-memory-efficient-way-to-compute-abs2-of-complex-numpy-ndarray
+        A = np.power(np.abs(A), 2)
+
+        W = 2 * np.pi * np.subtract.outer(evals, evals)
+
+        # No idea why we need to divide by 2 here - without it values go
+        # up to 0.25 instead of 0.5
+        other_dimension /= 2
+
+        # Avoid using append as assignment should be faster
+        result = np.zeros((times.shape[0], 1), dtype=np.float64)
+        for i in range(times.shape[0]):
+            # k <= j
+            for j in range(A.shape[0]):
+                for k in range(0, j + 1):
+                    result[i, 0] += A[j, k] * np.cos(W[j, k] * times[i])
+            result[i, 0] /= other_dimension
         return result

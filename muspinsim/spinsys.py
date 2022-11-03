@@ -522,7 +522,7 @@ class SpinSystem(Clonable):
 
         return self._Is[i]
 
-    def operator(self, terms={}, include_only_given=False):
+    def operator(self, terms={}):
         """Return an operator for this spin system
         Return a SpinOperator for this system containing the specified terms.
         Keyword Arguments:
@@ -531,24 +531,11 @@ class SpinSystem(Clonable):
                             symbols indicating one spin operator (either x, y,
                             z, +, - or 0). Wherever not specified, the identity
                             operaror is applied (default: {{}})
-            include_only_given -- When True only the requested terms will be included
-                                  otherwise the result will include the kronecker
-                                  product with identity matrices for the partcles
-                                  not present in the terms
         Returns:
             SpinOperator -- The requested operator
         """
 
-        if include_only_given:
-            # For Celio's method wont need all of the 0's, just the ones relevant to
-            # the interaction itself
-            ops = [
-                self._operators[i][terms.get(i, "0")]
-                for i in range(len(self))
-                if terms.get(i, "0") != "0"
-            ]
-        else:
-            ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
+        ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
 
         M = ops[0]
 
