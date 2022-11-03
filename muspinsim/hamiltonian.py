@@ -3,11 +3,13 @@
 A class describing a spin Hamiltonian with various terms
 """
 
+import time
 import numpy as np
 from numbers import Number
 
 from scipy import sparse
 
+from muspinsim import cython_utils
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
@@ -218,12 +220,16 @@ class Hamiltonian(Operator, Hermitian):
         # up to 0.25 instead of 0.5
         other_dimension /= 2
 
+        t_start = time.time()
         # Avoid using append as assignment should be faster
-        result = np.zeros((times.shape[0], 1), dtype=np.float64)
-        for i in range(times.shape[0]):
-            # k <= j
-            for j in range(A.shape[0]):
-                for k in range(0, j + 1):
-                    result[i, 0] += A[j, k] * np.cos(W[j, k] * times[i])
-            result[i, 0] /= other_dimension
+        # result = np.zeros((times.shape[0], 1), dtype=np.float64)
+        # for i in range(times.shape[0]):
+        #     # k <= j
+        #     for j in range(A.shape[0]):
+        #         for k in range(0, j + 1):
+        #             result[i, 0] += A[j, k] * np.cos(W[j, k] * times[i])
+        #     result[i, 0] /= other_dimension
+
+        result = cython_utils.calc_time_evolve(times, other_dimension, A, W)
+        print("Evolve time: ", time.time() - t_start)
         return result

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 import setuptools
+from Cython.Build import cythonize
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -34,7 +35,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Physics",
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
-    install_requires=["numpy", "scipy", "soprano", "lark"],
+    install_requires=["numpy", "scipy", "soprano", "lark", "Cython"],
     extras_require={
         "docs": ["mkdocs", "pymdown-extensions"],
         "dev": ["flake8", "black>=22.3.0", "pytest", "pre-commit"],
@@ -46,4 +47,9 @@ setuptools.setup(
         ]
     },
     python_requires=">=3.8",
+    ext_modules=cythonize(
+        ["muspinsim/cython_utils.pyx"],
+        compiler_directives={"language_level": "3str"},
+        annotate=True,
+    ),
 )
