@@ -48,6 +48,46 @@ This way we can see that the equations are completely decoupled. Coefficients on
 
 > **For developers:** time evolution of a system is handled by the `.evolve()` method of the `Hamiltonian` class.
 
+#### Celio's Method
+
+Muspinsim can also make use of an approximation to speedup calculations and reduce memory usage in certain cases by making use of [Celio's method](https://www.doi.org/10.1103/PhysRevLett.56.2720). To do this we split up the Hamiltonian into constituent parts representing contributions from each interaction.
+
+$$
+H = \sum_{i}^{N} H_i
+$$
+
+Then referring back to the earlier result
+
+$$
+\rho(t) = e^{-\frac{i}{\hbar}Ht}\rho(0)e^{\frac{i}{\hbar}Ht}.
+$$
+
+We expand using the Suzuki–Trotter formula
+
+$$
+e^{H_1 + H_2} = \lim_{k\rightarrow\infty}{\left[e^{\frac{H_1}{k}}e^{\frac{H_2}{k}}\right]^k}
+$$
+
+To obtain
+
+$$
+e^{-\frac{i}{\hbar}Ht} = \lim_{k\rightarrow\infty}{\left[\prod_{i}^{N}e^{-\frac{i}{k\hbar}H_it}\right]^k}
+$$
+
+This allows us to compute the evolution operator while avoiding the diagonalisation of the Hamiltonian. In reality this formula is a simplification as each $H_i$ acts in a smaller subspace of dimension determined by the spins involved in the interaction it describes. As a result, in computing this product in terms of matrices, we must also use the kronecker product with identity matrices that match the other particles in the system not involved in the interaction. We also use swap gates to ensure the order of these kronecker products is preserved.
+
+For example for a system of a muon and two electrons (labelled 1, 2 and 3 respectively) with a single dipolar interaction defined between the muon and second electron we compute
+
+$$
+e^{-\frac{i}{\hbar}Ht} = \lim_{k\rightarrow\infty}{\left[\text{SWAP}_{32} \left( \mathbb{1}_2 \otimes e^{-\frac{i}{k\hbar}H_{13}t}\right)\right]^k}
+$$
+
+Where $H_{12}$ is the contribution from the dipolar interaction and $\mathbb{1}_2$ is the identity matrix of size $2I + 1 = 2$ (For the first electron). $\text{SWAP}_{32}$ is a swap gate that has the effect of reversing the kronecker products into the correct order as of $H_{13}$ is formed in a subspace with only particles 1 and 3 wheras it should be computed for the system with particles 1, 2 and 3 in that order.
+
+Due to the extra matrix products this method is most suitable when the evolution operator's matrix is sparse for which it will be faster and will use significantly less memory. This will generally be the case for larger spins with a few simple interactions. Muspinsim will log a warning in its output if the sparsity doesn't appear suitable for Celio's method.
+
+> **For developers:** time evolution of a system using Celio's method is handled by the `.evolve()` method of the `CelioHamiltonian` class.
+
 ### Integral of asymmetry
 In muon experiments we're usually interested in measuring the asymmetry of positron hits between the forward and back detectors in the experimental setup - namely, the polarisation of the muon along a certain axis, as it evolves in time. However, in some cases (like ALC experiments) what we actually care about is the *integral* of this asymmetry throughout a certain time interval. This could be trivially computed simply by computing the time evolution and then integrating numerically. However MuSpinSim in this case uses a different algorithm to perform the integral analytically, saving some unnecessary steps. The full derivation of the formula is detailed in [this arXiv paper](https://arxiv.org/abs/1704.02785). The essence of it is that, if we have an operator $S$ with matrix elements $s_{ij}$ whose integral value we want to compute:
 
