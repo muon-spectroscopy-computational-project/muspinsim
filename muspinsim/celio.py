@@ -250,7 +250,7 @@ class CelioHamiltonian:
         results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
 
         # Obtain transpose of operators
-        operatorsT = np.array([o.matrix.T.toarray() for o in operators])
+        operatorsT = np.array([o.matrix.T for o in operators])
 
         if len(operators) > 0:
             # Compute expectation values one at a time
