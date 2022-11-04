@@ -434,3 +434,24 @@ dissipation 1
 Add a dissipation term for a given spin, which switches the system to using the [Lindblad master equation](./theory_2.md#the-lindblad-master-equation) instead of regular unitary quantim evolution. The dissipative term will cause random spin flips that decohere the system and drive it towards a thermal equilibrium state (determined by the temperature). The dissipation term is given in MHz. Indices count from 1. 
 
 > **CAUTION:** Lindbladian matrices can be not diagonalizable. This functionality does not yet account for that, so it could fail in some cases.
+
+### celio
+| Keyword:              | `celio`       |
+|-----------------------|--------------:|
+| Allows multiple rows: |            No |
+| Allows expressions:   |           Yes |
+| Allows constants:     |       Default |
+| Allows functions:     |       Default |
+
+*Example:*
+```plaintext
+celio
+    100
+```
+
+
+Use [Celio's Method](./theory_2.md#celios-method) instead of the regular time evolution method. The number indicates the Trotter number, k, used in the expansion. Larger values are in theory more accurate but will become inaccurate again when very large at a point depending on the system. A value of $k = 0$ has no effect as it disables its use. This will provide a speed boost and reduction in memory usage for certain systems, typically those with large spins and relatively few, simple interactions.
+
+This does not support [dissipation](#dissipation) or [integral](#y_axis) calculations.
+
+> **CAUTION:** Some systems will be very slower using this method due to the matrix density being too high. A warning message is displayed in the logs when this is the case.
