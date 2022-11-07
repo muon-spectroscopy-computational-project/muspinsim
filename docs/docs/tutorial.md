@@ -1,39 +1,11 @@
 
 # Tutorial
 
-## Installation
-
-MuSpinSim is written in Python and as such you must first ensure it is installed on your system. You may do this either by directly installing [Python](https://www.python.org/downloads/), or by installing [Anaconda](https://www.anaconda.com/products/distribution).
-
-There are several ways you can install MuSpinSim. The simplest is using either the pip or conda package managers using one of the following commands.
-
-```bash
-pip install muspinsim
-```
-
-or for an Anaconda installation
-
-```bash
-conda install muspinsim
-```
-
-It is also possible to install from the GitHub repository via pip. To do this first either clone the repository with
-
-```bash
-git clone https://github.com/muon-spectroscopy-computational-project/muspinsim.git
-```
-or download it as a zip file from [Github](https://github.com/muon-spectroscopy-computational-project/muspinsim) and then unzip it.
-
-Then navigate to the newly created muspinsim folder and install via pip with
-```bash
-pip install .
-```
-
 ## Usage
 
 ### From the command line
 
-Once installed, the program will be made available for command line use as `muspinsim`. The usage is
+Once installed, MuSpinSim will be available for command line use as `muspinsim`. To run it you may use the following syntax
 
 ```bash
 muspinsim input_file.in
