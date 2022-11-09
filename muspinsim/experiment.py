@@ -5,8 +5,8 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
-from scipy import sparse
 from qutip import sigmax, sigmay, sigmaz
+from ase.quaternions import Quaternion
 
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
@@ -93,8 +93,6 @@ class ExperimentRunner(object):
         self._rho0 = None
         self._Hz = None
         self._dops = None
-
-        self._T_inf_speedup = True
 
     @property
     def config(self):
@@ -334,10 +332,26 @@ class ExperimentRunner(object):
         T = cfg_snap.T  # Temperature
         q, w = cfg_snap.orient  # Quaternion and Weight for orientation
 
+        # q = Quaternion.from_euler_angles(
+        #     0 * (np.pi / 180), 0 * (np.pi / 180), 0 * (np.pi / 180)
+        # )
+        # w = 1.0
+
         # Let's start by rotating things
         self.B = q.rotate(B)
         self.p = q.rotate(p)
         self.T = T
+
+        # Figure out if a speedup is suitable
+        B = np.linalg.norm(self.B)
+        T = self.T
+
+        result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * T * cnst.k)
+        if result > 0:
+            print("Check: ", result)
+
+        # For now only use when exactly 0
+        self._T_inf_speedup = result == 0
 
         return w
 
@@ -371,9 +385,13 @@ class ExperimentRunner(object):
                     [self._system.dimension[i] for i in other_spins]
                 )
 
-                muon_axis = self._p
+                muon_axis = self.p
                 mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
                 sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
+
+                # sigma_mu = DensityOperator.from_vectors(
+                #     self._system.I(self._system.muon_index), muon_axis, 0
+                # ).matrix
 
                 data = H.fast_evolve(sigma_mu, cfg_snap.t, other_dimension)
             else:

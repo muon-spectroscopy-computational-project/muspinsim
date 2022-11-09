@@ -214,7 +214,6 @@ class Hamiltonian(Operator, Hermitian):
         A = np.dot(evecs.T.conjugate(), np.dot(sigma_mu.toarray(), evecs))
 
         # Mod square
-        # Potential better method: https://stackoverflow.com/questions/30437947/most-memory-efficient-way-to-compute-abs2-of-complex-numpy-ndarray
         A = np.power(np.abs(A), 2)
         print("Amplitudes time: ", time.time() - t_start)
 
@@ -224,7 +223,7 @@ class Hamiltonian(Operator, Hermitian):
 
         # No idea why we need to divide by 2 here - without it values go
         # up to 0.25 instead of 0.5
-        other_dimension /= 2
+        # other_dimension /= 2
 
         t_start = time.time()
         # Avoid using append as assignment should be faster
@@ -235,8 +234,9 @@ class Hamiltonian(Operator, Hermitian):
         #         for k in range(0, j + 1):
         #             result[i, 0] += A[j, k] * np.cos(W[j, k] * times[i])
         #     result[i, 0] /= other_dimension
+        # result = result[:, 0]
 
         # result = cython_utils.calc_time_evolve(times, other_dimension, A, W)
         result = cython_utils.calc_time_evolve_parallel(times, other_dimension, A, W)
         print("Evolve time: ", time.time() - t_start)
-        return result
+        return result  # - 0.1649526

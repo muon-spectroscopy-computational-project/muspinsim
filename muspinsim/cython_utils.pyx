@@ -53,19 +53,20 @@ cdef extern from "<math.h>" nogil:
 from cython.parallel import prange
 @cython.boundscheck(False) # Disable bounds-checking
 @cython.wraparound(False)  # Disable negative index wrapping
-def calc_time_evolve_parallel(double [:] times, int other_dimension, double [:, ::1] A, double [:, ::1] W):
+def calc_time_evolve_parallel(double [:] times, double other_dimension, double [:, ::1] A, double [:, ::1] W):
     cdef Py_ssize_t num_times = times.shape[0]
     cdef Py_ssize_t mat_dim = A.shape[0]
 
     # Avoid using append as assignment should be faster
     cdef np.ndarray[np.float64_t, ndim=1] result = np.zeros((num_times), dtype=np.float64)
     cdef double [::1] result_view = result
-    cdef Py_ssize_t  i, j, k
+    cdef Py_ssize_t i, j, k
 
     for i in prange(num_times, nogil=True):
         # k <= j
         for j in range(mat_dim):
-            for k in range(0, j):
+            for k in range(mat_dim):
+            #for k in range(0, j + 1):
                 result_view[i] += A[j, k] * cos(W[j, k] * times[i])
         result_view[i] /= other_dimension
 
