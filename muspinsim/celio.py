@@ -113,6 +113,12 @@ class CelioHamiltonian:
                         [self._spinsys.dimension[j] for j in other_spins_copy]
                     )
 
+                    # Detect Quadrupolar terms which will have the same index twice
+                    indices = list(indices)
+                    if len(indices) == 2 and indices[0] == indices[1]:
+                        # Only include one of them for the ordering
+                        indices.pop()
+
                     # Order in which kronecker products will be performed in Celio's
                     # method
                     spin_order = list(indices) + other_spins_copy
