@@ -5,6 +5,7 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
+from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
@@ -375,7 +376,14 @@ class ExperimentRunner(object):
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
-            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+            if isinstance(H, CelioHamiltonian):
+                muon_axis = self.p
+                mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
+                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
+
+                data = H.fast_evolve(sigma_mu, cfg_snap.t, operators=[S])[:, 0]
+            else:
+                data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
             data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 

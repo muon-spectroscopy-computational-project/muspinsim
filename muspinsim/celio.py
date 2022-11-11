@@ -193,7 +193,6 @@ class CelioHamiltonian:
         a sequence of expectation values for given SpinOperators.
 
         Arguments:
-            k {int} -- Factor used in the Trotter expansion
             rho0 {DensityOperator} -- Initial state
             times {ndarray} -- Times to compute the evolution for, in microseconds
 
@@ -275,6 +274,99 @@ class CelioHamiltonian:
 
                 # Evolution step
                 total_evol_op = total_evol_op * evol_op
+
+        return results
+
+    def fast_evolve(self, sigma_mu, times, operators=[]):
+        """Time evolution of a state under this Hamiltonian
+
+        Perform an evolution of a state described by a DensityOperator under
+        this Hamiltonian and return either a sequence of DensityOperators or
+        a sequence of expectation values for given SpinOperators.
+
+        Arguments:
+            sigma_mu {matrix} -- Spin matrix of the muon
+            times {ndarray} -- Times to compute the evolution for, in microseconds
+
+        Keyword Arguments:
+            operators {[SpinOperator]} -- List of SpinOperators to compute the
+                                          expectation values of at each step.
+                                          If omitted, the states' density
+                                          matrices will be returned instead
+                                           (default: {[]})
+
+        Returns:
+            [DensityOperator | ndarray] -- DensityOperators or expectation values
+
+        Raises:
+            TypeError -- Invalid operators
+            ValueError -- Invalid values of times or operators
+            RuntimeError -- Hamiltonian is not hermitian
+        """
+
+        times = np.array(times)
+
+        if len(times.shape) != 1:
+            raise ValueError("times must be an array of values in microseconds")
+
+        if isinstance(operators, SpinOperator):
+            operators = [operators]
+        if not all([isinstance(o, SpinOperator) for o in operators]):
+            raise ValueError(
+                "operators must be a SpinOperator or a list of SpinOperator objects"
+            )
+
+        time_step = times[1] - times[0]
+
+        e, v = np.linalg.eig(sigma_mu - np.eye(2))
+        mu_psi = v[:, 1] if e[1] > 0.1 else v[:, 0]
+
+        # Time evolution step that will modify the trotter_hamiltonian below
+        evol_op = self._calc_trotter_evol_op(time_step)
+
+        half_dim = int(evol_op.shape[0] / 2)
+        psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
+        psi = np.kron(mu_psi.T, psi0)
+
+        # Normalise
+        psi = psi * (1 / np.sqrt(half_dim))
+        psi = sparse.csr_matrix(psi).T
+
+        mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
+
+        if mat_density >= 0.08:
+            logging.warning(
+                "Matrix density is %s >= 0.08 and so Celio's method is not suitable, "
+                "consider disabling it.",
+                mat_density,
+            )
+            # Matrix products with trotter_hamiltonian_dt is very likely to be slower
+            # with sparse matrices than dense
+
+            # We can still save some memory over Hamiltonian's evolve method at the
+            # cost of performance by using dense matrices for trotter_hamiltonian
+            # trotter_hamiltonian_dt but the improvement is minimal and as the problem
+            # gets bigger the reduction in memory usage decreases and increase in time
+            # increases so does not appear worth it
+
+        # Avoid using append as assignment should be faster
+        results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
+
+        # Obtain transpose of operators
+        operatorsT = np.array([o.matrix.T for o in operators])
+
+        if len(operators) > 0:
+            # Compute expectation values one at a time
+            for i in range(times.shape[0]):
+                # When passing multiple operators we want to return results for each
+                for j, operatorT in enumerate(operatorsT):
+                    # This element wise multiplication then sum gives the equivalent
+                    # as the trace of the matrix product (without the transpose) and
+                    # and is faster
+                    results[i][j] = (psi.conj().T * (operatorT * psi))[0, 0]
+
+                # Evolution step
+                psi = evol_op * psi
 
         return results
 
