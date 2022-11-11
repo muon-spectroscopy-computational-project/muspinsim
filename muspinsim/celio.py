@@ -9,6 +9,7 @@ See Phys. Rev. Lett. 56 2720 (1986)
 from dataclasses import dataclass
 import itertools
 import logging
+import time
 from typing import List
 import numpy as np
 from scipy import sparse
@@ -144,16 +145,16 @@ class CelioHamiltonian:
 
         return H_contribs
 
-    def _calc_trotter_evol_op(self, time_step):
-        """Calculates and returns the Trotter expansion of the time evolution operator
-           from the Hamiltonian contributions
+    def _calc_trotter_evol_op_contribs(self, time_step):
+        """Calculates and returns the contributions to the Trotter expansion of
+        the time evolution operator computed from the Hamiltonian contributions
 
         Arguments:
             time_step {float} -- Timestep that will be used during the evolution
 
         Returns:
-            evol_op {[matrix]} -- Result of the Trotter expansion of the evolution
-                                operator
+            evol_op_contribs {[matrix]} -- Contributions to the Trotter expansion
+                                           of the evolution operator
         """
 
         H_contribs = self._calc_H_contribs()
@@ -183,7 +184,7 @@ class CelioHamiltonian:
 
             evol_op_contribs.append(evol_op_contrib)
 
-        return np.product(evol_op_contribs) ** self._k
+        return evol_op_contribs
 
     def evolve(self, rho0, times, operators=[]):
         """Time evolution of a state under this Hamiltonian
@@ -231,7 +232,7 @@ class CelioHamiltonian:
         rho0 = rho0.matrix
 
         # Time evolution step that will modify the trotter_hamiltonian below
-        evol_op = self._calc_trotter_evol_op(time_step)
+        evol_op = np.product(self._calc_trotter_evol_op_contribs(time_step)) ** self._k
         total_evol_op = sparse.identity(evol_op.shape[0], format="csr")
 
         mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
@@ -322,32 +323,26 @@ class CelioHamiltonian:
         mu_psi = v[:, 1] if e[1] > 0.1 else v[:, 0]
 
         # Time evolution step that will modify the trotter_hamiltonian below
-        evol_op = self._calc_trotter_evol_op(time_step)
+        evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step)
 
-        half_dim = int(evol_op.shape[0] / 2)
-        psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
-        psi = np.kron(mu_psi.T, psi0)
+        half_dim = int(evol_op_contribs[0].shape[0] / 2)
 
-        # Normalise
-        psi = psi * (1 / np.sqrt(half_dim))
-        psi = sparse.csr_matrix(psi).T
+        # mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
 
-        mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
+        # if mat_density >= 0.08:
+        #     logging.warning(
+        #         "Matrix density is %s >= 0.08 and so Celio's method is not suitable, "
+        #         "consider disabling it.",
+        #         mat_density,
+        #     )
+        #     # Matrix products with trotter_hamiltonian_dt is very likely to be slower
+        #     # with sparse matrices than dense
 
-        if mat_density >= 0.08:
-            logging.warning(
-                "Matrix density is %s >= 0.08 and so Celio's method is not suitable, "
-                "consider disabling it.",
-                mat_density,
-            )
-            # Matrix products with trotter_hamiltonian_dt is very likely to be slower
-            # with sparse matrices than dense
-
-            # We can still save some memory over Hamiltonian's evolve method at the
-            # cost of performance by using dense matrices for trotter_hamiltonian
-            # trotter_hamiltonian_dt but the improvement is minimal and as the problem
-            # gets bigger the reduction in memory usage decreases and increase in time
-            # increases so does not appear worth it
+        #     # We can still save some memory over Hamiltonian's evolve method at the
+        #     # cost of performance by using dense matrices for trotter_hamiltonian
+        #     # trotter_hamiltonian_dt but the improvement is minimal and as the problem
+        #     # gets bigger the reduction in memory usage decreases and increase in time
+        #     # increases so does not appear worth it
 
         # Avoid using append as assignment should be faster
         results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
@@ -355,20 +350,35 @@ class CelioHamiltonian:
         # Obtain transpose of operators
         operatorsT = np.array([o.matrix.T for o in operators])
 
+        averages = 12
+        avg_factor = 1 / averages
+
+        def compute_psi(mu_psi, half_dim):
+            psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
+            psi = np.kron(mu_psi.T, psi0)
+
+            # Normalise
+            psi = psi * (1 / np.sqrt(half_dim))
+            return sparse.csr_matrix(psi).T
+
+        start_t = time.time()
         if len(operators) > 0:
-            # Compute expectation values one at a time
-            for i in range(times.shape[0]):
-                # When passing multiple operators we want to return results for each
-                for j, operatorT in enumerate(operatorsT):
-                    # This element wise multiplication then sum gives the equivalent
-                    # as the trace of the matrix product (without the transpose) and
-                    # and is faster
-                    results[i][j] = (psi.conj().T * (operatorT * psi))[0, 0]
+            for _ in range(averages):
+                psi = compute_psi(mu_psi, half_dim)
 
-                # Evolution step
-                psi = evol_op * psi
+                # Compute expectation values one at a time
+                for i in range(times.shape[0]):
+                    # When passing multiple operators we want to return results for each
+                    for j, operatorT in enumerate(operatorsT):
+                        results[i][j] += (psi.conj().T * (operatorT * psi))[0, 0]
 
-        return results
+                    # Evolution step
+                    for _ in range(self._k):
+                        for evol_op_contrib in evol_op_contribs:
+                            psi = evol_op_contrib * psi
+        print("Time", time.time() - start_t)
+
+        return results * avg_factor
 
     def integrate_decaying(self, rho0, tau, operators=[]):
         """Called to integrate one or more expectation values in time with decay
