@@ -350,21 +350,22 @@ class CelioHamiltonian:
         # Obtain transpose of operators
         operatorsT = np.array([o.matrix.T for o in operators])
 
-        averages = 12
-        avg_factor = 1 / averages
+        averages = 4
+        avg_factor = 1.0 / averages
 
         def compute_psi(mu_psi, half_dim):
             psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
             psi = np.kron(mu_psi.T, psi0)
 
             # Normalise
-            psi = psi * (1 / np.sqrt(half_dim))
-            return sparse.csr_matrix(psi).T
+            psi = psi * (1.0 / np.sqrt(half_dim))
+            return np.matrix(psi).T  # Likely dense, faster to use numpy
 
         start_t = time.time()
         if len(operators) > 0:
             for _ in range(averages):
                 psi = compute_psi(mu_psi, half_dim)
+                print("Psi shape", psi.shape)
 
                 # Compute expectation values one at a time
                 for i in range(times.shape[0]):
@@ -378,7 +379,7 @@ class CelioHamiltonian:
                             psi = evol_op_contrib * psi
         print("Time", time.time() - start_t)
 
-        return results * avg_factor
+        return results * avg_factor #* 2  # Temporarily multiply by 2 for comparison
 
     def integrate_decaying(self, rho0, tau, operators=[]):
         """Called to integrate one or more expectation values in time with decay
