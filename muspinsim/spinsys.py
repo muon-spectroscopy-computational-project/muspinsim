@@ -42,13 +42,23 @@ class InteractionTerm(Clonable):
             index_tuples = [[]]
 
         for ii in index_tuples:
-            op = (
-                self._spinsys.operator(
-                    {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)},
-                    include_only_given=self._spinsys.celio,
+            # Detect double terms with same index - e.g. quadrupole terms
+            if len(self._indices) == 2 and self._indices[0] == self._indices[1]:
+                op = (
+                    self._spinsys.operator(
+                        {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
+                        include_only_given=self._spinsys.celio,
+                    )
+                    * self._tensor[tuple(ii)]
                 )
-                * self._tensor[tuple(ii)]
-            )
+            else:
+                op = (
+                    self._spinsys.operator(
+                        {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)},
+                        include_only_given=self._spinsys.celio,
+                    )
+                    * self._tensor[tuple(ii)]
+                )
             if total_op is None:
                 total_op = op
             else:
@@ -553,16 +563,28 @@ class SpinSystem(Clonable):
             SpinOperator -- The requested operator
         """
 
-        if include_only_given:
-            # For Celio's method wont need all of the 0's, just the ones relevant to
-            # the interaction itself
-            ops = [
-                self._operators[i][terms.get(i, "0")]
-                for i in range(len(self))
-                if terms.get(i, "0") != "0"
-            ]
-        else:
-            ops = [self._operators[i][terms.get(i, "0")] for i in range(len(self))]
+        def _get_term(i):
+            # Default to identity of the approriate size if not specified
+            # (and not requesting that we include only the explicitly
+            # specified terms)
+            ops = terms.get(i, None if include_only_given else "0")
+            term_result = None
+            if ops:
+                # Compute matrix product of terms if a list is specified for
+                # the index
+                if isinstance(ops, list) and len(ops) > 0:
+                    term_result = self._operators[i][ops[0]]
+                    for op in ops[1:]:
+                        term_result *= self._operators[i][op]
+                else:
+                    term_result = self._operators[i][terms.get(i, ops)]
+            return term_result
+
+        ops = []
+        for i in range(len(self)):
+            term = _get_term(i)
+            if term:
+                ops.append(term)
 
         M = ops[0]
 

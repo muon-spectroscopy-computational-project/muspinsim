@@ -130,6 +130,15 @@ class TestSpinSystem(unittest.TestCase):
             )
         )
 
+        self.assertTrue(
+            np.allclose(
+                ssys.operator({0: ["z", "y"]}, True).matrix.toarray(),
+                (
+                    SpinOperator.from_axes(0.5, "z") * SpinOperator.from_axes(0.5, "y")
+                ).matrix.toarray(),
+            )
+        )
+
         self.assertEqual(ssys.dimension, (2, 2))
 
     def test_addterms(self):
