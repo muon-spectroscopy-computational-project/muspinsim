@@ -379,7 +379,7 @@ class CelioHamiltonian:
                             psi = evol_op_contrib * psi
         print("Time", time.time() - start_t)
 
-        return results * avg_factor #* 2  # Temporarily multiply by 2 for comparison
+        return results * avg_factor  # * 2  # Temporarily multiply by 2 for comparison
 
     def integrate_decaying(self, rho0, tau, operators=[]):
         """Called to integrate one or more expectation values in time with decay
