@@ -9,6 +9,7 @@ import numpy as np
 from numbers import Number
 import scipy.constants as cnst
 from scipy import sparse
+from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
@@ -657,15 +658,22 @@ class MuonSpinSystem(SpinSystem):
 
         return self.add_bilinear_term(i, j, A, "Hyperfine")
 
-    def muon_operator(self, v):
+    def muon_operator(self, v, include_only_muon=False):
         """Get a muon operator
 
         Get a single operator for the muon, given a vector representing its
-        direction. Uses precalculated operators for speed.
+        direction.
 
         Arguments:
             v {[float]} -- 3-dimensional vector representing the directions of
                            the desired operator
+            include_only_muon {boolean} - When False will compute using the
+                                          large spin matrices including terms
+                                          from the whole system that are
+                                          precaculated for speed.
+                                          Otherwise only calculates using
+                                          the 2x2 spin matrices for the
+                                          muon.
 
         Returns:
             mu_op {SpinOperator} -- Requested operator
@@ -679,7 +687,11 @@ class MuonSpinSystem(SpinSystem):
                 "Vector passed to muon_operator must be three" " dimensional"
             )
 
-        op = [x * self._mu_ops[i] for i, x in enumerate(v)]
-        op = sum(op[1:], op[0])
+        if include_only_muon:
+            mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
+            op = SpinOperator(np.sum([x * mu_ops[i] for i, x in enumerate(v)]))
+        else:
+            op = [x * self._mu_ops[i] for i, x in enumerate(v)]
+            op = sum(op[1:], op[0])
 
         return op

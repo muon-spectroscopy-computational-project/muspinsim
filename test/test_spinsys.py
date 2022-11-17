@@ -243,3 +243,29 @@ class TestMuonSpinSystem(unittest.TestCase):
         self.assertEqual(mSsys.elec_indices, {0, 1})
         with self.assertRaises(ValueError):
             mSsys.add_hyperfine_term(2, np.eye(3))  # Must specify electron
+
+    def test_muon_operator(self):
+        mSsys = MuonSpinSystem(["mu", "e"])
+
+        muon_operator = mSsys.muon_operator([1, 1, 1], True)
+        self.assertEqual(muon_operator.matrix.shape, (2, 2))
+        self.assertIsNone(
+            np.testing.assert_array_equal(
+                muon_operator.matrix.toarray(),
+                [[0.5 + 0j, 0.5 - 0.5j], [0.5 + 0.5j, -0.5 + 0j]],
+            )
+        )
+
+        muon_operator = mSsys.muon_operator([1, 1, 1], False)
+        self.assertEqual(muon_operator.matrix.shape, (4, 4))
+        self.assertIsNone(
+            np.testing.assert_array_equal(
+                muon_operator.matrix.toarray(),
+                [
+                    [0.5 + 0.0j, 0.0 + 0.0j, 0.5 - 0.5j, 0.0 + 0.0j],
+                    [0.0 + 0.0j, 0.5 + 0.0j, 0.0 + 0.0j, 0.5 - 0.5j],
+                    [0.5 + 0.5j, 0.0 + 0.0j, -0.5 + 0.0j, 0.0 + 0.0j],
+                    [0.0 + 0.0j, 0.5 + 0.5j, 0.0 + 0.0j, -0.5 + 0.0j],
+                ],
+            )
+        )

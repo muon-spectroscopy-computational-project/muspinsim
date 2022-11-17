@@ -177,11 +177,11 @@ class Hamiltonian(Operator, Hermitian):
            Hamiltonian
 
         Computes the evolution of a muon polarisation state under this
-        Hamiltonian and return either a sequence of expectation values
+        Hamiltonian and returns either a sequence of expectation values
         for the given SpinOperator.
 
         Arguments:
-            sigma_mu {matrix} -- Spin matrix of the muon
+            sigma_mu {SpinOperator} -- Muon spin operator
             times {ndarray} -- Times to compute the evolution for, in microseconds
             other_dimension {int} -- Combined dimension of all non-muons in the
                                      system
@@ -205,7 +205,9 @@ class Hamiltonian(Operator, Hermitian):
         print("Eigenvalue time: ", time.time() - t_start)
 
         # Expand to correct size
-        sigma_mu = sparse.kron(sigma_mu, sparse.identity(other_dimension, format="csr"))
+        sigma_mu = sparse.kron(
+            sigma_mu.matrix, sparse.identity(other_dimension, format="csr")
+        )
 
         # Compute the value of R^dagger * sigma * R
         # evecs = sparse.csr_matrix(sigma_mu)
@@ -223,6 +225,7 @@ class Hamiltonian(Operator, Hermitian):
 
         # No idea why we need to divide by 2 here - without it values go
         # up to 0.25 instead of 0.5
+        # Only needed when not doing full sum and isntead only doing for \alpha > \beta
         # other_dimension /= 2
 
         t_start = time.time()
@@ -236,7 +239,7 @@ class Hamiltonian(Operator, Hermitian):
         #     result[i, 0] /= other_dimension
         # result = result[:, 0]
 
-        # result = cython_utils.calc_time_evolve(times, other_dimension, A, W)
-        result = cython_utils.calc_time_evolve_parallel(times, other_dimension, A, W)
+        # result = cython_utils.fast_time_evolve(times, other_dimension, A, W)
+        result = cython_utils.fast_time_evolve_parallel(times, other_dimension, A, W)
         print("Evolve time: ", time.time() - t_start)
-        return result  # - 0.1649526
+        return result

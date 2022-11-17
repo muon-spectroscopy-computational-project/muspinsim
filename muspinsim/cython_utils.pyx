@@ -1,9 +1,18 @@
 import numpy as np
+from cython.parallel import prange
 
 cimport numpy as np
+cimport cython
+
 np.import_array()
 
-def calc_time_evolve_basic(times, other_dimension, A, W):
+# Use C versions to avoid linking back to python
+cdef extern from "<math.h>" nogil:
+    double cos(double theta)
+    double sin(double theta)
+
+"""
+def fast_time_evolve_basic(times, other_dimension, A, W):
     cdef int num_times = times.shape[0]
     cdef int mat_dim = A.shape[0]
 
@@ -17,18 +26,12 @@ def calc_time_evolve_basic(times, other_dimension, A, W):
         result[i, 0] /= other_dimension
 
     return result
+"""
 
-cimport cython
-
-""""
-# Use C versions to avoid linking back to python
-cdef extern from "math.h":
-    double cos(double theta)
-    double sin(double theta)
-
+"""
 @cython.boundscheck(False) # Disable bounds-checking
 @cython.wraparound(False)  # Disable negative index wrapping
-def calc_time_evolve(np.ndarray[np.float64_t, ndim=1] times, int other_dimension, np.ndarray[np.float64_t, ndim=2] A, np.ndarray[np.float64_t, ndim=2] W):
+def fast_time_evolve(np.ndarray[np.float64_t, ndim=1] times, int other_dimension, np.ndarray[np.float64_t, ndim=2] A, np.ndarray[np.float64_t, ndim=2] W):
     cdef Py_ssize_t num_times = times.shape[0]
     cdef Py_ssize_t mat_dim = A.shape[0]
 
@@ -45,15 +48,34 @@ def calc_time_evolve(np.ndarray[np.float64_t, ndim=1] times, int other_dimension
     return result
 """
 
-# Use C versions to avoid linking back to python
-cdef extern from "<math.h>" nogil:
-    double cos(double theta)
-    double sin(double theta)
-
-from cython.parallel import prange
 @cython.boundscheck(False) # Disable bounds-checking
 @cython.wraparound(False)  # Disable negative index wrapping
-def calc_time_evolve_parallel(double [:] times, double other_dimension, double [:, ::1] A, double [:, ::1] W):
+def fast_time_evolve_parallel(double [:] times, double other_dimension, double [:, ::1] A, double [:, ::1] W):
+    """Computes the result of time evolution of a muon polarisation
+
+    Fast method for computing the result of time evolution of a
+    muon polarisation. It requires the T -> inf approximation.
+    Calculated as:
+    \frac{1}{d}\sum_{\alpha, \beta}|<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
+        \cos[(E_{\alpha} - E{\alpha})t]
+
+    Arguments:
+        other_dimension {double} -- Value of the dimension labelled
+                                    as d in the equation above.
+        A {ndarray} -- Matrix giving the amplites of the cosines
+                       |<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
+        W {ndarray} -- Matrix containing the differences of eigenvalues
+                       computed with np.outer
+
+    Returns:
+        [DensityOperator | ndarray] -- DensityOperators or expectation values
+
+    Raises:
+        TypeError -- Invalid operators
+        ValueError -- Invalid values of times or operators
+        RuntimeError -- Hamiltonian is not hermitian
+    """
+
     cdef Py_ssize_t num_times = times.shape[0]
     cdef Py_ssize_t mat_dim = A.shape[0]
 
@@ -62,6 +84,7 @@ def calc_time_evolve_parallel(double [:] times, double other_dimension, double [
     cdef double [::1] result_view = result
     cdef Py_ssize_t i, j, k
 
+    # Run times in parallel
     for i in prange(num_times, nogil=True):
         # k <= j
         for j in range(mat_dim):

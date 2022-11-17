@@ -385,13 +385,7 @@ class ExperimentRunner(object):
                     [self._system.dimension[i] for i in other_spins]
                 )
 
-                muon_axis = self.p
-                mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
-                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
-
-                # sigma_mu = DensityOperator.from_vectors(
-                #     self._system.I(self._system.muon_index), muon_axis, 0
-                # ).matrix
+                sigma_mu = self._system.muon_operator(self.p, include_only_muon=True)
 
                 data = H.fast_evolve(sigma_mu, cfg_snap.t, other_dimension)
             else:
