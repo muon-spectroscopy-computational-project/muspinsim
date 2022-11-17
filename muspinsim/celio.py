@@ -278,30 +278,23 @@ class CelioHamiltonian:
 
         return results
 
-    def fast_evolve(self, sigma_mu, times, operators=[]):
+    def fast_evolve(self, sigma_mu, times):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
-        this Hamiltonian and return either a sequence of DensityOperators or
-        a sequence of expectation values for given SpinOperators.
+        this Hamiltonian and return a sequence of expectation values for
+        muon polarisation at the requested times
 
         Arguments:
             sigma_mu {matrix} -- Spin matrix of the muon
             times {ndarray} -- Times to compute the evolution for, in microseconds
 
-        Keyword Arguments:
-            operators {[SpinOperator]} -- List of SpinOperators to compute the
-                                          expectation values of at each step.
-                                          If omitted, the states' density
-                                          matrices will be returned instead
-                                           (default: {[]})
-
         Returns:
-            [DensityOperator | ndarray] -- DensityOperators or expectation values
+            [ndarray] -- Expectation values
 
         Raises:
             TypeError -- Invalid operators
-            ValueError -- Invalid values of times or operators
+            ValueError -- Invalid values of times
             RuntimeError -- Hamiltonian is not hermitian
         """
 
@@ -310,22 +303,16 @@ class CelioHamiltonian:
         if len(times.shape) != 1:
             raise ValueError("times must be an array of values in microseconds")
 
-        if isinstance(operators, SpinOperator):
-            operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list of SpinOperator objects"
-            )
-
         time_step = times[1] - times[0]
 
-        e, v = np.linalg.eig(sigma_mu - np.eye(2))
-        mu_psi = v[:, 1] if e[1] > 0.1 else v[:, 0]
+        evals, evecs = np.linalg.eig(sigma_mu + np.eye(2))
+        mu_psi = evecs[:, 1] if evals[1] > 0.1 else evecs[:, 0]
 
         # Time evolution step that will modify the trotter_hamiltonian below
         evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step)
 
         half_dim = int(evol_op_contribs[0].shape[0] / 2)
+        operator = sparse.kron(sigma_mu, sparse.identity(half_dim, format="csr")).T
 
         # mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
 
@@ -345,10 +332,7 @@ class CelioHamiltonian:
         #     # increases so does not appear worth it
 
         # Avoid using append as assignment should be faster
-        results = np.zeros((times.shape[0], len(operators)), dtype=np.complex128)
-
-        # Obtain transpose of operators
-        operatorsT = np.array([o.matrix.T for o in operators])
+        results = np.zeros(times.shape[0], dtype=np.complex128)
 
         averages = 4
         avg_factor = 1.0 / averages
@@ -362,24 +346,23 @@ class CelioHamiltonian:
             return np.matrix(psi).T  # Likely dense, faster to use numpy
 
         start_t = time.time()
-        if len(operators) > 0:
-            for _ in range(averages):
-                psi = compute_psi(mu_psi, half_dim)
-                print("Psi shape", psi.shape)
+        for _ in range(averages):
+            psi = compute_psi(mu_psi, half_dim)
+            print("Psi shape", psi.shape)
 
-                # Compute expectation values one at a time
-                for i in range(times.shape[0]):
-                    # When passing multiple operators we want to return results for each
-                    for j, operatorT in enumerate(operatorsT):
-                        results[i][j] += (psi.conj().T * (operatorT * psi))[0, 0]
+            # Compute expectation values one at a time
+            for i in range(times.shape[0]):
+                # When passing multiple operators we want to return results for each
+                results[i] += (psi.conj().T * (operator * psi))[0, 0]
 
-                    # Evolution step
-                    for _ in range(self._k):
-                        for evol_op_contrib in evol_op_contribs:
-                            psi = evol_op_contrib * psi
+                # Evolution step
+                for _ in range(self._k):
+                    for evol_op_contrib in evol_op_contribs:
+                        psi = evol_op_contrib * psi
         print("Time", time.time() - start_t)
 
-        return results * avg_factor  # * 2  # Temporarily multiply by 2 for comparison
+        # Divide by 2 as by convention rest of muspinsim gives results between 0.5 and -0.5
+        return results * avg_factor * 0.5
 
     def integrate_decaying(self, rho0, tau, operators=[]):
         """Called to integrate one or more expectation values in time with decay
