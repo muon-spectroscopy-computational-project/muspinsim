@@ -84,9 +84,70 @@ $$
 
 Where $H_{12}$ is the contribution from the dipolar interaction and $\mathbb{1}_2$ is the identity matrix of size $2I + 1 = 2$ (For the first electron). $\text{SWAP}_{32}$ is a swap gate that has the effect of reversing the kronecker products into the correct order as of $H_{13}$ is formed in a subspace with only particles 1 and 3 wheras it should be computed for the system with particles 1, 2 and 3 in that order.
 
-Due to the extra matrix products this method is most suitable when the evolution operator's matrix is sparse for which it will be faster and will use significantly less memory. This will generally be the case for larger spins with a few simple interactions. MuSpinSim will log a warning in its output if the sparsity doesn't appear suitable for Celio's method.
+Due to the extra matrix products this method is most suitable when the evolution operator's matrix is sparse for which it will be faster and will use significantly less memory. This will generally be the case for larger spins with a few simple interactions. MuSpinSim will log a warning in its output if the sparsity doesn't appear suitable for this variant Celio's method.
 
-> **For developers:** time evolution of a system using Celio's method is handled by the `.evolve()` method of the `CelioHamiltonian` class.
+For a further speedup we can also approximate the initial states provided that $T\rightarrow \infty$ and use this instead of $\rho$ in the equations above to provide a large increase in performance. This method is also less susceptible to matrices becoming dense allowing more complex systems to be used but with a lower accuracy. The equations for this also form part of Celio's method by approximating the initial state. An abbreviated form of it is shown below.
+
+Instead of evolving the density matrix, we instead evolve the muon spin operator hereafter labelled as $\sigma_{\mu}$
+
+$$
+\sigma_{\mu}(t) = e^{\frac{iHt}{\hbar}}\sigma_{\mu}e^{-\frac{iHt}{\hbar}}
+$$
+
+Then by choosing a representation where $\sigma_{\mu}$ is diagonal we can write the muon polarisation as
+
+$$
+P(t) = \sum_{n=1}^{d}{w_n\bra{\psi_n(t)}\sigma_{\mu}\ket{\psi_n(t)}}
+$$
+
+where d is the total dimension, $\sigma_{\mu}=2I_{\mu}$ are the Pauli matrices in the direction of the muon and
+
+$$
+\ket{\psi_n(t)} = e^{\frac{-iHt}{\hbar}}\ket{\psi_n(0)}
+$$
+
+The coefficients $w_n$ here describe the probability of finding the spin system in the state $\psi_n(0)$ at $t = 0$. In standard experimental conditions these are determined as
+
+$$
+w_n = \frac{2}{d}\text{  if  }\sigma_{\mu}\bra{\psi_n(0)} = + \ket{\psi_n(0)} 
+$$
+
+$$
+w_n = 0\text{  if  }\sigma_{\mu}\bra{\psi_n(0)} = - \ket{\psi_n(0)} 
+$$
+
+Thus we can diagonalise the density matrix for the muon given by
+
+$$
+\rho = \mathbb{1}_2 + \sigma_{\mu}
+$$
+
+and choose the eigenvector with a positive eigenvalue to obtain the initial state $\ket{\psi(0)}$
+
+Now we define the total initial state of the system as
+
+$$
+\ket{\phi(0)} = \sum_{m=1}^{d/2}\left(\frac{2}{d}\right)^{1/2}e^{i\lambda_m}\ket{\psi_m(0)}
+$$
+
+where $\lambda_m$ is chosen randomly in the range $[0, 2\pi]$.
+
+Then the state at a later time t is given by
+
+$$
+\ket{\phi(t)} = \sum_{m=1}^{d/2}\left(\frac{2}{d}\right)^{1/2}e^{i\lambda_m}\ket{\psi_m(t)}
+$$
+
+and the matrix elements are given by
+
+$$
+\bra{\phi(t)}\sigma_{\mu}\ket{\phi(t)} = \sum_{m=1}^{d/2}\frac{2}{d}\bra{\psi_m(t)}\sigma_{\mu}\ket{\psi_m(t)} + \sum_{m,n=1, m\neq n}^{d/2}\frac{2}{d}e^{i(\lambda_m - \lambda_n)}\bra{\psi_n(t)}\sigma_{\mu}\ket{\psi_m(t)}
+$$
+
+This second term vanishes for very large $d$ allowing us to avoid very large matrix products which speeds up the method drastically.
+
+
+> **For developers:** time evolution of a system using Celio's method is handled by the `.evolve()` and `.fast_evolve()` methods of the `CelioHamiltonian` class.
 
 ### Integral of asymmetry
 In muon experiments we're usually interested in measuring the asymmetry of positron hits between the forward and back detectors in the experimental setup - namely, the polarisation of the muon along a certain axis, as it evolves in time. However, in some cases (like ALC experiments) what we actually care about is the *integral* of this asymmetry throughout a certain time interval. This could be trivially computed simply by computing the time evolution and then integrating numerically. However MuSpinSim in this case uses a different algorithm to perform the integral analytically, saving some unnecessary steps. The full derivation of the formula is detailed in [this arXiv paper](https://arxiv.org/abs/1704.02785). The essence of it is that, if we have an operator $S$ with matrix elements $s_{ij}$ whose integral value we want to compute:
