@@ -219,15 +219,17 @@ class ExperimentRunner(object):
                 self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
             else:
                 extra_terms = []
-                for i in range(len(self._system.spins)):
-                    extra_terms.append(
-                        SingleTerm(
-                            self._system,
-                            i,
-                            self._B * self._system.gammas[i],
-                            label="Zeeman",
+                # Add zeeman terms only if there is a field present
+                if not np.array_equal(self._B, [0, 0, 0]):
+                    for i in range(len(self._system.spins)):
+                        extra_terms.append(
+                            SingleTerm(
+                                self._system,
+                                i,
+                                self._B * self._system.gammas[i],
+                                label="Zeeman",
+                            )
                         )
-                    )
                 self._Hz = CelioHamiltonian(
                     extra_terms, self.config.celio, self._system
                 )

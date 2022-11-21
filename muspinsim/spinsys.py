@@ -644,7 +644,7 @@ class SpinSystem(Clonable):
         """
 
         def _get_term(i):
-            # Default to identity of the approriate size if not specified
+            # Default to identity of the appropriate size if not specified
             # (and not requesting that we include only the explicitly
             # specified terms)
             ops = terms.get(i, None if include_only_given else "0")

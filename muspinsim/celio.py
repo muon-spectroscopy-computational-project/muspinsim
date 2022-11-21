@@ -30,7 +30,7 @@ class CelioHContrib:
                                      remaining spins that are not included in this
                                      hamiltonian contribution
             permutation_order {[int]} -- Defines the order of permutations that will be
-                                         needed when constructing the contributioin to
+                                         needed when constructing the contribution to
                                          the trotter hamiltonian after the matrix
                                          exponential
             permutation_dimensions {[int]} -- Defines the size of the matrices involved
@@ -73,7 +73,7 @@ class CelioHamiltonian:
 
         Returns:
             H_contribs {[CelioHContrib]} -- List of matrices representing contributions
-                                            to the total system hamiltonians refered to
+                                            to the total system hamiltonians referred to
                                             in Celio's method as H_i
         """
 
@@ -174,7 +174,7 @@ class CelioHamiltonian:
                     sparse.identity(H_contrib.other_dimension, format="csr"),
                 )
 
-            # For particle interactions that are not neighbours we must use a swap gate
+            # For particle interactions that are not neighbors we must use a swap gate
             qtip_obj = Qobj(
                 inpt=evol_op_contrib,
                 dims=[H_contrib.permute_dimensions, H_contrib.permute_dimensions],
@@ -334,8 +334,10 @@ class CelioHamiltonian:
         # Avoid using append as assignment should be faster
         results = np.zeros(times.shape[0], dtype=np.complex128)
 
-        averages = 4
+        averages = 12
         avg_factor = 1.0 / averages
+
+        print(self._terms)
 
         def compute_psi(mu_psi, half_dim):
             psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
