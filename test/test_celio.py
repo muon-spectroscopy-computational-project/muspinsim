@@ -4,7 +4,7 @@ from qutip import sigmaz
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.spinop import DensityOperator
-from muspinsim.spinsys import SingleTerm, SpinSystem
+from muspinsim.spinsys import MuonSpinSystem, SingleTerm, SpinSystem
 
 
 class TestCelioHamilto(unittest.TestCase):
@@ -110,7 +110,7 @@ class TestCelioHamilto(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
 
     def test_fast_evolve(self):
-        ssys = SpinSystem(["e"], celio_k=10)
+        ssys = MuonSpinSystem(["mu", "e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
         t = np.linspace(0, 1, 100)

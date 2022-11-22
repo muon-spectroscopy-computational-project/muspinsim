@@ -352,8 +352,8 @@ class CelioHamiltonian:
             # Normalise
             psi = psi * (1.0 / np.sqrt(half_dim))
 
-            # Likely dense, faster to use numpy
-            return np.matrix(psi).T
+            # Likely dense, faster to use numpy array
+            return psi.T
 
         start_t = time.time()
         for _ in range(averages):
@@ -362,8 +362,8 @@ class CelioHamiltonian:
 
             # Compute expectation values one at a time
             for i in range(times.shape[0]):
-                # When passing multiple operators we want to return results for each
-                results[i] += (psi.conj().T * (operator * psi))[0, 0]
+                # Use @ symbol to avoid confusion when using numpy arrays
+                results[i] += psi.conj().T @ (operator @ psi)
 
                 # Evolution step
                 for _ in range(self._k):
