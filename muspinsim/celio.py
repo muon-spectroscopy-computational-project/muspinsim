@@ -9,7 +9,6 @@ See Phys. Rev. Lett. 56 2720 (1986)
 from dataclasses import dataclass
 import itertools
 import logging
-import time
 from typing import List
 import numpy as np
 from scipy import sparse
@@ -355,10 +354,8 @@ class CelioHamiltonian:
             # Likely dense, faster to use numpy array
             return psi.T
 
-        start_t = time.time()
         for _ in range(averages):
             psi = compute_psi(mu_psi, half_dim)
-            print("Psi shape", psi.shape)
 
             # Compute expectation values one at a time
             for i in range(times.shape[0]):
@@ -369,7 +366,6 @@ class CelioHamiltonian:
                 for _ in range(self._k):
                     for evol_op_contrib in evol_op_contribs:
                         psi = evol_op_contrib * psi
-        print("Time", time.time() - start_t)
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5
