@@ -1,7 +1,8 @@
 import unittest
 import numpy as np
-from muspinsim.celio import CelioHamiltonian
+from qutip import sigmaz
 
+from muspinsim.celio import CelioHamiltonian
 from muspinsim.spinop import DensityOperator
 from muspinsim.spinsys import SingleTerm, SpinSystem
 
@@ -107,6 +108,21 @@ class TestCelioHamilto(unittest.TestCase):
         evol = H.evolve(rho0, t, ssys.operator({0: "z"}))
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
+
+    def test_fast_evolve(self):
+        ssys = SpinSystem(["e"], celio_k=10)
+        ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
+        H = ssys.hamiltonian
+        t = np.linspace(0, 1, 100)
+
+        self.assertTrue(isinstance(H, CelioHamiltonian))
+
+        # Start along z
+        evol = H.fast_evolve(sigmaz(), t, 10)
+
+        # This test is subject to randomness, but np.isclose appears to avoid
+        # any issues
+        self.assertTrue(np.all(np.isclose(evol[:], 0.5 * np.cos(2 * np.pi * t))))
 
     def test_integrate(self):
         ssys = SpinSystem(["e"], celio_k=10)

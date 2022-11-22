@@ -219,6 +219,52 @@ celio
 
         self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
 
+        # Simple system using faster method - should fail as muon is not first
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+celio
+    10 8
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        self.assertEqual(ertest.config.celio_k, 10)
+        self.assertEqual(ertest.config.celio_averages, 8)
+
+        # Check raises error when muon is not first
+        with self.assertRaises(ValueError):
+            results = ertest.run()
+
+        # Simple system using faster method
+        stest = StringIO(
+            """
+spins
+    mu e
+time
+    range(0, 10)
+zeeman 1
+    0 0 1.0/muon_gyr
+celio
+    10 8
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        # This test is subject to randomness, but np.isclose appears to avoid
+        # any issues
+        self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
+
     def test_dissipation(self):
 
         # Simple system

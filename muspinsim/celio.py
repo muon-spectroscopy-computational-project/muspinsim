@@ -299,6 +299,9 @@ class CelioHamiltonian:
         Raises:
             TypeError -- Invalid operators
             ValueError -- Invalid values of times
+            ValueError -- Invalid value of averages
+            ValueError -- If there are no interaction terms for the evolution
+            ValueError -- If the muon is not first in the system
             RuntimeError -- Hamiltonian is not hermitian
         """
 
@@ -312,6 +315,16 @@ class CelioHamiltonian:
 
         if len(self._terms) == 0:
             raise ValueError("No interaction terms to evolve")
+
+        # Due to computation of of psi we assume the muon is first in
+        # the system so ensure this is the case here, otherwise
+        # we need to change the order of kronecker products when computing
+        # it and this would be slower anyway
+        if self._spinsys.muon_index != 0:
+            raise ValueError(
+                "Muon must be the first spin in the system in order to use"
+                "the fast Celio method"
+            )
 
         time_step = times[1] - times[0]
 
