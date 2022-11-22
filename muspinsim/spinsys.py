@@ -41,100 +41,10 @@ class InteractionTerm(Clonable):
         else:
             index_tuples = [[]]
 
-        # Detect double terms with same index - e.g. quadrupole terms
-        if len(self._indices) == 2 and self._indices[0] == self._indices[1]:
-            tensor = self._tensor
-
-            I = self._spinsys.I(self._indices[0])
-            Q = self._spinsys.Q(self._indices[0])
-            # Q = -0.052 * 10e-28
-            # Q = -52
-
-            # tensor = Q * cnst.e / (cnst.hbar * 6 * I * (2 * I - 1)) * tensor
-            # tensor = EFG_2_MHZ * Q / (6 * I * (2 * I - 1)) * tensor
-
-            # tensor = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * tensor
-
-            # Before meddling we were using
-            # tensor *= (
-            #     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
-            #     * cnst.e
-            #     * 1e-37
-            #     * Q
-            #     / (2 * I * (2 * I - 1) * cnst.h)
-            # )
-
-            # To match UNDI use this
-            tensor *= (
-                cnst.physical_constants["atomic unit of electric field " "gradient"][0]
-                * cnst.e
-                * 1e-36  # 1e-6 * 10e-31, the latter for converting Q to m^2
-                * Q
-                / (2 * I * (2 * I - 1) * cnst.hbar)
-            )
-
-            # I_squared = (
-            #     (
-            #         SpinOperator.from_axes(I, "xyz"[0])
-            #         * SpinOperator.from_axes(I, "xyz"[0])
-            #     )
-            #     + (
-            #         SpinOperator.from_axes(I, "xyz"[1])
-            #         * SpinOperator.from_axes(I, "xyz"[1])
-            #     )
-            #     + (
-            #         SpinOperator.from_axes(I, "xyz"[2])
-            #         * SpinOperator.from_axes(I, "xyz"[2])
-            #     )
-            # )
-
-            # contribs = []
-            # for a in range(3):
-            #     for b in range(3):
-            #         delta = 0 if a != b else I_squared
-            #         contrib = tensor[a][b] * (
-            #             (
-            #                 (3 / 2)
-            #                 * (
-            #                     (
-            #                         SpinOperator.from_axes(I, "xyz"[a])
-            #                         * SpinOperator.from_axes(I, "xyz"[b])
-            #                     )
-            #                     + (
-            #                         SpinOperator.from_axes(I, "xyz"[b])
-            #                         * SpinOperator.from_axes(I, "xyz"[a])
-            #                     )
-            #                 )
-            #             )
-            #             - (delta)
-            #         )
-            #         contribs.append(contrib)
-
-            # hartree = 4.3597447222071e-18
-            # bohr_radius = 5.29177210903e-11
-            # efg_units = hartree / (bohr_radius * bohr_radius)
-
-            # factor = (
-            #     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
-            #     * cnst.e
-            #     * 1e-6
-            #     * Q
-            #     / (6 * I * (2 * I - 1) * cnst.hbar)
-            # )
-
-            # factor = (
-            #     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
-            #     * cnst.e
-            #     * 1e-36  # 1e-6 * 10e-31, the latter for converting Q to m^2
-            #     * Q
-            #     / (6 * I * (2 * I - 1) * cnst.hbar)
-            # )
-
-            # print(factor)
-
-            # total_op = factor * np.sum(contribs)
-
-            for ii in index_tuples:
+        for ii in index_tuples:
+            # Detect double terms with same index - e.g. quadrupole terms
+            if len(self._indices) == 2 and self._indices[0] == self._indices[1]:
+                # Here use matrix multiplication for the terms
                 op = (
                     self._spinsys.operator(
                         {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
@@ -142,38 +52,8 @@ class InteractionTerm(Clonable):
                     )
                     * self._tensor[tuple(ii)]
                 )
-
-                if total_op is None:
-                    total_op = op
-                else:
-                    total_op += op
-        else:
-            for ii in index_tuples:
-                # # Detect double terms with same index - e.g. quadrupole terms
-                # if len(self._indices) == 2 and self._indices[0] == self._indices[1]:
-                #     # op = (
-                #     #     self._spinsys.operator(
-                #     #         {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
-                #     #         include_only_given=self._spinsys.celio,
-                #     #     )
-                #     #     * self._tensor[tuple(ii)]
-                #     # )
-
-                #     # Time to butcher this:
-                #     # tensor = self._tensor
-                #     # I = 3.5
-                #     # Q = -52
-
-                #     # tensor = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * tensor
-
-                #     # op = (
-                #     #     self._spinsys.operator(
-                #     #         {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
-                #     #         include_only_given=self._spinsys.celio,
-                #     #     )
-                #     #     * tensor[tuple(ii)]
-                #     # )
-                # else:
+            else:
+                # Here use kronecker products when there are more than one term
                 op = (
                     self._spinsys.operator(
                         {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)},
@@ -182,10 +62,10 @@ class InteractionTerm(Clonable):
                     * self._tensor[tuple(ii)]
                 )
 
-                if total_op is None:
-                    total_op = op
-                else:
-                    total_op += op
+            if total_op is None:
+                total_op = op
+            else:
+                total_op += op
 
         self._operator = total_op
 
@@ -559,8 +439,7 @@ class SpinSystem(Clonable):
                 "Can not set up quadrupolar coupling for " "spin 1/2 particle"
             )
 
-        # Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
-        Qtens = EFG
+        Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
 
         logging.info("Adding quadrupolar term to spin {0}".format(i + 1))
 

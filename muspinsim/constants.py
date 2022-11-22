@@ -17,8 +17,8 @@ MU_TAU = 2.19703  # Muon decay rate (10^-6 s)
 EFG_2_MHZ = (
     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
     * cnst.e
-    * 1e-37
-    / cnst.h
+    * 1e-36  # 1e-6 * 10e-31, the latter for converting Q to m^2
+    / cnst.hbar
 )
 
 
