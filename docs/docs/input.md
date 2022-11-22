@@ -446,12 +446,21 @@ Add a dissipation term for a given spin, which switches the system to using the 
 *Example:*
 ```plaintext
 celio
-    100
+    10 8
 ```
 
+Use [Celio's Method](./theory_2.md#celios-method) instead of the regular time evolution method. The first number indicates the Trotter number, $k$, used in the expansion. The optional second number allows a number of averages to be specified enabling the use of an approximate form of initial states for a drastic performance boost. This example takes $k = 10$ with $8$ averages.
 
-Use [Celio's Method](./theory_2.md#celios-method) instead of the regular time evolution method. The number indicates the Trotter number, k, used in the expansion. Larger values are in theory more accurate but will become inaccurate again when very large at a point depending on the system. A value of $k = 0$ has no effect as it disables its use. This will provide a speed boost and reduction in memory usage for certain systems, typically those with large spins and relatively few, simple interactions.
+Larger values of $k$ are in theory more accurate but will become inaccurate again when very large at a point depending on the system. A value of $k = 0$ has no effect as it disables its use.
 
-This does not support [dissipation](#dissipation) or [integral](#y_axis) calculations.
+> **NOTE:** Celio's method does not support [dissipation](#dissipation) or [integral](#y_axis) calculations.
 
-> **CAUTION:** Some systems will be very slower using this method due to the matrix density being too high. A warning message is displayed in the logs when this is the case.
+#### Method 1 - Evolving the density matrix
+
+When the number of averages is not specified or is given as 0, only the first part of Celio's method is performed to evolve the initial density matrix. This way it retains the ability to work with an initial temperature and is not subject to randomness in the results. This method will only provide a speed boost for certain systems, typically those with large spins and relatively few, simple interactions.
+
+> **CAUTION:** Some systems will be extremely slow using this method due to the matrix density being too high. A warning message is displayed in the logs when this is the case.
+
+#### Method 2 - Using random initial states
+
+When the number of averages is given as a value greater than 0, random initial states will be generated for the muon and the full version of Celio's method will be run repeatedly to obtain an average. These results will be less accurate and subject to randomness but this method is substantially faster and requires less memory making it very useful for large systems.

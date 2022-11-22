@@ -86,6 +86,8 @@ Where $H_{12}$ is the contribution from the dipolar interaction and $\mathbb{1}_
 
 Due to the extra matrix products this method is most suitable when the evolution operator's matrix is sparse for which it will be faster and will use significantly less memory. This will generally be the case for larger spins with a few simple interactions. MuSpinSim will log a warning in its output if the sparsity doesn't appear suitable for this variant Celio's method.
 
+##### Further speedup
+
 For a further speedup we can also approximate the initial states provided that $T\rightarrow \infty$ and use this instead of $\rho$ in the equations above to provide a large increase in performance. This method is also less susceptible to matrices becoming dense allowing more complex systems to be used but with a lower accuracy. The equations for this also form part of Celio's method by approximating the initial state. An abbreviated form of it is shown below.
 
 Instead of evolving the density matrix, we instead evolve the muon spin operator hereafter labelled as $\sigma_{\mu}$
