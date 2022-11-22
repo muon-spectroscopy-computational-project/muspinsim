@@ -278,7 +278,7 @@ class CelioHamiltonian:
 
         return results
 
-    def fast_evolve(self, sigma_mu, times):
+    def fast_evolve(self, sigma_mu, times, averages):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
@@ -288,6 +288,7 @@ class CelioHamiltonian:
         Arguments:
             sigma_mu {matrix} -- Spin matrix of the muon
             times {ndarray} -- Times to compute the evolution for, in microseconds
+            averages {int} -- Number of averages to compute
 
         Returns:
             [ndarray] -- Expectation values
@@ -303,6 +304,9 @@ class CelioHamiltonian:
         if len(times.shape) != 1:
             raise ValueError("times must be an array of values in microseconds")
 
+        if averages <= 0:
+            raise ValueError("averages must be a positive integer")
+
         time_step = times[1] - times[0]
 
         evals, evecs = np.linalg.eig(sigma_mu + np.eye(2))
@@ -314,38 +318,23 @@ class CelioHamiltonian:
         half_dim = int(evol_op_contribs[0].shape[0] / 2)
         operator = sparse.kron(sigma_mu, sparse.identity(half_dim, format="csr")).T
 
-        # mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
-
-        # if mat_density >= 0.08:
-        #     logging.warning(
-        #         "Matrix density is %s >= 0.08 and so Celio's method is not suitable, "
-        #         "consider disabling it.",
-        #         mat_density,
-        #     )
-        #     # Matrix products with trotter_hamiltonian_dt is very likely to be slower
-        #     # with sparse matrices than dense
-
-        #     # We can still save some memory over Hamiltonian's evolve method at the
-        #     # cost of performance by using dense matrices for trotter_hamiltonian
-        #     # trotter_hamiltonian_dt but the improvement is minimal and as the problem
-        #     # gets bigger the reduction in memory usage decreases and increase in time
-        #     # increases so does not appear worth it
-
         # Avoid using append as assignment should be faster
         results = np.zeros(times.shape[0], dtype=np.complex128)
 
-        averages = 12
         avg_factor = 1.0 / averages
 
-        print(self._terms)
-
         def compute_psi(mu_psi, half_dim):
+            """
+            Computes a random initial muon state
+            """
             psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
             psi = np.kron(mu_psi.T, psi0)
 
             # Normalise
             psi = psi * (1.0 / np.sqrt(half_dim))
-            return np.matrix(psi).T  # Likely dense, faster to use numpy
+
+            # Likely dense, faster to use numpy
+            return np.matrix(psi).T
 
         start_t = time.time()
         for _ in range(averages):

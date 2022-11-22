@@ -208,7 +208,7 @@ class ExperimentRunner(object):
     def Hz(self):
         if self._Hz is None:
             # Compute Zeeman Hamiltonian contribution
-            if not self._config.celio:
+            if not self._config.celio_k:
                 B = self._B
                 g = self._system.gammas
                 Bg = B[None, :] * g[:, None]
@@ -231,7 +231,7 @@ class ExperimentRunner(object):
                             )
                         )
                 self._Hz = CelioHamiltonian(
-                    extra_terms, self.config.celio, self._system
+                    extra_terms, self.config.celio_k, self._system
                 )
 
         return self._Hz
@@ -378,12 +378,13 @@ class ExperimentRunner(object):
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
-            if isinstance(H, CelioHamiltonian):
+            # Use faster more approximate method of Celio's if requested
+            if isinstance(H, CelioHamiltonian) and self.config.celio_averages:
                 muon_axis = self.p
                 mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
                 sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
 
-                data = H.fast_evolve(sigma_mu, cfg_snap.t)
+                data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
             else:
                 data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":

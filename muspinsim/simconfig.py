@@ -103,7 +103,7 @@ class MuSpinConfig(object):
         # Basic parameters
         self._name = self.validate("name", params["name"].value)[0]
         self._spins = self.validate("spins", params["spins"].value[0])
-        self._celio = self.validate("celio", params["celio"].value[0])[0]
+        self._celio = self._validate_celio(params["celio"].value[0])
         self._y_axis = self.validate("y", params["y_axis"].value[0])[0]
 
         # Identify ranges
@@ -207,7 +207,7 @@ class MuSpinConfig(object):
             _log_dictranges(self._file_ranges)
 
         # Now make the spin system
-        self._system = MuonSpinSystem(self._spins, self._celio)
+        self._system = MuonSpinSystem(self._spins, self.celio_k)
         self._dissip_terms = {}
 
         for iid, idata in params["couplings"].items():
@@ -397,8 +397,20 @@ Parameters used:
         return list(self._spins)
 
     @property
-    def celio(self):
-        return self._celio
+    def celio_k(self):
+        """
+        Returns the value of k for Celio's method, a value of 0 indicates
+        Celio's method should not be used
+        """
+        return self._celio[0]
+
+    @property
+    def celio_averages(self):
+        """
+        Returns the number of averages to use in Celio's method, a value
+        of 0 indicates the random states method should not be used
+        """
+        return self._celio[1]
 
     @property
     def system(self):
@@ -485,8 +497,10 @@ Parameters used:
 
     def _validate_celio(self, v):
         trotter_k = 0
+        averages = 0
+        # When no average is given assume only value is that of the value of k
         try:
-            trotter_k = int(v)
+            trotter_k = int(v[0])
             if trotter_k < 0:
                 raise MuSpinConfigError(
                     "Value of k for Celio's method must a postive " "integer or 0"
@@ -495,7 +509,20 @@ Parameters used:
             raise MuSpinConfigError(
                 "Value of k for Celio's method must be an " "integer"
             ) from ValueError
-        return trotter_k
+        # When there are 2 values, assign the value of averages as well
+        if len(v) == 2:
+            try:
+                averages = int(v[1])
+                if averages < 0:
+                    raise MuSpinConfigError(
+                        "Value of averages for Celio's method must a postive "
+                        "integer or 0"
+                    )
+            except ValueError:
+                raise MuSpinConfigError(
+                    "Value of averages for Celio's method must be an " "integer"
+                ) from ValueError
+        return (trotter_k, averages)
 
     def _validate_t(self, v):
         if len(v) != 1:

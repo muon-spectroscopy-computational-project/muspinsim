@@ -48,7 +48,7 @@ class InteractionTerm(Clonable):
                 op = (
                     self._spinsys.operator(
                         {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
-                        include_only_given=self._spinsys.celio,
+                        include_only_given=self._spinsys.celio_k,
                     )
                     * self._tensor[tuple(ii)]
                 )
@@ -57,7 +57,7 @@ class InteractionTerm(Clonable):
                 op = (
                     self._spinsys.operator(
                         {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)},
-                        include_only_given=self._spinsys.celio,
+                        include_only_given=self._spinsys.celio_k,
                     )
                     * self._tensor[tuple(ii)]
                 )
@@ -165,7 +165,7 @@ class DissipationTerm(Clonable):
 
 
 class SpinSystem(Clonable):
-    def __init__(self, spins=[], celio=0):
+    def __init__(self, spins=[], celio_k=0):
         """Create a SpinSystem object
 
         Create an object representing a system of particles with spins (muons,
@@ -176,7 +176,7 @@ class SpinSystem(Clonable):
                             Each element can be 'e' (electron), 'mu' (muon) a
                             chemical symbol, or a (str, int) tuple with a
                             chemical symbol and an isotope (default: {[]})
-            celio {int} -- Factor for the Trotter approximation if Celio's
+            celio_k {int} -- Factor for the Trotter approximation if Celio's
                            method is to be used. When this is 0, Celio's method
                            is not used.
         """
@@ -211,7 +211,7 @@ class SpinSystem(Clonable):
         self._terms = []
         self._dissip_terms = []
 
-        self._celio = celio
+        self._celio_k = celio_k
 
         snames = [
             "{1}{0}".format(*s) if (type(s) == tuple) else str(s) for s in self._spins
@@ -224,8 +224,8 @@ class SpinSystem(Clonable):
         return list(self._spins)
 
     @property
-    def celio(self):
-        return self._celio
+    def celio_k(self):
+        return self._celio_k
 
     @property
     def gammas(self):
@@ -619,7 +619,7 @@ class SpinSystem(Clonable):
     @property
     def hamiltonian(self):
         H = None
-        if not self._celio:
+        if not self._celio_k:
             if len(self._terms) == 0:
                 n = np.prod(self.dimension)
                 H = sparse.csr_matrix((n, n))
@@ -627,7 +627,7 @@ class SpinSystem(Clonable):
                 H = np.sum([t.matrix for t in self._terms], axis=0)
             H = Hamiltonian(H, dim=self.dimension)
         else:
-            H = CelioHamiltonian(self._terms, self._celio, self)
+            H = CelioHamiltonian(self._terms, self._celio_k, self)
 
         return H
 
@@ -645,9 +645,9 @@ class SpinSystem(Clonable):
 
 
 class MuonSpinSystem(SpinSystem):
-    def __init__(self, spins=["mu", "e"], celio=0):
+    def __init__(self, spins=["mu", "e"], celio_k=0):
 
-        super(MuonSpinSystem, self).__init__(spins, celio)
+        super(MuonSpinSystem, self).__init__(spins, celio_k)
 
         # Identify the muon index
         if self._spins.count("mu") != 1:
