@@ -241,8 +241,8 @@ class CelioHamiltonian:
 
         if mat_density >= 0.08:
             logging.warning(
-                "Matrix density is %s >= 0.08 and so Celio's method is not suitable, "
-                "consider disabling it.",
+                "Matrix density is %s >= 0.08. Using Celio's method"
+                "without random initial states will be slow.",
                 mat_density,
             )
             # Matrix products with trotter_hamiltonian_dt is very likely to be slower
