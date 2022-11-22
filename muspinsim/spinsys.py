@@ -44,65 +44,109 @@ class InteractionTerm(Clonable):
         # Detect double terms with same index - e.g. quadrupole terms
         if len(self._indices) == 2 and self._indices[0] == self._indices[1]:
             tensor = self._tensor
-            I = 3.5
-            Q = -0.052 * 10e-28
+
+            I = self._spinsys.I(self._indices[0])
+            Q = self._spinsys.Q(self._indices[0])
+            # Q = -0.052 * 10e-28
             # Q = -52
 
             # tensor = Q * cnst.e / (cnst.hbar * 6 * I * (2 * I - 1)) * tensor
             # tensor = EFG_2_MHZ * Q / (6 * I * (2 * I - 1)) * tensor
 
-            I_squared = (
-                (
-                    SpinOperator.from_axes(I, "xyz"[0])
-                    * SpinOperator.from_axes(I, "xyz"[0])
-                )
-                + (
-                    SpinOperator.from_axes(I, "xyz"[1])
-                    * SpinOperator.from_axes(I, "xyz"[1])
-                )
-                + (
-                    SpinOperator.from_axes(I, "xyz"[2])
-                    * SpinOperator.from_axes(I, "xyz"[2])
-                )
+            # tensor = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * tensor
+
+            # Before meddling we were using
+            # tensor *= (
+            #     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
+            #     * cnst.e
+            #     * 1e-37
+            #     * Q
+            #     / (2 * I * (2 * I - 1) * cnst.h)
+            # )
+
+            # To match UNDI use this
+            tensor *= (
+                cnst.physical_constants["atomic unit of electric field " "gradient"][0]
+                * cnst.e
+                * 1e-36  # 1e-6 * 10e-31, the latter for converting Q to m^2
+                * Q
+                / (2 * I * (2 * I - 1) * cnst.hbar)
             )
 
-            contribs = []
-            for a in range(3):
-                for b in range(3):
-                    delta = 0 if a != b else I_squared
-                    contrib = tensor[a][b] * (
-                        (
-                            (3 / 2)
-                            * (
-                                (
-                                    SpinOperator.from_axes(I, "xyz"[a])
-                                    * SpinOperator.from_axes(I, "xyz"[b])
-                                )
-                                + (
-                                    SpinOperator.from_axes(I, "xyz"[b])
-                                    * SpinOperator.from_axes(I, "xyz"[a])
-                                )
-                            )
-                        )
-                        - (delta)
-                    )
-                    contribs.append(contrib)
+            # I_squared = (
+            #     (
+            #         SpinOperator.from_axes(I, "xyz"[0])
+            #         * SpinOperator.from_axes(I, "xyz"[0])
+            #     )
+            #     + (
+            #         SpinOperator.from_axes(I, "xyz"[1])
+            #         * SpinOperator.from_axes(I, "xyz"[1])
+            #     )
+            #     + (
+            #         SpinOperator.from_axes(I, "xyz"[2])
+            #         * SpinOperator.from_axes(I, "xyz"[2])
+            #     )
+            # )
+
+            # contribs = []
+            # for a in range(3):
+            #     for b in range(3):
+            #         delta = 0 if a != b else I_squared
+            #         contrib = tensor[a][b] * (
+            #             (
+            #                 (3 / 2)
+            #                 * (
+            #                     (
+            #                         SpinOperator.from_axes(I, "xyz"[a])
+            #                         * SpinOperator.from_axes(I, "xyz"[b])
+            #                     )
+            #                     + (
+            #                         SpinOperator.from_axes(I, "xyz"[b])
+            #                         * SpinOperator.from_axes(I, "xyz"[a])
+            #                     )
+            #                 )
+            #             )
+            #             - (delta)
+            #         )
+            #         contribs.append(contrib)
 
             # hartree = 4.3597447222071e-18
             # bohr_radius = 5.29177210903e-11
             # efg_units = hartree / (bohr_radius * bohr_radius)
 
-            factor = (
-                cnst.physical_constants["atomic unit of electric field " "gradient"][0]
-                * cnst.e
-                * 1e-6
-                * Q
-                / (6 * I * (2 * I - 1) * cnst.hbar)
-            )
+            # factor = (
+            #     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
+            #     * cnst.e
+            #     * 1e-6
+            #     * Q
+            #     / (6 * I * (2 * I - 1) * cnst.hbar)
+            # )
 
-            print(factor)
+            # factor = (
+            #     cnst.physical_constants["atomic unit of electric field " "gradient"][0]
+            #     * cnst.e
+            #     * 1e-36  # 1e-6 * 10e-31, the latter for converting Q to m^2
+            #     * Q
+            #     / (6 * I * (2 * I - 1) * cnst.hbar)
+            # )
 
-            total_op = factor * np.sum(contribs)
+            # print(factor)
+
+            # total_op = factor * np.sum(contribs)
+
+            for ii in index_tuples:
+                op = (
+                    self._spinsys.operator(
+                        {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
+                        include_only_given=self._spinsys.celio,
+                    )
+                    * self._tensor[tuple(ii)]
+                )
+
+                if total_op is None:
+                    total_op = op
+                else:
+                    total_op += op
         else:
             for ii in index_tuples:
                 # # Detect double terms with same index - e.g. quadrupole terms
