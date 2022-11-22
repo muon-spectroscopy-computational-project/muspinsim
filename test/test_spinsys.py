@@ -111,9 +111,6 @@ class TestSpinSystem(unittest.TestCase):
 
         ssys = SpinSystem(["mu", "e"])
 
-        print(ssys.operator({0: "x"}, True).matrix.toarray())
-        print(SpinOperator.from_axes([0.5, 0.5], "x0").matrix.toarray())
-
         self.assertTrue(
             np.allclose(
                 sparse.kron(
@@ -200,7 +197,7 @@ class TestSpinSystem(unittest.TestCase):
 
     def test_addterms_celio(self):
 
-        ssys = SpinSystem(["mu", "e"], celio=10)
+        ssys = SpinSystem(["mu", "e"], celio_k=10)
 
         t1 = ssys.add_linear_term(0, [1, 0, 1])
 
@@ -229,37 +226,38 @@ class TestSpinSystem(unittest.TestCase):
             )
         )
 
-        evol_op = ssys.hamiltonian._calc_trotter_evol_op(1)
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1)
+        self.assertEqual(len(evol_op_contribs), 2)
 
         self.assertTrue(
             np.all(
                 np.isclose(
-                    evol_op.toarray(),
+                    np.product(evol_op_contribs).toarray(),
                     np.array(
                         [
                             [
-                                0.57470166 + 0.35450902j,
-                                0.66911902 - 0.01630097j,
-                                0.22622372 - 0.16020638j,
-                                0.10688036 - 0.08825368j,
+                                0.84425599 - 0.44143085j,
+                                -0.09276182 - 0.01469203j,
+                                0.04521741 - 0.28549151j,
+                                0.0 + 0.0j,
                             ],
                             [
-                                0.66911902 - 0.16020638j,
-                                -0.33601494 + 0.53101637j,
-                                -0.32064108 + 0.05565173j,
-                                0.012463 + 0.16020638j,
+                                0.0 + 0.0j,
+                                0.89336999 - 0.15115734j,
+                                -0.049114 - 0.29027351j,
+                                -0.0475444 - 0.30018354j,
                             ],
                             [
-                                0.22622372 - 0.01630097j,
-                                -0.32064108 - 0.23215908j,
-                                0.54977566 + 0.53101637j,
-                                0.4553583 + 0.01630097j,
+                                -0.0475444 - 0.30018354j,
+                                0.13640963 - 0.26088945j,
+                                0.80293516 + 0.41982569j,
+                                0.0 + 0.0j,
                             ],
                             [
-                                0.10688036 - 0.08825368j,
-                                0.012463 + 0.01630097j,
-                                0.4553583 + 0.16020638j,
-                                -0.78846238 + 0.35450902j,
+                                0.0 + 0.0j,
+                                0.04521741 - 0.28549151j,
+                                -0.09276182 - 0.01469203j,
+                                0.93934479 + 0.15893624j,
                             ],
                         ]
                     ),
@@ -270,9 +268,9 @@ class TestSpinSystem(unittest.TestCase):
         # Now test clearing them
         ssys.clear_terms()
 
-        evol_op = ssys.hamiltonian._calc_trotter_evol_op(1)
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1)
 
-        self.assertTrue(np.isclose(evol_op, 1))
+        self.assertEqual(len(evol_op_contribs), 0)
 
     def test_lindbladian(self):
 

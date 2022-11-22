@@ -8,7 +8,7 @@ from muspinsim.spinsys import SingleTerm, SpinSystem
 
 class TestCelioHamilto(unittest.TestCase):
     def test_sum(self):
-        ssys = SpinSystem(["mu", "e"], celio=10)
+        ssys = SpinSystem(["mu", "e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         extra_terms = [SingleTerm(ssys, 1, [0, 1, 0])]
 
@@ -18,7 +18,7 @@ class TestCelioHamilto(unittest.TestCase):
         self.assertEqual(H_sum._terms[1], extra_terms[0])
 
     def test_calc_H_contribs(self):
-        ssys = SpinSystem(["mu", "F", ("e", 2)], celio=10)
+        ssys = SpinSystem(["mu", "F", ("e", 2)], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])
         ssys.add_bilinear_term(0, 1, [[0, 0, 1], [0, 0, 1], [0, 0, 1]])
         ssys.add_bilinear_term(0, 2, [[0, 0, -1], [0, 0, -1], [0, 0, -1]])
@@ -75,21 +75,28 @@ class TestCelioHamilto(unittest.TestCase):
         )
 
     def test_calc_trotter_evol_op(self):
-        ssys = SpinSystem(["mu", "e"], celio=10)
+        ssys = SpinSystem(["mu", "e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])
         H = ssys.hamiltonian
 
-        evol_op = H._calc_trotter_evol_op(1)
+        evol_op_contribs = H._calc_trotter_evol_op_contribs(1)
+
+        self.assertEqual(len(evol_op_contribs), 1)
 
         self.assertTrue(
             np.allclose(
-                evol_op.toarray(),
-                [[-1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, -1]],
+                evol_op_contribs[0].toarray(),
+                [
+                    [0.95105652, 0, -0.30901699j, 0],
+                    [0, 0.95105652, 0, -0.30901699j],
+                    [-0.30901699j, 0, 0.95105652, 0],
+                    [0, -0.30901699j, 0, 0.95105652],
+                ],
             )
         )
 
     def test_evolve(self):
-        ssys = SpinSystem(["e"], celio=10)
+        ssys = SpinSystem(["e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
         rho0 = DensityOperator.from_vectors()  # Start along z
@@ -102,7 +109,7 @@ class TestCelioHamilto(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
 
     def test_integrate(self):
-        ssys = SpinSystem(["e"], celio=10)
+        ssys = SpinSystem(["e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
         rho0 = DensityOperator.from_vectors()  # Start along z

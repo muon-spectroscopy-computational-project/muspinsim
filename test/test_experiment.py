@@ -195,9 +195,8 @@ celio
         itest = MuSpinInput(stest)
         ertest = ExperimentRunner(itest)
 
-        results = ertest.run()
-
-        self.assertTrue(np.all(results == 0.5))
+        with self.assertRaises(ValueError):
+            results = ertest.run()
 
         # Simple system
         stest = StringIO(

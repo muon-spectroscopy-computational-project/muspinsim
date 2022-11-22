@@ -227,12 +227,15 @@ class CelioHamiltonian:
             raise ValueError(
                 "operators must be a SpinOperator or a list of SpinOperator objects"
             )
+        if len(self._terms) == 0:
+            raise ValueError("No interaction terms to evolve")
 
         time_step = times[1] - times[0]
         rho0 = rho0.matrix
 
         # Time evolution step that will modify the trotter_hamiltonian below
         evol_op = np.product(self._calc_trotter_evol_op_contribs(time_step)) ** self._k
+
         total_evol_op = sparse.identity(evol_op.shape[0], format="csr")
 
         mat_density = evol_op.getnnz() / np.prod(evol_op.shape)
@@ -307,6 +310,9 @@ class CelioHamiltonian:
         if averages <= 0:
             raise ValueError("averages must be a positive integer")
 
+        if len(self._terms) == 0:
+            raise ValueError("No interaction terms to evolve")
+
         time_step = times[1] - times[0]
 
         evals, evecs = np.linalg.eig(sigma_mu + np.eye(2))
@@ -352,7 +358,8 @@ class CelioHamiltonian:
                         psi = evol_op_contrib * psi
         print("Time", time.time() - start_t)
 
-        # Divide by 2 as by convention rest of muspinsim gives results between 0.5 and -0.5
+        # Divide by 2 as by convention rest of muspinsim gives results between
+        # 0.5 and -0.5
         return results * avg_factor * 0.5
 
     def integrate_decaying(self, rho0, tau, operators=[]):
