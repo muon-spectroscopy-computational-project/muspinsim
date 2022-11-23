@@ -103,14 +103,14 @@ class CelioHamiltonian:
                     H_contrib = np.sum([term.matrix for term in grouped_spin_ints])
 
                     # Find indices of spins not involved in the current interactions
-                    other_spins_copy = other_spins.copy()
+                    uninvolved_spins = other_spins.copy()
                     for term in grouped_spin_ints:
                         for j in term.indices:
-                            if j in other_spins_copy:
-                                other_spins_copy.remove(j)
+                            if j in uninvolved_spins:
+                                uninvolved_spins.remove(j)
 
                     other_dimension = np.product(
-                        [self._spinsys.dimension[j] for j in other_spins_copy]
+                        [self._spinsys.dimension[j] for j in uninvolved_spins]
                     )
 
                     # Detect Quadrupolar terms which will have the same index twice
@@ -121,13 +121,11 @@ class CelioHamiltonian:
 
                     # Order in which kronecker products will be performed in Celio's
                     # method
-                    spin_order = list(indices) + other_spins_copy
+                    spin_order = indices + uninvolved_spins
 
                     # Order we need to permute in order to obtain the same order as was
                     # given in the input
-                    permute_order = np.zeros(len(spin_order), dtype=np.int32)
-                    for i, value in enumerate(spin_order):
-                        permute_order[value] = i
+                    permute_order = np.argsort(spin_order)
 
                     permute_dimensions = [
                         self._spinsys.dimension[i] for i in spin_order

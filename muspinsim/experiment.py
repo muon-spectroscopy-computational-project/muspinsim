@@ -219,7 +219,8 @@ class ExperimentRunner(object):
                 self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
             else:
                 extra_terms = []
-                # Add zeeman terms only if there is a field present
+                # Add zeeman terms only if there is a field present to avoid
+                # making Celio's method unnecessarily expensive
                 if not np.array_equal(self._B, [0, 0, 0]):
                     for i in range(len(self._system.spins)):
                         extra_terms.append(

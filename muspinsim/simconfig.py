@@ -503,11 +503,11 @@ Parameters used:
             trotter_k = int(v[0])
             if trotter_k < 0:
                 raise MuSpinConfigError(
-                    "Value of k for Celio's method must a postive " "integer or 0"
+                    "Value of k for Celio's method must a postive integer or 0"
                 )
         except ValueError:
             raise MuSpinConfigError(
-                "Value of k for Celio's method must be an " "integer"
+                "Value of k for Celio's method must be an integer"
             ) from ValueError
         # When there are 2 values, assign the value of averages as well
         if len(v) == 2:
@@ -520,7 +520,7 @@ Parameters used:
                     )
             except ValueError:
                 raise MuSpinConfigError(
-                    "Value of averages for Celio's method must be an " "integer"
+                    "Value of averages for Celio's method must be an integer"
                 ) from ValueError
         return (trotter_k, averages)
 
