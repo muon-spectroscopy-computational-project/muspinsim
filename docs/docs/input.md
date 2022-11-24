@@ -449,7 +449,7 @@ celio
     10 8
 ```
 
-Use [Celio's Method](./theory_2.md#celios-method) instead of the regular time evolution method. The first number indicates the Trotter number, $k$, used in the expansion. The optional second number allows a number of averages to be specified enabling the use of an approximate form of initial states for a drastic performance boost. This example takes $k = 10$ with $8$ averages.
+Use [Celio's Method](./theory_2.md#celios-method) instead of the regular time evolution method. The first number indicates the Trotter number, $k$, used in the expansion. The optional second number allows a number of averages to be specified enabling of approximate initial states for a drastic performance boost. This example takes $k = 10$ with $8$ averages.
 
 Larger values of $k$ are in theory more accurate but will become inaccurate again when very large at a point depending on the system. A value of $k = 0$ has no effect as it disables its use.
 
@@ -459,7 +459,7 @@ Larger values of $k$ are in theory more accurate but will become inaccurate agai
 
 When the number of averages is not specified or is given as 0, only the first part of Celio's method is performed to evolve the initial density matrix. This way it retains the ability to work with an initial temperature and is not subject to randomness in the results. This method will only provide a speed boost for certain systems, typically those with large spins and relatively few, simple interactions.
 
-> **CAUTION:** Some systems will be extremely slow using this method due to the matrix density being too high. A warning message is displayed in the logs when this is the case.
+> **CAUTION:** Some systems will be extremely slow using this method due to the matrix density being too high. A warning message is displayed in the '.log' file when this is the case.
 
 #### Method 2 - Using random initial states
 
