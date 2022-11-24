@@ -239,7 +239,7 @@ class CelioHamiltonian:
 
         if mat_density >= 0.08:
             logging.warning(
-                "Matrix density is %s >= 0.08. Using Celio's method"
+                "Matrix density is %s >= 0.08. Using Celio's method "
                 "without random initial states will be slow.",
                 mat_density,
             )
@@ -319,7 +319,7 @@ class CelioHamiltonian:
         # it and this would be slower anyway
         if self._spinsys.muon_index != 0:
             raise ValueError(
-                "Muon must be the first spin in the system in order to use"
+                "Muon must be the first spin in the system in order to use "
                 "the fast Celio method"
             )
 

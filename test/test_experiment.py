@@ -265,6 +265,28 @@ celio
         # any issues
         self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
 
+        # Simple system using faster method with a temperature - should fail
+        # as need T -> inf
+        stest = StringIO(
+            """
+spins
+    mu e
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+celio
+    10 8
+temperature
+    1.0
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        with self.assertRaises(ValueError):
+            results = ertest.run()
+
     def test_dissipation(self):
 
         # Simple system

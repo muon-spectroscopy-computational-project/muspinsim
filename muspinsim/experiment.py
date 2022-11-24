@@ -381,6 +381,14 @@ class ExperimentRunner(object):
         if cfg_snap.y == "asymmetry":
             # Use faster more approximate method of Celio's if requested
             if isinstance(H, CelioHamiltonian) and self.config.celio_averages:
+                # Ensure the system is valid for its use
+                if self.T != np.inf:
+                    raise ValueError(
+                        "The fast version of Celio's method requires T -> inf. "
+                        "Either remove the number of averages or don't use "
+                        "celio."
+                    )
+
                 muon_axis = self.p
                 mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
                 sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
