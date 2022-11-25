@@ -9,7 +9,7 @@ class TestConstants(unittest.TestCase):
         self.assertAlmostEqual(constants.ELEC_GAMMA, -28024.9514242)
         self.assertAlmostEqual(constants.MU_GAMMA, 135.53880943285955)
         self.assertAlmostEqual(constants.MU_TAU, 2.19703)
-        self.assertAlmostEqual(constants.EFG_2_MHZ, 14.763272417922328)
+        self.assertAlmostEqual(constants.EFG_2_MHZ, 0.23496477815245767)
 
     def test_gyromagnetic(self):
 
