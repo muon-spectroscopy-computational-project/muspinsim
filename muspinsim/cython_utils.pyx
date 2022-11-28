@@ -50,7 +50,7 @@ def fast_time_evolve(np.ndarray[np.float64_t, ndim=1] times, int other_dimension
 
 @cython.boundscheck(False) # Disable bounds-checking
 @cython.wraparound(False)  # Disable negative index wrapping
-def fast_time_evolve_parallel(double [:] times, double other_dimension, double [:, ::1] A, double [:, ::1] W):
+def fast_time_evolve_parallel(double [:] times, double other_dimension, double [:, :] A, double [:, :] W):
     """Computes the result of time evolution of a muon polarisation
 
     Fast method for computing the result of time evolution of a
@@ -79,9 +79,10 @@ def fast_time_evolve_parallel(double [:] times, double other_dimension, double [
     cdef Py_ssize_t num_times = times.shape[0]
     cdef Py_ssize_t mat_dim = A.shape[0]
 
-    # Avoid using append as assignment should be faster
+    # Use a memory view to the results array to make access faster
     cdef np.ndarray[np.float64_t, ndim=1] result = np.zeros((num_times), dtype=np.float64)
-    cdef double [::1] result_view = result
+    cdef double [:] result_view = result
+    
     cdef Py_ssize_t i, j, k
 
     # Run times in parallel

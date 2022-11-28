@@ -208,7 +208,10 @@ class Hamiltonian(Operator, Hermitian):
         evals, evecs = self.diag()
         print("Eigenvalue time: ", time.time() - t_start)
 
-        # Expand to correct size
+        # Expand to correct size (Assumes the muon is the first element in
+        # the system)
+        # TODO: Can use method from C++ implementation of Celio's here to avoid
+        # the use of kron, reduce memory and speed up
         sigma_mu = sparse.kron(
             sigma_mu.matrix, sparse.identity(other_dimension, format="csr")
         )
@@ -229,7 +232,7 @@ class Hamiltonian(Operator, Hermitian):
 
         # No idea why we need to divide by 2 here - without it values go
         # up to 0.25 instead of 0.5
-        # Only needed when not doing full sum and isntead only doing for \alpha > \beta
+        # Only needed when not doing full sum and instead only doing for \alpha > \beta
         # other_dimension /= 2
 
         t_start = time.time()
