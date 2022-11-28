@@ -41,6 +41,8 @@ class TestHamiltonian(unittest.TestCase):
         rho0 = DensityOperator.from_vectors()  # Start along z
         t = np.linspace(0, 1, 100)
 
+        self.assertTrue(isinstance(H, Hamiltonian))
+
         evol = H.evolve(rho0, t, ssys.operator({0: "z"}))
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
@@ -51,6 +53,9 @@ class TestHamiltonian(unittest.TestCase):
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
         rho0 = DensityOperator.from_vectors()  # Start along z
+
+        self.assertTrue(isinstance(H, Hamiltonian))
+
         avg = H.integrate_decaying(rho0, 1.0, ssys.operator({0: "z"}))
 
         self.assertTrue(np.isclose(avg[0], 0.5 / (1.0 + 4 * np.pi**2)))
