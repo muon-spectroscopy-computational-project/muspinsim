@@ -345,6 +345,15 @@ class KWSpins(MuSpinKeyword):
     default = "mu e"
 
 
+class KWCelio(MuSpinKeyword):
+
+    name = "celio"
+    expr_size_bounds = (1, 2)
+    block_size = 1
+    accept_range = False
+    default = "0 0"
+
+
 class KWPolarization(MuSpinExpandKeyword):
 
     name = "polarization"

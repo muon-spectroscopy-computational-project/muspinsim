@@ -117,6 +117,92 @@ y_axis
         with self.assertRaises(MuSpinConfigError):
             cfg = MuSpinConfig(itest.evaluate())
 
+    def test_celio(self):
+        # No mention of celio
+        stest = StringIO(
+            """
+spins
+    mu e
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 0)
+        self.assertEqual(cfg.celio_averages, 0)
+
+        # Only specifying a k
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    10
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 10)
+        self.assertEqual(cfg.celio_averages, 0)
+
+        # Using default k and averages
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    0 0
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 0)
+        self.assertEqual(cfg.celio_averages, 0)
+
+        # k and averages
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    10 8
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 10)
+        self.assertEqual(cfg.celio_averages, 8)
+
+        # Try a few errors
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    10 -8
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        with self.assertRaises(MuSpinConfigError):
+            cfg = MuSpinConfig(itest.evaluate())
+
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    -1 0
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        with self.assertRaises(MuSpinConfigError):
+            cfg = MuSpinConfig(itest.evaluate())
+
     def test_orient(self):
         # Some special tests to check how orientations are dealt with
 

@@ -141,5 +141,8 @@ examples/*/*
 # Visual Studio Code settings
 .vscode
 
+# Local file generated in testing
+muspinsim.dat
+
 # Cython generated C code
 muspinsim/*.c
