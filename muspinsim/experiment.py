@@ -5,12 +5,14 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
+from qutip import sigmax, sigmay, sigmaz
 
+from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
-from muspinsim.spinsys import MuonSpinSystem
+from muspinsim.spinsys import MuonSpinSystem, SingleTerm
 from muspinsim.input import MuSpinInput
 from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
@@ -70,8 +72,8 @@ class ExperimentRunner(object):
 
         self._config = config
         self._system = config.system
-        # Store single spin operators
 
+        # Store single spin operators
         self._single_spinops = np.array(
             [
                 [self._system.operator({i: a}).matrix for a in "xyz"]
@@ -175,7 +177,6 @@ class ExperimentRunner(object):
                         ],
                         axis=0,
                     )
-
                     evals, evecs = np.linalg.eigh(Hz.toarray())
                     E = evals * 1e6 * self._system.gamma(i)
 
@@ -205,16 +206,34 @@ class ExperimentRunner(object):
 
     @property
     def Hz(self):
-
         if self._Hz is None:
-            B = self._B
-            g = self._system.gammas
-            Bg = B[None, :] * g[:, None]
+            # Compute Zeeman Hamiltonian contribution
+            if not self._config.celio_k:
+                B = self._B
+                g = self._system.gammas
+                Bg = B[None, :] * g[:, None]
 
-            Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
-            Hz = np.sum(Hz_sp_list)
+                Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+                Hz = np.sum(Hz_sp_list)
 
-            self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+                self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+            else:
+                extra_terms = []
+                # Add zeeman terms only if there is a field present to avoid
+                # making Celio's method unnecessarily expensive
+                if not np.array_equal(self._B, [0, 0, 0]):
+                    for i in range(len(self._system.spins)):
+                        extra_terms.append(
+                            SingleTerm(
+                                self._system,
+                                i,
+                                self._B * self._system.gammas[i],
+                                label="Zeeman",
+                            )
+                        )
+                self._Hz = CelioHamiltonian(
+                    extra_terms, self.config.celio_k, self._system
+                )
 
         return self._Hz
 
@@ -360,7 +379,23 @@ class ExperimentRunner(object):
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
-            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+            # Use faster more approximate method of Celio's if requested
+            if isinstance(H, CelioHamiltonian) and self.config.celio_averages:
+                # Ensure the system is valid for its use
+                if self.T != np.inf:
+                    raise ValueError(
+                        "The fast version of Celio's method requires T -> inf. "
+                        "Either remove the number of averages or don't use "
+                        "celio."
+                    )
+
+                muon_axis = self.p
+                mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
+                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
+
+                data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
+            else:
+                data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
             data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 

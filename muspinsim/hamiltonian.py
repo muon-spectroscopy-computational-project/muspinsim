@@ -93,6 +93,10 @@ class Hamiltonian(Operator, Hermitian):
             # Actually compute expectation values one at a time
             for i in range(times.shape[0]):
                 rho = calc_single_rho(i)
+
+                # This element wise multiplication then sum gives the equivalent
+                # as the trace of the matrix product (without the transpose) and
+                # and is faster
                 single_res = np.sum(
                     rho[0, None, :, :] * operatorsT[None, :, :, :], axis=(2, 3)
                 )

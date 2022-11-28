@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+from scipy import sparse
 
 from muspinsim import constants
 from muspinsim.spinop import SpinOperator, SuperOperator
@@ -106,6 +107,37 @@ class TestSpinSystem(unittest.TestCase):
 
         self.assertEqual(ssys.dimension, (2, 2))
 
+    def test_operator_include_only_given(self):
+
+        ssys = SpinSystem(["mu", "e"])
+
+        self.assertTrue(
+            np.allclose(
+                sparse.kron(
+                    ssys.operator({0: "x"}, True).matrix, sparse.identity(2)
+                ).toarray(),
+                SpinOperator.from_axes([0.5, 0.5], "x0").matrix.toarray(),
+            )
+        )
+
+        self.assertTrue(
+            np.allclose(
+                ssys.operator({0: "z", 1: "y"}, True).matrix.toarray(),
+                SpinOperator.from_axes([0.5, 0.5], "zy").matrix.toarray(),
+            )
+        )
+
+        self.assertTrue(
+            np.allclose(
+                ssys.operator({0: ["z", "y"]}, True).matrix.toarray(),
+                (
+                    SpinOperator.from_axes(0.5, "z") * SpinOperator.from_axes(0.5, "y")
+                ).matrix.toarray(),
+            )
+        )
+
+        self.assertEqual(ssys.dimension, (2, 2))
+
     def test_addterms(self):
 
         ssys = SpinSystem(["mu", "e"])
@@ -163,6 +195,83 @@ class TestSpinSystem(unittest.TestCase):
 
         self.assertTrue(np.all(np.isclose(H.matrix.toarray(), np.zeros((4, 4)))))
 
+    def test_addterms_celio(self):
+
+        ssys = SpinSystem(["mu", "e"], celio_k=10)
+
+        t1 = ssys.add_linear_term(0, [1, 0, 1])
+
+        self.assertEqual(t1.label, "Single")
+
+        self.assertTrue(
+            np.allclose(
+                t1.operator.matrix.data,
+                (
+                    ssys.operator({0: "x"}, True) + ssys.operator({0: "z"}, True)
+                ).matrix.data,
+            )
+        )
+
+        t2 = ssys.add_bilinear_term(0, 1, np.eye(3))
+
+        self.assertEqual(t2.label, "Double")
+        self.assertTrue(
+            np.allclose(
+                t2.operator.matrix.data,
+                (
+                    ssys.operator({0: "x", 1: "x"}, True)
+                    + ssys.operator({0: "y", 1: "y"}, True)
+                    + ssys.operator({0: "z", 1: "z"}, True)
+                ).matrix.data,
+            )
+        )
+
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1)
+        self.assertEqual(len(evol_op_contribs), 2)
+
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    np.product(evol_op_contribs).toarray(),
+                    np.array(
+                        [
+                            [
+                                0.84425599 - 0.44143085j,
+                                -0.09276182 - 0.01469203j,
+                                0.04521741 - 0.28549151j,
+                                0.0 + 0.0j,
+                            ],
+                            [
+                                0.0 + 0.0j,
+                                0.89336999 - 0.15115734j,
+                                -0.049114 - 0.29027351j,
+                                -0.0475444 - 0.30018354j,
+                            ],
+                            [
+                                -0.0475444 - 0.30018354j,
+                                0.13640963 - 0.26088945j,
+                                0.80293516 + 0.41982569j,
+                                0.0 + 0.0j,
+                            ],
+                            [
+                                0.0 + 0.0j,
+                                0.04521741 - 0.28549151j,
+                                -0.09276182 - 0.01469203j,
+                                0.93934479 + 0.15893624j,
+                            ],
+                        ]
+                    ),
+                )
+            )
+        )
+
+        # Now test clearing them
+        ssys.clear_terms()
+
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1)
+
+        self.assertEqual(len(evol_op_contribs), 0)
+
     def test_lindbladian(self):
 
         ssys = SpinSystem(["mu"])
@@ -183,6 +292,14 @@ class TestSpinSystem(unittest.TestCase):
 
         L = ssys.lindbladian
         self.assertTrue(np.all(np.isclose(L.matrix.toarray(), L1.matrix.toarray())))
+
+    def test_lindbladian_celio(self):
+
+        ssys = SpinSystem(["mu"], 10)
+        ssys.add_linear_term(0, [0, 0, 1])
+
+        with self.assertRaises(NotImplementedError):
+            L = ssys.lindbladian
 
 
 class TestMuonSpinSystem(unittest.TestCase):

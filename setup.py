@@ -34,7 +34,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Physics",
         "Topic :: Scientific/Engineering :: Information Analysis",
     ],
-    install_requires=["numpy", "scipy", "soprano", "lark"],
+    install_requires=["numpy", "scipy", "soprano", "lark", "qutip"],
     extras_require={
         "docs": ["mkdocs", "pymdown-extensions"],
         "dev": ["flake8", "black>=22.3.0", "pytest", "pre-commit"],
