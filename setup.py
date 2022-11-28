@@ -2,6 +2,7 @@
 #
 import setuptools
 from Cython.Build import cythonize
+import sys
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -9,6 +10,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
 version = {}
 with open("muspinsim/version.py") as fp:
     exec(fp.read(), version)
+
+# Choose appropriate OpenMP compile flag for platform
+openmp_flag = "-fopenmp" if "win" not in sys.platform else "/openmp"
 
 setuptools.setup(
     name="muspinsim",
@@ -52,8 +56,8 @@ setuptools.setup(
             setuptools.Extension(
                 "muspinsim.cython_utils",
                 ["muspinsim/cython_utils.pyx"],
-                extra_compile_args=["-fopenmp"],
-                extra_link_args=["-fopenmp"],
+                extra_compile_args=[openmp_flag],
+                extra_link_args=[openmp_flag],
             )
         ],
         compiler_directives={"language_level": "3str"},
