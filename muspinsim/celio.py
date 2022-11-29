@@ -339,6 +339,10 @@ class CelioHamiltonian:
 
         avg_factor = 1.0 / averages
 
+        from muspinsim.cpp import add
+
+        print(add(1, 2))
+
         def compute_psi(mu_psi, half_dim):
             """
             Computes a random initial muon state
