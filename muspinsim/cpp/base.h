@@ -9,6 +9,7 @@ namespace py = pybind11;
 
 /* Typedef to make using taking numpy arrays a bit clearer*/
 using np_array_complex_t = py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast>;
+using np_array_size_t = py::array_t<size_t, py::array::c_style | py::array::forcecast>;
 
 /* Forward declarations of methods in this header allows for autocomplete
    where methods are needed in different source files to their own */
@@ -30,11 +31,21 @@ void init(py::module_&);
 
 /* Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
    matrix M where 1_{d} an identity matrix of size d */
-double fast_measure(np_array_complex_t V, np_array_complex_t M, size_t d);
+double fast_measure(np_array_complex_t& V, np_array_complex_t& M, size_t d);
 double fast_measure_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d);
 
 /* Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
    Hermitian matrix M where 1_{d} an identity matrix of size d */
-double fast_measure_h(np_array_complex_t V, np_array_complex_t M, size_t d);
+double fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, size_t d);
 double fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d);
+
+/* Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
+   vector, M is a complex square matrix and 1_{d} an identity matrix of
+   size d. The indices allow the ability to modify the order of the
+   kronecker products. */
+/* Modifies a vector, V to have a value equal to its product with a matrix
+   equal to M with some amount of kronecker products with identity
+   matrices */
+void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, size_t d, np_array_size_t& indices);
+void fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d, size_t* indices);
 };  // namespace parallel
