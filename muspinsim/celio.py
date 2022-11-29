@@ -14,6 +14,7 @@ import numpy as np
 from scipy import sparse
 from qutip import Qobj
 
+from muspinsim.cpp import parallel_fast_measure, parallel_fast_measure_h
 from muspinsim.spinop import SpinOperator, DensityOperator
 
 
@@ -339,10 +340,6 @@ class CelioHamiltonian:
 
         avg_factor = 1.0 / averages
 
-        from muspinsim.cpp import add
-
-        print(add(1, 2))
-
         def compute_psi(mu_psi, half_dim):
             """
             Computes a random initial muon state
@@ -363,6 +360,98 @@ class CelioHamiltonian:
             for i in range(times.shape[0]):
                 # Use @ symbol to avoid confusion when using numpy arrays
                 results[i] += psi.conj().T @ (operator @ psi)
+
+                # Evolution step
+                for _ in range(self._k):
+                    for evol_op_contrib in evol_op_contribs:
+                        psi = evol_op_contrib * psi
+
+        # Divide by 2 as by convention rest of muspinsim gives results between
+        # 0.5 and -0.5
+        return results * avg_factor * 0.5
+
+    def fast_evolve_parallel(self, sigma_mu, times, averages):
+        """Time evolution of a state under this Hamiltonian
+
+        Perform an evolution of a state described by a DensityOperator under
+        this Hamiltonian and return a sequence of expectation values for
+        muon polarisation at the requested times
+
+        Arguments:
+            sigma_mu {matrix} -- Spin matrix of the muon
+            times {ndarray} -- Times to compute the evolution for, in microseconds
+            averages {int} -- Number of averages to compute
+
+        Returns:
+            [ndarray] -- Expectation values
+
+        Raises:
+            TypeError -- Invalid operators
+            ValueError -- Invalid values of times
+            ValueError -- Invalid value of averages
+            ValueError -- If there are no interaction terms for the evolution
+            ValueError -- If the muon is not first in the system
+            RuntimeError -- Hamiltonian is not hermitian
+        """
+
+        times = np.array(times)
+
+        if len(times.shape) != 1:
+            raise ValueError("times must be an array of values in microseconds")
+
+        if averages <= 0:
+            raise ValueError("averages must be a positive integer")
+
+        if len(self._terms) == 0:
+            raise ValueError("No interaction terms to evolve")
+
+        # Due to computation of of psi we assume the muon is first in
+        # the system so ensure this is the case here, otherwise
+        # we need to change the order of kronecker products when computing
+        # it and this would be slower anyway
+        if self._spinsys.muon_index != 0:
+            raise ValueError(
+                "Muon must be the first spin in the system in order to use "
+                "the fast Celio method"
+            )
+
+        time_step = times[1] - times[0]
+
+        evals, evecs = np.linalg.eig(sigma_mu + np.eye(2))
+        mu_psi = evecs[:, 1] if evals[1] > 0.1 else evecs[:, 0]
+
+        # Time evolution step that will modify the trotter_hamiltonian below
+        evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step)
+
+        half_dim = int(evol_op_contribs[0].shape[0] / 2)
+        operator = sparse.kron(sigma_mu, sparse.identity(half_dim, format="csr")).T
+
+        # Avoid using append as assignment should be faster
+        results = np.zeros(times.shape[0], dtype=np.complex128)
+
+        avg_factor = 1.0 / averages
+
+        def compute_psi(mu_psi, half_dim):
+            """
+            Computes a random initial muon state
+            """
+            psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
+            psi = np.kron(mu_psi.T, psi0)
+
+            # Normalise
+            psi = psi * (1.0 / np.sqrt(half_dim))
+
+            # Likely dense, faster to use numpy array
+            return psi.T
+
+        for _ in range(averages):
+            psi = compute_psi(mu_psi, half_dim)
+
+            # Compute expectation values one at a time
+            for i in range(times.shape[0]):
+                # Use @ symbol to avoid confusion when using numpy arrays
+                # results[i] += psi.conj().T @ (operator @ psi)
+                results[i] += parallel_fast_measure_h(psi, sigma_mu.toarray(), half_dim)
 
                 # Evolution step
                 for _ in range(self._k):

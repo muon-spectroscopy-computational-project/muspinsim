@@ -393,7 +393,10 @@ class ExperimentRunner(object):
                 mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
                 sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
 
-                data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
+                # data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
+                data = H.fast_evolve_parallel(
+                    sigma_mu, cfg_snap.t, self.config.celio_averages
+                )
             else:
                 data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
