@@ -13,7 +13,7 @@
  *
  * @return The result of the combined product. Will be a single value.
  */
-double parallel::fast_measure(np_array_complex_t& V, np_array_complex_t& M, size_t d) {
+double parallel::fast_measure(np_array_complex_t& V, np_array_complex_t& M, long int d) {
     py::buffer_info V_info = V.request();
     py::buffer_info M_info = M.request();
 
@@ -36,7 +36,7 @@ double parallel::fast_measure(np_array_complex_t& V, np_array_complex_t& M, size
  *
  * @return The result of the combined product. Will be a single value.
  */
-double parallel::fast_measure_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d) {
+double parallel::fast_measure_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d) {
     double result = 0;
 
 // Sum results from separate threads into result
@@ -51,11 +51,12 @@ double parallel::fast_measure_ptr(std::complex<double>* V_ptr, size_t V_dim, std
 
 // Parallelise over d - likely to be a large value
 #pragma omp for
-        for (size_t k = 0; k < d; ++k) {
-            for (size_t i = 0; i < M_dim; ++i) {
+        // OpenMP on Windows needs to use signed int for the index
+        for (int k = 0; k < d; ++k) {
+            for (unsigned int i = 0; i < M_dim; ++i) {
                 mat_col_offset = i * M_dim;
                 term = {0, 0};
-                for (size_t j = 0; j < M_dim; ++j)
+                for (unsigned int j = 0; j < M_dim; ++j)
                     // M[i, j] -> M[i * operator_dim + j] as column major
                     term += M_ptr[mat_col_offset + j] * V_ptr[j * d + k];
                 // Sum current result of full product
@@ -80,7 +81,7 @@ double parallel::fast_measure_ptr(std::complex<double>* V_ptr, size_t V_dim, std
  *
  * @return The result of the combined product. Will be a single value.
  */
-double parallel::fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, size_t d) {
+double parallel::fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, long int d) {
     py::buffer_info V_info = V.request();
     py::buffer_info M_info = M.request();
 
@@ -103,7 +104,7 @@ double parallel::fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, si
  *
  * @return The result of the combined product. Will be a single value.
  */
-double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d) {
+double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d) {
     double result = 0;
 
 // Sum results from separate threads into result
@@ -118,8 +119,9 @@ double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, s
 
 // Parallelise over d - likely to be a large value
 #pragma omp for
-        for (size_t k = 0; k < d; ++k) {
-            for (size_t i = 0; i < M_dim; ++i) {
+        // OpenMP on Windows needs to use signed int for the index
+        for (int k = 0; k < d; ++k) {
+            for (unsigned int i = 0; i < M_dim; ++i) {
                 mat_col_offset = i * M_dim;
                 // Initialise with term on diagonal
                 term = M_ptr[mat_col_offset + i] * V_ptr[i * d + k];
@@ -170,7 +172,7 @@ double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, s
  *                For a list of dimensions and a new order of kronecker
  *                products.
  */
-void parallel::fast_evolve(np_array_complex_t& V, np_array_complex_t& M, size_t d, np_array_size_t& indices) {
+void parallel::fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, np_array_size_t& indices) {
     py::buffer_info V_info = V.request();
     py::buffer_info M_info = M.request();
     py::buffer_info indices_info = indices.request();
@@ -195,7 +197,7 @@ void parallel::fast_evolve(np_array_complex_t& V, np_array_complex_t& M, size_t 
  * @param indices Indices used to offset the accessed rows of V in order
  *                to effectively reverse the order of kronecker products.
  */
-void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d, size_t* indices_ptr) {
+void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices_ptr) {
 #pragma omp parallel
     {
         // Avoid unecessary multiply ops
@@ -207,7 +209,8 @@ void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::c
 
 // Parallelise over d - likely to be a large value
 #pragma omp for
-        for (size_t k = 0; k < d; ++k) {
+        // OpenMP on Windows needs to use signed int for the index
+        for (int k = 0; k < d; ++k) {
             for (size_t i = 0; i < M_dim; ++i) {
                 mat_col_offset = i * M_dim;
                 tmp[i] = {0.0, 0.0};

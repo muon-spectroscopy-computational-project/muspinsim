@@ -32,13 +32,13 @@ void init(py::module_&);
 
 /* Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
    matrix M where 1_{d} an identity matrix of size d */
-double fast_measure(np_array_complex_t& V, np_array_complex_t& M, size_t d);
-double fast_measure_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d);
+double fast_measure(np_array_complex_t& V, np_array_complex_t& M, long int d);
+double fast_measure_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d);
 
 /* Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
    Hermitian matrix M where 1_{d} an identity matrix of size d */
-double fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, size_t d);
-double fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d);
+double fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, long int d);
+double fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d);
 
 /* Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
    vector, M is a complex square matrix and 1_{d} an identity matrix of
@@ -47,8 +47,8 @@ double fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, std::comple
 /* Modifies a vector, V to have a value equal to its product with a matrix
    equal to M with some amount of kronecker products with identity
    matrices */
-void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, size_t d, np_array_size_t& indices);
-void fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d, size_t* indices);
+void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, np_array_size_t& indices);
+void fast_evolve_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices);
 };  // namespace parallel
 
 /* Functions for Celio's method */
@@ -59,5 +59,5 @@ void init(py::module_&);
 struct EvolveContrib;
 
 /* Performs Celio's method and adds the result to an array in place */
-void evolve(size_t num_times, np_array_complex_t& psi, np_array_complex_t& sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_op_contribs, np_array_double_t& results);
+void evolve(unsigned int num_times, np_array_complex_t& psi, np_array_complex_t& sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_op_contribs, np_array_double_t& results);
 }  // namespace celio
