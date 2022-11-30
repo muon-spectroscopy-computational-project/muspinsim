@@ -14,7 +14,12 @@ import numpy as np
 from scipy import sparse
 from qutip import Qobj
 
-from muspinsim.cpp import parallel_fast_measure, parallel_fast_measure_h
+from muspinsim.cpp import (
+    parallel_fast_measure,
+    parallel_fast_measure_h,
+    parallel_fast_evolve,
+    Celio_EvolveContrib,
+)
 from muspinsim.spinop import SpinOperator, DensityOperator
 
 
@@ -29,19 +34,19 @@ class CelioHContrib:
             other_dimension {int} -- Defines the product of the matrix sizes of any
                                      remaining spins that are not included in this
                                      hamiltonian contribution
-            permutation_order {[int]} -- Defines the order of permutations that will be
-                                         needed when constructing the contribution to
-                                         the trotter hamiltonian after the matrix
-                                         exponential
-            permutation_dimensions {[int]} -- Defines the size of the matrices involved
-                                              in the kronecker products that make up
-                                              this contribution to the Hamiltonian
+            spin_order {[int]} -- Defines the order in which spins are included for
+                                  this term. Its needed when constructing the
+                                  contribution to the trotter hamiltonian after the
+                                  matrix exponential
+            spin_dimensions {[int]} -- Defines the size of the matrices involved
+                                       in the kronecker products that make up this
+                                       contribution to the Hamiltonian
     """
 
     matrix: sparse.csr_matrix
     other_dimension: int
-    permute_order: List[int]
-    permute_dimensions: List[int]
+    spin_order: List[int]
+    spin_dimensions: List[int]
 
 
 class CelioHamiltonian:
@@ -121,23 +126,16 @@ class CelioHamiltonian:
                         indices.pop()
 
                     # Order in which kronecker products will be performed in Celio's
-                    # method
+                    # method and the corresponding dimensions
                     spin_order = indices + uninvolved_spins
-
-                    # Order we need to permute in order to obtain the same order as was
-                    # given in the input
-                    permute_order = np.argsort(spin_order)
-
-                    permute_dimensions = [
-                        self._spinsys.dimension[i] for i in spin_order
-                    ]
+                    spin_dimensions = [self._spinsys.dimension[i] for i in spin_order]
 
                     H_contribs.append(
                         CelioHContrib(
                             H_contrib,
                             other_dimension,
-                            permute_order,
-                            permute_dimensions,
+                            spin_order,
+                            spin_dimensions,
                         )
                     )
 
@@ -175,12 +173,56 @@ class CelioHamiltonian:
             # For particle interactions that are not neighbors we must use a swap gate
             qtip_obj = Qobj(
                 inpt=evol_op_contrib,
-                dims=[H_contrib.permute_dimensions, H_contrib.permute_dimensions],
+                dims=[H_contrib.spin_dimensions, H_contrib.spin_dimensions],
             )
-            qtip_obj = qtip_obj.permute(H_contrib.permute_order)
+            # Order we need to permute in order to obtain the same order as was
+            # given in the input
+            permute_order = np.argsort(H_contrib.spin_order)
+
+            qtip_obj = qtip_obj.permute(permute_order)
             evol_op_contrib = qtip_obj.data
 
             evol_op_contribs.append(evol_op_contrib)
+
+        return evol_op_contribs
+
+    def _calc_trotter_evol_op_contribs_fast(
+        self, time_step
+    ) -> List[Celio_EvolveContrib]:
+        """Calculates and returns the contributions to the Trotter expansion of
+        the time evolution operator computed from the Hamiltonian contributions
+
+        Arguments:
+            time_step {float} -- Timestep that will be used during the evolution
+
+        Returns:
+            evol_op_contribs {[matrix]} -- Contributions to the Trotter expansion
+                                           of the evolution operator
+        """
+
+        H_contribs = self._calc_H_contribs()
+
+        evol_op_contribs = []
+
+        for H_contrib in H_contribs:
+            # The matrix is currently stored in csr format, but expm wants it in csc so
+            # convert here
+            evol_op_contrib = sparse.linalg.expm(
+                -2j * np.pi * H_contrib.matrix.tocsc() * time_step / self._k
+            ).tocsr()
+
+            evol_op_contribs.append(
+                Celio_EvolveContrib(
+                    evol_op_contrib.toarray(),
+                    int(H_contrib.other_dimension),
+                    np.transpose(
+                        np.arange(np.product(self._spinsys.dimension)).reshape(
+                            self._spinsys.dimension
+                        ),
+                        axes=H_contrib.spin_order,
+                    ).flatten(),
+                )
+            )
 
         return evol_op_contribs
 
@@ -421,10 +463,10 @@ class CelioHamiltonian:
         mu_psi = evecs[:, 1] if evals[1] > 0.1 else evecs[:, 0]
 
         # Time evolution step that will modify the trotter_hamiltonian below
-        evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step)
+        evol_op_contribs = self._calc_trotter_evol_op_contribs_fast(time_step)
 
-        half_dim = int(evol_op_contribs[0].shape[0] / 2)
-        operator = sparse.kron(sigma_mu, sparse.identity(half_dim, format="csr")).T
+        dimension = np.product(self._spinsys.dimension)
+        half_dim = int(dimension / 2)
 
         # Avoid using append as assignment should be faster
         results = np.zeros(times.shape[0], dtype=np.complex128)
@@ -456,7 +498,12 @@ class CelioHamiltonian:
                 # Evolution step
                 for _ in range(self._k):
                     for evol_op_contrib in evol_op_contribs:
-                        psi = evol_op_contrib * psi
+                        parallel_fast_evolve(
+                            psi,
+                            evol_op_contrib.matrix,
+                            evol_op_contrib.other_dimension,
+                            evol_op_contrib.indices,
+                        )
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5

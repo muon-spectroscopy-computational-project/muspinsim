@@ -49,3 +49,11 @@ double fast_measure_h_ptr(std::complex<double>* V_ptr, size_t V_dim, std::comple
 void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, size_t d, np_array_size_t& indices);
 void fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::complex<double>* M_ptr, size_t M_dim, size_t d, size_t* indices);
 };  // namespace parallel
+
+/* Functions for Celio's method */
+namespace celio {
+void init(py::module_&);
+
+/* Structure for storing information about a Hamiltonian contribution */
+struct EvolveContrib;
+}  // namespace celio

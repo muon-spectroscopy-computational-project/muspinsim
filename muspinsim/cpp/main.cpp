@@ -6,4 +6,5 @@ PYBIND11_MODULE(cpp, m) {
     // Call all init functions here
     test::init(m);
     parallel::init(m);
+    celio::init(m);
 }
