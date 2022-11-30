@@ -10,7 +10,7 @@ namespace py = pybind11;
 /* Typedef to make using taking numpy arrays a bit clearer*/
 using np_array_complex_t = py::array_t<std::complex<double>, py::array::c_style | py::array::forcecast>;
 using np_array_size_t = py::array_t<size_t, py::array::c_style | py::array::forcecast>;
-using np_array_double_t = py::array_t<size_t, py::array::c_style | py::array::forcecast>;
+using np_array_double_t = py::array_t<double, py::array::c_style | py::array::forcecast>;
 
 /* Forward declarations of methods in this header allows for autocomplete
    where methods are needed in different source files to their own */
@@ -58,6 +58,6 @@ void init(py::module_&);
 /* Structure for storing information about a Hamiltonian contribution */
 struct EvolveContrib;
 
-/* Performs Celio's method and returns the result */
-np_array_double_t evolve(size_t num_times, np_array_complex_t psi, np_array_complex_t sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_op_contribs);
+/* Performs Celio's method and adds the result to an array in place */
+void evolve(size_t num_times, np_array_complex_t& psi, np_array_complex_t& sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_op_contribs, np_array_double_t& results);
 }  // namespace celio

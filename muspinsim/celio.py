@@ -218,9 +218,9 @@ class CelioHamiltonian:
                     evol_op_contrib.toarray(),
                     int(H_contrib.other_dimension),
                     np.transpose(
-                        np.arange(np.product(self._spinsys.dimension)).reshape(
-                            self._spinsys.dimension
-                        ),
+                        np.arange(
+                            np.product(self._spinsys.dimension), dtype=np.int64
+                        ).reshape(self._spinsys.dimension),
                         axes=H_contrib.spin_order,
                     ).flatten(),
                 )
@@ -475,7 +475,7 @@ class CelioHamiltonian:
         half_dim = int(dimension / 2)
 
         # Avoid using append as assignment should be faster
-        results = np.zeros(times.shape[0], dtype=np.complex128)
+        results = np.zeros(times.shape[0], dtype=np.float64)
 
         avg_factor = 1.0 / averages
 
@@ -499,8 +499,14 @@ class CelioHamiltonian:
             psi = compute_psi(mu_psi, half_dim)
 
             # Compute expectation values
-            results += celio_evolve(
-                times.shape[0], psi, sigma_mu, half_dim, self._k, evol_op_contribs
+            celio_evolve(
+                times.shape[0],
+                psi,
+                sigma_mu,
+                half_dim,
+                self._k,
+                evol_op_contribs,
+                results,
             )
         print("Time to evolve: ", time.time() - time_t)
 

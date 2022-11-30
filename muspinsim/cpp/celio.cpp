@@ -10,7 +10,7 @@ struct celio::EvolveContrib {
 };
 
 /*
- * Performs Celio's method and returns the result
+ * Performs Celio's method and adds the result to an array in place
  *
  * @param num_times Number of time steps to compute for
  * @param psi Initial approximated spin states
@@ -18,15 +18,16 @@ struct celio::EvolveContrib {
  * @param half_dim Half the total dimension of the system
  * @param k Value of k used in the Trotter expansion
  * @param evol_contribs List of EvolveContrib structures containing information about the Hamiltonian contributions
- *
- * @return Array of expectation values computed for the given times
  */
-np_array_double_t celio::evolve(size_t num_times, np_array_complex_t psi, np_array_complex_t sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_contribs) {
+void celio::evolve(size_t num_times, np_array_complex_t& psi, np_array_complex_t& sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_contribs, np_array_double_t& results) {
     py::buffer_info psi_info = psi.request();
     auto* psi_ptr = static_cast<std::complex<double>*>(psi_info.ptr);
 
     py::buffer_info sigma_mu_info = sigma_mu.request();
     auto* sigma_mu_ptr = static_cast<std::complex<double>*>(sigma_mu_info.ptr);
+
+    py::buffer_info results_info = results.request();
+    auto* results_ptr = static_cast<double*>(results_info.ptr);
 
     // Will be faster to do any casting before the method begins, so obtain the needed info
     // from the evol_contribs here
@@ -48,11 +49,6 @@ np_array_double_t celio::evolve(size_t num_times, np_array_complex_t psi, np_arr
         evol_contrib_other_dims[i] = evol_contrib.other_dim;
     }
 
-    // Generate results array
-    np_array_double_t results = np_array_double_t(num_times);
-    py::buffer_info results_info = results.request();
-    auto* results_ptr = static_cast<double*>(results_info.ptr);
-
     // Now compute for each time step
     for (unsigned int i = 0; i < num_times; ++i) {
         // Measure
@@ -69,13 +65,11 @@ np_array_double_t celio::evolve(size_t num_times, np_array_complex_t psi, np_arr
                     evol_contrib_index_ptrs[j]);
         }
     }
-
-    return results;
 }
 
 /* Init function for defining python bindings */
 void celio::init(py::module_& m) {
     py::class_<celio::EvolveContrib>(m, "Celio_EvolveContrib").def(py::init<np_array_complex_t, size_t, np_array_size_t>());
 
-    m.def("celio_evolve", &celio::evolve, "Performs Celio's method and returns the result");
+    m.def("celio_evolve", &celio::evolve, "Performs Celio's method and adds the result to an array in place");
 }

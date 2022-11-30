@@ -209,7 +209,7 @@ void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::c
 #pragma omp for
         for (size_t k = 0; k < d; ++k) {
             for (size_t i = 0; i < M_dim; ++i) {
-                mat_col_offset = i * d;
+                mat_col_offset = i * M_dim;
                 tmp[i] = {0.0, 0.0};
 
                 for (size_t j = 0; j < M_dim; ++j)
@@ -220,6 +220,8 @@ void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, size_t V_dim, std::c
             for (size_t i = 0; i < M_dim; ++i)
                 V_ptr[indices_ptr[i * d + k]] = tmp[i];
         }
+        // Allocated with new, so delete
+        delete[] tmp;
     }
 }
 
