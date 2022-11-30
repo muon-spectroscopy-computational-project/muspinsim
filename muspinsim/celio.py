@@ -9,6 +9,7 @@ See Phys. Rev. Lett. 56 2720 (1986)
 from dataclasses import dataclass
 import itertools
 import logging
+import time
 from typing import List
 import numpy as np
 from scipy import sparse
@@ -19,6 +20,7 @@ from muspinsim.cpp import (
     parallel_fast_measure_h,
     parallel_fast_evolve,
     Celio_EvolveContrib,
+    celio_evolve,
 )
 from muspinsim.spinop import SpinOperator, DensityOperator
 
@@ -395,6 +397,8 @@ class CelioHamiltonian:
             # Likely dense, faster to use numpy array
             return psi.T
 
+        time_t = time.time()
+
         for _ in range(averages):
             psi = compute_psi(mu_psi, half_dim)
 
@@ -407,6 +411,8 @@ class CelioHamiltonian:
                 for _ in range(self._k):
                     for evol_op_contrib in evol_op_contribs:
                         psi = evol_op_contrib * psi
+
+        print("Time to evolve: ", time.time() - time_t)
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5
@@ -486,24 +492,17 @@ class CelioHamiltonian:
             # Likely dense, faster to use numpy array
             return psi.T
 
+        sigma_mu = sigma_mu.toarray()
+
+        time_t = time.time()
         for _ in range(averages):
             psi = compute_psi(mu_psi, half_dim)
 
-            # Compute expectation values one at a time
-            for i in range(times.shape[0]):
-                # Use @ symbol to avoid confusion when using numpy arrays
-                # results[i] += psi.conj().T @ (operator @ psi)
-                results[i] += parallel_fast_measure_h(psi, sigma_mu.toarray(), half_dim)
-
-                # Evolution step
-                for _ in range(self._k):
-                    for evol_op_contrib in evol_op_contribs:
-                        parallel_fast_evolve(
-                            psi,
-                            evol_op_contrib.matrix,
-                            evol_op_contrib.other_dimension,
-                            evol_op_contrib.indices,
-                        )
+            # Compute expectation values
+            results += celio_evolve(
+                times.shape[0], psi, sigma_mu, half_dim, self._k, evol_op_contribs
+            )
+        print("Time to evolve: ", time.time() - time_t)
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5
