@@ -18,14 +18,6 @@ using np_array_double_t = py::array_t<double, py::array::c_style | py::array::fo
 /* As a best practice init functions are defined here for each file and are
    called in main.cpp to define the bindings */
 
-/* Functions for testing pybind11 works*/
-namespace test {
-void init(py::module_&);
-
-/* Adds two numbers */
-int add(int i, int j);
-};  // namespace test
-
 /* Functions for parallel operations */
 namespace parallel {
 void init(py::module_&);

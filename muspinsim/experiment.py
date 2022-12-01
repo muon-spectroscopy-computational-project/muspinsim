@@ -6,7 +6,6 @@ import logging
 import time
 import numpy as np
 import scipy.constants as cnst
-from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
@@ -390,14 +389,9 @@ class ExperimentRunner(object):
                         "celio."
                     )
 
-                muon_axis = self.p
-                mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
-                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
-
                 time_t = time.time()
-                # data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
-                data = H.fast_evolve_parallel(
-                    sigma_mu, cfg_snap.t, self.config.celio_averages
+                data = H.fast_evolve(
+                    self.p, cfg_snap.t, self.config.celio_averages, True
                 )
                 print("Time to call H.fast_evolve: ", time.time() - time_t)
             else:

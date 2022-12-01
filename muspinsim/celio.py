@@ -13,12 +13,9 @@ import time
 from typing import List
 import numpy as np
 from scipy import sparse
-from qutip import Qobj
+from qutip import Qobj, sigmax, sigmay, sigmaz
 
 from muspinsim.cpp import (
-    parallel_fast_measure,
-    parallel_fast_measure_h,
-    parallel_fast_evolve,
     Celio_EvolveContrib,
     celio_evolve,
 )
@@ -143,12 +140,14 @@ class CelioHamiltonian:
 
         return H_contribs
 
-    def _calc_trotter_evol_op_contribs(self, time_step):
+    def _calc_trotter_evol_op_contribs(self, time_step, fast):
         """Calculates and returns the contributions to the Trotter expansion of
         the time evolution operator computed from the Hamiltonian contributions
 
         Arguments:
             time_step {float} -- Timestep that will be used during the evolution
+            fast {boolean} -- When true will calculate ready for use with
+                              the parallelised C++ version.
 
         Returns:
             evol_op_contribs {[matrix]} -- Contributions to the Trotter expansion
@@ -160,71 +159,49 @@ class CelioHamiltonian:
         evol_op_contribs = []
 
         for H_contrib in H_contribs:
-            # The matrix is currently stored in csr format, but expm wants it in csc so
-            # convert here
+            # The matrix is currently stored in csr format, but expm wants it
+            # in csc so convert here
             evol_op_contrib = sparse.linalg.expm(
                 -2j * np.pi * H_contrib.matrix.tocsc() * time_step / self._k
             ).tocsr()
 
-            if H_contrib.other_dimension > 1:
-                evol_op_contrib = sparse.kron(
-                    evol_op_contrib,
-                    sparse.identity(H_contrib.other_dimension, format="csr"),
+            if fast:
+                # C++ version - No kronecker products required - just an array
+                # of indices
+                evol_op_contribs.append(
+                    Celio_EvolveContrib(
+                        evol_op_contrib.toarray(),
+                        int(H_contrib.other_dimension),
+                        np.transpose(
+                            np.arange(
+                                np.product(self._spinsys.dimension), dtype=np.int64
+                            ).reshape(self._spinsys.dimension),
+                            axes=H_contrib.spin_order,
+                        ).flatten(),
+                    )
                 )
+            else:
+                # Python version - requires kronecker products
+                if H_contrib.other_dimension > 1:
+                    evol_op_contrib = sparse.kron(
+                        evol_op_contrib,
+                        sparse.identity(H_contrib.other_dimension, format="csr"),
+                    )
 
-            # For particle interactions that are not neighbors we must use a swap gate
-            qtip_obj = Qobj(
-                inpt=evol_op_contrib,
-                dims=[H_contrib.spin_dimensions, H_contrib.spin_dimensions],
-            )
-            # Order we need to permute in order to obtain the same order as was
-            # given in the input
-            permute_order = np.argsort(H_contrib.spin_order)
-
-            qtip_obj = qtip_obj.permute(permute_order)
-            evol_op_contrib = qtip_obj.data
-
-            evol_op_contribs.append(evol_op_contrib)
-
-        return evol_op_contribs
-
-    def _calc_trotter_evol_op_contribs_fast(
-        self, time_step
-    ) -> List[Celio_EvolveContrib]:
-        """Calculates and returns the contributions to the Trotter expansion of
-        the time evolution operator computed from the Hamiltonian contributions
-
-        Arguments:
-            time_step {float} -- Timestep that will be used during the evolution
-
-        Returns:
-            evol_op_contribs {[matrix]} -- Contributions to the Trotter expansion
-                                           of the evolution operator
-        """
-
-        H_contribs = self._calc_H_contribs()
-
-        evol_op_contribs = []
-
-        for H_contrib in H_contribs:
-            # The matrix is currently stored in csr format, but expm wants it in csc so
-            # convert here
-            evol_op_contrib = sparse.linalg.expm(
-                -2j * np.pi * H_contrib.matrix.tocsc() * time_step / self._k
-            ).tocsr()
-
-            evol_op_contribs.append(
-                Celio_EvolveContrib(
-                    evol_op_contrib.toarray(),
-                    int(H_contrib.other_dimension),
-                    np.transpose(
-                        np.arange(
-                            np.product(self._spinsys.dimension), dtype=np.int64
-                        ).reshape(self._spinsys.dimension),
-                        axes=H_contrib.spin_order,
-                    ).flatten(),
+                # For particle interactions that are not neighbors we must use
+                # a swap gate
+                qtip_obj = Qobj(
+                    inpt=evol_op_contrib,
+                    dims=[H_contrib.spin_dimensions, H_contrib.spin_dimensions],
                 )
-            )
+                # Order we need to permute in order to obtain the same order
+                # as was given in the input
+                permute_order = np.argsort(H_contrib.spin_order)
+
+                qtip_obj = qtip_obj.permute(permute_order)
+                evol_op_contrib = qtip_obj.data
+
+                evol_op_contribs.append(evol_op_contrib)
 
         return evol_op_contribs
 
@@ -276,7 +253,9 @@ class CelioHamiltonian:
         rho0 = rho0.matrix
 
         # Time evolution step that will modify the trotter_hamiltonian below
-        evol_op = np.product(self._calc_trotter_evol_op_contribs(time_step)) ** self._k
+        evol_op = (
+            np.product(self._calc_trotter_evol_op_contribs(time_step, False)) ** self._k
+        )
 
         total_evol_op = sparse.identity(evol_op.shape[0], format="csr")
 
@@ -323,15 +302,38 @@ class CelioHamiltonian:
 
         return results
 
-    def fast_evolve(self, sigma_mu, times, averages):
-        """Time evolution of a state under this Hamiltonian
+    def _compute_psi(self, mu_psi, half_dim):
+        """Computes a random initial muon state
 
-        Perform an evolution of a state described by a DensityOperator under
-        this Hamiltonian and return a sequence of expectation values for
+        The muon index should be first for this to work correctly, otherwise
+        the order of the kronecker products will need be be modified.
+
+        Arguments:
+            mu_psi {ndarray} -- Eigenvector from sigma_mu + eye(2)
+            half_dim {int} -- Half the total dimension of the system
+
+        Returns:
+            [ndarray] -- Randomised initial state for the system with a shape
+                         (mu_psi.shape[0] * half_dim, 1)
+        """
+        psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
+        psi = np.kron(mu_psi.T, psi0)
+
+        # Normalise
+        psi = psi * (1.0 / np.sqrt(half_dim))
+
+        # Likely dense, faster to use numpy array
+        return psi.T
+
+    def fast_evolve(self, muon_axis, times, averages, parallel=True):
+        """Time evolution of spin states under this Hamiltonian
+
+        Perform the time evolution of a randomised initial spin state under
+        this Hamiltonian and return a sequence of expectation values for the
         muon polarisation at the requested times
 
         Arguments:
-            sigma_mu {matrix} -- Spin matrix of the muon
+            muon_axis {ndarray} -- Initial polarisation axis for the muon
             times {ndarray} -- Times to compute the evolution for, in microseconds
             averages {int} -- Number of averages to compute
 
@@ -370,13 +372,50 @@ class CelioHamiltonian:
 
         time_step = times[1] - times[0]
 
+        # Compute spin matrix in direction of the muon
+        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
+        sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
+
+        # Obtain spin up and down states, and select the one with
+        # the eigenvalue +1 while trying to avoid precision issues
         evals, evecs = np.linalg.eig(sigma_mu + np.eye(2))
         mu_psi = evecs[:, 1] if evals[1] > 0.1 else evecs[:, 0]
 
-        # Time evolution step that will modify the trotter_hamiltonian below
-        evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step)
+        dimension = np.product(self._spinsys.dimension)
+        half_dim = int(dimension / 2)
 
-        half_dim = int(evol_op_contribs[0].shape[0] / 2)
+        if parallel:
+            return self._fast_evolve_parallel(
+                sigma_mu, times, averages, mu_psi, half_dim, time_step
+            )
+        else:
+            return self._fast_evolve_python(
+                sigma_mu, times, averages, mu_psi, half_dim, time_step
+            )
+
+    def _fast_evolve_python(
+        self, sigma_mu, times, averages, mu_psi, half_dim, time_step
+    ):
+        """Time evolution of spin states under this Hamiltonian
+
+        Perform the time evolution of a randomised initial spin state under
+        this Hamiltonian and return a sequence of expectation values for the
+        muon polarisation at the requested times
+
+        Arguments:
+            sigma_mu {matrix} -- Spin matrix of the muon
+            times {ndarray} -- Times to compute the evolution for, in microseconds
+            averages {int} -- Number of averages to compute
+            mu_psi {ndarray} -- Eigenvector from sigma_mu + eye(2)
+            half_dim {int} -- Half the total dimension of the system
+            time_step {float} -- Difference between subsequent times
+
+        Returns:
+            [ndarray] -- Expectation values
+        """
+        # Time evolution step that will modify the trotter_hamiltonian below
+        evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step, False)
+
         operator = sparse.kron(sigma_mu, sparse.identity(half_dim, format="csr")).T
 
         # Avoid using append as assignment should be faster
@@ -384,23 +423,10 @@ class CelioHamiltonian:
 
         avg_factor = 1.0 / averages
 
-        def compute_psi(mu_psi, half_dim):
-            """
-            Computes a random initial muon state
-            """
-            psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
-            psi = np.kron(mu_psi.T, psi0)
-
-            # Normalise
-            psi = psi * (1.0 / np.sqrt(half_dim))
-
-            # Likely dense, faster to use numpy array
-            return psi.T
-
         time_t = time.time()
 
         for _ in range(averages):
-            psi = compute_psi(mu_psi, half_dim)
+            psi = self._compute_psi(mu_psi, half_dim)
 
             # Compute expectation values one at a time
             for i in range(times.shape[0]):
@@ -418,85 +444,40 @@ class CelioHamiltonian:
         # 0.5 and -0.5
         return results * avg_factor * 0.5
 
-    def fast_evolve_parallel(self, sigma_mu, times, averages):
-        """Time evolution of a state under this Hamiltonian
+    def _fast_evolve_parallel(
+        self, sigma_mu, times, averages, mu_psi, half_dim, time_step
+    ):
+        """Parallelised time evolution of a state under this Hamiltonian
 
-        Perform an evolution of a state described by a DensityOperator under
-        this Hamiltonian and return a sequence of expectation values for
+        Perform the time evolution of a randomised initial spin state under
+        this Hamiltonian and return a sequence of expectation values for the
         muon polarisation at the requested times
 
         Arguments:
             sigma_mu {matrix} -- Spin matrix of the muon
             times {ndarray} -- Times to compute the evolution for, in microseconds
             averages {int} -- Number of averages to compute
+            mu_psi {ndarray} -- Eigenvector from sigma_mu + eye(2)
+            half_dim {int} -- Half the total dimension of the system
+            time_step {float} -- Difference between subsequent times
 
         Returns:
             [ndarray] -- Expectation values
-
-        Raises:
-            TypeError -- Invalid operators
-            ValueError -- Invalid values of times
-            ValueError -- Invalid value of averages
-            ValueError -- If there are no interaction terms for the evolution
-            ValueError -- If the muon is not first in the system
-            RuntimeError -- Hamiltonian is not hermitian
         """
 
-        times = np.array(times)
-
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
-
-        if averages <= 0:
-            raise ValueError("averages must be a positive integer")
-
-        if len(self._terms) == 0:
-            raise ValueError("No interaction terms to evolve")
-
-        # Due to computation of of psi we assume the muon is first in
-        # the system so ensure this is the case here, otherwise
-        # we need to change the order of kronecker products when computing
-        # it and this would be slower anyway
-        if self._spinsys.muon_index != 0:
-            raise ValueError(
-                "Muon must be the first spin in the system in order to use "
-                "the fast Celio method"
-            )
-
-        time_step = times[1] - times[0]
-
-        evals, evecs = np.linalg.eig(sigma_mu + np.eye(2))
-        mu_psi = evecs[:, 1] if evals[1] > 0.1 else evecs[:, 0]
-
         # Time evolution step that will modify the trotter_hamiltonian below
-        evol_op_contribs = self._calc_trotter_evol_op_contribs_fast(time_step)
-
-        dimension = np.product(self._spinsys.dimension)
-        half_dim = int(dimension / 2)
+        evol_contribs = self._calc_trotter_evol_op_contribs(time_step, True)
 
         # Avoid using append as assignment should be faster
         results = np.zeros(times.shape[0], dtype=np.float64)
 
         avg_factor = 1.0 / averages
 
-        def compute_psi(mu_psi, half_dim):
-            """
-            Computes a random initial muon state
-            """
-            psi0 = np.exp(2j * np.pi * np.random.rand(half_dim))
-            psi = np.kron(mu_psi.T, psi0)
-
-            # Normalise
-            psi = psi * (1.0 / np.sqrt(half_dim))
-
-            # Likely dense, faster to use numpy array
-            return psi.T
-
         sigma_mu = sigma_mu.toarray()
 
         time_t = time.time()
         for _ in range(averages):
-            psi = compute_psi(mu_psi, half_dim)
+            psi = self._compute_psi(mu_psi, half_dim)
 
             # Compute expectation values
             celio_evolve(
@@ -505,7 +486,7 @@ class CelioHamiltonian:
                 sigma_mu,
                 half_dim,
                 self._k,
-                evol_op_contribs,
+                evol_contribs,
                 results,
             )
         print("Time to evolve: ", time.time() - time_t)
