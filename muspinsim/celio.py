@@ -174,7 +174,7 @@ class CelioHamiltonian:
                         int(H_contrib.other_dimension),
                         np.transpose(
                             np.arange(
-                                np.product(self._spinsys.dimension), dtype=np.int64
+                                np.product(self._spinsys.dimension), dtype=np.uint64
                             ).reshape(self._spinsys.dimension),
                             axes=H_contrib.spin_order,
                         ).flatten(),
@@ -478,6 +478,8 @@ class CelioHamiltonian:
         time_t = time.time()
         for _ in range(averages):
             psi = self._compute_psi(mu_psi, half_dim)
+
+            print(psi.size * psi.itemsize / 1024 / 1024)
 
             # Compute expectation values
             celio_evolve(

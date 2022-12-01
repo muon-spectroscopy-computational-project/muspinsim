@@ -69,7 +69,12 @@ void celio::evolve(unsigned int num_times, np_array_complex_t& psi, np_array_com
 
 /* Init function for defining python bindings */
 void celio::init(py::module_& m) {
-    py::class_<celio::EvolveContrib>(m, "Celio_EvolveContrib").def(py::init<np_array_complex_t, size_t, np_array_size_t>());
+    py::class_<celio::EvolveContrib>(m, "Celio_EvolveContrib")
+        .def(py::init<np_array_complex_t, size_t, np_array_size_t>())
+        // Allow access to python
+        .def_readonly("matrix", &EvolveContrib::matrix)
+        .def_readonly("other_dim", &EvolveContrib::other_dim)
+        .def_readonly("indices", &EvolveContrib::indices);
 
     m.def("celio_evolve", &celio::evolve, "Performs Celio's method and adds the result to an array in place");
 }
