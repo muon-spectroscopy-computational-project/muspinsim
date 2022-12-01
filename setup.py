@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
+from collections import defaultdict
 import setuptools
-import sys
 from glob import glob
 from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 
@@ -15,8 +15,6 @@ with open("muspinsim/version.py") as fp:
 # Optional multithreaded build for pybind11
 ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 
-# Choose appropriate OpenMP compile flag for the current platform
-openmp_flag = "-fopenmp" if "win" not in sys.platform else "/openmp"
 
 # Setup pybind11 extension with OpenMP support
 ext_modules = []
@@ -24,10 +22,34 @@ ext_modules.append(
     Pybind11Extension(
         "muspinsim.cpp",
         sorted(glob("muspinsim/cpp/*.cpp")),
-        extra_compile_args=[openmp_flag],
-        extra_link_args=[openmp_flag],
     ),
 )
+
+# We need to choose the right C++ compiler and linker flags for the
+# current platform, these are specified in the dictionaries below
+
+# -fvisibility=hidden explained here
+# https://pybind11.readthedocs.io/en/stable/faq.html
+COMPILE_ARGS_DICT = defaultdict(lambda: ["-fvisibility=hidden", "-fopenmp"])
+COMPILE_ARGS_DICT["msvc"] = ["/openmp"]
+
+LINK_ARGS_DICT = defaultdict(lambda: ["-fopenmp"])
+LINK_ARGS_DICT["msvc"] = ["/openmp"]
+
+
+# Selects the right arguments for the available compiler
+class build_ext_subclass(build_ext):
+    def build_extensions(self):
+        compiler = self.compiler.compiler_type
+        compile_args = COMPILE_ARGS_DICT[compiler]
+        link_args = LINK_ARGS_DICT[compiler]
+
+        for extension in self.extensions:
+            extension.extra_compile_args = compile_args
+            extension.extra_link_args = link_args
+
+        build_ext.build_extensions(self)
+
 
 setuptools.setup(
     name="muspinsim",
@@ -67,6 +89,6 @@ setuptools.setup(
     },
     ext_modules=ext_modules,
     # Build tool for pybind11 - searches for highest supported C++ standard
-    cmdclass={"build_ext": build_ext},
+    cmdclass={"build_ext": build_ext_subclass},
     python_requires=">=3.8",
 )
