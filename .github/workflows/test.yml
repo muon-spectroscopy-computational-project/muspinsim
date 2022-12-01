@@ -42,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -56,6 +56,36 @@ jobs:
         pip install wheel
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+      shell: bash # Windows runners have Git Bash installed so this should work on all runners
+    - name: Install package
+      run: pip install -e . # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
+    - name: Test with pytest
+      run: pytest
+
+  # Need a separate job as need to install OpenMP separately
+  test-macos:
+    name: Test on Python ${{ matrix.python-version }} and ${{ matrix.os }}
+    needs: lint # don't run if linting failed
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.10"]
+        os: [macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+        brew update && brew install libomp
       shell: bash # Windows runners have Git Bash installed so this should work on all runners
     - name: Install package
       run: pip install -e . # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode

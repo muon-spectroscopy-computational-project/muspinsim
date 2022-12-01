@@ -2,6 +2,7 @@
 #
 from collections import defaultdict
 import setuptools
+import platform
 from glob import glob
 from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 
@@ -35,6 +36,19 @@ COMPILE_ARGS_DICT["msvc"] = ["/openmp"]
 
 LINK_ARGS_DICT = defaultdict(lambda: ["-fopenmp"])
 LINK_ARGS_DICT["msvc"] = ["/openmp"]
+
+# To work on macOS need the compiler args
+# -Xclang -fopenmp
+# and the linker args
+# -L/usr/local/opt/libomp/lib/ -lomp
+# These are highly specific to use libomp however and this path is specific
+# to the system
+if platform.system().lower() == "darwin":
+    # Override
+    COMPILE_ARGS_DICT = defaultdict(
+        lambda: ["-fvisibility=hidden", "-Xclang", "-fopenmp"]
+    )
+    LINK_ARGS_DICT = defaultdict(lambda: ["-L/usr/local/opt/libomp/lib/", "-lomp"])
 
 
 # Selects the right arguments for the available compiler
