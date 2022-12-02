@@ -148,7 +148,7 @@ $$
 \bra{\phi(t)}\sigma_{\mu}\ket{\phi(t)} = \sum_{m=1}^{d/2}\frac{2}{d}\bra{\psi_m(t)}\sigma_{\mu}\ket{\psi_m(t)} + \sum_{m,n=1, m\neq n}^{d/2}\frac{2}{d}e^{i(\lambda_m - \lambda_n)}\bra{\psi_n(t)}\sigma_{\mu}\ket{\psi_m(t)}
 $$
 
-This second term vanishes for very large $d$ allowing us to avoid very large matrix products which speeds up the method drastically.
+This second term vanishes for very large $d$ allowing us to avoid very large matrix products which speeds up the method drastically. When installed with OpenMP, MuSpinSim will parallelise this method over the values of $m$.
 
 
 > **For developers:** time evolution of a system using Celio's method is handled by the `.evolve()` and `.fast_evolve()` methods of the `CelioHamiltonian` class.

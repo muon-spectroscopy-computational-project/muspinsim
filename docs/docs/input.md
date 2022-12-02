@@ -463,4 +463,4 @@ When the number of averages is not specified or is given as 0, only the first pa
 
 #### Method 2 - Using random initial states
 
-When the number of averages is given as a value greater than 0, random initial states will be generated for the muon and the full version of Celio's method will be run repeatedly to obtain an average. These results will be less accurate and subject to randomness but this method is substantially faster and requires less memory making it very useful for large systems.
+When the number of averages is given as a value greater than 0, random initial states will be generated for the muon and the full version of Celio's method will be run repeatedly to obtain an average. These results will be less accurate and subject to randomness but this method is substantially faster and requires less memory making it very useful for large systems. This method is also parallelised when MuSpinSim is installed with OpenMP.
