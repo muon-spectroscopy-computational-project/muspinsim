@@ -42,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
@@ -62,16 +62,15 @@ jobs:
     - name: Test with pytest
       run: pytest
 
-  # Need a separate job as need to install OpenMP separately
-  test-macos:
-    name: Test on Python ${{ matrix.python-version }} and ${{ matrix.os }}
+  test-openmp:
+    name: Test on Python ${{ matrix.python-version }} and ${{ matrix.os }} with OpenMP
     needs: lint # don't run if linting failed
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        os: [macOS-latest]
+        os: [ubuntu-latest, windows-latest] # macOS-latest fails due to issue with OpenMP install
 
     steps:
     - uses: actions/checkout@v2
@@ -85,9 +84,8 @@ jobs:
         pip install wheel
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
-        brew update && brew install libomp
       shell: bash # Windows runners have Git Bash installed so this should work on all runners
     - name: Install package
-      run: pip install -e . # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
+      run: python setup.py install develop # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
     - name: Test with pytest
       run: pytest
