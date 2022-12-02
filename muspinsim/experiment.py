@@ -3,7 +3,6 @@
 Classes and functions to perform actual experiments"""
 
 import logging
-import time
 import numpy as np
 import scipy.constants as cnst
 
@@ -389,11 +388,9 @@ class ExperimentRunner(object):
                         "celio."
                     )
 
-                time_t = time.time()
                 data = H.fast_evolve(
                     self.p, cfg_snap.t, self.config.celio_averages, True
                 )
-                print("Time to call H.fast_evolve: ", time.time() - time_t)
             else:
                 data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":

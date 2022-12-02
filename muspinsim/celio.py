@@ -9,7 +9,6 @@ See Phys. Rev. Lett. 56 2720 (1986)
 from dataclasses import dataclass
 import itertools
 import logging
-import time
 from typing import List
 import numpy as np
 from scipy import sparse
@@ -423,8 +422,6 @@ class CelioHamiltonian:
 
         avg_factor = 1.0 / averages
 
-        time_t = time.time()
-
         for _ in range(averages):
             psi = self._compute_psi(mu_psi, half_dim)
 
@@ -437,8 +434,6 @@ class CelioHamiltonian:
                 for _ in range(self._k):
                     for evol_op_contrib in evol_op_contribs:
                         psi = evol_op_contrib * psi
-
-        print("Time to evolve: ", time.time() - time_t)
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5
@@ -475,11 +470,8 @@ class CelioHamiltonian:
 
         sigma_mu = sigma_mu.toarray()
 
-        time_t = time.time()
         for _ in range(averages):
             psi = self._compute_psi(mu_psi, half_dim)
-
-            print(psi.size * psi.itemsize / 1024 / 1024)
 
             # Compute expectation values
             celio_evolve(
@@ -491,7 +483,6 @@ class CelioHamiltonian:
                 evol_contribs,
                 results,
             )
-        print("Time to evolve: ", time.time() - time_t)
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5
