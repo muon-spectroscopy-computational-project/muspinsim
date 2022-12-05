@@ -52,7 +52,8 @@ double parallel::fast_measure_ptr(std::complex<double>* V_ptr, unsigned int V_di
 // Parallelise over d - likely to be a large value
 #pragma omp for
         // OpenMP on Windows needs to use signed int for the index
-        for (int k = 0; k < d; ++k) {
+        // Use long int as muon and 9 spin 7/2 will use max integer value
+        for (long int k = 0; k < d; ++k) {
             for (unsigned int i = 0; i < M_dim; ++i) {
                 mat_col_offset = i * M_dim;
                 term = {0, 0};
@@ -120,7 +121,8 @@ double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_
 // Parallelise over d - likely to be a large value
 #pragma omp for
         // OpenMP on Windows needs to use signed int for the index
-        for (int k = 0; k < d; ++k) {
+        // Use long int as muon and 9 spin 7/2 will use max integer value
+        for (long int k = 0; k < d; ++k) {
             for (unsigned int i = 0; i < M_dim; ++i) {
                 mat_col_offset = i * M_dim;
                 // Initialise with term on diagonal
@@ -210,7 +212,8 @@ void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, unsigned int V_dim, 
 // Parallelise over d - likely to be a large value
 #pragma omp for
         // OpenMP on Windows needs to use signed int for the index
-        for (int k = 0; k < d; ++k) {
+        // Use long int as muon and 9 spin 7/2 will use max integer value
+        for (long int k = 0; k < d; ++k) {
             for (size_t i = 0; i < M_dim; ++i) {
                 mat_col_offset = i * M_dim;
                 tmp[i] = {0.0, 0.0};

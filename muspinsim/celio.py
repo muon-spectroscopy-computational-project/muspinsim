@@ -139,14 +139,14 @@ class CelioHamiltonian:
 
         return H_contribs
 
-    def _calc_trotter_evol_op_contribs(self, time_step, fast):
+    def _calc_trotter_evol_op_contribs(self, time_step, cpp):
         """Calculates and returns the contributions to the Trotter expansion of
         the time evolution operator computed from the Hamiltonian contributions
 
         Arguments:
             time_step {float} -- Timestep that will be used during the evolution
-            fast {boolean} -- When true will calculate ready for use with
-                              the parallelised C++ version.
+            cpp {boolean} -- When true will calculate ready for use with the C++
+                             version
 
         Returns:
             evol_op_contribs {[matrix]} -- Contributions to the Trotter expansion
@@ -164,7 +164,7 @@ class CelioHamiltonian:
                 -2j * np.pi * H_contrib.matrix.tocsc() * time_step / self._k
             ).tocsr()
 
-            if fast:
+            if cpp:
                 # C++ version - No kronecker products required - just an array
                 # of indices
                 evol_op_contribs.append(
@@ -324,7 +324,7 @@ class CelioHamiltonian:
         # Likely dense, faster to use numpy array
         return psi.T
 
-    def fast_evolve(self, muon_axis, times, averages, parallel=True):
+    def fast_evolve(self, muon_axis, times, averages, cpp=True):
         """Time evolution of spin states under this Hamiltonian
 
         Perform the time evolution of a randomised initial spin state under
@@ -333,8 +333,11 @@ class CelioHamiltonian:
 
         Arguments:
             muon_axis {ndarray} -- Initial polarisation axis for the muon
-            times {ndarray} -- Times to compute the evolution for, in microseconds
+            times {ndarray} -- Times to compute the evolution for, in
+                               microseconds
             averages {int} -- Number of averages to compute
+            cpp {boolean} -- When true will calculate ready for use with the
+                             C++ version
 
         Returns:
             [ndarray] -- Expectation values
@@ -383,8 +386,8 @@ class CelioHamiltonian:
         dimension = np.product(self._spinsys.dimension)
         half_dim = int(dimension / 2)
 
-        if parallel:
-            return self._fast_evolve_parallel(
+        if cpp:
+            return self._fast_evolve_cpp(
                 sigma_mu, times, averages, mu_psi, half_dim, time_step
             )
         else:
@@ -439,9 +442,7 @@ class CelioHamiltonian:
         # 0.5 and -0.5
         return results * avg_factor * 0.5
 
-    def _fast_evolve_parallel(
-        self, sigma_mu, times, averages, mu_psi, half_dim, time_step
-    ):
+    def _fast_evolve_cpp(self, sigma_mu, times, averages, mu_psi, half_dim, time_step):
         """Parallelised time evolution of a state under this Hamiltonian
 
         Perform the time evolution of a randomised initial spin state under
