@@ -146,10 +146,11 @@ double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_
 }
 
 /*
- * Modifies a vector, V to have a value equal to its product with a matrix
- * equal to M with some amount of kronecker products with identity
- * matrices. The indices allow the ability to reverse the effective order
- * of kronecker products.
+ * Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
+ * vector, M is a complex square matrix and 1_{d} an identity matrix of
+ * size d. The indices allow the ability to modify the order of the
+ *  kronecker products (assuming 1_{d} is the result of multiple products
+ *  of smaller identities)
  *
  * For speed, no checks are performed here. The matrix M should be square
  * with size N and the shape of V should be (N*d, 1). The number of indices

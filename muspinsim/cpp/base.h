@@ -35,10 +35,8 @@ double fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::
 /* Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
    vector, M is a complex square matrix and 1_{d} an identity matrix of
    size d. The indices allow the ability to modify the order of the
-   kronecker products. */
-/* Modifies a vector, V to have a value equal to its product with a matrix
-   equal to M with some amount of kronecker products with identity
-   matrices */
+   kronecker products (assuming 1_{d} is the result of multiple products
+   of smaller identities). */
 void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, np_array_size_t& indices);
 void fast_evolve_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices);
 };  // namespace parallel
