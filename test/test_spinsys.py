@@ -226,7 +226,7 @@ class TestSpinSystem(unittest.TestCase):
             )
         )
 
-        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1)
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1, False)
         self.assertEqual(len(evol_op_contribs), 2)
 
         self.assertTrue(
@@ -265,10 +265,80 @@ class TestSpinSystem(unittest.TestCase):
             )
         )
 
+        # Check C++ variant
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1, True)
+        self.assertEqual(len(evol_op_contribs), 2)
+
+        print(evol_op_contribs[0].indices)
+        print(evol_op_contribs[1].indices)
+
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    evol_op_contribs[0].matrix,
+                    np.array(
+                        [
+                            [
+                                9.02916796e-01 - 0.30392537j,
+                                6.93889390e-18 - 0.30392537j,
+                            ],
+                            [
+                                -6.93889390e-18 - 0.30392537j,
+                                9.02916796e-01 + 0.30392537j,
+                            ],
+                        ]
+                    ),
+                )
+            )
+        )
+        self.assertEqual(evol_op_contribs[0].other_dim, 2)
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    evol_op_contribs[0].indices,
+                    np.array(
+                        [0, 1, 2, 3],
+                    ),
+                )
+            )
+        )
+
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    evol_op_contribs[1].matrix,
+                    np.array(
+                        [
+                            [0.98768834 - 0.15643447j, 0, 0, 0],
+                            [0, 0.93934743 + 0.14877802j, 0.04834091 - 0.30521248j, 0],
+                            [0, 0.04834091 - 0.30521248j, 0.93934743 + 0.14877802j, 0],
+                            [0, 0, 0, 0.98768834 - 0.15643447j],
+                        ]
+                    ),
+                )
+            )
+        )
+        self.assertEqual(evol_op_contribs[1].other_dim, 1)
+        self.assertTrue(
+            np.all(
+                np.isclose(
+                    evol_op_contribs[1].indices,
+                    np.array(
+                        [0, 1, 2, 3],
+                    ),
+                )
+            )
+        )
+
         # Now test clearing them
         ssys.clear_terms()
 
-        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1)
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1, False)
+
+        self.assertEqual(len(evol_op_contribs), 0)
+
+        # C++ variant
+        evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1, True)
 
         self.assertEqual(len(evol_op_contribs), 0)
 

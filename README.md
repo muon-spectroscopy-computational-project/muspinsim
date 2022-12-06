@@ -12,6 +12,21 @@ pip install muspinsim
 conda install muspinsim
 ```
 
+You may also install MuSpinSim from source which will require a C++ compiler to be present on the system. To do this obtain the source and install with
+
+```bash
+python setup.py install
+```
+
+This also allows you to install MuSpinSim with OpenMP support using the optional `--with-openmp` flag using
+
+```bash
+python setup.py install --with-openmp
+```
+
+This also requires that your compiler has OpenMP support.
+
+
 ## Usage
 
 Once installed, the program will be made available for command line use as `muspinsim`. The usage is

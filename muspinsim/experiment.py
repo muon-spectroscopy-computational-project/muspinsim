@@ -5,8 +5,6 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
-from qutip import sigmax, sigmay, sigmaz
-from ase.quaternions import Quaternion
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
@@ -350,11 +348,6 @@ class ExperimentRunner(object):
         T = cfg_snap.T  # Temperature
         q, w = cfg_snap.orient  # Quaternion and Weight for orientation
 
-        # q = Quaternion.from_euler_angles(
-        #     0 * (np.pi / 180), 0 * (np.pi / 180), 0 * (np.pi / 180)
-        # )
-        # w = 1.0
-
         # Let's start by rotating things
         self.B = q.rotate(B)
         self.p = q.rotate(p)
@@ -406,11 +399,9 @@ class ExperimentRunner(object):
                         "celio."
                     )
 
-                muon_axis = self.p
-                mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
-                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
-
-                data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
+                data = H.fast_evolve(
+                    self.p, cfg_snap.t, self.config.celio_averages, True
+                )
             else:
                 if self._T_inf_speedup:
                     other_spins = list(range(0, len(self._system.spins)))
