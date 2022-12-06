@@ -5,7 +5,6 @@ Classes and functions to perform actual experiments"""
 import logging
 import numpy as np
 import scipy.constants as cnst
-from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
@@ -389,11 +388,9 @@ class ExperimentRunner(object):
                         "celio."
                     )
 
-                muon_axis = self.p
-                mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
-                sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
-
-                data = H.fast_evolve(sigma_mu, cfg_snap.t, self.config.celio_averages)
+                data = H.fast_evolve(
+                    self.p, cfg_snap.t, self.config.celio_averages, True
+                )
             else:
                 data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
