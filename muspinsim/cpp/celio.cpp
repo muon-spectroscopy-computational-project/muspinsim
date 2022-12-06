@@ -52,13 +52,13 @@ void celio::evolve(unsigned int num_times, np_array_complex_t& psi, np_array_com
     // Now compute for each time step
     for (unsigned int i = 0; i < num_times; ++i) {
         // Measure
-        results_ptr[i] += parallel::fast_measure_h_ptr(psi_ptr, psi_info.shape[0], sigma_mu_ptr, sigma_mu_info.shape[0], half_dim);
+        results_ptr[i] += parallel::fast_measure_h_ptr(psi_ptr, sigma_mu_ptr, sigma_mu_info.shape[0], half_dim);
 
         // Evolve
         for (unsigned int _k = 0; _k < k; ++_k) {
             for (unsigned int j = 0; j < evol_contribs.size(); ++j)
                 parallel::fast_evolve_ptr(
-                    psi_ptr, psi_info.shape[0],
+                    psi_ptr,
                     evol_contrib_mat_ptrs[j],
                     evol_contrib_mat_dims[j],
                     evol_contrib_other_dims[j],

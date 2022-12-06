@@ -25,12 +25,12 @@ void init(py::module_&);
 /* Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
    matrix M where 1_{d} an identity matrix of size d */
 double fast_measure(np_array_complex_t& V, np_array_complex_t& M, long int d);
-double fast_measure_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d);
+double fast_measure_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d);
 
 /* Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
    Hermitian matrix M where 1_{d} an identity matrix of size d */
 double fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, long int d);
-double fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d);
+double fast_measure_h_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d);
 
 /* Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
    vector, M is a complex square matrix and 1_{d} an identity matrix of
@@ -38,7 +38,7 @@ double fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::
    kronecker products (assuming 1_{d} is the result of multiple products
    of smaller identities). */
 void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, np_array_size_t& indices);
-void fast_evolve_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices);
+void fast_evolve_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices);
 };  // namespace parallel
 
 /* Functions for Celio's method */

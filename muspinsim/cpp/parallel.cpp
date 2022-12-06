@@ -19,24 +19,29 @@ double parallel::fast_measure(np_array_complex_t& V, np_array_complex_t& M, long
 
     return parallel::fast_measure_ptr(
         static_cast<std::complex<double>*>(V_info.ptr),
-        V_info.shape[0],
         static_cast<std::complex<double>*>(M_info.ptr),
         M_info.shape[0],
         d);
 }
 
-/* Same as above, but only for use in C++ - uses pointers instead of numpy
- * arrays
+/*
+ * Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
+ * matrix M where 1_{d} an identity matrix of size d
+ *
+ * For speed, no checks are performed here. The matrix M should be Hermitian
+ * with size N and the shape of V should be (N*d, 1).
+ *
+ * (Same as above, but only for use in C++ - uses pointers instead of numpy
+ * arrays)
  *
  * @param V_ptr Pointer to the vector
- * @param V_dim Dimension of V
  * @param M_ptr Pointer to the matrix
  * @param M_dim Dimension of M
  * @param d The dimension of the identity matrix
  *
  * @return The result of the combined product. Will be a single value.
  */
-double parallel::fast_measure_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d) {
+double parallel::fast_measure_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d) {
     double result = 0;
 
 // Sum results from separate threads into result
@@ -88,24 +93,29 @@ double parallel::fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, lo
 
     return parallel::fast_measure_h_ptr(
         static_cast<std::complex<double>*>(V_info.ptr),
-        V_info.shape[0],
         static_cast<std::complex<double>*>(M_info.ptr),
         M_info.shape[0],
         d);
 }
 
-/* Same as above, but only for use in C++ - uses pointers instead of numpy
- * arrays
+/*
+ * Computes V^\dagger (M \otimes 1_{d}) V between a complex vector V and a
+ * Hermitian matrix M where 1_{d} an identity matrix of size d
+ *
+ * For speed, no checks are performed here. The matrix M should be Hermitian
+ * with size N and the shape of V should be (N*d, 1).
+ *
+ * (Same as above, but only for use in C++ - uses pointers instead of numpy
+ * arrays)
  *
  * @param V_ptr Pointer to the vector
- * @param V_dim Dimension of V
  * @param M_ptr Pointer to the matrix
  * @param M_dim Dimension of M
  * @param d The dimension of the identity matrix
  *
  * @return The result of the combined product. Will be a single value.
  */
-double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d) {
+double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d) {
     double result = 0;
 
 // Sum results from separate threads into result
@@ -182,25 +192,33 @@ void parallel::fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, 
 
     parallel::fast_evolve_ptr(
         static_cast<std::complex<double>*>(V_info.ptr),
-        V_info.shape[0],
         static_cast<std::complex<double>*>(M_info.ptr),
         M_info.shape[0],
         d,
         static_cast<size_t*>(indices_info.ptr));
 }
 
-/* Same as above, but only for use in C++ - uses pointers instead of numpy
- * arrays
+/*
+ * Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
+ * vector, M is a complex square matrix and 1_{d} an identity matrix of
+ * size d. The indices allow the ability to modify the order of the
+ * kronecker products (assuming 1_{d} is the result of multiple products
+ * of smaller identities)
+ *
+ * For speed, no checks are performed here. The matrix M should be square
+ * with size N and the shape of V should be (N*d, 1). The number of indices
+ * supplied should be equal to N*d.
+ *
+ * (Same as above, but only for use in C++ - uses pointers instead of numpy)
  *
  * @param V_ptr Pointer to the vector
- * @param V_dim Dimension of V
  * @param M_ptr Pointer to the matrix
  * @param M_dim Dimension of M
  * @param d The total dimension M should increase by
  * @param indices Indices used to offset the accessed rows of V in order
  *                to effectively reverse the order of kronecker products.
  */
-void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, unsigned int V_dim, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices_ptr) {
+void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices_ptr) {
 #pragma omp parallel
     {
         // Avoid unecessary multiply ops
