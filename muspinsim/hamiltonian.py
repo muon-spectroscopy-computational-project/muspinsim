@@ -10,6 +10,7 @@ from numbers import Number
 from scipy import sparse
 
 from muspinsim import cython_utils
+from muspinsim.cpp import parallel_fast_time_evolve_test
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
@@ -246,7 +247,12 @@ class Hamiltonian(Operator, Hermitian):
         #     result[i, 0] /= other_dimension
         # result = result[:, 0]
 
-        # result = cython_utils.fast_time_evolve(times, other_dimension, A, W)
-        result = cython_utils.fast_time_evolve_parallel(times, other_dimension, A, W)
+        results = cython_utils.fast_time_evolve(times, other_dimension, A, W)
+        results = cython_utils.fast_time_evolve_parallel(times, other_dimension, A, W)
+
+        # Try pybind version
+        # results = np.zeros(times.shape[0], dtype=np.float64)
+        # parallel_fast_time_evolve_test(times, other_dimension, A, W, results)
+
         print("Evolve time: ", time.time() - t_start)
-        return result
+        return results

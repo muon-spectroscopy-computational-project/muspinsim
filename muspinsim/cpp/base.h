@@ -39,6 +39,8 @@ double fast_measure_h_ptr(std::complex<double>* V_ptr, std::complex<double>* M_p
    of smaller identities). */
 void fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, np_array_size_t& indices);
 void fast_evolve_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices);
+
+void fast_time_evolve_test(np_array_double_t& times, double other_dimension, np_array_double_t& A, np_array_double_t& W, np_array_double_t& results);
 };  // namespace parallel
 
 /* Functions for Celio's method */

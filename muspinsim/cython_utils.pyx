@@ -80,8 +80,8 @@ def fast_time_evolve_parallel(double [:] times, double other_dimension, double [
     cdef Py_ssize_t mat_dim = A.shape[0]
 
     # Use a memory view to the results array to make access faster
-    cdef np.ndarray[np.float64_t, ndim=1] result = np.zeros((num_times), dtype=np.float64)
-    cdef double [:] result_view = result
+    cdef np.ndarray[np.float64_t, ndim=1] results = np.zeros((num_times), dtype=np.float64)
+    cdef double [:] results_view = results
     
     cdef Py_ssize_t i, j, k
 
@@ -91,7 +91,7 @@ def fast_time_evolve_parallel(double [:] times, double other_dimension, double [
         for j in range(mat_dim):
             for k in range(mat_dim):
             #for k in range(0, j + 1):
-                result_view[i] += A[j, k] * cos(W[j, k] * times[i])
-        result_view[i] /= other_dimension
+                results_view[i] += A[j, k] * cos(W[j, k] * times[i])
+        results_view[i] /= other_dimension
 
-    return result
+    return results
