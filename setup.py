@@ -5,6 +5,7 @@ from glob import glob
 import sys
 import sysconfig
 import os
+
 from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 from Cython.Build import cythonize
 
@@ -27,8 +28,10 @@ def _add_compile_options(options):
     if sysconfig.get_platform().startswith("win") and os.environ.get("MSYSTEM") is None:
         # Windows
         options["compile_args"].extend(["/w", "/Ox"])
+
         if options["openmp"]:
             options["compile_args"].append("/openmp")
+            options["link_args"].append("/openmp")
     else:
         # Linux/Mac/Windows MINGW
         options["compile_args"].extend(["-w", "-O3", "-funroll-loops"])
@@ -46,29 +49,20 @@ def _add_compile_options(options):
     return options
 
 
-def setup():
-    with open("README.md", "r", encoding="utf-8") as fh:
-        long_description = fh.read()
-
-    version = {}
-    with open("muspinsim/version.py") as fp:
-        exec(fp.read(), version)
-
-    options = {}
-    options = _check_user_arguments(options)
-    options = _add_compile_options(options)
-
-    # Optional multithreaded build for pybind11
-    ParallelCompile("NPY_NUM_BUILD_JOBS").install()
+# Returns the extensions for compillation
+def _get_extensions(options):
+    ext_modules = []
 
     # Setup pybind11 extension
-    ext_modules = []
     ext_modules.append(
         Pybind11Extension(
             "muspinsim.cpp",
             sorted(glob("muspinsim/cpp/*.cpp")),
-            extra_compile_args=options["compile_args"],
-            extra_link_args=options["link_args"],
+            # Need to copy the arrays as this step actually modifies them
+            # and this breaks the cython compilation as -fvisibility=hidden
+            # is used on linux which prevents the cython bindings being seen
+            extra_compile_args=options["compile_args"].copy(),
+            extra_link_args=options["link_args"].copy(),
         ),
     )
 
@@ -84,9 +78,31 @@ def setup():
                 )
             ],
             compiler_directives={"language_level": "3str"},
-            annotate=True,
+            # The following is useful when developing - generates a report to
+            # see how much python is still used
+            # annotate=True,
         ),
     )
+
+    return ext_modules
+
+
+def setup():
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+
+    version = {}
+    with open("muspinsim/version.py") as fp:
+        exec(fp.read(), version)
+
+    options = {}
+    options = _check_user_arguments(options)
+    options = _add_compile_options(options)
+
+    # Optional multithreaded build for pybind11
+    ParallelCompile("NPY_NUM_BUILD_JOBS").install()
+
+    ext_modules = _get_extensions(options)
 
     setuptools.setup(
         name="muspinsim",
