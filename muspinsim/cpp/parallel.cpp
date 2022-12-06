@@ -158,9 +158,10 @@ double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, std::complex<do
 /*
  * Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
  * vector, M is a complex square matrix and 1_{d} an identity matrix of
- * size d. The indices allow the ability to modify the order of the
- *  kronecker products (assuming 1_{d} is the result of multiple products
- *  of smaller identities)
+ * size d. The indices can be used to modify the rows/columns accessed and
+ * when chosen appropriately can be used to act as a swap gate.
+ * (assuming 1_{d} is the result of multiple kronecker products of smaller
+ * identities)
  *
  * For speed, no checks are performed here. The matrix M should be square
  * with size N and the shape of V should be (N*d, 1). The number of indices
@@ -171,11 +172,13 @@ double parallel::fast_measure_h_ptr(std::complex<double>* V_ptr, std::complex<do
  * @param d The total dimension M should increase by after kronecker
  *          products. E.g. a 2x2 matrix with d = 8 would become
  *          a 16x16 matrix.
- * @param indices Indices used to offset the accessed rows of V in order
- *                to effectively reverse the order of kronecker products.
+ * @param indices Indices used to offset the accessed rows of V.
+ *
  *                To compute M \otimes 1_d you would need to supply N*d
  *                indices in order from 0 to N*d.
- *                To generate these you can use np.transpose e.g.
+ *
+ *                To generate these to act like a swap gate you can use
+ *                np.transpose e.g.
  *                  np.transpose(
  *                      np.arange(np.product(dimensions)).reshape(
  *                          dimensions
@@ -201,9 +204,10 @@ void parallel::fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, 
 /*
  * Computes (M \otimes 1_{d}) V, modifying V inplace, where V is a complex
  * vector, M is a complex square matrix and 1_{d} an identity matrix of
- * size d. The indices allow the ability to modify the order of the
- * kronecker products (assuming 1_{d} is the result of multiple products
- * of smaller identities)
+ * size d. The indices can be used to modify the rows/columns accessed and
+ * when chosen appropriately can be used to act as a swap gate.
+ * (assuming 1_{d} is the result of multiple kronecker products of smaller
+ * identities)
  *
  * For speed, no checks are performed here. The matrix M should be square
  * with size N and the shape of V should be (N*d, 1). The number of indices
@@ -215,8 +219,7 @@ void parallel::fast_evolve(np_array_complex_t& V, np_array_complex_t& M, int d, 
  * @param M_ptr Pointer to the matrix
  * @param M_dim Dimension of M
  * @param d The total dimension M should increase by
- * @param indices Indices used to offset the accessed rows of V in order
- *                to effectively reverse the order of kronecker products.
+ * @param indices Indices used to offset the accessed rows of V
  */
 void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, std::complex<double>* M_ptr, unsigned int M_dim, long int d, size_t* indices_ptr) {
 #pragma omp parallel
