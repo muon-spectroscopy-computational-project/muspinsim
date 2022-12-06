@@ -113,11 +113,11 @@ gives the time evolution of the initial approximated states.
 The coefficients $w_n$ here describe the probability of finding the spin system in the state $\ket{\psi_n(0)}$ at $t = 0$. In standard experimental conditions these are determined as
 
 $$
-w_n = \frac{2}{d}\text{  if  }\sigma_{\mu}\bra{\psi_n(0)} = + \ket{\psi_n(0)} 
+w_n = \frac{2}{d}\text{  if  }\sigma_{\mu}\ket{\psi_n(0)} = + \ket{\psi_n(0)} 
 $$
 
 $$
-w_n = 0\text{  if  }\sigma_{\mu}\bra{\psi_n(0)} = - \ket{\psi_n(0)} 
+w_n = 0\text{  if  }\sigma_{\mu}\ket{\psi_n(0)} = - \ket{\psi_n(0)} 
 $$
 
 Thus we can diagonalise the density matrix for the muon given by
