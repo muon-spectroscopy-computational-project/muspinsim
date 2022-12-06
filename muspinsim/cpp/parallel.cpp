@@ -7,6 +7,9 @@
  * For speed, no checks are performed here. The matrix M should be Hermitian
  * with size N and the shape of V should be (N*d, 1).
  *
+ * No swapping is done here as it is assumed the thing being measured is
+ * first in the system.
+ *
  * @param V The vector
  * @param M The matrix
  * @param d The dimension of the identity matrix
@@ -30,6 +33,9 @@ double parallel::fast_measure(np_array_complex_t& V, np_array_complex_t& M, long
  *
  * For speed, no checks are performed here. The matrix M should be Hermitian
  * with size N and the shape of V should be (N*d, 1).
+ *
+ * No swapping is done here as it is assumed the thing being measured is
+ * first in the system.
  *
  * (Same as above, but only for use in C++ - uses pointers instead of numpy
  * arrays)
@@ -81,6 +87,9 @@ double parallel::fast_measure_ptr(std::complex<double>* V_ptr, std::complex<doub
  * For speed, no checks are performed here. The matrix M should be Hermitian
  * with size N and the shape of V should be (N*d, 1).
  *
+ * No swapping is done here as it is assumed the thing being measured is
+ * first in the system.
+ *
  * @param V The vector
  * @param M The matrix
  * @param d The dimension of the identity matrix
@@ -104,6 +113,9 @@ double parallel::fast_measure_h(np_array_complex_t& V, np_array_complex_t& M, lo
  *
  * For speed, no checks are performed here. The matrix M should be Hermitian
  * with size N and the shape of V should be (N*d, 1).
+ *
+ * No swapping is done here as it is assumed the thing being measured is
+ * first in the system.
  *
  * (Same as above, but only for use in C++ - uses pointers instead of numpy
  * arrays)
