@@ -411,7 +411,8 @@ class ExperimentRunner(object):
                     self.p, cfg_snap.t, self.config.celio_averages, True
                 )
             else:
-                if self._T_inf_speedup:
+                # Use faster evolution if able to (Doesn't exist for Linbladian)
+                if self._T_inf_speedup and not isinstance(H, Lindbladian):
                     other_spins = list(range(0, len(self._system.spins)))
                     other_spins.remove(self._system.muon_index)
                     other_dimension = np.prod(

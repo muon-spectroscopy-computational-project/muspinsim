@@ -5,6 +5,7 @@ from glob import glob
 import sys
 import sysconfig
 import os
+import numpy
 
 from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 from Cython.Build import cythonize
@@ -49,7 +50,7 @@ def _add_compile_options(options):
     return options
 
 
-# Returns the extensions for compillation
+# Returns the extensions for compilation
 def _get_extensions(options):
     ext_modules = []
 
@@ -75,6 +76,9 @@ def _get_extensions(options):
                     ["muspinsim/cython_utils.pyx"],
                     extra_compile_args=options["compile_args"],
                     extra_link_args=options["link_args"],
+                    # This requires numpy to be installed while building, so
+                    # it's needed in setup_requires
+                    include_dirs=[numpy.get_include()],
                 )
             ],
             compiler_directives={"language_level": "3str"},
@@ -129,6 +133,8 @@ def setup():
             "Topic :: Scientific/Engineering :: Physics",
             "Topic :: Scientific/Engineering :: Information Analysis",
         ],
+        # Includes are needed for Cython compilation
+        setup_requires=["numpy"],
         install_requires=[
             "numpy",
             "scipy",
