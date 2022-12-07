@@ -360,6 +360,18 @@ class ExperimentRunner(object):
         # For now only use when exactly 0 (i.e. when T -> inf, or B = 0)
         self._T_inf_speedup = check_result == 0
 
+        # Due to the method of computation we also require that muon is first in
+        # the system so we check this is the case here, otherwise we need to
+        # change the order of kronecker products when computing the sigma_mu for
+        # the system and this would be slower anyway
+        if self._T_inf_speedup and self._system.muon_index != 0:
+            self._T_inf_speedup = False
+
+            # Add a message to the log to notify there is a speedup available
+            # if the system is reordered
+            logging.info(
+                "The system is suitable for a speedup if the muon is defined first."
+            )
         return w
 
     def run_single(self, cfg_snap: ConfigSnapshot):

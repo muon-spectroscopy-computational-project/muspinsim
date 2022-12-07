@@ -11,7 +11,6 @@ from scipy import sparse
 from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim import cython_utils
-from muspinsim.cpp import parallel_fast_time_evolve_test
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
@@ -184,6 +183,9 @@ class Hamiltonian(Operator, Hermitian):
 
         Computes the evolution of a muon polarisation state under this
         Hamiltonian and returns a sequence of expectation values.
+
+        The muon polarisation is assumed to be first in the system in this
+        computation.
 
         Arguments:
             muon_axis {ndarray} -- Initial polarisation axis for the muon

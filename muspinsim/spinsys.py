@@ -178,8 +178,8 @@ class SpinSystem(Clonable):
                             chemical symbol, or a (str, int) tuple with a
                             chemical symbol and an isotope (default: {[]})
             celio_k {int} -- Factor for the Trotter approximation if Celio's
-                           method is to be used. When this is 0, Celio's method
-                           is not used.
+                             method is to be used. When this is 0, Celio's
+                             method is not used.
         """
 
         gammas = []
@@ -549,23 +549,19 @@ class SpinSystem(Clonable):
 
     def operator(self, terms={}, include_only_given=False):
         """Return an operator for this spin system
-                Return a SpinOperator for this system containing the specified terms.
-                Keyword Arguments:
-                    terms {dict} -- A dictionary of terms to include. The keys should
-                                    indices of particles and the values should be
-                                    symbols indicating one spin operator (either x, y,
-                                    z, +, - or 0). Wherever not specified, the identity
-                                    operaror is applied (default: {{}})
-        <<<<<<< HEAD
-        =======
-                    include_only_given -- When True only the requested terms will be included
-                                          otherwise the result will include the kronecker
-                                          product with identity matrices for the partcles
-                                          not present in the terms
-
-        >>>>>>> 2.x
-                Returns:
-                    SpinOperator -- The requested operator
+        Return a SpinOperator for this system containing the specified terms.
+        Keyword Arguments:
+            terms {dict} -- A dictionary of terms to include. The keys should
+                            indices of particles and the values should be
+                            symbols indicating one spin operator (either x, y,
+                            z, +, - or 0). Wherever not specified, the identity
+                            operator is applied (default: {{}})
+            include_only_given -- When True only the requested terms will be included
+                                  otherwise the result will include the kronecker
+                                  product with identity matrices for the particles
+                                  not present in the terms
+        Returns:
+            SpinOperator -- The requested operator
         """
 
         def _get_term(i):
