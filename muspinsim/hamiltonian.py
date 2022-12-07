@@ -3,14 +3,13 @@
 A class describing a spin Hamiltonian with various terms
 """
 
-import time
 import numpy as np
 from numbers import Number
 
 from scipy import sparse
 from qutip import sigmax, sigmay, sigmaz
 
-from muspinsim import cython_utils
+from muspinsim.cython import parallel_fast_time_evolve
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 
 
@@ -211,9 +210,7 @@ class Hamiltonian(Operator, Hermitian):
         sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
 
         # Diagonalize self
-        t_start = time.time()
         evals, evecs = self.diag()
-        print("Eigenvalue time: ", time.time() - t_start)
 
         # Expand to correct size (Assumes the muon is the first element in
         # the system)
@@ -224,28 +221,13 @@ class Hamiltonian(Operator, Hermitian):
         # Compute the value of R^dagger * sigma * R
         # evecs = sparse.csr_matrix(sigma_mu)
         # A = evecs.T.conjugate() * (sigma_mu * evecs)
-        t_start = time.time()
         A = np.dot(evecs.T.conjugate(), np.dot(sigma_mu.toarray(), evecs))
 
         # Mod square
         A = np.power(np.abs(A), 2)
-        print("Amplitudes time: ", time.time() - t_start)
-
-        t_start = time.time()
         W = 2 * np.pi * np.subtract.outer(evals, evals)
-        print("W time ", time.time() - t_start)
 
-        t_start = time.time()
-
-        results = cython_utils.cy_parallel_fast_time_evolve(
-            times, other_dimension, A, W
-        )
-
-        # Try pybind version
-        # results = np.zeros(times.shape[0], dtype=np.float64)
-        # parallel_fast_time_evolve_test(times, other_dimension, A, W, results)
-
-        print("Evolve time: ", time.time() - t_start)
+        results = parallel_fast_time_evolve(times, other_dimension, A, W)
 
         # Divide by 2 as by convention rest of muspinsim gives results between
         # 0.5 and -0.5

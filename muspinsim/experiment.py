@@ -355,7 +355,7 @@ class ExperimentRunner(object):
 
         # Figure out if a speedup is suitable
         B = np.linalg.norm(self.B)
-        check_result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * T * cnst.k)
+        check_result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * cnst.k * T)
 
         # For now only use when exactly 0 (i.e. when T -> inf, or B = 0)
         self._T_inf_speedup = check_result == 0

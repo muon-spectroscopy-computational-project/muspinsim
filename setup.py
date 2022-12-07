@@ -72,8 +72,8 @@ def _get_extensions(options):
         cythonize(
             [
                 setuptools.Extension(
-                    "muspinsim.cython_utils",
-                    ["muspinsim/cython_utils.pyx"],
+                    "muspinsim.cython",
+                    sorted(glob("muspinsim/cython/*.pyx")),
                     extra_compile_args=options["compile_args"],
                     extra_link_args=options["link_args"],
                     # This requires numpy to be installed while building, so

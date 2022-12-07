@@ -145,4 +145,4 @@ examples/*/*
 muspinsim.dat
 
 # Cython generated C code
-muspinsim/*.c
+muspinsim/cython/*.c
