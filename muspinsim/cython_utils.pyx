@@ -50,18 +50,21 @@ def fast_time_evolve(np.ndarray[np.float64_t, ndim=1] times, int other_dimension
 
 @cython.boundscheck(False) # Disable bounds-checking
 @cython.wraparound(False)  # Disable negative index wrapping
-def fast_time_evolve_parallel(double [:] times, double other_dimension, double [:, :] A, double [:, :] W):
+def cy_parallel_fast_time_evolve(double [:] times, int other_dimension, double [:, :] A, double [:, :] W):
     """Computes the result of time evolution of a muon polarisation
 
     Fast method for computing the result of time evolution of a
     muon polarisation. It requires the T -> inf approximation.
     Calculated as:
-    \frac{1}{d}\sum_{\alpha, \beta}|<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
+    \frac{1}{2d}\sum_{\alpha, \beta}|<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
+    +
+    \frac{1}{d}\sum_{\alpha < \beta}|<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
         \cos[(E_{\alpha} - E{\alpha})t]
 
     Arguments:
-        other_dimension {double} -- Value of the dimension labelled
-                                    as d in the equation above.
+        other_dimension {int} -- Value of the dimension labelled as d in the
+                                 equation above. Equal to half the total
+                                 dimension of the system.
         A {ndarray} -- Matrix giving the amplites of the cosines
                        |<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
         W {ndarray} -- Matrix containing the differences of eigenvalues
@@ -85,13 +88,18 @@ def fast_time_evolve_parallel(double [:] times, double other_dimension, double [
     
     cdef Py_ssize_t i, j, k
 
+    cdef double one_over_d = 1.0 / other_dimension
+
     # Run times in parallel
     for i in prange(num_times, nogil=True):
-        # k <= j
         for j in range(mat_dim):
-            for k in range(mat_dim):
-            #for k in range(0, j + 1):
-                results_view[i] += A[j, k] * cos(W[j, k] * times[i])
-        results_view[i] /= other_dimension
+            # k <= j
+            for k in range(0, j + 1):
+                if k == j:
+                    # Multiply by 0.5 here as want 1/2d here, and 1/d below
+                    results_view[i] += 0.5 * A[j, k]
+                else:
+                    results_view[i] += A[j, k] * cos(W[j, k] * times[i])
+        results_view[i] *= one_over_d
 
     return results

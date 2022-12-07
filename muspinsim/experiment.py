@@ -355,14 +355,10 @@ class ExperimentRunner(object):
 
         # Figure out if a speedup is suitable
         B = np.linalg.norm(self.B)
-        T = self.T
+        check_result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * T * cnst.k)
 
-        result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * T * cnst.k)
-        if result > 0:
-            print("Check: ", result)
-
-        # For now only use when exactly 0
-        self._T_inf_speedup = result == 0
+        # For now only use when exactly 0 (i.e. when T -> inf, or B = 0)
+        self._T_inf_speedup = check_result == 0
 
         return w
 
@@ -410,11 +406,7 @@ class ExperimentRunner(object):
                         [self._system.dimension[i] for i in other_spins]
                     )
 
-                    sigma_mu = self._system.muon_operator(
-                        self.p, include_only_muon=True
-                    )
-
-                    data = H.fast_evolve(sigma_mu, cfg_snap.t, other_dimension)
+                    data = H.fast_evolve(self.p, cfg_snap.t, other_dimension)
                 else:
                     data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":

@@ -8,6 +8,7 @@ import numpy as np
 from numbers import Number
 
 from scipy import sparse
+from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim import cython_utils
 from muspinsim.cpp import parallel_fast_time_evolve_test
@@ -177,16 +178,15 @@ class Hamiltonian(Operator, Hermitian):
 
         return result
 
-    def fast_evolve(self, sigma_mu, times, other_dimension):
+    def fast_evolve(self, muon_axis, times, other_dimension):
         """Compute time evolution of a muon polarisation state using this
            Hamiltonian
 
         Computes the evolution of a muon polarisation state under this
-        Hamiltonian and returns either a sequence of expectation values
-        for the given SpinOperator.
+        Hamiltonian and returns a sequence of expectation values.
 
         Arguments:
-            sigma_mu {SpinOperator} -- Muon spin operator
+            muon_axis {ndarray} -- Initial polarisation axis for the muon
             times {ndarray} -- Times to compute the evolution for, in microseconds
             other_dimension {int} -- Combined dimension of all non-muons in the
                                      system
@@ -204,6 +204,10 @@ class Hamiltonian(Operator, Hermitian):
         if len(times.shape) != 1:
             raise ValueError("times must be an array of values in microseconds")
 
+        # Compute spin matrix in direction of the muon
+        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
+        sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
+
         # Diagonalize self
         t_start = time.time()
         evals, evecs = self.diag()
@@ -213,9 +217,7 @@ class Hamiltonian(Operator, Hermitian):
         # the system)
         # TODO: Can use method from C++ implementation of Celio's here to avoid
         # the use of kron, reduce memory and speed up
-        sigma_mu = sparse.kron(
-            sigma_mu.matrix, sparse.identity(other_dimension, format="csr")
-        )
+        sigma_mu = sparse.kron(sigma_mu, sparse.identity(other_dimension, format="csr"))
 
         # Compute the value of R^dagger * sigma * R
         # evecs = sparse.csr_matrix(sigma_mu)
@@ -231,28 +233,18 @@ class Hamiltonian(Operator, Hermitian):
         W = 2 * np.pi * np.subtract.outer(evals, evals)
         print("W time ", time.time() - t_start)
 
-        # No idea why we need to divide by 2 here - without it values go
-        # up to 0.25 instead of 0.5
-        # Only needed when not doing full sum and instead only doing for \alpha > \beta
-        # other_dimension /= 2
-
         t_start = time.time()
-        # Avoid using append as assignment should be faster
-        # result = np.zeros((times.shape[0], 1), dtype=np.float64)
-        # for i in range(times.shape[0]):
-        #     # k <= j
-        #     for j in range(A.shape[0]):
-        #         for k in range(0, j + 1):
-        #             result[i, 0] += A[j, k] * np.cos(W[j, k] * times[i])
-        #     result[i, 0] /= other_dimension
-        # result = result[:, 0]
 
-        results = cython_utils.fast_time_evolve(times, other_dimension, A, W)
-        results = cython_utils.fast_time_evolve_parallel(times, other_dimension, A, W)
+        results = cython_utils.cy_parallel_fast_time_evolve(
+            times, other_dimension, A, W
+        )
 
         # Try pybind version
         # results = np.zeros(times.shape[0], dtype=np.float64)
         # parallel_fast_time_evolve_test(times, other_dimension, A, W, results)
 
         print("Evolve time: ", time.time() - t_start)
-        return results
+
+        # Divide by 2 as by convention rest of muspinsim gives results between
+        # 0.5 and -0.5
+        return results * 0.5
