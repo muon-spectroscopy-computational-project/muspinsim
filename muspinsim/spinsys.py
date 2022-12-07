@@ -710,26 +710,15 @@ class MuonSpinSystem(SpinSystem):
 
         return self.add_bilinear_term(i, j, A, "Hyperfine")
 
-    def muon_operator(self, v, include_only_muon=False):
+    def muon_operator(self, v):
         """Get a muon operator
-
         Get a single operator for the muon, given a vector representing its
-        direction.
-
+        direction. Uses precalculated operators for speed.
         Arguments:
-            v {[float]} -- 3-dimensional vector representing the directions of
+            v {[float]} -- 3-dimensional vector representing the direction of
                            the desired operator
-            include_only_muon {boolean} - When False will compute using the
-                                          large spin matrices including terms
-                                          from the whole system that are
-                                          precaculated for speed.
-                                          Otherwise only calculates using
-                                          the 2x2 spin matrices for the
-                                          muon.
-
         Returns:
             mu_op {SpinOperator} -- Requested operator
-
         Raises:
             ValueError -- Invalid length of v
         """
@@ -739,11 +728,34 @@ class MuonSpinSystem(SpinSystem):
                 "Vector passed to muon_operator must be three" " dimensional"
             )
 
-        if include_only_muon:
-            mu_ops = [0.5 * sigmax().data, 0.5 * sigmay().data, 0.5 * sigmaz().data]
-            op = SpinOperator(np.sum([x * mu_ops[i] for i, x in enumerate(v)]))
-        else:
-            op = [x * self._mu_ops[i] for i, x in enumerate(v)]
-            op = sum(op[1:], op[0])
+        op = [x * self._mu_ops[i] for i, x in enumerate(v)]
+        op = sum(op[1:], op[0])
 
         return op
+
+    def sigma_mu(self, v):
+        """Obtain sigma_mu - a linear combination of Pauli spin operators in
+        a given direction for the muon. Unlike the 'muon_operator' above it
+        does not include a factor of spin and will be a 2x2 matrix instead of
+        one as large as the total combined system.
+
+        Arguments:
+            v {[float]} -- 3-dimensional vector representing the direction of
+                           the desired operator
+        Returns:
+            sigma_mu {ndarray} -- A linear combination of Pauli spin matrices
+                                  in the direction of v
+        Raises:
+            ValueError -- Invalid length of v
+        """
+
+        if len(v) != 3:
+            raise ValueError(
+                "Vector passed to muon_operator must be three" " dimensional"
+            )
+
+        # Spin matrix in direction of the muon
+        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
+        sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(v)])
+
+        return sigma_mu

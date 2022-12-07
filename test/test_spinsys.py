@@ -434,16 +434,7 @@ class TestMuonSpinSystem(unittest.TestCase):
     def test_muon_operator(self):
         mSsys = MuonSpinSystem(["mu", "e"])
 
-        muon_operator = mSsys.muon_operator([1, 1, 1], True)
-        self.assertEqual(muon_operator.matrix.shape, (2, 2))
-        self.assertIsNone(
-            np.testing.assert_array_equal(
-                muon_operator.matrix.toarray(),
-                [[0.5 + 0j, 0.5 - 0.5j], [0.5 + 0.5j, -0.5 + 0j]],
-            )
-        )
-
-        muon_operator = mSsys.muon_operator([1, 1, 1], False)
+        muon_operator = mSsys.muon_operator([1, 1, 1])
         self.assertEqual(muon_operator.matrix.shape, (4, 4))
         self.assertIsNone(
             np.testing.assert_array_equal(
@@ -454,5 +445,17 @@ class TestMuonSpinSystem(unittest.TestCase):
                     [0.5 + 0.5j, 0.0 + 0.0j, -0.5 + 0.0j, 0.0 + 0.0j],
                     [0.0 + 0.0j, 0.5 + 0.5j, 0.0 + 0.0j, -0.5 + 0.0j],
                 ],
+            )
+        )
+
+    def test_sigma_mu(self):
+        mSsys = MuonSpinSystem(["mu", "e"])
+
+        muon_operator = mSsys.sigma_mu([1, 1, 1])
+        self.assertEqual(muon_operator.shape, (2, 2))
+        self.assertIsNone(
+            np.testing.assert_array_equal(
+                muon_operator.toarray(),
+                [[1 + 0j, 1 - 1j], [1 + 1j, -1 + 0j]],
             )
         )

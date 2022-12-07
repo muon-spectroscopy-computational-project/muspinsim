@@ -68,11 +68,6 @@ class Hermitian(object):
         # need to convert this to use sparse matrices instead
         eigh = np.linalg.eigh(self._matrix.toarray())
 
-        # SciPy uses evr driver by default which is faster but seems less acurate
-        # strangly explicitly stating csr is slower than not...
-        # Numpy uses evd instead
-        # eigh = scipy.linalg.eigh(self._matrix.toarray())
-
         # setting k is important
         # too big will cause memory issues
         # too small = inaccurate results

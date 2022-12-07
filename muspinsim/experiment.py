@@ -408,7 +408,10 @@ class ExperimentRunner(object):
                     )
 
                 data = H.fast_evolve(
-                    self.p, cfg_snap.t, self.config.celio_averages, True
+                    self._system.sigma_mu(self.p),
+                    cfg_snap.t,
+                    self.config.celio_averages,
+                    True,
                 )
             else:
                 # Use faster evolution if able to (Doesn't exist for Linbladian)
@@ -419,7 +422,9 @@ class ExperimentRunner(object):
                         [self._system.dimension[i] for i in other_spins]
                     )
 
-                    data = H.fast_evolve(self.p, cfg_snap.t, other_dimension)
+                    data = H.fast_evolve(
+                        self._system.sigma_mu(self.p), cfg_snap.t, other_dimension
+                    )
                 else:
                     data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":

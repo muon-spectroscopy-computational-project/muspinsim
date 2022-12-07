@@ -57,7 +57,7 @@ class TestHamiltonian(unittest.TestCase):
         self.assertTrue(isinstance(H, Hamiltonian))
 
         # Start along z
-        evol = H.fast_evolve([0, 0, 1], t, 2)
+        evol = H.fast_evolve(ssys.sigma_mu([0, 0, 1]), t, 2)
 
         self.assertTrue(np.all(np.isclose(evol, 0.5 * np.cos(2 * np.pi * t))))
 

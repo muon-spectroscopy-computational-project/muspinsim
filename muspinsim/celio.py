@@ -12,7 +12,7 @@ import logging
 from typing import List
 import numpy as np
 from scipy import sparse
-from qutip import Qobj, sigmax, sigmay, sigmaz
+from qutip import Qobj
 
 from muspinsim.cpp import (
     Celio_EvolveContrib,
@@ -324,7 +324,7 @@ class CelioHamiltonian:
         # Likely dense, faster to use numpy array
         return psi.T
 
-    def fast_evolve(self, muon_axis, times, averages, cpp=True):
+    def fast_evolve(self, sigma_mu, times, averages, cpp=True):
         """Time evolution of spin states under this Hamiltonian
 
         Perform the time evolution of a randomised initial spin state under
@@ -332,7 +332,8 @@ class CelioHamiltonian:
         muon polarisation at the requested times
 
         Arguments:
-            muon_axis {ndarray} -- Initial polarisation axis for the muon
+            sigma_mu {ndarray} -- Linear combination of Pauli spin matrices in
+                                  the direction of the muon
             times {ndarray} -- Times to compute the evolution for, in
                                microseconds
             averages {int} -- Number of averages to compute
@@ -373,10 +374,6 @@ class CelioHamiltonian:
             )
 
         time_step = times[1] - times[0]
-
-        # Compute spin matrix in direction of the muon
-        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
-        sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
 
         # Obtain spin up and down states, and select the one with
         # the eigenvalue +1 while trying to avoid precision issues

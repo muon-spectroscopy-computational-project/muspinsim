@@ -265,44 +265,9 @@ void parallel::fast_evolve_ptr(std::complex<double>* V_ptr, std::complex<double>
     }
 }
 
-void parallel::fast_time_evolve_test(np_array_double_t& times, double other_dimension, np_array_double_t& A, np_array_double_t& W, np_array_double_t& results) {
-    py::buffer_info times_info = times.request();
-    py::buffer_info A_info = A.request();
-    py::buffer_info W_info = W.request();
-    py::buffer_info results_info = results.request();
-
-    auto* times_ptr = static_cast<double*>(times_info.ptr);
-    auto* A_ptr = static_cast<double*>(A_info.ptr);
-    auto* W_ptr = static_cast<double*>(W_info.ptr);
-    auto* results_ptr = static_cast<double*>(results_info.ptr);
-
-    unsigned int num_times = times_info.shape[0];
-    unsigned int mat_dim = A_info.shape[0];
-
-#pragma omp parallel
-    {
-        // Avoid unecessary multiply ops
-        size_t mat_col_offset;
-
-        // Parallelise over times
-#pragma omp for
-        for (long int i = 0; i < num_times; ++i) {
-            for (unsigned int j = 0; j < mat_dim; ++j) {
-                mat_col_offset = j * mat_dim;
-                for (unsigned int k = 0; k < mat_dim; ++k) {
-                    // M[j, k] -> M[j * mat_dim + k] as column major
-                    results_ptr[i] += A_ptr[mat_col_offset + k] * cos(W_ptr[mat_col_offset + k] * times_ptr[i]);
-                }
-            }
-            results_ptr[i] /= other_dimension;
-        }
-    }
-}
-
 /* Init function for defining python bindings */
 void parallel::init(py::module_& m) {
     m.def("parallel_fast_measure", &parallel::fast_measure, "Computes V^\\dagger (M \\otimes 1_{d}) V between a complex vector V and a matrix M where 1_{d} an identity matrix of size d");
     m.def("parallel_fast_measure_h", &parallel::fast_measure_h, "Computes V^\\dagger (M \\otimes 1_{d}) V between a complex vector V and a Hermitian matrix M where 1_{d} an identity matrix of size d");
     m.def("parallel_fast_evolve", &parallel::fast_evolve, "Modifies a vector, V to have a value equal to its product with a matrix equal to M with some amount of kronecker products with identity matrices");
-    m.def("parallel_fast_time_evolve_test", &parallel::fast_time_evolve_test, "");
 }
