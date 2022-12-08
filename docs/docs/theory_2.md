@@ -53,7 +53,7 @@ This way we can see that the equations are completely decoupled. Coefficients on
 When simulating systems where $\frac{B}{T} \rightarrow 0$, i.e. when we have zero external magnetic field or the temperature $T \rightarrow \infty$, MuSpinSim will automatically employ a faster method of time evolution. To explain this method we first note that the density matrix at $t=0$ for the muon polarised along a direction ${\hat n}$ can be written as
 
 $$
- \rho_\mu (t=0) = \frac{1}{2}(1 + \sigma_\mu^{\hat n}),
+ \rho_\mu (t=0) = \frac{1}{2}(\mathbb{1} + \sigma_\mu^{\hat n}),
 $$
 
 and hence the density matrix of the full system is, (defining $d =\prod_{i \neq 0} 2I_i + 1$ as the dimension of the Hilbert space without the muon)
@@ -140,7 +140,7 @@ $$
 Finally, by expressing the exponentials in terms of $\sin$ and $\cos$, we may simplify the expression to
 
 $$
-P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha = \beta}\Big|\langle\alpha|\sigma_{\mu}^{\hat{n}}|\beta\rangle\Big|^2 + \frac{1}{d}\sum_{\alpha > \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 \cos [(E_\beta-E_\alpha) t].
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha = \beta}\Big|\langle\alpha|\sigma_{\mu}^{\hat{n}}|\beta\rangle\Big|^2 + \frac{1}{d}\sum_{\alpha < \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 \cos [(E_\beta-E_\alpha) t].
 $$
 
 When installed with OpenMP, MuSpinSim will parallelise this method over the time values, so when computing for 100 times, it will run on up to 100 threads.
@@ -192,7 +192,7 @@ For a further speedup we can continue to follow Celio's method, approximating th
 Here instead of evolving the density matrix, we instead evolve $\sigma_{\mu}=2I_{\mu}$ which are the Pauli matrices in the direction of the muon.
 
 $$
-\sigma_{\mu}(t) = e^{\frac{iHt}{\hbar}}\sigma_{\mu}e^{-\frac{iHt}{\hbar}}
+\sigma_{\mu}(t) = e^{-\frac{i}{\hbar}Ht}\sigma_{\mu}e^{\frac{i}{\hbar}Ht}
 $$
 
 Then by choosing a representation where $\sigma_{\mu}$ is diagonal we can write the muon polarisation as
