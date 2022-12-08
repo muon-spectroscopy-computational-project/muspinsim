@@ -50,20 +50,20 @@ This way we can see that the equations are completely decoupled. Coefficients on
 
 #### A faster method
 
-For cases when $\frac{B}{T} \rightarrow 0$, for instance when we are simulating a zero field experiment or one where we take $T\rightarrow = \infty$, we no longer need the density matrix and automatically employ a faster method. To do we can first note that we will be dealing with a spin-polarised muon with various other unpolarised spins. The density matrix at $t=0$ for the muon polarised along ${\hat n}$ can be written as
+When simulating systems where $\frac{B}{T} \rightarrow 0$, i.e. when we have zero external magnetic field or the temperature $T \rightarrow \infty$, MuSpinSim will automatically employ a faster method of time evolution. To explain this method we first note that the density matrix at $t=0$ for the muon polarised along a direction ${\hat n}$ can be written as
 
 $$
  \rho_\mu (t=0) = \frac{1}{2}(1 + \sigma_\mu^{\hat n}),
 $$
 
-and hence the density matrix of the full system is, (defining $d =\prod_{i \neq 0} 2I_i + 1$ as the dimension of the Hilbert space without the muon), 
+and hence the density matrix of the full system is, (defining $d =\prod_{i \neq 0} 2I_i + 1$ as the dimension of the Hilbert space without the muon)
 
 $$
  \rho(t=0) = \frac{1}{2}(\mathbb{1}+\sigma_\mu^{\hat n}) \otimes \frac{1}{d}\mathbb{1}_d.
 $$
 
 Here we want to calculate the time dependence of the muon polarisation along ${\hat n}$, which is given by (notational abuse 
-means $\sigma_\mu^{\hat n}(t) = e^{iHt}(\sigma_\mu^{\hat n} \otimes \mathbb{1}_d) e^{-iHt}$)
+means $\sigma_\mu^{\hat n}(t) = e^{-\frac{i}{\hbar}Ht}(\sigma_\mu^{\hat n} \otimes \mathbb{1}_d) e^{\frac{i}{\hbar}Ht}$)
 
 $$
  P^{\hat n}_\mu(t) = \mathrm{Tr}[\rho(t)\sigma_\mu^{\hat n}(0)] = \mathrm{Tr}[\rho(t=0)\sigma_\mu^{\hat n}(t)].
@@ -106,14 +106,14 @@ Explicitly writing out the time dependance, we get
 
 $$
 P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta, \gamma} \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle e^{iE_\beta t} \langle \beta | \sigma_\mu^{\hat n}(0)
-|\gamma \rangle e^{-iE_\beta t} \langle \gamma | \alpha \rangle,
+|\gamma \rangle e^{-iE_\gamma t} \langle \gamma | \alpha \rangle,
 $$
 
 and as $\langle \gamma | \alpha \rangle = \delta_{\gamma, \alpha}$, this simplifies to
 
 $$
 P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta} \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle e^{iE_\beta t} \langle \beta | \sigma_\mu^{\hat n}(0)
-|\alpha \rangle e^{-iE_\beta t},
+|\alpha \rangle e^{-iE_\alpha t},
 $$
 
 so that
@@ -122,10 +122,25 @@ $$
 P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t}.
 $$
 
-Simplifying this further we find
+Then, we can separate these terms into
 
 $$
-P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta}\Big|\langle\alpha|\sigma_{\mu}^{\hat{n}}|\beta\rangle\Big|^2 + \frac{1}{d}\sum_{\alpha > \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 \cos [(E_\beta-E_\alpha) t].
+\begin{aligned}
+P^{\hat n}_\mu(t) & = \frac{1}{2d}\sum_{\alpha = \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t} \\
+& + \frac{1}{2d}\sum_{\alpha < \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t} + \frac{1}{2d}\sum_{\alpha > \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t}.
+\end{aligned}
+$$
+
+Now by swapping $\alpha$ and $\beta$ in the last term, we see that it is the same as the second term apart from a sign in the exponential, so they may combined to give
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha = \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t} + \frac{1}{2d}\sum_{\alpha < \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 [e^{i(E_\beta-E_\alpha) t} + e^{-i(E_\beta-E_\alpha) t}].
+$$
+
+Finally, by expressing the exponentials in terms of $\sin$ and $\cos$, we may simplify the expression to
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha = \beta}\Big|\langle\alpha|\sigma_{\mu}^{\hat{n}}|\beta\rangle\Big|^2 + \frac{1}{d}\sum_{\alpha > \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 \cos [(E_\beta-E_\alpha) t].
 $$
 
 When installed with OpenMP, MuSpinSim will parallelise this method over the time values, so when computing for 100 times, it will run on up to 100 threads.
