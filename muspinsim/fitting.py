@@ -40,7 +40,7 @@ class FittingRunner(object):
             if len(variables) == 0:
                 # Should never happen, but...
                 raise ValueError(
-                    "MuSpinInput passed to FittingRunner has no " "variables to fit"
+                    "MuSpinInput passed to FittingRunner has no variables to fit"
                 )
 
             self._xnames = tuple(sorted(variables.keys()))  # Order is important!
@@ -142,7 +142,7 @@ class FittingRunner(object):
                     "Final absolute error <|f-f_targ|>: "
                     "{0}\n".format(self._sol["fun"])
                 )
-                f.write("Number of simulations: " "{0}\n".format(self._sol["nfev"]))
+                f.write("Number of simulations: {0}\n".format(self._sol["nfev"]))
                 f.write("Number of iterations: {0}\n".format(self._sol["nit"]))
 
                 f.write("\n" + "=" * 20 + "\n")

@@ -34,7 +34,7 @@ class TestInput(unittest.TestCase):
             MuSpinKeyword()
         self.assertEqual(
             str(err.exception),
-            "Input is empty and keyword " "'keyword' doesn't have a default value",
+            "Input is empty and keyword 'keyword' doesn't have a default value",
         )
 
     def test_evaluate_keyword(self):

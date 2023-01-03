@@ -166,7 +166,7 @@ class Operator(Clonable):
 
             if self.dimension != x.dimension:
                 raise ArithmeticError(
-                    "Can not add to Operators" " with different dimensions"
+                    "Can not add to Operators with different dimensions"
                 )
 
             ans = self.clone()
@@ -189,7 +189,7 @@ class Operator(Clonable):
 
             if self.dimension != x.dimension:
                 raise ArithmeticError(
-                    "Can not subtract to Operators" " with different dimensions"
+                    "Can not subtract to Operators with different dimensions"
                 )
 
             ans = self.clone()
@@ -209,7 +209,7 @@ class Operator(Clonable):
 
             if self.dimension != x.dimension:
                 raise ArithmeticError(
-                    "Can not multiply to Operators" " with different dimensions"
+                    "Can not multiply to Operators with different dimensions"
                 )
 
             ans = self.clone()
@@ -271,7 +271,7 @@ class Operator(Clonable):
 
         if not isinstance(x, Operator):
             raise ValueError(
-                "Can only perform Kronecker product with" " another Operator"
+                "Can only perform Kronecker product with another Operator"
             )
 
         # Doing it this way saves some time
@@ -300,7 +300,7 @@ class Operator(Clonable):
 
         if not isinstance(x, Operator):
             raise ValueError(
-                "Can only perform Hilbert-Schmidt product with" " another Operator"
+                "Can only perform Hilbert-Schmidt product with another Operator"
             )
 
         if not x.dimension == self.dimension:
@@ -560,7 +560,7 @@ class DensityOperator(Operator):
 
         if not operator.dimension == self.dimension:
             raise ValueError(
-                "SpinOperator and DensityOperator do not have" " compatible dimensions"
+                "SpinOperator and DensityOperator do not have compatible dimensions"
             )
 
         return operator.matrix.multiply(self.matrix.T).sum()

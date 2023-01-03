@@ -35,7 +35,7 @@ class Lindbladian(SuperOperator):
         AA = A.dagger() * A
         Ld = gamma * (SuperOperator.bracket(A) - 0.5 * SuperOperator.anticommutator(AA))
         if Ld.dimension != self.dimension:
-            raise ValueError("Invalid dissipation operator for this " "Lindbladian")
+            raise ValueError("Invalid dissipation operator for this Lindbladian")
 
         self._matrix += Ld.matrix
 
@@ -78,7 +78,7 @@ class Lindbladian(SuperOperator):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
             raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+                "operators must be a SpinOperator or a list of SpinOperator objects"
             )
 
         dim = rho0.dimension
@@ -153,7 +153,7 @@ class Lindbladian(SuperOperator):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
             raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+                "operators must be a SpinOperator or a list of SpinOperator objects"
             )
 
         # Start by building the matrix

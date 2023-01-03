@@ -70,7 +70,7 @@ class Hamiltonian(Operator, Hermitian):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
             raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+                "operators must be a SpinOperator or a list of SpinOperator objects"
             )
 
         # Diagonalize self
@@ -152,7 +152,7 @@ class Hamiltonian(Operator, Hermitian):
             operators = [operators]
         if not all([isinstance(o, SpinOperator) for o in operators]):
             raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
+                "operators must be a SpinOperator or a list of SpinOperator objects"
             )
 
         # Diagonalize self
