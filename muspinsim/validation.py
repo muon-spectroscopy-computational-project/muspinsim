@@ -6,7 +6,7 @@ from muspinsim.spinop import DensityOperator, SpinOperator
 
 def validate_times(times):
     """Validates the 'times' parameter for 'evolve' and 'integrate_decaying'
-       methods inthe  Hamiltonian, CelioHamiltonian and Linbladian classes
+       methods in the  Hamiltonian, CelioHamiltonian and Linbladian classes
 
     Arguments:
        times {ndarray} -- Times to compute the evolution for, in microseconds
@@ -27,13 +27,8 @@ def validate_evolve_params(rho0, times, operators):
     Arguments:
         rho0 {DensityOperator} -- Initial state
         times {ndarray} -- Times to compute the evolution for, in microseconds
-
-    Keyword Arguments:
         operators {[SpinOperator]} -- List of SpinOperators to compute the
-                                        expectation values of at each step.
-                                        If omitted, the states' density
-                                        matrices will be returned instead
-                                        (default: {[]})
+                                      expectation values of at each step.
     Raises:
         TypeError -- Invalid operators
         ValueError -- Invalid values of times or operators
@@ -56,8 +51,6 @@ def validate_integrate_decaying_params(rho0, tau, operators):
     Arguments:
         rho0 {DensityOperator} -- Initial state
         tau {float} -- Decay time, in microseconds
-
-    Keyword Arguments:
         operators {list} -- Operators to compute the expectation values
                             of
 
