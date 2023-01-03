@@ -54,7 +54,12 @@ class ExperimentRunner(object):
         mpi.broadcast_object(config, attrs)
 
         # broadcast _system attribute without _terms attribute
-        system = config.__dict__.get("_system", MuonSpinSystem())
+        system = config.__dict__.get("_system", None)
+
+        # Create default system only if none found
+        if system is None:
+            system = MuonSpinSystem()
+
         attrs = list(system.__dict__.keys())
         if "_terms" in attrs:
             attrs.remove("_terms")
