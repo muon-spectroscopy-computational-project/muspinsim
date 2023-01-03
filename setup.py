@@ -136,6 +136,7 @@ def setup():
         # Includes are needed for Cython compilation
         setup_requires=["numpy"],
         install_requires=[
+            "ase",
             "numpy",
             "scipy",
             "soprano",
