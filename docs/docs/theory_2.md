@@ -44,9 +44,108 @@ $$
 \rho_{ij}(t) = e^{-\frac{i}{\hbar}\left(\lambda_i-\lambda_j\right) t}\rho_{ij}(0)
 $$
 
-This way we can see that the equations are completely decoupled. Coefficients on the diagonal of the density matrix don't change, while off-diagonal coefficients gain a phase factor at a constant rate that is dependent on the differences between the Hamiltonian eigenvalues. This method gives us the exact evolution of the system and perfectly preserves unitarity. The downside of it is that it requires a full diagonalization of the Hamiltonian. However, many spin systems that we are interested in are relatively small, and one single diagonalisation for each of them isn't a big deal. Cheaper, more approximate methods might be implemented in the future, but at the moment, MuSpinSim can easily carry out calculations on systems that don't exceed nine or ten spins on a laptop in a few minutes.
+This way we can see that the equations are completely decoupled. Coefficients on the diagonal of the density matrix don't change, while off-diagonal coefficients gain a phase factor at a constant rate that is dependent on the differences between the Hamiltonian eigenvalues. This method gives us the exact evolution of the system and perfectly preserves unitarity. The downside of it is that it requires a full diagonalization of the Hamiltonian. However, many spin systems that we are interested in are relatively small, and one single diagonalisation for each of them isn't a big deal. For a cheaper, more approximate method see [Celio's Method](#celios-method).
 
 > **For developers:** time evolution of a system is handled by the `.evolve()` method of the `Hamiltonian` class.
+
+#### A faster method
+
+When simulating systems where $\frac{B}{T} \rightarrow 0$, i.e. when we have zero external magnetic field or the temperature $T \rightarrow \infty$, MuSpinSim will automatically employ a faster method of time evolution. To explain this method we first note that the density matrix at $t=0$ for the muon polarised along a direction ${\hat n}$ can be written as
+
+$$
+ \rho_\mu (t=0) = \frac{1}{2}(\mathbb{1} + \sigma_\mu^{\hat n}),
+$$
+
+and hence the density matrix of the full system is, (defining $d =\prod_{i \neq 0} 2I_i + 1$ as the dimension of the Hilbert space without the muon)
+
+$$
+ \rho(t=0) = \frac{1}{2}(\mathbb{1}+\sigma_\mu^{\hat n}) \otimes \frac{1}{d}\mathbb{1}_d.
+$$
+
+Here we want to calculate the time dependence of the muon polarisation along ${\hat n}$, which is given by (notational abuse 
+means $\sigma_\mu^{\hat n}(t) = e^{-\frac{i}{\hbar}Ht}(\sigma_\mu^{\hat n} \otimes \mathbb{1}_d) e^{\frac{i}{\hbar}Ht}$)
+
+$$
+ P^{\hat n}_\mu(t) = \mathrm{Tr}[\rho(t)\sigma_\mu^{\hat n}(0)] = \mathrm{Tr}[\rho(t=0)\sigma_\mu^{\hat n}(t)].
+$$
+
+We have also switched which operator we are time-evolving on the RHS here. Now, substituting $\rho(t=0)$,  we get
+
+$$
+P^{\hat n}_\mu(t) = \mathrm{Tr}[\rho(t=0)\sigma_\mu^{\hat n}(t)]= \mathrm{Tr}\Bigg[\Big(\frac{1}{2}(\mathbb{1}+\sigma_\mu^{\hat n}) \otimes \frac{1}{d}\mathbb{1}_{d} \Big)\sigma_\mu^{\hat n}(t)\Bigg] 
+$$
+
+which can be simplified to
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\mathrm{Tr}\Bigg[\Big((\mathbb{1}+\sigma_\mu^{\hat n}) \otimes \mathbb{1}_{d} \Big)\sigma_\mu^{\hat n}(t)\Bigg].
+$$
+
+Now, if we factor out the first term in the trace, we get
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\mathrm{Tr}[(\mathbb{1} \otimes \mathbb{1}_{d}) \sigma_\mu^{\hat n}(t)]
+			+\frac{1}{2d}\mathrm{Tr}\Bigg[(\sigma_\mu^{\hat n} \otimes \mathbb{1}_{d}) \sigma_\mu^{\hat n}(t)\Bigg].
+$$
+
+Note that ass the trace of a Pauli spin matrix is **always** zero, only the second term is non-zero. Hence the muon polarisation can be written 
+as (after re-defining $\sigma_\mu^{\hat n}$ to include the kronecker product with the identity matrix of the other spins)
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\mathrm{Tr}\Bigg[\sigma_\mu^{\hat n}(0) \sigma_\mu^{\hat n}(t)\Bigg].
+$$
+
+Now replacing the trace with $\sum_\alpha \langle \alpha| ... | \alpha \rangle$, where $| \alpha \rangle$ is a complete set 
+of orthonormal eigenstates we obtain
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_\alpha \langle \alpha | \Bigg[\sigma_\mu^{\hat n}(0) \sigma_\mu^{\hat n}(t)\Bigg] | \alpha \rangle.
+$$
+
+Explicitly writing out the time dependance, we get
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta, \gamma} \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle e^{iE_\beta t} \langle \beta | \sigma_\mu^{\hat n}(0)
+|\gamma \rangle e^{-iE_\gamma t} \langle \gamma | \alpha \rangle,
+$$
+
+and as $\langle \gamma | \alpha \rangle = \delta_{\gamma, \alpha}$, this simplifies to
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta} \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle e^{iE_\beta t} \langle \beta | \sigma_\mu^{\hat n}(0)
+|\alpha \rangle e^{-iE_\alpha t},
+$$
+
+so that
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha, \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t}.
+$$
+
+Then, we can separate these terms into
+
+$$
+\begin{aligned}
+P^{\hat n}_\mu(t) & = \frac{1}{2d}\sum_{\alpha = \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t} \\
+& + \frac{1}{2d}\sum_{\alpha < \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t} + \frac{1}{2d}\sum_{\alpha > \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t}.
+\end{aligned}
+$$
+
+Now by swapping $\alpha$ and $\beta$ in the last term, we see that it is the same as the second term apart from a sign in the exponential, so they may combined to give
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha = \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 e^{i(E_\beta-E_\alpha) t} + \frac{1}{2d}\sum_{\alpha < \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 [e^{i(E_\beta-E_\alpha) t} + e^{-i(E_\beta-E_\alpha) t}].
+$$
+
+Finally, by expressing the exponentials in terms of $\sin$ and $\cos$, we may simplify the expression to
+
+$$
+P^{\hat n}_\mu(t) = \frac{1}{2d}\sum_{\alpha = \beta}\Big|\langle\alpha|\sigma_{\mu}^{\hat{n}}|\beta\rangle\Big|^2 + \frac{1}{d}\sum_{\alpha < \beta} \Big| \langle \alpha | \sigma_\mu^{\hat n}(0) |\beta \rangle \Big|^2 \cos [(E_\beta-E_\alpha) t].
+$$
+
+When installed with OpenMP, MuSpinSim will parallelise this method over the time values, so when computing for 100 times, it will run on up to 100 threads.
+
+> **For developers:** this time evolution of a system is handled by the `.fast_evolve()` method of the `Hamiltonian` class.
 
 #### Celio's Method
 
@@ -93,7 +192,7 @@ For a further speedup we can continue to follow Celio's method, approximating th
 Here instead of evolving the density matrix, we instead evolve $\sigma_{\mu}=2I_{\mu}$ which are the Pauli matrices in the direction of the muon.
 
 $$
-\sigma_{\mu}(t) = e^{\frac{iHt}{\hbar}}\sigma_{\mu}e^{-\frac{iHt}{\hbar}}
+\sigma_{\mu}(t) = e^{-\frac{i}{\hbar}Ht}\sigma_{\mu}e^{\frac{i}{\hbar}Ht}
 $$
 
 Then by choosing a representation where $\sigma_{\mu}$ is diagonal we can write the muon polarisation as
