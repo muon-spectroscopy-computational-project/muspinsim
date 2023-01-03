@@ -6,10 +6,23 @@ from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.validation import (
     validate_evolve_params,
     validate_integrate_decaying_params,
+    validate_times,
 )
 
 
 class TestValidation(unittest.TestCase):
+    def test_validate_times(self):
+        # Should work
+        validate_times(np.array([0, 1]))
+
+        # Invalid
+        with self.assertRaises(ValueError):
+            validate_times(np.eye(2))
+        with self.assertRaises(TypeError):
+            validate_times(
+                [10],
+            )
+
     def test_validate_evolve_params(self):
         # Should work
         validate_evolve_params(

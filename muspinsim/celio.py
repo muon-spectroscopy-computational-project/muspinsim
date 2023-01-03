@@ -19,7 +19,7 @@ from muspinsim.cpp import (
     celio_evolve,
 )
 from muspinsim.spinop import SpinOperator
-from muspinsim.validation import validate_evolve_params
+from muspinsim.validation import validate_evolve_params, validate_times
 
 
 @dataclass
@@ -347,8 +347,7 @@ class CelioHamiltonian:
 
         times = np.array(times)
 
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
+        validate_times(times)
 
         if averages <= 0:
             raise ValueError("averages must be a positive integer")
@@ -405,6 +404,7 @@ class CelioHamiltonian:
         Returns:
             [ndarray] -- Expectation values
         """
+
         # Time evolution step that will modify the trotter_hamiltonian below
         evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step, False)
 

@@ -12,6 +12,7 @@ from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
 from muspinsim.validation import (
     validate_evolve_params,
     validate_integrate_decaying_params,
+    validate_times,
 )
 
 
@@ -189,8 +190,7 @@ class Hamiltonian(Operator, Hermitian):
 
         times = np.array(times)
 
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
+        validate_times(times)
 
         # Diagonalize self
         evals, evecs = self.diag()
