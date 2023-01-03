@@ -49,7 +49,7 @@ Dipole-dipole interactions are the result of one spin interacting with the magne
 Given two spins $i$ and $j$, and a vector connecting them $\mathbf{r}_{ij}$, the dipolar tensor for them can be computed as:
 
 $$
-\mathbf{D}_{ij} = -\frac{\mu_0\hbar \gamma_i \gamma_j}{2|r_{ij}|^3}\left(\frac{3}{|r_{ij}|^2}\mathbf{r}_{ij}\otimes \mathbf{r}_{ij} - \mathbb{I} \right)
+\mathbf{D}_{ij} = -\frac{\mu_0\hbar \gamma_i \gamma_j}{2|r_{ij}|^3}\left(\frac{3}{|r_{ij}|^2}\mathbf{r}_{ij}\otimes \mathbf{r}_{ij} - \mathbb{1} \right)
 $$
 
 This will return a tensor in frequency units, and thus the dipolar Hamiltonian can be defined like the hyperfine one:
