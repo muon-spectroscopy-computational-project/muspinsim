@@ -270,9 +270,7 @@ class Operator(Clonable):
         """
 
         if not isinstance(x, Operator):
-            raise ValueError(
-                "Can only perform Kronecker product with another Operator"
-            )
+            raise ValueError("Can only perform Kronecker product with another Operator")
 
         # Doing it this way saves some time
         ans = self.__class__.__new__(self.__class__)

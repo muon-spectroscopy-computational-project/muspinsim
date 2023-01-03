@@ -18,7 +18,8 @@ from muspinsim.cpp import (
     Celio_EvolveContrib,
     celio_evolve,
 )
-from muspinsim.spinop import SpinOperator, DensityOperator
+from muspinsim.spinop import SpinOperator
+from muspinsim.validation import validate_evolve_params
 
 
 @dataclass
@@ -231,20 +232,12 @@ class CelioHamiltonian:
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
         times = np.array(times)
-
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list of SpinOperator objects"
-            )
+
+        validate_evolve_params(rho0, times, operators)
+
         if len(self._terms) == 0:
             raise ValueError("No interaction terms to evolve")
 

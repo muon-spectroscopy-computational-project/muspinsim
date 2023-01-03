@@ -4,12 +4,15 @@ A class describing a spin Hamiltonian with various terms
 """
 
 import numpy as np
-from numbers import Number
 
 from scipy import sparse
 
 from muspinsim.cython import parallel_fast_time_evolve
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
+from muspinsim.validation import (
+    validate_evolve_params,
+    validate_integrate_decaying_params,
+)
 
 
 class Hamiltonian(Operator, Hermitian):
@@ -58,20 +61,12 @@ class Hamiltonian(Operator, Hermitian):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
         times = np.array(times)
-
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
 
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list of SpinOperator objects"
-            )
+
+        validate_evolve_params(rho0, times, operators)
 
         # Diagonalize self
         evals, evecs = self.diag()
@@ -142,18 +137,10 @@ class Hamiltonian(Operator, Hermitian):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
-        if not (isinstance(tau, Number) and np.isreal(tau) and tau > 0):
-            raise ValueError("tau must be a real number > 0")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list of SpinOperator objects"
-            )
+
+        validate_integrate_decaying_params(rho0, tau, operators)
 
         # Diagonalize self
         evals, evecs = self.diag()
@@ -211,8 +198,9 @@ class Hamiltonian(Operator, Hermitian):
         # Expand to correct size (Assumes the muon is the first element in
         # the system)
         # Note: May be able to adapt method from C++ implementation of Celio's
-        # avoid the use of kron here to reduce memory and speed up - although
-        # limiting factor at the moment is still the eigenvalue computation
+        # to avoid the use of kron here to reduce memory and speed up -
+        # although limiting factor at the moment is still the eigenvalue
+        # computation
         sigma_mu = sparse.kron(sigma_mu, sparse.identity(other_dimension, format="csr"))
 
         # Compute the value of R^dagger * sigma * R
