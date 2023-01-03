@@ -28,17 +28,20 @@ def parallel_fast_time_evolve(double [:] times, int other_dimension, double [:, 
         \cos[(E_{\alpha} - E{\alpha})t]
 
     Arguments:
+        times {ndarray} -- Times to compute the evolution for, in microseconds
         other_dimension {int} -- Value of the dimension labelled as d in the
                                  equation above. Equal to half the total
                                  dimension of the system.
-        A {ndarray} -- Matrix giving the amplites of the cosines
+        A {ndarray} -- Matrix indexed by \alpha and \beta that
+                       gives the amplitude
                        |<\alpha|\sigma_{\mu}^{\hat{n}}|\beta>|^2
-        W {ndarray} -- Matrix containing the differences of eigenvalues
-                       computed with np.outer
+                       of each cosine term in the sum
+        W {ndarray} -- Matrix indexed by \alpha and \beta that contains the
+                       differences of their eigenvalues, expressed as angular
+                       frequency and computed with np.outer
 
     Returns:
         [ndarray] -- Expectation values
-
     """
 
     cdef Py_ssize_t num_times = times.shape[0]

@@ -437,7 +437,7 @@ class SpinSystem(Clonable):
 
         if I == 0.5:
             raise ValueError(
-                "Can not set up quadrupolar coupling for " "spin 1/2 particle"
+                "Can not set up quadrupolar coupling for spin 1/2 particle"
             )
 
         Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
@@ -609,7 +609,7 @@ class SpinSystem(Clonable):
             rssys._terms = [t.rotate(rotmat) for t in terms]
         except AttributeError:
             raise RuntimeError(
-                "Can only rotate SpinSystems containing Single" " or Double terms"
+                "Can only rotate SpinSystems containing Single or Double terms"
             )
 
         return rssys
@@ -650,7 +650,7 @@ class MuonSpinSystem(SpinSystem):
         # Identify the muon index
         if self._spins.count("mu") != 1:
             raise ValueError(
-                "Spins passed to MuonSpinSystem must contain" " exactly one muon"
+                "Spins passed to MuonSpinSystem must contain exactly one muon"
             )
 
         self._mu_i = self._spins.index("mu")
@@ -691,19 +691,19 @@ class MuonSpinSystem(SpinSystem):
         if j is None:
             if len(elec_i) > 1:
                 raise ValueError(
-                    "Must specify an electron index in system "
-                    "with multiple electrons"
+                    "Must specify an electron index in system with multiple "
+                    "electrons"
                 )
             else:
                 j = list(elec_i)[0]
         else:
             if j not in elec_i:
                 raise ValueError(
-                    "Second index in hyperfine coupling must" " refer to an electron"
+                    "Second index in hyperfine coupling must refer to an electron"
                 )
         if i in elec_i:
             raise ValueError(
-                "First index in hyperfine coupling must" " not refer to an electron"
+                "First index in hyperfine coupling must not refer to an electron"
             )
 
         logging.info("Adding hyperfine term to spins {0}-{1}".format(i + 1, j + 1))
@@ -724,9 +724,7 @@ class MuonSpinSystem(SpinSystem):
         """
 
         if len(v) != 3:
-            raise ValueError(
-                "Vector passed to muon_operator must be three" " dimensional"
-            )
+            raise ValueError("Vector passed to muon_operator must be three dimensional")
 
         op = [x * self._mu_ops[i] for i, x in enumerate(v)]
         op = sum(op[1:], op[0])
@@ -750,9 +748,7 @@ class MuonSpinSystem(SpinSystem):
         """
 
         if len(v) != 3:
-            raise ValueError(
-                "Vector passed to muon_operator must be three" " dimensional"
-            )
+            raise ValueError("Vector passed to muon_operator must be three dimensional")
 
         # Spin matrix in direction of the muon
         mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
