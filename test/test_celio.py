@@ -139,7 +139,7 @@ class TestCelioHamilto(unittest.TestCase):
         self.assertTrue(isinstance(H, CelioHamiltonian))
 
         # Start along z
-        evol = H.fast_evolve([0, 0, 1], t, 10)
+        evol = H.fast_evolve(ssys.sigma_mu([0, 0, 1]), t, 10)
 
         # This test is subject to randomness, but np.isclose appears to avoid
         # any issues

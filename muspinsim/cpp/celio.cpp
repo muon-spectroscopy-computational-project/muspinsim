@@ -18,6 +18,7 @@ struct celio::EvolveContrib {
  * @param half_dim Half the total dimension of the system
  * @param k Value of k used in the Trotter expansion
  * @param evol_contribs List of EvolveContrib structures containing information about the Hamiltonian contributions
+ * @param results Array to add the results to (Should have a length equal to num_times)
  */
 void celio::evolve(unsigned int num_times, np_array_complex_t& psi, np_array_complex_t& sigma_mu, size_t half_dim, unsigned int k, const py::list& evol_contribs, np_array_double_t& results) {
     py::buffer_info psi_info = psi.request();

@@ -12,13 +12,14 @@ import logging
 from typing import List
 import numpy as np
 from scipy import sparse
-from qutip import Qobj, sigmax, sigmay, sigmaz
+from qutip import Qobj
 
 from muspinsim.cpp import (
     Celio_EvolveContrib,
     celio_evolve,
 )
-from muspinsim.spinop import SpinOperator, DensityOperator
+from muspinsim.spinop import SpinOperator
+from muspinsim.validation import validate_evolve_params, validate_times
 
 
 @dataclass
@@ -231,20 +232,12 @@ class CelioHamiltonian:
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
         times = np.array(times)
-
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list of SpinOperator objects"
-            )
+
+        validate_evolve_params(rho0, times, operators)
+
         if len(self._terms) == 0:
             raise ValueError("No interaction terms to evolve")
 
@@ -324,7 +317,7 @@ class CelioHamiltonian:
         # Likely dense, faster to use numpy array
         return psi.T
 
-    def fast_evolve(self, muon_axis, times, averages, cpp=True):
+    def fast_evolve(self, sigma_mu, times, averages, cpp=True):
         """Time evolution of spin states under this Hamiltonian
 
         Perform the time evolution of a randomised initial spin state under
@@ -332,7 +325,8 @@ class CelioHamiltonian:
         muon polarisation at the requested times
 
         Arguments:
-            muon_axis {ndarray} -- Initial polarisation axis for the muon
+            sigma_mu {ndarray} -- Linear combination of Pauli spin matrices in
+                                  the direction of the muon
             times {ndarray} -- Times to compute the evolution for, in
                                microseconds
             averages {int} -- Number of averages to compute
@@ -353,8 +347,7 @@ class CelioHamiltonian:
 
         times = np.array(times)
 
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
+        validate_times(times)
 
         if averages <= 0:
             raise ValueError("averages must be a positive integer")
@@ -373,10 +366,6 @@ class CelioHamiltonian:
             )
 
         time_step = times[1] - times[0]
-
-        # Compute spin matrix in direction of the muon
-        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
-        sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(muon_axis)])
 
         # Obtain spin up and down states, and select the one with
         # the eigenvalue +1 while trying to avoid precision issues
@@ -415,6 +404,7 @@ class CelioHamiltonian:
         Returns:
             [ndarray] -- Expectation values
         """
+
         # Time evolution step that will modify the trotter_hamiltonian below
         evol_op_contribs = self._calc_trotter_evol_op_contribs(time_step, False)
 

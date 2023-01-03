@@ -85,7 +85,7 @@ class MuSpinKeyword(object):
             )
         if not self.accept_range and len(block) > 1:
             raise RuntimeError(
-                "Can not accept range of values for " "keyword {0}".format(self.name)
+                "Can not accept range of values for keyword {0}".format(self.name)
             )
 
         use_default = False
@@ -292,7 +292,7 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
                 eval_values += [eval_line]
             else:
                 raise RuntimeError(
-                    "Unable to evaluate expression for " "keyword {0}".format(self.name)
+                    "Unable to evaluate expression for keyword {0}".format(self.name)
                 )
 
         return eval_values

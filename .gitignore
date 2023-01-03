@@ -143,3 +143,6 @@ examples/*/*
 
 # Local file generated in testing
 muspinsim.dat
+
+# Cython generated C code
+muspinsim/cython/*.c

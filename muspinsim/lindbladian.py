@@ -4,11 +4,14 @@ SuperOperator class for Lindbladian, used in open quantum dynamics
 """
 
 import numpy as np
-from numbers import Number
 from muspinsim.celio import CelioHamiltonian
 
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.spinop import SuperOperator, SpinOperator, DensityOperator
+from muspinsim.validation import (
+    validate_evolve_params,
+    validate_integrate_decaying_params,
+)
 
 
 class Lindbladian(SuperOperator):
@@ -35,7 +38,7 @@ class Lindbladian(SuperOperator):
         AA = A.dagger() * A
         Ld = gamma * (SuperOperator.bracket(A) - 0.5 * SuperOperator.anticommutator(AA))
         if Ld.dimension != self.dimension:
-            raise ValueError("Invalid dissipation operator for this " "Lindbladian")
+            raise ValueError("Invalid dissipation operator for this Lindbladian")
 
         self._matrix += Ld.matrix
 
@@ -66,20 +69,11 @@ class Lindbladian(SuperOperator):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
         times = np.array(times)
-
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
-            )
+
+        validate_evolve_params(rho0, times, operators)
 
         dim = rho0.dimension
         if self.dimension != dim * 2:
@@ -143,18 +137,10 @@ class Lindbladian(SuperOperator):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
-        if not (isinstance(tau, Number) and np.isreal(tau) and tau > 0):
-            raise ValueError("tau must be a real number > 0")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
-            )
+
+        validate_integrate_decaying_params(rho0, tau, operators)
 
         # Start by building the matrix
         L = self.matrix

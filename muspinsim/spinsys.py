@@ -9,8 +9,9 @@ import numpy as np
 from numbers import Number
 import scipy.constants as cnst
 from scipy import sparse
-from muspinsim.celio import CelioHamiltonian
+from qutip import sigmax, sigmay, sigmaz
 
+from muspinsim.celio import CelioHamiltonian
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
@@ -177,8 +178,8 @@ class SpinSystem(Clonable):
                             chemical symbol, or a (str, int) tuple with a
                             chemical symbol and an isotope (default: {[]})
             celio_k {int} -- Factor for the Trotter approximation if Celio's
-                           method is to be used. When this is 0, Celio's method
-                           is not used.
+                             method is to be used. When this is 0, Celio's
+                             method is not used.
         """
 
         gammas = []
@@ -436,7 +437,7 @@ class SpinSystem(Clonable):
 
         if I == 0.5:
             raise ValueError(
-                "Can not set up quadrupolar coupling for " "spin 1/2 particle"
+                "Can not set up quadrupolar coupling for spin 1/2 particle"
             )
 
         Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
@@ -548,20 +549,17 @@ class SpinSystem(Clonable):
 
     def operator(self, terms={}, include_only_given=False):
         """Return an operator for this spin system
-
         Return a SpinOperator for this system containing the specified terms.
-
         Keyword Arguments:
             terms {dict} -- A dictionary of terms to include. The keys should
                             indices of particles and the values should be
                             symbols indicating one spin operator (either x, y,
                             z, +, - or 0). Wherever not specified, the identity
-                            operaror is applied (default: {{}})
+                            operator is applied (default: {{}})
             include_only_given -- When True only the requested terms will be included
                                   otherwise the result will include the kronecker
-                                  product with identity matrices for the partcles
+                                  product with identity matrices for the particles
                                   not present in the terms
-
         Returns:
             SpinOperator -- The requested operator
         """
@@ -611,7 +609,7 @@ class SpinSystem(Clonable):
             rssys._terms = [t.rotate(rotmat) for t in terms]
         except AttributeError:
             raise RuntimeError(
-                "Can only rotate SpinSystems containing Single" " or Double terms"
+                "Can only rotate SpinSystems containing Single or Double terms"
             )
 
         return rssys
@@ -652,7 +650,7 @@ class MuonSpinSystem(SpinSystem):
         # Identify the muon index
         if self._spins.count("mu") != 1:
             raise ValueError(
-                "Spins passed to MuonSpinSystem must contain" " exactly one muon"
+                "Spins passed to MuonSpinSystem must contain exactly one muon"
             )
 
         self._mu_i = self._spins.index("mu")
@@ -693,19 +691,19 @@ class MuonSpinSystem(SpinSystem):
         if j is None:
             if len(elec_i) > 1:
                 raise ValueError(
-                    "Must specify an electron index in system "
-                    "with multiple electrons"
+                    "Must specify an electron index in system with multiple "
+                    "electrons"
                 )
             else:
                 j = list(elec_i)[0]
         else:
             if j not in elec_i:
                 raise ValueError(
-                    "Second index in hyperfine coupling must" " refer to an electron"
+                    "Second index in hyperfine coupling must refer to an electron"
                 )
         if i in elec_i:
             raise ValueError(
-                "First index in hyperfine coupling must" " not refer to an electron"
+                "First index in hyperfine coupling must not refer to an electron"
             )
 
         logging.info("Adding hyperfine term to spins {0}-{1}".format(i + 1, j + 1))
@@ -714,27 +712,46 @@ class MuonSpinSystem(SpinSystem):
 
     def muon_operator(self, v):
         """Get a muon operator
-
         Get a single operator for the muon, given a vector representing its
         direction. Uses precalculated operators for speed.
-
         Arguments:
-            v {[float]} -- 3-dimensional vector representing the directions of
+            v {[float]} -- 3-dimensional vector representing the direction of
                            the desired operator
-
         Returns:
             mu_op {SpinOperator} -- Requested operator
-
         Raises:
             ValueError -- Invalid length of v
         """
 
         if len(v) != 3:
-            raise ValueError(
-                "Vector passed to muon_operator must be three" " dimensional"
-            )
+            raise ValueError("Vector passed to muon_operator must be three dimensional")
 
         op = [x * self._mu_ops[i] for i, x in enumerate(v)]
         op = sum(op[1:], op[0])
 
         return op
+
+    def sigma_mu(self, v):
+        """Obtain sigma_mu - a linear combination of Pauli spin operators in
+        a given direction for the muon. Unlike the 'muon_operator' above it
+        does not include a factor of spin and will be a 2x2 matrix instead of
+        one as large as the total combined system.
+
+        Arguments:
+            v {[float]} -- 3-dimensional vector representing the direction of
+                           the desired operator
+        Returns:
+            sigma_mu {ndarray} -- A linear combination of Pauli spin matrices
+                                  in the direction of v
+        Raises:
+            ValueError -- Invalid length of v
+        """
+
+        if len(v) != 3:
+            raise ValueError("Vector passed to muon_operator must be three dimensional")
+
+        # Spin matrix in direction of the muon
+        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
+        sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(v)])
+
+        return sigma_mu

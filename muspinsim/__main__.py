@@ -34,7 +34,6 @@ def ensure_dir_path_exists(path_string):
 
 
 def main(use_mpi=False):
-
     if use_mpi:
         mpi.connect()
 
@@ -108,7 +107,7 @@ def main(use_mpi=False):
         )
 
         logging.info(
-            "Launching MuSpinSim calculation " "from file: {0}".format(inp_filepath)
+            "Launching MuSpinSim calculation from file: {0}".format(inp_filepath)
         )
 
         if is_fitting:
@@ -159,7 +158,7 @@ def main(use_mpi=False):
     if mpi.is_root:
         tend = datetime.now()
         simtime = (tend - tstart).total_seconds()
-        logging.info("Simulation completed in " "{0:.3f} seconds".format(simtime))
+        logging.info("Simulation completed in {0:.3f} seconds".format(simtime))
 
     logging.shutdown()
 

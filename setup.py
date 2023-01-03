@@ -5,7 +5,10 @@ from glob import glob
 import sys
 import sysconfig
 import os
+import numpy
+
 from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
+from Cython.Build import cythonize
 
 
 def _check_user_arguments(options):
@@ -26,8 +29,10 @@ def _add_compile_options(options):
     if sysconfig.get_platform().startswith("win") and os.environ.get("MSYSTEM") is None:
         # Windows
         options["compile_args"].extend(["/w", "/Ox"])
+
         if options["openmp"]:
             options["compile_args"].append("/openmp")
+            options["link_args"].append("/openmp")
     else:
         # Linux/Mac/Windows MINGW
         options["compile_args"].extend(["-w", "-O3", "-funroll-loops"])
@@ -45,6 +50,47 @@ def _add_compile_options(options):
     return options
 
 
+# Returns the extensions for compilation
+def _get_extensions(options):
+    ext_modules = []
+
+    # Setup pybind11 extension
+    ext_modules.append(
+        Pybind11Extension(
+            "muspinsim.cpp",
+            sorted(glob("muspinsim/cpp/*.cpp")),
+            # Need to copy the arrays as this step actually modifies them
+            # and this breaks the cython compilation as -fvisibility=hidden
+            # is used on linux which prevents the cython bindings being seen
+            extra_compile_args=options["compile_args"].copy(),
+            extra_link_args=options["link_args"].copy(),
+        ),
+    )
+
+    # Setup cython extension
+    ext_modules.extend(
+        cythonize(
+            [
+                setuptools.Extension(
+                    "muspinsim.cython",
+                    sorted(glob("muspinsim/cython/*.pyx")),
+                    extra_compile_args=options["compile_args"],
+                    extra_link_args=options["link_args"],
+                    # This requires numpy to be installed while building, so
+                    # it's needed in setup_requires
+                    include_dirs=[numpy.get_include()],
+                )
+            ],
+            compiler_directives={"language_level": "3str"},
+            # The following is useful when developing - generates a report to
+            # see how much python is still used
+            # annotate=True,
+        ),
+    )
+
+    return ext_modules
+
+
 def setup():
     with open("README.md", "r", encoding="utf-8") as fh:
         long_description = fh.read()
@@ -60,16 +106,7 @@ def setup():
     # Optional multithreaded build for pybind11
     ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 
-    # Setup pybind11 extension with OpenMP support
-    ext_modules = []
-    ext_modules.append(
-        Pybind11Extension(
-            "muspinsim.cpp",
-            sorted(glob("muspinsim/cpp/*.cpp")),
-            extra_compile_args=options["compile_args"],
-            extra_link_args=options["link_args"],
-        ),
-    )
+    ext_modules = _get_extensions(options)
 
     setuptools.setup(
         name="muspinsim",
@@ -96,7 +133,17 @@ def setup():
             "Topic :: Scientific/Engineering :: Physics",
             "Topic :: Scientific/Engineering :: Information Analysis",
         ],
-        install_requires=["numpy", "scipy", "soprano", "lark", "qutip", "pybind11"],
+        # Includes are needed for Cython compilation
+        setup_requires=["numpy"],
+        install_requires=[
+            "numpy",
+            "scipy",
+            "soprano",
+            "lark",
+            "qutip",
+            "pybind11",
+            "Cython",
+        ],
         extras_require={
             "docs": ["mkdocs", "pymdown-extensions"],
             "dev": ["flake8", "black>=22.3.0", "pytest", "pre-commit"],

@@ -287,6 +287,120 @@ temperature
         with self.assertRaises(ValueError):
             results = ertest.run()
 
+    # For testing the faster time evolution method is run
+    # correctly in the right scenarios
+    def test_run_fast(self):
+
+        # System without muon first should revert to the
+        # slower method
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertFalse(ertest._T_inf_speedup)
+        self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
+
+        # System with the muon first should use the faster method
+        stest = StringIO(
+            """
+spins
+    mu e
+time
+    range(0, 10)
+zeeman 1
+    0 0 1.0/muon_gyr
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertTrue(ertest._T_inf_speedup)
+        self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
+
+        # System with the a low temperature but no field should use the fast
+        # method
+        stest = StringIO(
+            """
+spins
+    mu e
+time
+    range(0, 10)
+temperature
+    1
+zeeman 1
+    0 0 1.0/muon_gyr
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertTrue(ertest._T_inf_speedup)
+        self.assertTrue(np.all(np.isclose(results, 0.5 * np.cos(2 * np.pi * times))))
+
+        # System with T -> inf but a zero field should still use the fast
+        # method
+        stest = StringIO(
+            """
+spins
+    mu e
+time
+    range(0, 10)
+field
+    0.01
+zeeman 1
+    0 0 1.0/muon_gyr
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertTrue(ertest._T_inf_speedup)
+
+        # System with a low temperature and a non-zero field should not use
+        # the fast method
+        stest = StringIO(
+            """
+spins
+    mu e
+time
+    range(0, 10)
+field
+    0.01
+temperature
+    1
+zeeman 1
+    0 0 1.0/muon_gyr
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertFalse(ertest._T_inf_speedup)
+
     def test_dissipation(self):
 
         # Simple system

@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from muspinsim.spinop import SpinOperator, DensityOperator
-from muspinsim.spinsys import SpinSystem
+from muspinsim.spinsys import MuonSpinSystem, SpinSystem
 from muspinsim.hamiltonian import Hamiltonian
 
 
@@ -46,6 +46,20 @@ class TestHamiltonian(unittest.TestCase):
         evol = H.evolve(rho0, t, ssys.operator({0: "z"}))
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
+
+    def test_fast_evolve(self):
+
+        ssys = MuonSpinSystem(["mu", "e"])
+        ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
+        H = ssys.hamiltonian
+        t = np.linspace(0, 1, 100)
+
+        self.assertTrue(isinstance(H, Hamiltonian))
+
+        # Start along z
+        evol = H.fast_evolve(ssys.sigma_mu([0, 0, 1]), t, 2)
+
+        self.assertTrue(np.all(np.isclose(evol, 0.5 * np.cos(2 * np.pi * t))))
 
     def test_integrate(self):
 

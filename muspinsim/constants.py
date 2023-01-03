@@ -18,7 +18,7 @@ MU_TAU = 2.19703  # Muon decay rate (10^-6 s)
 # in order this converts to MHz, from barn to m^2 and the last factor
 # accounts for the soprano returning quadrupole moments in millibarn
 EFG_2_MHZ = (
-    cnst.physical_constants["atomic unit of electric field " "gradient"][0]
+    cnst.physical_constants["atomic unit of electric field gradient"][0]
     * cnst.e
     * 1e-37
     / cnst.h
@@ -97,7 +97,7 @@ def spin(elem="mu", iso=None):
     elif elem == "e":
         iso = iso or 1
         if iso < 1 or int(iso) != iso:
-            raise ValueError("Invalid multiplicity " "{0} for electron".format(iso))
+            raise ValueError("Invalid multiplicity {0} for electron".format(iso))
         return 0.5 * int(iso)
     else:
         try:

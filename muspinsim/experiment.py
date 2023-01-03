@@ -353,6 +353,25 @@ class ExperimentRunner(object):
         self.p = q.rotate(p)
         self.T = T
 
+        # Figure out if a speedup is suitable
+        B = np.linalg.norm(self.B)
+        check_result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * cnst.k * T)
+
+        # For now only use when exactly 0 (i.e. when T -> inf, or B = 0)
+        self._T_inf_speedup = check_result == 0
+
+        # Due to the method of computation we also require that muon is first in
+        # the system so we check this is the case here, otherwise we need to
+        # change the order of kronecker products when computing the sigma_mu for
+        # the system and this would be slower anyway
+        if self._T_inf_speedup and self._system.muon_index != 0:
+            self._T_inf_speedup = False
+
+            # Add a message to the log to notify there is a speedup available
+            # if the system is reordered
+            logging.info(
+                "The system is suitable for a speedup if the muon is defined first."
+            )
         return w
 
     def run_single(self, cfg_snap: ConfigSnapshot):
@@ -389,10 +408,25 @@ class ExperimentRunner(object):
                     )
 
                 data = H.fast_evolve(
-                    self.p, cfg_snap.t, self.config.celio_averages, True
+                    self._system.sigma_mu(self.p),
+                    cfg_snap.t,
+                    self.config.celio_averages,
+                    True,
                 )
             else:
-                data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+                # Use faster evolution if able to (Doesn't exist for Linbladian)
+                if self._T_inf_speedup and not isinstance(H, Lindbladian):
+                    other_spins = list(range(0, len(self._system.spins)))
+                    other_spins.remove(self._system.muon_index)
+                    other_dimension = np.prod(
+                        [self._system.dimension[i] for i in other_spins]
+                    )
+
+                    data = H.fast_evolve(
+                        self._system.sigma_mu(self.p), cfg_snap.t, other_dimension
+                    )
+                else:
+                    data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
             data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 

@@ -55,7 +55,7 @@ def _validate_coupling_args(fun):
 def _validate_shape(v, target_shape=(3,), name="vector"):
     v = np.array(v)
     if v.shape != target_shape:
-        raise MuSpinConfigError("Invalid shape for " "{0} coupling term".format(name))
+        raise MuSpinConfigError("Invalid shape for {0} coupling term".format(name))
     return v
 
 
@@ -120,7 +120,7 @@ class MuSpinConfig(object):
             try:
                 self._avg_ranges[_CDICT[a]] = None
             except KeyError:
-                raise MuSpinConfigError("Invalid average axis name in " "input file")
+                raise MuSpinConfigError("Invalid average axis name in input file")
 
         self._time_N = 0  # Number of time points. This is special
         self._time_isavg = "t" in self._avg_ranges  # Is time averaged over?
@@ -172,14 +172,14 @@ class MuSpinConfig(object):
         if self._y_axis == "integral":
             if "t" in self._x_range:
                 raise MuSpinConfigError(
-                    "Can not use time as X axis when " "evaluating integral of signal"
+                    "Can not use time as X axis when evaluating integral of signal"
                 )
 
         # If we're fitting, we can't have file ranges
         finfo = params["fitting_info"]
         if finfo["fit"]:
             if len(self._file_ranges) > 0:
-                raise MuSpinConfigError("Can not have file ranges when " "fitting")
+                raise MuSpinConfigError("Can not have file ranges when fitting")
             # The x axis is overridden, whatever it is
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
@@ -277,7 +277,7 @@ class MuSpinConfig(object):
             "{0}".format(len(self._configurations))
         )
         logging.info(
-            "Total number of configurations to average: " "{0}".format(self._avg_N)
+            "Total number of configurations to average: {0}".format(self._avg_N)
         )
 
     def validate(self, name, value, args={}):
@@ -457,7 +457,7 @@ Parameters used:
             i = slice(i, i + 1)
         elif type(i) != slice:
             raise TypeError(
-                "Indices must be integer or slices, " "not {0}".format(type(i))
+                "Indices must be integer or slices, not {0}".format(type(i))
             )
 
         ans = []
@@ -597,6 +597,6 @@ Parameters used:
         o, w = v
         abc = o.euler_angles("zyz") * 180 / np.pi
         ostr = (
-            "[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, " "c = {2:.1f} deg, weight = {3}"
+            "[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, c = {2:.1f} deg, weight = {3}"
         ).format(*abc, w)
         return ostr
