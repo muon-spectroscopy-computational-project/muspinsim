@@ -358,6 +358,10 @@ class ExperimentRunner(object):
         self.p = q.rotate(p)
         self.T = T
 
+        # Magnetic field is sum of external field (rotated with angular
+        # averages) and the intrinsic field that should not be rotated
+        self.B += cfg_snap.intrinsic_B
+
         # Figure out if a speedup is suitable
         B = np.linalg.norm(self.B)
         check_result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * cnst.k * T)

@@ -22,6 +22,7 @@ from muspinsim.utils import quat_from_polar
 _CDICT = {
     "polarization": "mupol",
     "field": "B",
+    "intrinsic_field": "intrinsic_B",
     "time": "t",
     "orientation": "orient",
     "temperature": "T",
@@ -362,7 +363,7 @@ Parameters used:
 
         x = self.x_axis_values
 
-        if "B" in self._x_range.keys():
+        if "B" in self._x_range.keys() or "intrinsic_B" in self._x_range.keys():
             x = np.linalg.norm(x, axis=-1)
 
         # Actually save the files
@@ -538,6 +539,15 @@ Parameters used:
 
         return v
 
+    def _validate_intrinsic_B(self, v):
+
+        if len(v) == 1:
+            v = np.array([0, 0, v[0]])  # The default direction is Z
+        elif len(v) != 3:
+            raise MuSpinConfigError("Invalid intrinsic magnetic field value")
+
+        return v
+
     def _validate_mupol(self, v):
         v = np.array(v, dtype=float)
         if len(v) != 3:
@@ -562,8 +572,8 @@ Parameters used:
 
         # After computing the rotation, we store the conjugate because it's a
         # lot cheaper, instead of rotating the whole system by q, to rotate
-        # only the magnetic field and the polarization (lab frame) by the
-        # inverse of q
+        # only the external magnetic field and the polarization (lab frame) by
+        # the inverse of q
 
         return (q.conjugate(), w)
 
