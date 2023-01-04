@@ -146,7 +146,27 @@ field
     4*MHz
 ```
 
-A single field, or range of magnetic fields, in Tesla, to simulate. These can be scalars or vectors; if scalars, the field will be assumed to be aligned with the Z axis. The function `range` expands into a number of values - by default, 50 of them, if only the start and end are specified. The default value is zero.
+A single or range of external magnetic fields, in Tesla, to simulate. These can be scalars or vectors; if scalars, the field will be assumed to be aligned with the Z axis. The function `range` expands into a number of values - by default, 50 of them, if only the start and end are specified. The default value is zero. This field type will be affected by any orientation changes such as when doing an angular average.
+
+### intrinsic_field 
+
+| Keyword:              |                    `intrinsic_field`
+|-----------------------|---------------------------:|
+| Allows multiple rows: |                        Yes |
+| Allows expressions:   |                        Yes |
+| Allows constants:     | default, `MHz`, `muon_gyr` |
+| Allows functions:     |           default, `range` |
+
+*Example:*
+```plaintext
+intrinsic_field
+    0
+    1*MHz
+    2*MHz
+    4*MHz
+```
+
+A single or range of intrinsic magnetic fields, in Tesla, to simulate. These can be scalars or vectors; if scalars, the field will be assumed to be aligned with the Z axis. The function `range` expands into a number of values - by default, 50 of them, if only the start and end are specified. The default value is zero. This field type will be unaffected by any orientation changes such as when doing an angular average.
 
 ### time
 
