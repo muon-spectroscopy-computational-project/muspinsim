@@ -269,9 +269,6 @@ class TestSpinSystem(unittest.TestCase):
         evol_op_contribs = ssys.hamiltonian._calc_trotter_evol_op_contribs(1, True)
         self.assertEqual(len(evol_op_contribs), 2)
 
-        print(evol_op_contribs[0].indices)
-        print(evol_op_contribs[1].indices)
-
         self.assertTrue(
             np.all(
                 np.isclose(

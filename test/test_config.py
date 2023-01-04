@@ -17,6 +17,8 @@ spins
     mu 2H e
 field
     range(1, 11, 2)
+intrinsic_field
+    range(1, 21, 2)
 temperature
     range(0, 10, 2)
 time
@@ -48,13 +50,14 @@ dissipation 2
         cfg = MuSpinConfig(itest.evaluate())
 
         self.assertEqual(cfg.name, "muspinsim")
-        self.assertEqual(len(cfg), 8)
-        self.assertEqual(cfg.results.shape, (2, 2, 21))
+        self.assertEqual(len(cfg), 16)
+        self.assertEqual(cfg.results.shape, (2, 2, 2, 21))
 
         # Try getting one configuration snapshot
         cfg0 = cfg[0]
 
         self.assertTrue((cfg0.B == [0, 0, 1]).all())
+        self.assertTrue((cfg0.intrinsic_B == [0, 0, 1]).all())
         self.assertEqual(cfg0.T, 0)
         self.assertTrue((cfg0.t == np.linspace(0, 10, 21)).all())
         self.assertTrue(np.isclose(np.linalg.norm(cfg0.mupol), 1.0))
