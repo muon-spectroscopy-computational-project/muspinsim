@@ -150,7 +150,7 @@ A single or range of external magnetic fields, in Tesla, to simulate. These can 
 
 ### intrinsic_field 
 
-| Keyword:              |                    `intrinsic_field`
+| Keyword:              |          `intrinsic_field` |
 |-----------------------|---------------------------:|
 | Allows multiple rows: |                        Yes |
 | Allows expressions:   |                        Yes |
@@ -189,11 +189,11 @@ A time or range of times, in microseconds, to simulate. Used by default as the `
 ### x_axis
 
 | Keyword:              |           `x_axis` |
-|-----------------------|-----------------:|
-| Allows multiple rows: |             No |
-| Allows expressions:   |              No|
-| Allows constants:     |          N/A |
-| Allows functions:     | N/A|
+|-----------------------|-------------------:|
+| Allows multiple rows: |                 No |
+| Allows expressions:   |                 No |
+| Allows constants:     |                N/A |
+| Allows functions:     |                N/A |
 
 *Example:*
 ```plaintext
