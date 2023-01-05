@@ -86,6 +86,8 @@ jobs:
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
       shell: bash # Windows runners have Git Bash installed so this should work on all runners
     - name: Install package
-      run: python setup.py develop --with-openmp # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
+      env:
+        MUSPINSIM_WITH_OPENMP: 1
+      run: pip install -e . # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
     - name: Test with pytest
       run: pytest

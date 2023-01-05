@@ -10,6 +10,7 @@ import numpy
 from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 from Cython.Build import cythonize
 
+
 # Returns a boolean value from the environment variable with the given key
 # if not found returns false
 def _get_environ_bool(key):
