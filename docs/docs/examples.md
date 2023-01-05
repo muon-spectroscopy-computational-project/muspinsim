@@ -172,7 +172,7 @@ and if you can compare with the original paper, you can notice how these are alr
 ## Example 9 - Fitting
 **Input file:** `examples/fitting/fitting.in`
 
-Finally, we look at how we can fit some data with MuSpinSim. Here we use again the same system seen in the [dissipation example](#example-6---dissipation), but we use some fake simulated data (found in `examples/fitting/experiment.dat`) calculated from the analytical solution to the problem with some added random noise. The data is formatted in two columns and normalised so that it begins around 0.5 intensity, and then is loaded in the input file:
+Now, we look at how we can fit some data with MuSpinSim. Here we use again the same system seen in the [dissipation example](#example-6---dissipation), but we use some fake simulated data (found in `examples/fitting/experiment.dat`) calculated from the analytical solution to the problem with some added random noise. The data is formatted in two columns and normalised so that it begins around 0.5 intensity, and then is loaded in the input file:
 
 ```plaintext
 fitting_data
@@ -191,3 +191,35 @@ dissipation 1
 Running this example will take a bit longer than the others, as the program needs to evaluate the function a lot of times to find the correct value. At the end, it should converge on a value close to `g = 3.0`, and as we can see here, the fitted function matches the fake data quite well:
 
 ![](./figExFitting.png)
+
+## Example 10 - Celio's Method
+**Input file:** `examples/celio/celio.in`
+
+Finally, we look at how we can use Celio's method to approximate a large system with MuSpinSim. Here we give an example of $\text{V}_3\text{Si}$ as described in the paper
+
+> Pietro Bonfà, Jonathan Frassineti, John M. Wilkinson, Giacomo Prando, Muhammad Maikudi Isah, Chennan Wang, Tiziana Spina, Boby Joseph, Vesna F. Mitrović, Roberto De Renzi, Stephen J. Blundell, and Samuele Sanna
+> [Entanglement between Muon and $I > \frac{1}{2}$ Nuclear Spins as a Probe of Charge Environment](https://doi.org/10.1103/PhysRevLett.129.097205)
+> *Phys. Rev. Lett. **129**, 097205 – Published 26 August 2022*
+
+In brief since the Si atoms have 0 spin, we only consider the Vanadium atoms and then include the 4 nearest neighbours to the muon stopping site. We then consider the dipolar couplings of the Vanadium atoms with the muon and quadrupolar couplings of the Vanadium atoms. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via
+
+```plaintext
+polarization
+    1 0 0
+    0 1 0
+    0 0 1
+average_axes
+    polarization
+```
+
+We then request that MuSpinSim uses Celio's method using
+
+```plaintext
+celio
+    10 4
+```
+
+Where the first value is the trotter number $k = 10$, and the second value gets MuSpinSim to randomise the initial states and compute the average of 4 simulations for each initial polarisation direction.
+
+Running this example will take longer than the others due to the size of the problem, but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
+![](./figExCelio.png)
