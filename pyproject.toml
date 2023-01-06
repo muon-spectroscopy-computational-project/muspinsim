@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 # Build with OpenMP
-environment = "MUSPINSIM_WITH_OPENMP=1"
+environment = { MUSPINSIM_WITH_OPENMP=1 }
 
 skip = [
     # Skip building on CPython 3.6 & 3.7 on all platforms as muspinsim requires >= 3.8
@@ -25,7 +25,13 @@ skip = [
 ]
 
 [tool.cibuildwheel.macos]
-# Don't use OpenMP - need to investigate how to setup OpenMP compiler properly on MacOS
-# as current one doesn't support OpenMP leading to
-# 'clang: error: unsupported option '-fopenmp' errors
-environment = "MUSPINSIM_WITH_OPENMP=0"
+# Default compiler on macOS doesn't support OpenMP, so install clang
+# and force its use through environment variables
+before-all = "brew install llvm"
+
+[tool.cibuildwheel.macos.environment]
+CC="/usr/local/opt/llvm/bin/clang"
+CXX="/usr/local/opt/llvm/bin/clang++"
+LDFLAGS="-L/usr/local/opt/llvm/lib"
+CPPFLAGS="-I/usr/local/opt/llvm/include"
+MUSPINSIM_WITH_OPENMP=1
