@@ -23,3 +23,9 @@ skip = [
     "*-win32", "*-manylinux_i686",
     "*-musllinux*"
 ]
+
+[tool.cibuildwheel.macos]
+# Don't use OpenMP - need to investigate how to setup OpenMP compiler properly on MacOS
+# as current one doesn't support OpenMP leading to
+# 'clang: error: unsupported option '-fopenmp' errors
+environment = "MUSPINSIM_WITH_OPENMP=0"
