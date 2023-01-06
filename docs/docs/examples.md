@@ -14,7 +14,7 @@ zeeman 1
 Being aligned with the *z* axis, it will produce a full precession of the entire muon polarisation, and given the field is defined as a function of the muon gyromagnetic ratio, it will result in a Larmor frequency of $\gamma_\mu B = 20 \,\mathrm{MHz}$, meaning it will do two full precessions in the $0.1\,\mu s$ range covered by the time axis.
 
 
-![](./figExZeeman.png)
+![Plot of asymmetry against time for the Zeeman example](./figExZeeman.png)
 
 ## Example 2 - Hyperfine coupling
 **Input file:** `examples/hfine/hfine.in`
@@ -30,7 +30,7 @@ hyperfine 1
 
 so we expect an oscillation of the muon's polarisation at that frequency.
 
-![](figExHfine.png)
+![Plot of asymmetry against time for the hyperfine example](figExHfine.png)
 
 ## Example 3 - Hyperfine coupling (with powder averaging)
 **Input file:** `examples/hfine_powder/hfine_powder.in`
@@ -53,14 +53,14 @@ orientation
 
 Each of these orientations will contribute an oscillation like the one above with a slightly different frequency. The overall sum of all contributions ends up decaying due to the dephased individual oscillations cancelling out.
 
-![](./figExHfinePowder.png)
+![Plot of asymmetry against time for the hyperfine example with powder averaging](./figExHfinePowder.png)
 
 ## Example 4 - Avoided Level Crossing
 **Input file:** `examples/alc/alc.in`
 
 A simple example of an Avoided Level Crossing experiment involving three spins: a muon, an electron, and a hydrogen atom. Both the muon and the hydrogen are coupled to the electron by the hyperfine interaction. The tensors are orientation dependent, and an average is carried out over different orientations (because this is an experiment with longitudinal polarisation, the `zcw` averaging should be sufficient, and is much cheaper than `eulrange`). The result can be seen as one major $\Delta_1$ peak around 2.1 T and a much smaller $\Delta_0$ one at 2.3 T.
 
-![](./figExALC.png)
+![Plot of asymmetry against magnetic field for the avoided level crossing example](./figExALC.png)
 
 ## Example 5 - Finite temperature
 **Input files:** `examples/temperature/low_T.in`, `examples/temperature/high_T.in`
@@ -85,7 +85,7 @@ For this reason, we make a comparison between two versions of the same system, o
 
 We can see the trends very obviously in the figure below. The high temperature limit corresponds to the sum of two slightly dephased cosinusoids, while the low temperature example is closer to a single wave. You can try experimenting with changing the temperature and re-running the simulation to see how it affects the result.
 
-![](figExTemperature.png)
+![Plot of asymmetry against time for the finite temperature example](figExTemperature.png)
 
 ## Example 6 - Dissipation
 **Input file:** `example/dissipation/dissipation.in`
@@ -107,7 +107,7 @@ $$
 
 where the time is in microseconds. We can in fact see this exact result in the figure below:
 
-![](./figExDissipation.png)
+![Plot of asymmetry against time for the dispersion example](./figExDissipation.png)
 
 ## Example 7 - Fluorine
 **Input files:** `examples/fluorine/fluorine_zf.in`, `examples/fluorine/fluorine_tf.in`
@@ -137,13 +137,13 @@ field
 
 This result is meant to be compared with Fig. 1 of the paper:
 
-![](./figExFluorineTF.png)
+![Plot of asymmetry against time for the transverse field fluorine example](./figExFluorineTF.png)
 
  One can see the similarity at the beginning, though at longer time scales, the experimental data decays a lot more quickly. This is due to how in the real experiment, of course, there aren't just *three* spins - there is a whole lattice of them. The fluorine nuclei in particular interact with other neighbouring nuclei via dipolar coupling, and that ends up causing a phenomenon known as 'spin diffusion' in which the polarisation is irreversibly dispersed throughout the crystal, and thus the muon loses it almost entirely.
  
  Here is instead the ZF experiment. This is meant to be compared with Fig. 3 of the paper, the bottom left quadrant:
  
- ![](./figExFluorineZF.png)
+ ![Plot of asymmetry against time for the zero field fluorine example](./figExFluorineZF.png)
  
  Again, the same principle holds, as the similarity is stronger for $t \lt 4 \,\mu\mathrm{s}$ and then is lost as the effect of spin diffusion becomes more pronounced.
  
@@ -161,11 +161,11 @@ dissipation 3
 
 The results in this way show a marked decay towards the end of the plot, for both transverse field:
 
-![](./figExFluorineTFDissip.png)
+![Plot of asymmetry against time for the transverse field fluorine example with dispersion](./figExFluorineTFDissip.png)
 
  and zero field:
  
- ![](./figExFluorineZFDissip.png)
+ ![Plot of asymmetry against time for the zero field fluorine example with dispersion](./figExFluorineZFDissip.png)
  
 and if you can compare with the original paper, you can notice how these are already much more similar to the look of the experimental results.
 
@@ -190,7 +190,7 @@ dissipation 1
 
 Running this example will take a bit longer than the others, as the program needs to evaluate the function a lot of times to find the correct value. At the end, it should converge on a value close to `g = 3.0`, and as we can see here, the fitted function matches the fake data quite well:
 
-![](./figExFitting.png)
+![Plot of fitted solution against experiment for the fitting example](./figExFitting.png)
 
 ## Example 10 - Celio's Method
 **Input file:** `examples/celio/celio.in`
@@ -222,4 +222,4 @@ celio
 Where the first value is the trotter number $k = 10$, and the second value gets MuSpinSim to randomise the initial states and compute the average of 4 simulations for each initial polarisation direction.
 
 Running this example will take longer than the others due to the size of the problem, but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
-![](./figExCelio.png)
+![Plot of asymmetry simulated using Celio's method for 4 V atoms](./figExCelio.png)
