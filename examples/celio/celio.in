@@ -1,0 +1,47 @@
+# An example of a using Celio's method to simulate a large system
+# The specifics are taken for V3Si, from the paper:
+#
+# Entanglement between Muon and I > 1/2 Nuclear Spins as a Probe of Charge Environment
+# Pietro Bonfà, Jonathan Frassineti, John M. Wilkinson, Giacomo Prando, Muhammad Maikudi Isah, Chennan Wang, Tiziana Spina, Boby Joseph, Vesna F. Mitrović, Roberto De Renzi, Stephen J. Blundell, and Samuele Sanna
+# Phys. Rev. Lett. 129, 097205 – Published 26 August 2022
+# 
+# Compare the results with the data presented in Fig. 2(a) of the paper.
+
+name
+    celio
+spins
+    mu V V V V
+polarization
+    1 0 0
+    0 1 0
+    0 0 1
+average_axes
+    polarization
+dipolar 1 2
+    5.8867821595143255e-06 -1.2410298376667999 1.2417097773151198
+quadrupolar 2
+    -0.030612 -3.6e-05 -1.1e-05
+    -3.6e-05 -0.00886 -0.011786
+    -1.1e-05 -0.011786 0.039472
+dipolar 1 3
+    -1.2410421175142399 1.7637655919999997e-05 -1.2417029559655202
+quadrupolar 3
+    -0.008881 -2.1e-05 0.011794
+    -2.1e-05 -0.030608 5e-06
+    0.011794 5e-06 0.039489
+dipolar 1 4
+    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
+quadrupolar 4
+    -0.008877 2.2e-05 -0.011811
+    2.2e-05 -0.030585 5e-06
+    -0.011811 5e-06 0.039462
+dipolar 1 5
+    5.8811095198230134e-06 1.2410652462856788 1.2417072770990398
+quadrupolar 5
+    -0.030585 3.6e-05 -1.1e-05
+    3.6e-05 -0.008892 0.011813
+    -1.1e-05 0.011813 0.039478
+celio
+    10 4
+time
+    range(0, 10, 50)
