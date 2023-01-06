@@ -378,6 +378,16 @@ class KWField(MuSpinExpandKeyword):
     _constants = {**_math_constants, **_phys_constants}
 
 
+class KWIntrinsicField(MuSpinExpandKeyword):
+
+    name = "intrinsic_field"
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = "0.0"
+    _constants = {**_math_constants, **_phys_constants}
+
+
 class KWTime(MuSpinExpandKeyword):
 
     name = "time"
