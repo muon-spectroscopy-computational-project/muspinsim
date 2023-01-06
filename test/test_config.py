@@ -76,6 +76,7 @@ dissipation 2
         self.assertEqual(cfg._dissip_terms[1], 0.1)
 
         self.assertIn("B", cfg._file_ranges)
+        self.assertIn("intrinsic_B", cfg._file_ranges)
         self.assertIn("T", cfg._file_ranges)
         self.assertIn("t", cfg._x_range)
         self.assertIn("orient", cfg._avg_ranges)

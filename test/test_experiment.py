@@ -204,6 +204,53 @@ intrinsic_field
 
         self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi**2 * tau**2))
 
+    def test_run_intrinsic_field(self):
+        # Check results from rotating are different when using field or intrinsic_field
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+orientation
+    zcw(1)
+field
+    10 0 0
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+orientation
+    zcw(1)
+intrinsic_field
+    10 0 0
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results_intrinsic = ertest.run()
+
+        np.testing.assert_raises(
+            AssertionError,
+            np.testing.assert_array_almost_equal,
+            results,
+            results_intrinsic,
+        )
+
     def test_run_celio(self):
 
         # Empty system
