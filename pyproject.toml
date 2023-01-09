@@ -25,21 +25,22 @@ skip = [
 ]
 
 [tool.cibuildwheel.macos]
-# Default compiler on macOS doesn't support OpenMP, so install clang
+# Default compiler on macOS doesn't support OpenMP, so install llvm
 # and force its use through environment variables
 before-all = "brew install llvm"
-#before-all = "arch -arm64 brew install llvm"
-#before-all = "brew reinstall gcc; brew reinstall libomp"
 
 [tool.cibuildwheel.macos.environment]
 CC="/usr/local/opt/llvm/bin/clang"
 CXX="/usr/local/opt/llvm/bin/clang++"
 LDFLAGS="-L/usr/local/opt/llvm/lib"
 CPPFLAGS="-I/usr/local/opt/llvm/include"
-# CC="/usr/local/bin/gcc-11"
-# CXX="/usr/local/bin/g++-11"
+
+# Disable OpenMP for macOS and Windows ARM builds - currently have various
+# issues with cross-compilation
+[[tool.cibuildwheel.overrides]]
+select = "*macosx_arm64"
+environment = { MUSPINSIM_WITH_OPENMP=0 }
 
 [[tool.cibuildwheel.overrides]]
-# Disable for macOS ARM builds - currently have various issues with cross-compilation
-select = "*macosx_arm64"
+select = "*win_arm64"
 environment = { MUSPINSIM_WITH_OPENMP=0 }

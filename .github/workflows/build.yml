@@ -12,22 +12,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macOS-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v3
+
+      # Required for aarch64
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.4
         env:
           # aarch64 and arm64 are both ARM architectures
-          # allow these to be built on Intel based runners
-          # CIBW_ARCHS_WINDOWS: auto ARM64
-          # CIBW_ARCHS_LINUX: auto aarch64
-          # OpenMP causes issues here when cross compiling for arm as
-          # the installed OpenMP libraries for llvm are x86_64 only
-          # CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_ARCHS_MACOS: auto arm64
+          # defined here to allow them to be built on the Intel based runners
+          CIBW_ARCHS_WINDOWS: auto # ARM64 - ignore for now, seems numpy causes issues here
+          CIBW_ARCHS_LINUX: auto aarch64
+          CIBW_ARCHS_MACOS: x86_64 arm64
         with:
           package-dir: .
           output-dir: wheelhouse
