@@ -12,13 +12,22 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [macOS-latest]
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.11.4
+        env:
+          # aarch64 and arm64 are both ARM architectures
+          # allow these to be built on Intel based runners
+          # CIBW_ARCHS_WINDOWS: auto ARM64
+          # CIBW_ARCHS_LINUX: auto aarch64
+          # OpenMP causes issues here when cross compiling for arm as
+          # the installed OpenMP libraries for llvm are x86_64 only
+          # CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_ARCHS_MACOS: auto arm64
         with:
           package-dir: .
           output-dir: wheelhouse
