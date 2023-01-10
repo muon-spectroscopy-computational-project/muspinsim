@@ -37,7 +37,7 @@ jobs:
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
           CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: pytest {project}/test
+          CIBW_TEST_COMMAND: pytest --pyargs muspinsim
           CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} *-macosx_arm64 *-macosx_universal2:arm64"
         with:
           package-dir: .
