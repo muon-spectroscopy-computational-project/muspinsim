@@ -12,7 +12,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        # macOS-12 pinned here due to usage of $(brew --prefix llvm@14) in
+        # pyproject.toml - this may need updating for future runner images
+        os: [ubuntu-latest, macOS-12, windows-latest]
 
     steps:
       - uses: actions/checkout@v3

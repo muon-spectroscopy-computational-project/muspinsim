@@ -24,23 +24,11 @@ skip = [
     "*-musllinux*"
 ]
 
-[tool.cibuildwheel.macos]
-# Default compiler on macOS doesn't support OpenMP, so install llvm
-# and force its use through environment variables
-before-all = "brew install llvm"
-
 [tool.cibuildwheel.macos.environment]
-CC="/usr/local/opt/llvm/bin/clang"
-CXX="/usr/local/opt/llvm/bin/clang++"
-LDFLAGS="-L/usr/local/opt/llvm/lib"
-CPPFLAGS="-I/usr/local/opt/llvm/include"
-
-# Disable OpenMP for macOS and Windows ARM builds - currently have various
-# issues with cross-compilation
-[[tool.cibuildwheel.overrides]]
-select = "*macosx_arm64"
-environment = { MUSPINSIM_WITH_OPENMP=0 }
-
-[[tool.cibuildwheel.overrides]]
-select = "*win_arm64"
-environment = { MUSPINSIM_WITH_OPENMP=0 }
+# Default compiler on macOS doesn't support OpenMP, so force the usage
+# of homebrew's llvm see
+# https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+# Installing the latest (currently llvm 15.0.6) seems to skip the ARM OpenMP
+# libraries meaning cross compilation fails)
+CC="$(brew --prefix llvm@14)/bin/clang"
+CXX="$(brew --prefix llvm@14)/bin/clang++"
