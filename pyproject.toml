@@ -11,8 +11,6 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
-# Build with OpenMP
-environment = { MUSPINSIM_WITH_OPENMP=1 }
 
 skip = [
     # Skip building on CPython 3.6 & 3.7 on all platforms as muspinsim requires >= 3.8
@@ -23,12 +21,3 @@ skip = [
     "*-win32", "*-manylinux_i686",
     "*-musllinux*"
 ]
-
-[tool.cibuildwheel.macos.environment]
-# Default compiler on macOS doesn't support OpenMP, so force the usage
-# of homebrew's llvm see
-# https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
-# Installing the latest (currently llvm 15.0.6) seems to skip the ARM OpenMP
-# libraries meaning cross compilation fails)
-CC="$(brew --prefix llvm@14)/bin/clang"
-CXX="$(brew --prefix llvm@14)/bin/clang++"
