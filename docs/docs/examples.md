@@ -11,7 +11,7 @@ zeeman 1
     0 0 20.0/muon_gyr
 ```
 
-Being aligned with the *z* axis, it will produce a full precession of the entire muon polarisation, and given the field is defined as a function of the muon gyromagnetic ratio, it will result in a Larmor frequency of $\gamma_\mu B = 20 \,\mathrm{MHz}$, meaning it will do two full precessions in the $0.1\,\mu s$ range covered by the time axis.
+Being aligned with the *z* axis, it will produce a full precession of the entire muon polarisation, and given the field is defined as a function of the muon gyromagnetic ratio, it will result in a Larmor frequency of $\gamma_\mu B = 20 \,\mathrm{MHz}$, meaning it will do two full precessions in the 0.1 µs range covered by the time axis.
 
 
 ![Plot of asymmetry against time for the Zeeman example](./figExZeeman.png)
