@@ -1,19 +1,17 @@
-### Installing `muspinsim`
+### Installing MuSpinSim
 
 In this tutorial we'll go through the best ways to install MuSpinSim on
-any system of your interest, so that you can use it for the other exercises.
-
-The first step is, of course, procuring Python itself. If you have not already
-done this, see the [tutorial here](./python-setup).
+any system of your interest. The first step is, of course, procuring Python
+itself. If you have not already done this, see the [tutorial here](https://muon-spectroscopy-computational-project.github.io/tutorial-folder/python-setup).
 
 #### Dependencies
 
 `pip` will take care of installing all of the dependencies (other packages
 that `muspinsim` needs to run). Just follow the instructions below.
 
-#### Installing MuSpinSim
+#### Installing with pip or conda
 
-Granted that you already have Python and `pip` installed on your system, and a
+Assuming you already have Python and `pip` installed on your system, and a
 command line ready to use, then installing `muspinsim` is easy using
 
 ```bash
@@ -36,8 +34,8 @@ To install from source you first need to ensure you have a suitable C++ compiler
 your system. If you are on Linux or macOS, this is likely already the case, but for
 Windows you will likely need to install one such as [MSCV](https://visualstudio.microsoft.com/visual-cpp-build-tools/). 
 
-You obtain package source from GitHub in one of two ways. If you have `git` installed and are familiar with its
-use you can simply clone the repository:
+After this you should obtain the source from GitHub in one of two ways. If you have
+`git` installed and are familiar with its use you can simply clone the repository:
 
 ```bash
 git clone https://github.com/muon-spectroscopy-computational-project/muspinsim.git
@@ -49,7 +47,7 @@ and unzip it in a folder of your choice.
 
 To install the downloaded source, navigate to the parent directory in your
 terminal. If you don't know how to do it,
-[here's a handy guide for Linux and MacOS](http://linuxcommand.org/lc3_lts0020.php).
+[here's a handy guide for Linux and MacOS](http://linuxcommand.org/lc3_lts0020.php)
 and [here's one for Windows](http://dosprompt.info/basics.asp), which has a 
 different syntax. 
 
@@ -82,7 +80,7 @@ set MUSPINSIM_WITH_OPENMP=1
 ```
 
 !!! Important
-    While the default compiler on Linux, and most Windows compilers support OpenMP
+    While the default compiler on Linux and most Windows compilers support OpenMP,
     the default compiler on macOS does not. As a result you should install a
     compatible compiler first. We recommend using clang from homebrew's llvm
     package which can be installed via
