@@ -6,6 +6,9 @@ markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
   - admonition
+  - pymdownx.superfences # Allows code block nesting in admonition
+  - pymdownx.highlight:
+      use_pygments: false # Avoids duplicate borders around blocks
 extra_javascript:
   - js/config.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6

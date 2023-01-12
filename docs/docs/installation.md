@@ -84,26 +84,24 @@ set MUSPINSIM_WITH_OPENMP=1
 !!! Important
     While the default compiler on Linux, and most Windows compilers support OpenMP
     the default compiler on macOS does not. As a result you should install a
-    compatible compiler first, see below.
+    compatible compiler first. We recommend using clang from homebrew's llvm
+    package which can be installed via
 
-For macOS we recommend using clang from homebrew's llvm package. This can
-be installed via
+    ```bash
+    brew install llvm
+    ```
 
-```bash
-brew install llvm
-```
+    Then you need to add the following environment variables to point to the
+    the new compilers instead of the default. The paths may differ for your
+    system but are usually
 
-Then you need to the following environment variables to point to the
-the compilers from Homebrew's llvm package instead of the default. The paths may
-differ for your system but are usually
+    ```bash
+    export CC="/usr/local/opt/llvm/bin/clang"
+    export CXX="/usr/local/opt/llvm/bin/clang++"
+    ```
 
-```bash
-export CC="/usr/local/opt/llvm/bin/clang"
-export CXX="/usr/local/opt/llvm/bin/clang++"
-```
+    With these set, you can now install the downloaded source with
 
-With these variables set, install the downloaded source with
-
-```bash
-pip install ./muspinsim --user
-```
+    ```bash
+    pip install ./muspinsim --user
+    ```
