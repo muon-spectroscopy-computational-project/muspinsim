@@ -272,6 +272,7 @@ Two helper functions are provided to generate automatically ranges of orientatio
 | Allows expressions:   |              Yes |
 | Allows constants:     |          default |
 | Allows functions:     | default, `range` |
+
 *Example:*
 ```plaintext
 temperature
@@ -322,6 +323,7 @@ Block of data to fit. Must have two columns: the first one is the `x_axis` (for 
 | Allows expressions:   |               No |
 | Allows constants:     |              N/A |
 | Allows functions:     |              N/A |
+
 *Example:*
 ```plaintext
 fitting_method
@@ -374,7 +376,6 @@ A convenience keyword that sets a number of other parameters to reproduce certai
 | Allows constants:     |  Default |
 | Allows functions:     |  Default |
 
-
 *Example:*
 ```plaintext
 zeeman 1
@@ -409,6 +410,7 @@ Specify a hyperfine tensor, in MHz, for a given spin. A hyperfine tensor couples
 | Allows expressions:   |       Yes |
 | Allows constants:     |   Default |
 | Allows functions:     |   Default |
+
 *Example:*
 ```plaintext
 dipolar 1 2
