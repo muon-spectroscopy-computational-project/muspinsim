@@ -4,15 +4,10 @@ In this tutorial we'll go through the best ways to install MuSpinSim on
 any system of your interest. The first step is, of course, procuring Python
 itself. If you have not already done this, see the [tutorial here](https://muon-spectroscopy-computational-project.github.io/tutorial-folder/python-setup).
 
-#### Dependencies
-
-`pip` will take care of installing all of the dependencies (other packages
-that `muspinsim` needs to run). Just follow the instructions below.
-
 #### Installing with pip or conda
 
-Assuming you already have Python and `pip` installed on your system, and a
-command line ready to use, then installing `muspinsim` is easy using
+Using either `pip` or `conda` will take care of installing all of the dependencies (other packages
+that `muspinsim` needs to run). Assuming you already have Python and `pip` installed on your system, then installing `muspinsim` from the command line is easy using
 
 ```bash
 pip install muspinsim --user
@@ -66,7 +61,8 @@ pip install ./muspinsim --user
 
 ##### Compiling with OpenMP
 
-To compile with OpenMP to allow parallelisation you can assign the environment variable
+If installing using `pip` or `conda`, then parallesisation with OpenMP will be enabled. If 
+compiling from source, to allow parallelisation you can assign the environment variable
 `MUSPINSIM_WITH_OPENMP` prior to installation. To do this on Linux and macOS you may use
 
 ```bash
