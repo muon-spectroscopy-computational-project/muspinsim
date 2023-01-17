@@ -272,6 +272,7 @@ Two helper functions are provided to generate automatically ranges of orientatio
 | Allows expressions:   |              Yes |
 | Allows constants:     |          default |
 | Allows functions:     | default, `range` |
+
 *Example:*
 ```plaintext
 temperature
@@ -322,6 +323,7 @@ Block of data to fit. Must have two columns: the first one is the `x_axis` (for 
 | Allows expressions:   |               No |
 | Allows constants:     |              N/A |
 | Allows functions:     |              N/A |
+
 *Example:*
 ```plaintext
 fitting_method
@@ -374,7 +376,6 @@ A convenience keyword that sets a number of other parameters to reproduce certai
 | Allows constants:     |  Default |
 | Allows functions:     |  Default |
 
-
 *Example:*
 ```plaintext
 zeeman 1
@@ -409,6 +410,7 @@ Specify a hyperfine tensor, in MHz, for a given spin. A hyperfine tensor couples
 | Allows expressions:   |       Yes |
 | Allows constants:     |   Default |
 | Allows functions:     |   Default |
+
 *Example:*
 ```plaintext
 dipolar 1 2
@@ -453,7 +455,8 @@ dissipation 1
 
 Add a dissipation term for a given spin, which switches the system to using the [Lindblad master equation](./theory_2.md#the-lindblad-master-equation) instead of regular unitary quantim evolution. The dissipative term will cause random spin flips that decohere the system and drive it towards a thermal equilibrium state (determined by the temperature). The dissipation term is given in MHz. Indices count from 1. 
 
-> **CAUTION:** Lindbladian matrices can be not diagonalizable. This functionality does not yet account for that, so it could fail in some cases.
+!!! warning
+    Lindbladian matrices can be not diagonalizable. This functionality does not yet account for that, so it could fail in some cases.
 
 ### celio
 | Keyword:              | `celio`       |
@@ -473,13 +476,15 @@ Use [Celio's Method](./theory_2.md#celios-method) instead of the regular time ev
 
 Larger values of $k$ are in theory more accurate but will become inaccurate again when very large at a point depending on the system. A value of $k = 0$ has no effect as it disables its use.
 
-> **NOTE:** Celio's method does not support [dissipation](#dissipation) or [integral](#y_axis) calculations.
+!!! note
+    Celio's method does not support [dissipation](#dissipation) or [integral](#y_axis) calculations.
 
 #### Method 1 - Evolving the density matrix
 
 When the number of averages is not specified or is given as 0, only the first part of Celio's method is performed to evolve the initial density matrix. This way it retains the ability to work with an initial temperature and is not subject to randomness in the results. This method will only provide a speed boost for certain systems, typically those with large spins and relatively few, simple interactions.
 
-> **CAUTION:** Some systems will be extremely slow using this method due to the matrix density being too high. A warning message is displayed in the '.log' file when this is the case.
+!!! warning
+    Some systems will be extremely slow using this method due to the matrix density being too high. A warning message is displayed in the '.log' file when this is the case.
 
 #### Method 2 - Using random initial states
 
