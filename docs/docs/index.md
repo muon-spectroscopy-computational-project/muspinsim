@@ -12,18 +12,7 @@ muon science experiments. MuSpinSim can:
 
 ## How to install
 
-Download the latest version of the code from [Github](https://github.com/muon-spectroscopy-computational-project/muspinsim)
-and unzip it, then in the command line enter the folder and use `pip` to install it:
-
-```bash
-$> pip install ./
-```
-
-It can then be run from anywhere simply with
-
-```bash
-$> muspinsim input_file
-```
+Follow the installation instructions [here](./installation.md).
 
 ## Topics
 * Learn about the [theory of spin dynamics behind MuSpinSim](./theory_1.md);

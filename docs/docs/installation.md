@@ -61,7 +61,7 @@ pip install ./muspinsim --user
 
 ##### Compiling with OpenMP
 
-If installing using `pip` or `conda`, then parallesisation with OpenMP will be enabled. If 
+If installing using `pip` or `conda`, then parallelisation with OpenMP will be enabled. If 
 compiling from source, to allow parallelisation you can assign the environment variable
 `MUSPINSIM_WITH_OPENMP` prior to installation. To do this on Linux and macOS you may use
 
@@ -99,3 +99,5 @@ set MUSPINSIM_WITH_OPENMP=1
     ```bash
     pip install ./muspinsim --user
     ```
+
+> **For developers:** You may also use `python setup.py --with-openmp build_ext --inplace` to compile the source with OpenMP while developing.
