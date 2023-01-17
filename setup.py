@@ -11,9 +11,20 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext, ParallelCompile
 from Cython.Build import cythonize
 
 
+# Returns a boolean value from the environment variable with the given key
+# if not found returns false
+def _get_environ_bool(key):
+    value = os.environ.get(key)
+    if value is None:
+        return False
+    return value.lower() not in {"0", "false", ""}
+
+
 def _check_user_arguments(options):
     # OpenMP
-    options["openmp"] = "--with-openmp" in sys.argv
+    options["openmp"] = "--with-openmp" in sys.argv or _get_environ_bool(
+        "MUSPINSIM_WITH_OPENMP"
+    )
     if "--with-openmp" in sys.argv:
         sys.argv.remove("--with-openmp")
 

@@ -23,7 +23,7 @@ jobs:
     name: Lint with flake8 and black
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -45,9 +45,9 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -58,9 +58,9 @@ jobs:
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
       shell: bash # Windows runners have Git Bash installed so this should work on all runners
     - name: Install package
-      run: pip install -e . # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
+      run: pip install .
     - name: Test with pytest
-      run: pytest
+      run: pytest --pyargs muspinsim
 
   test-openmp:
     name: Test on Python ${{ matrix.python-version }} and ${{ matrix.os }} with OpenMP
@@ -70,12 +70,13 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        os: [ubuntu-latest, windows-latest] # macOS-latest fails due to issue with OpenMP install
+        # macOS-12 pinned here due to usage of $(brew --prefix llvm@14) below
+        os: [ubuntu-latest, macOS-12, windows-latest] # macOS-latest fails due to issue with OpenMP install
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
@@ -85,7 +86,21 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
       shell: bash # Windows runners have Git Bash installed so this should work on all runners
+
+    # Default compiler on macOS doesn't support OpenMP, so force the usage
+    # of homebrew's llvm see
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+    - name: Add optional environment variables
+      run: |
+        if [ "$RUNNER_OS" == 'macOS' ]; then
+          echo "CC=$(brew --prefix llvm@14)/bin/clang" >> "$GITHUB_ENV"
+          echo "CXX=$(brew --prefix llvm@14)/bin/clang++" >> "$GITHUB_ENV"
+        fi
+      shell: bash
+
     - name: Install package
-      run: python setup.py develop --with-openmp # pytest always runs in local directory here, need compiled files to be produced here too so use editable mode
+      env:
+        MUSPINSIM_WITH_OPENMP: 1
+      run: pip install .
     - name: Test with pytest
-      run: pytest
+      run: pytest --pyargs muspinsim

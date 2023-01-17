@@ -1,0 +1,23 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "Cython",
+    "pybind11",
+    # See https://numpy.org/devdocs/user/troubleshooting-importerror.html#c-api-incompatibility
+    "oldest-supported-numpy",
+    "scipy",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+
+skip = [
+    # Skip building on CPython 3.6 & 3.7 on all platforms as muspinsim requires >= 3.8
+    "cp36-*", "cp37-*",
+    # The following are disabled due to errors - it seems other libraries
+    # ignore these as well
+    "pp*",
+    "*-win32", "*-manylinux_i686",
+    "*-musllinux*"
+]
