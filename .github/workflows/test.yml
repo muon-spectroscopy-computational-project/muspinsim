@@ -70,8 +70,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        # macOS-12 pinned here due to usage of $(brew --prefix llvm@14) below
-        os: [ubuntu-latest, macOS-12, windows-latest] # macOS-latest fails due to issue with OpenMP install
+        # macOS-11 pinned here due to usage of $(brew --prefix llvm@14)
+        # macOS-12 will become macOS-latest in the near future but
+        # is currently still unstable
+        os: [ubuntu-latest, macOS-11, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -89,7 +91,7 @@ jobs:
 
     # Default compiler on macOS doesn't support OpenMP, so force the usage
     # of homebrew's llvm see
-    # https://github.com/actions/runner-images/blob/main/images/macos/macos-12-Readme.md
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
     - name: Add optional environment variables
       run: |
         if [ "$RUNNER_OS" == 'macOS' ]; then

@@ -11,8 +11,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # macOS-12 pinned here due to usage of $(brew --prefix llvm@14) below
-        os: [ubuntu-latest, macOS-12, windows-latest]
+        # macOS-11 pinned here due to usage of $(brew --prefix llvm@14)
+        # macOS-12 will become macOS-latest in the near future but
+        # is currently still unstable
+        os: [ubuntu-latest, macOS-11, windows-latest]
 
     steps:
       - uses: actions/checkout@v3
