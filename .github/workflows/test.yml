@@ -70,7 +70,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        # macOS-11 pinned here due to usage of $(brew --prefix llvm@14)
+        # macOS-11 pinned here due to usage of $(brew --prefix llvm@15)
         # macOS-12 will become macOS-latest in the near future but
         # is currently still unstable
         os: [ubuntu-latest, macOS-11, windows-latest]
@@ -95,8 +95,8 @@ jobs:
     - name: Add optional environment variables
       run: |
         if [ "$RUNNER_OS" == 'macOS' ]; then
-          echo "CC=$(brew --prefix llvm@14)/bin/clang" >> "$GITHUB_ENV"
-          echo "CXX=$(brew --prefix llvm@14)/bin/clang++" >> "$GITHUB_ENV"
+          echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
+          echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
         fi
       shell: bash
 
