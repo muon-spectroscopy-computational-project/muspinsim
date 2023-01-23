@@ -140,3 +140,12 @@ examples/*/*
 
 # Visual Studio Code settings
 .vscode
+
+# Local file generated in testing
+muspinsim.dat
+
+# Cython generated C code
+muspinsim/cython/*.c
+
+# cibuildwheels output folder (Used for locally testing builds)
+wheelhouse/*

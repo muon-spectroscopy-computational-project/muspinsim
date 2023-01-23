@@ -22,6 +22,7 @@ from muspinsim.utils import quat_from_polar
 _CDICT = {
     "polarization": "mupol",
     "field": "B",
+    "intrinsic_field": "intrinsic_B",
     "time": "t",
     "orientation": "orient",
     "temperature": "T",
@@ -55,7 +56,7 @@ def _validate_coupling_args(fun):
 def _validate_shape(v, target_shape=(3,), name="vector"):
     v = np.array(v)
     if v.shape != target_shape:
-        raise MuSpinConfigError("Invalid shape for " "{0} coupling term".format(name))
+        raise MuSpinConfigError("Invalid shape for {0} coupling term".format(name))
     return v
 
 
@@ -103,6 +104,7 @@ class MuSpinConfig(object):
         # Basic parameters
         self._name = self.validate("name", params["name"].value)[0]
         self._spins = self.validate("spins", params["spins"].value[0])
+        self._celio = self._validate_celio(params["celio"].value[0])
         self._y_axis = self.validate("y", params["y_axis"].value[0])[0]
 
         # Identify ranges
@@ -119,7 +121,7 @@ class MuSpinConfig(object):
             try:
                 self._avg_ranges[_CDICT[a]] = None
             except KeyError:
-                raise MuSpinConfigError("Invalid average axis name in " "input file")
+                raise MuSpinConfigError("Invalid average axis name in input file")
 
         self._time_N = 0  # Number of time points. This is special
         self._time_isavg = "t" in self._avg_ranges  # Is time averaged over?
@@ -171,14 +173,14 @@ class MuSpinConfig(object):
         if self._y_axis == "integral":
             if "t" in self._x_range:
                 raise MuSpinConfigError(
-                    "Can not use time as X axis when " "evaluating integral of signal"
+                    "Can not use time as X axis when evaluating integral of signal"
                 )
 
         # If we're fitting, we can't have file ranges
         finfo = params["fitting_info"]
         if finfo["fit"]:
             if len(self._file_ranges) > 0:
-                raise MuSpinConfigError("Can not have file ranges when " "fitting")
+                raise MuSpinConfigError("Can not have file ranges when fitting")
             # The x axis is overridden, whatever it is
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
@@ -206,7 +208,7 @@ class MuSpinConfig(object):
             _log_dictranges(self._file_ranges)
 
         # Now make the spin system
-        self._system = MuonSpinSystem(self._spins)
+        self._system = MuonSpinSystem(self._spins, self.celio_k)
         self._dissip_terms = {}
 
         for iid, idata in params["couplings"].items():
@@ -276,7 +278,7 @@ class MuSpinConfig(object):
             "{0}".format(len(self._configurations))
         )
         logging.info(
-            "Total number of configurations to average: " "{0}".format(self._avg_N)
+            "Total number of configurations to average: {0}".format(self._avg_N)
         )
 
     def validate(self, name, value, args={}):
@@ -361,7 +363,7 @@ Parameters used:
 
         x = self.x_axis_values
 
-        if "B" in self._x_range.keys():
+        if "B" in self._x_range.keys() or "intrinsic_B" in self._x_range.keys():
             x = np.linalg.norm(x, axis=-1)
 
         # Actually save the files
@@ -394,6 +396,22 @@ Parameters used:
     @property
     def spins(self):
         return list(self._spins)
+
+    @property
+    def celio_k(self):
+        """
+        Returns the value of k for Celio's method, a value of 0 indicates
+        Celio's method should not be used
+        """
+        return self._celio[0]
+
+    @property
+    def celio_averages(self):
+        """
+        Returns the number of averages to use in Celio's method, a value
+        of 0 indicates the random states method should not be used
+        """
+        return self._celio[1]
 
     @property
     def system(self):
@@ -440,7 +458,7 @@ Parameters used:
             i = slice(i, i + 1)
         elif type(i) != slice:
             raise TypeError(
-                "Indices must be integer or slices, " "not {0}".format(type(i))
+                "Indices must be integer or slices, not {0}".format(type(i))
             )
 
         ans = []
@@ -478,6 +496,35 @@ Parameters used:
             A = int(A)
             return (el, A)
 
+    def _validate_celio(self, v):
+        trotter_k = 0
+        averages = 0
+        # When no average is given assume only value is that of the value of k
+        try:
+            trotter_k = int(v[0])
+            if trotter_k < 0:
+                raise MuSpinConfigError(
+                    "Value of k for Celio's method must a postive integer or 0"
+                )
+        except ValueError:
+            raise MuSpinConfigError(
+                "Value of k for Celio's method must be an integer"
+            ) from ValueError
+        # When there are 2 values, assign the value of averages as well
+        if len(v) == 2:
+            try:
+                averages = int(v[1])
+                if averages < 0:
+                    raise MuSpinConfigError(
+                        "Value of averages for Celio's method must a postive "
+                        "integer or 0"
+                    )
+            except ValueError:
+                raise MuSpinConfigError(
+                    "Value of averages for Celio's method must be an integer"
+                ) from ValueError
+        return (trotter_k, averages)
+
     def _validate_t(self, v):
         if len(v) != 1:
             raise MuSpinConfigError("Invalid line in time range")
@@ -489,6 +536,15 @@ Parameters used:
             v = np.array([0, 0, v[0]])  # The default direction is Z
         elif len(v) != 3:
             raise MuSpinConfigError("Invalid magnetic field value")
+
+        return v
+
+    def _validate_intrinsic_B(self, v):
+
+        if len(v) == 1:
+            v = np.array([0, 0, v[0]])  # The default direction is Z
+        elif len(v) != 3:
+            raise MuSpinConfigError("Invalid intrinsic magnetic field value")
 
         return v
 
@@ -516,8 +572,8 @@ Parameters used:
 
         # After computing the rotation, we store the conjugate because it's a
         # lot cheaper, instead of rotating the whole system by q, to rotate
-        # only the magnetic field and the polarization (lab frame) by the
-        # inverse of q
+        # only the external magnetic field and the polarization (lab frame) by
+        # the inverse of q
 
         return (q.conjugate(), w)
 
@@ -551,6 +607,6 @@ Parameters used:
         o, w = v
         abc = o.euler_angles("zyz") * 180 / np.pi
         ostr = (
-            "[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, " "c = {2:.1f} deg, weight = {3}"
+            "[ZYZ] a = {0:.1f} deg, b = {1:.1f} deg, c = {2:.1f} deg, weight = {3}"
         ).format(*abc, w)
         return ostr

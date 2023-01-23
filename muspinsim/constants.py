@@ -14,8 +14,11 @@ MU_GAMMA = -(ELEC_GAMMA / 206.7669883)  # Muon gyromagnetic ratio (MHz/T)
 MU_TAU = 2.19703  # Muon decay rate (10^-6 s)
 # EFG to MHz constant for Quadrupole couplings
 # (the total quadrupole coupling in MHz is QCONST*Q*Vzz)
+# The factor 1e-37 comes from 1e-6 * 1e-28 * 1e-3
+# in order this converts to MHz, from barn to m^2 and the last factor
+# accounts for the soprano returning quadrupole moments in millibarn
 EFG_2_MHZ = (
-    cnst.physical_constants["atomic unit of electric field " "gradient"][0]
+    cnst.physical_constants["atomic unit of electric field gradient"][0]
     * cnst.e
     * 1e-37
     / cnst.h
@@ -94,7 +97,7 @@ def spin(elem="mu", iso=None):
     elif elem == "e":
         iso = iso or 1
         if iso < 1 or int(iso) != iso:
-            raise ValueError("Invalid multiplicity " "{0} for electron".format(iso))
+            raise ValueError("Invalid multiplicity {0} for electron".format(iso))
         return 0.5 * int(iso)
     else:
         try:

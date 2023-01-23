@@ -6,10 +6,12 @@ import logging
 import numpy as np
 import scipy.constants as cnst
 
+from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
+from muspinsim.spinsys import MuonSpinSystem, SingleTerm
 from muspinsim.input import MuSpinInput
 from muspinsim.spinop import DensityOperator, SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
@@ -44,10 +46,37 @@ class ExperimentRunner(object):
         else:
             config = MuSpinConfig()
 
-        mpi.broadcast_object(config)
+        # broadcast config object without _system attribute
+        attrs = list(config.__dict__.keys())
+        for x in ["_system", "system"]:
+            if x in attrs:
+                attrs.remove(x)
+        mpi.broadcast_object(config, attrs)
+
+        # broadcast _system attribute without _terms attribute
+        system = config.__dict__.get("_system", None)
+
+        # Create default system only if none found
+        if system is None:
+            system = MuonSpinSystem()
+
+        attrs = list(system.__dict__.keys())
+        if "_terms" in attrs:
+            attrs.remove("_terms")
+        mpi.broadcast_object(system, attrs)
+
+        # broadcast _terms attribute sequentially
+        terms = system.__dict__.get("_terms", [])
+        terms = mpi.broadcast_terms(terms)
+
+        for i in terms:
+            i.__setattr__("_spinsys", system)
+        system.__setattr__("_terms", terms)
+        config.__setattr__("_system", system)
 
         self._config = config
         self._system = config.system
+
         # Store single spin operators
         self._single_spinops = np.array(
             [
@@ -152,8 +181,7 @@ class ExperimentRunner(object):
                         ],
                         axis=0,
                     )
-
-                    evals, evecs = np.linalg.eigh(Hz)
+                    evals, evecs = np.linalg.eigh(Hz.toarray())
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
@@ -182,15 +210,34 @@ class ExperimentRunner(object):
 
     @property
     def Hz(self):
-
         if self._Hz is None:
-            B = self._B
-            g = self._system.gammas
-            Hz = np.sum(
-                B[None, :, None, None] * g[:, None, None, None] * self._single_spinops,
-                axis=(0, 1),
-            )
-            self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+            # Compute Zeeman Hamiltonian contribution
+            if not self._config.celio_k:
+                B = self._B
+                g = self._system.gammas
+                Bg = B[None, :] * g[:, None]
+
+                Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+                Hz = np.sum(Hz_sp_list)
+
+                self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+            else:
+                extra_terms = []
+                # Add zeeman terms only if there is a field present to avoid
+                # making Celio's method unnecessarily expensive
+                if not np.array_equal(self._B, [0, 0, 0]):
+                    for i in range(len(self._system.spins)):
+                        extra_terms.append(
+                            SingleTerm(
+                                self._system,
+                                i,
+                                self._B * self._system.gammas[i],
+                                label="Zeeman",
+                            )
+                        )
+                self._Hz = CelioHamiltonian(
+                    extra_terms, self.config.celio_k, self._system
+                )
 
         return self._Hz
 
@@ -226,11 +273,15 @@ class ExperimentRunner(object):
                 z = self._B / B
                 x, y = get_xy(z)
 
+            def sparse_sum(sp_mat_list):
+                sp_mat_list = sp_mat_list.flatten().tolist()
+                return np.sum(sp_mat_list)
+
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
 
-                op_x = np.sum(self._single_spinops[i, :] * x[:, None, None], axis=0)
-                op_y = np.sum(self._single_spinops[i, :] * y[:, None, None], axis=0)
+                op_x = sparse_sum(self._single_spinops[i, :, None] * x[:, None])
+                op_y = sparse_sum(self._single_spinops[i, :, None] * y[:, None])
                 op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
                 op_m = SpinOperator(op_x - 1.0j * op_y, dim=self.system.dimension)
 
@@ -307,6 +358,29 @@ class ExperimentRunner(object):
         self.p = q.rotate(p)
         self.T = T
 
+        # Magnetic field is sum of external field (rotated with angular
+        # averages) and the intrinsic field that should not be rotated
+        self.B += cfg_snap.intrinsic_B
+
+        # Figure out if a speedup is suitable
+        B = np.linalg.norm(self.B)
+        check_result = (cnst.e * (cnst.hbar**2) * B) / (2 * cnst.m_p * cnst.k * T)
+
+        # For now only use when exactly 0 (i.e. when T -> inf, or B = 0)
+        self._T_inf_speedup = check_result == 0
+
+        # Due to the method of computation we also require that muon is first in
+        # the system so we check this is the case here, otherwise we need to
+        # change the order of kronecker products when computing the sigma_mu for
+        # the system and this would be slower anyway
+        if self._T_inf_speedup and self._system.muon_index != 0:
+            self._T_inf_speedup = False
+
+            # Add a message to the log to notify there is a speedup available
+            # if the system is reordered
+            logging.info(
+                "The system is suitable for a speedup if the muon is defined first."
+            )
         return w
 
     def run_single(self, cfg_snap: ConfigSnapshot):
@@ -332,7 +406,36 @@ class ExperimentRunner(object):
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
-            data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+            # Use faster more approximate method of Celio's if requested
+            if isinstance(H, CelioHamiltonian) and self.config.celio_averages:
+                # Ensure the system is valid for its use
+                if self.T != np.inf:
+                    raise ValueError(
+                        "The fast version of Celio's method requires T -> inf. "
+                        "Either remove the number of averages or don't use "
+                        "celio."
+                    )
+
+                data = H.fast_evolve(
+                    self._system.sigma_mu(self.p),
+                    cfg_snap.t,
+                    self.config.celio_averages,
+                    True,
+                )
+            else:
+                # Use faster evolution if able to (Doesn't exist for Linbladian)
+                if self._T_inf_speedup and not isinstance(H, Lindbladian):
+                    other_spins = list(range(0, len(self._system.spins)))
+                    other_spins.remove(self._system.muon_index)
+                    other_dimension = np.prod(
+                        [self._system.dimension[i] for i in other_spins]
+                    )
+
+                    data = H.fast_evolve(
+                        self._system.sigma_mu(self.p), cfg_snap.t, other_dimension
+                    )
+                else:
+                    data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
             data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 

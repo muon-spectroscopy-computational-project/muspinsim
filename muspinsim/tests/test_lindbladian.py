@@ -19,7 +19,7 @@ class TestLindbladian(unittest.TestCase):
         L = Lindbladian.from_hamiltonian(H)
 
         self.assertEqual(L.dimension, (2, 2))
-        self.assertTrue(np.all(L.matrix == 1.0j * np.diag([0, -1, 1, 0])))
+        self.assertTrue(np.all(L.matrix.toarray() == 1.0j * np.diag([0, -1, 1, 0])))
 
         # Dissipation
         L = Lindbladian.from_hamiltonian(H, [(sx, 0.1)])
@@ -27,7 +27,7 @@ class TestLindbladian(unittest.TestCase):
         self.assertTrue(
             np.all(
                 np.isclose(
-                    L.matrix,
+                    L.matrix.toarray(),
                     [
                         [-0.025, 0, 0, 0.025],
                         [0, -0.025 - 1.0j, 0.025, 0],

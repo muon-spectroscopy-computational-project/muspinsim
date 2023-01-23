@@ -387,7 +387,7 @@ $$
 Sometimes, even in a system with multiple spins, operators involving only one of them, like $S_x^\mu$, might be relevant. In that case we must understand them as having an implicit identity matrix for all the spins that don't appear explicitly. So we have:
 
 $$
-S_x^\mu = S_x^\mu\mathbb{I}^e =
+S_x^\mu = S_x^\mu\mathbb{1}^e =
 \begin{bmatrix}
 0 & \frac{1}{2} \\
 \frac{1}{2} & 0
@@ -424,7 +424,7 @@ S^e_x \\
 S^e_y \\ 
 S^e_z
 \end{bmatrix}
-= \\
+\\
  = & A_{xx}S^\mu_xS^e_x + A_{yy}S^\mu_yS^e_y + A_{zz}S^\mu_zS^e_z + \\
  +&A_{xy}(S^\mu_xS^e_y+S^\mu_yS^e_x) + A_{xz}(S^\mu_xS^e_z+S^\mu_zS^e_x) +  A_{yz}(S^\mu_yS^e_z+S^\mu_zS^e_y)
 \end{split}

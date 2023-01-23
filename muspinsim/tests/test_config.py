@@ -17,6 +17,8 @@ spins
     mu 2H e
 field
     range(1, 11, 2)
+intrinsic_field
+    range(1, 21, 2)
 temperature
     range(0, 10, 2)
 time
@@ -48,13 +50,14 @@ dissipation 2
         cfg = MuSpinConfig(itest.evaluate())
 
         self.assertEqual(cfg.name, "muspinsim")
-        self.assertEqual(len(cfg), 8)
-        self.assertEqual(cfg.results.shape, (2, 2, 21))
+        self.assertEqual(len(cfg), 16)
+        self.assertEqual(cfg.results.shape, (2, 2, 2, 21))
 
         # Try getting one configuration snapshot
         cfg0 = cfg[0]
 
         self.assertTrue((cfg0.B == [0, 0, 1]).all())
+        self.assertTrue((cfg0.intrinsic_B == [0, 0, 1]).all())
         self.assertEqual(cfg0.T, 0)
         self.assertTrue((cfg0.t == np.linspace(0, 10, 21)).all())
         self.assertTrue(np.isclose(np.linalg.norm(cfg0.mupol), 1.0))
@@ -73,6 +76,7 @@ dissipation 2
         self.assertEqual(cfg._dissip_terms[1], 0.1)
 
         self.assertIn("B", cfg._file_ranges)
+        self.assertIn("intrinsic_B", cfg._file_ranges)
         self.assertIn("T", cfg._file_ranges)
         self.assertIn("t", cfg._x_range)
         self.assertIn("orient", cfg._avg_ranges)
@@ -114,6 +118,92 @@ y_axis
 
         itest = MuSpinInput(stest)
 
+        with self.assertRaises(MuSpinConfigError):
+            cfg = MuSpinConfig(itest.evaluate())
+
+    def test_celio(self):
+        # No mention of celio
+        stest = StringIO(
+            """
+spins
+    mu e
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 0)
+        self.assertEqual(cfg.celio_averages, 0)
+
+        # Only specifying a k
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    10
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 10)
+        self.assertEqual(cfg.celio_averages, 0)
+
+        # Using default k and averages
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    0 0
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 0)
+        self.assertEqual(cfg.celio_averages, 0)
+
+        # k and averages
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    10 8
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate())
+        self.assertEqual(cfg.celio_k, 10)
+        self.assertEqual(cfg.celio_averages, 8)
+
+        # Try a few errors
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    10 -8
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        with self.assertRaises(MuSpinConfigError):
+            cfg = MuSpinConfig(itest.evaluate())
+
+        stest = StringIO(
+            """
+spins
+    mu e
+celio
+    -1 0
+"""
+        )
+
+        itest = MuSpinInput(stest)
         with self.assertRaises(MuSpinConfigError):
             cfg = MuSpinConfig(itest.evaluate())
 

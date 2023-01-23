@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from muspinsim.spinop import SpinOperator, DensityOperator
-from muspinsim.spinsys import SpinSystem
+from muspinsim.spinsys import MuonSpinSystem, SpinSystem
 from muspinsim.hamiltonian import Hamiltonian
 
 
@@ -15,8 +15,8 @@ class TestHamiltonian(unittest.TestCase):
         self.assertEqual(H.dimension, (2,))
 
         # Error if not Hermitian
-        with self.assertRaises(ValueError):
-            Hamiltonian([[1, 1], [0, 1]])
+        with self.assertRaises(ValueError) as e:
+            Hamiltonian(np.array([[1, 1], [0, 1]]))
 
     def test_diag(self):
 
@@ -31,7 +31,7 @@ class TestHamiltonian(unittest.TestCase):
 
         Hrot = H.basis_change(evecs)
 
-        self.assertTrue(np.all(np.isclose(Hrot.matrix, np.diag(evals))))
+        self.assertTrue(np.all(np.isclose(Hrot.matrix.toarray(), np.diag(evals))))
 
     def test_evolve(self):
 
@@ -41,9 +41,25 @@ class TestHamiltonian(unittest.TestCase):
         rho0 = DensityOperator.from_vectors()  # Start along z
         t = np.linspace(0, 1, 100)
 
+        self.assertTrue(isinstance(H, Hamiltonian))
+
         evol = H.evolve(rho0, t, ssys.operator({0: "z"}))
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
+
+    def test_fast_evolve(self):
+
+        ssys = MuonSpinSystem(["mu", "e"])
+        ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
+        H = ssys.hamiltonian
+        t = np.linspace(0, 1, 100)
+
+        self.assertTrue(isinstance(H, Hamiltonian))
+
+        # Start along z
+        evol = H.fast_evolve(ssys.sigma_mu([0, 0, 1]), t, 2)
+
+        self.assertTrue(np.all(np.isclose(evol, 0.5 * np.cos(2 * np.pi * t))))
 
     def test_integrate(self):
 
@@ -51,6 +67,9 @@ class TestHamiltonian(unittest.TestCase):
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
         rho0 = DensityOperator.from_vectors()  # Start along z
+
+        self.assertTrue(isinstance(H, Hamiltonian))
+
         avg = H.integrate_decaying(rho0, 1.0, ssys.operator({0: "z"}))
 
         self.assertTrue(np.isclose(avg[0], 0.5 / (1.0 + 4 * np.pi**2)))

@@ -4,16 +4,24 @@ SuperOperator class for Lindbladian, used in open quantum dynamics
 """
 
 import numpy as np
-from numbers import Number
+from muspinsim.celio import CelioHamiltonian
 
 from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.spinop import SuperOperator, SpinOperator, DensityOperator
+from muspinsim.validation import (
+    validate_evolve_params,
+    validate_integrate_decaying_params,
+)
 
 
 class Lindbladian(SuperOperator):
     @classmethod
     def from_hamiltonian(self, H, dissipators=[]):
 
+        if isinstance(H, CelioHamiltonian):
+            raise NotImplementedError(
+                "Linbladian is not implemented for Celio's method"
+            )
         if not isinstance(H, Hamiltonian):
             raise ValueError("Must use Hamiltonian to create Lindbladian")
 
@@ -30,7 +38,7 @@ class Lindbladian(SuperOperator):
         AA = A.dagger() * A
         Ld = gamma * (SuperOperator.bracket(A) - 0.5 * SuperOperator.anticommutator(AA))
         if Ld.dimension != self.dimension:
-            raise ValueError("Invalid dissipation operator for this " "Lindbladian")
+            raise ValueError("Invalid dissipation operator for this Lindbladian")
 
         self._matrix += Ld.matrix
 
@@ -61,20 +69,11 @@ class Lindbladian(SuperOperator):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
         times = np.array(times)
-
-        if len(times.shape) != 1:
-            raise ValueError("times must be an array of values in microseconds")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
-            )
+
+        validate_evolve_params(rho0, times, operators)
 
         dim = rho0.dimension
         if self.dimension != dim * 2:
@@ -84,17 +83,19 @@ class Lindbladian(SuperOperator):
             raise ValueError("Incompatible measure operator dimension")
 
         # Start by building the matrix
-        L = self.matrix
+        L = self.matrix.toarray()
 
         # Diagonalize it
         evals, revecs = np.linalg.eig(L)
 
         # Vec-ing the density matrix
-        rho0 = rho0.matrix.reshape((-1,))
+        rho0 = rho0.matrix.toarray().reshape(
+            -1,
+        )
         rho0 = np.linalg.solve(revecs, rho0)
         # And the operators
         operatorsT = np.array(
-            [np.dot(o.matrix.T.reshape((-1,)), revecs) for o in operators]
+            [np.dot(o.matrix.T.toarray().reshape((-1,)), revecs) for o in operators]
         )
 
         rho = np.exp(2.0 * np.pi * evals[None, :] * times[:, None]) * rho0[None, :]
@@ -136,33 +137,34 @@ class Lindbladian(SuperOperator):
             RuntimeError -- Hamiltonian is not hermitian
         """
 
-        if not isinstance(rho0, DensityOperator):
-            raise TypeError("rho0 must be a valid DensityOperator")
-
-        if not (isinstance(tau, Number) and np.isreal(tau) and tau > 0):
-            raise ValueError("tau must be a real number > 0")
-
         if isinstance(operators, SpinOperator):
             operators = [operators]
-        if not all([isinstance(o, SpinOperator) for o in operators]):
-            raise ValueError(
-                "operators must be a SpinOperator or a list" " of SpinOperator objects"
-            )
+
+        validate_integrate_decaying_params(rho0, tau, operators)
 
         # Start by building the matrix
         L = self.matrix
 
         # Diagonalize it
-        evals, revecs = np.linalg.eig(L)
+
+        # sparse matricies
+
+        # need to convert this to use sparse matrices instead
+        evals, revecs = np.linalg.eig(L.toarray())
+
+        # evals, revecs = linalg.eigsh(self._matrix, k=self._matrix.shape[0]-2)
+        # idx = evals.argsort()
+        # evals = eigval[idx]
+        # revecs = eigvec[:,idx]
 
         # Vec-ing the density matrix
-        rho0 = rho0.matrix.reshape((-1,))
+        rho0 = rho0.matrix.toarray().reshape((-1,))
         rho0 = np.linalg.solve(revecs, rho0)
 
         # And the operators
         intops = np.array(
             [
-                np.dot(o.matrix.T.reshape((-1,)), revecs)
+                np.dot(o.matrix.T.toarray().reshape((-1,)), revecs)
                 / (1.0 / tau - 2.0 * np.pi * evals)
                 for o in operators
             ]

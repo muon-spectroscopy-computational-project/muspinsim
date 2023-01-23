@@ -40,7 +40,7 @@ class FittingRunner(object):
             if len(variables) == 0:
                 # Should never happen, but...
                 raise ValueError(
-                    "MuSpinInput passed to FittingRunner has no " "variables to fit"
+                    "MuSpinInput passed to FittingRunner has no variables to fit"
                 )
 
             self._xnames = tuple(sorted(variables.keys()))  # Order is important!
@@ -54,7 +54,7 @@ class FittingRunner(object):
         self._done = False
         self._sol = None
 
-    def run(self):
+    def run(self, name=None, path="."):
         """Run a fitting calculation using Scipy, and returns the solution
 
         Returns:
@@ -82,7 +82,7 @@ class FittingRunner(object):
             mpi.broadcast_object(self, ["_sol"])
 
             # And now save the last result
-            self._runner.config.save_output()
+            self._runner.config.save_output(name=name, path=path)
         else:
             while not self._done:
                 self._targfun(self._x)
@@ -130,7 +130,7 @@ class FittingRunner(object):
             config = MuSpinConfig(self._input.evaluate(**variables))
 
             if fname is None:
-                fname = config.name + "_fitreport.txt"
+                fname = config.name + "_fit_report.txt"
 
             with open(os.path.join(path, fname), "w") as f:
                 f.write("Fitting process for {0} completed\n".format(config.name))
@@ -142,7 +142,7 @@ class FittingRunner(object):
                     "Final absolute error <|f-f_targ|>: "
                     "{0}\n".format(self._sol["fun"])
                 )
-                f.write("Number of simulations: " "{0}\n".format(self._sol["nfev"]))
+                f.write("Number of simulations: {0}\n".format(self._sol["nfev"]))
                 f.write("Number of iterations: {0}\n".format(self._sol["nit"]))
 
                 f.write("\n" + "=" * 20 + "\n")

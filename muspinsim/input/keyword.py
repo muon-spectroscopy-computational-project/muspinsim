@@ -85,7 +85,7 @@ class MuSpinKeyword(object):
             )
         if not self.accept_range and len(block) > 1:
             raise RuntimeError(
-                "Can not accept range of values for " "keyword {0}".format(self.name)
+                "Can not accept range of values for keyword {0}".format(self.name)
             )
 
         use_default = False
@@ -292,7 +292,7 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
                 eval_values += [eval_line]
             else:
                 raise RuntimeError(
-                    "Unable to evaluate expression for " "keyword {0}".format(self.name)
+                    "Unable to evaluate expression for keyword {0}".format(self.name)
                 )
 
         return eval_values
@@ -345,6 +345,15 @@ class KWSpins(MuSpinKeyword):
     default = "mu e"
 
 
+class KWCelio(MuSpinKeyword):
+
+    name = "celio"
+    expr_size_bounds = (1, 2)
+    block_size = 1
+    accept_range = False
+    default = "0 0"
+
+
 class KWPolarization(MuSpinExpandKeyword):
 
     name = "polarization"
@@ -362,6 +371,16 @@ class KWPolarization(MuSpinExpandKeyword):
 class KWField(MuSpinExpandKeyword):
 
     name = "field"
+    block_size = 1
+    accept_range = True
+    accept_as_x = True
+    default = "0.0"
+    _constants = {**_math_constants, **_phys_constants}
+
+
+class KWIntrinsicField(MuSpinExpandKeyword):
+
+    name = "intrinsic_field"
     block_size = 1
     accept_range = True
     accept_as_x = True

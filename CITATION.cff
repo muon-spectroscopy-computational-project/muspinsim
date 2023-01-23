@@ -26,6 +26,14 @@ authors:
     family-names: Mudaraddi
     affiliation: Science and Technology Facilities Council
     orcid: 'https://orcid.org/0000-0002-2135-2705'
+  - given-names: Joel
+    family-names: Davies
+    affiliation: Science and Technology Facilities Council
+    orcid: 'https://orcid.org/0000-0002-4153-6819'
+  - given-names: John
+    family-names: Wilkinson
+    affiliation: Science and Technology Facilities Council
+    orcid: 'https://orcid.org/0000-0001-6879-7181'
   - name: "Muon Spectroscopy Computational Project"
 repository-code: >-
   https://github.com/muon-spectroscopy-computational-project/muspinsim
@@ -50,14 +58,14 @@ keywords:
   - "muon experiments: zero field"
 license: MIT
 # version data
-version: v1.1.0
-date-released: '2022-05-19'
+version: v2.0.0
+date-released: '2023-01-30'
 identifiers:
   - type: doi
     value: 10.5281/zenodo.6517626
     description: The concept DOI for the collection containing all versions of muspinsim.
   - type: doi
-    value: 10.5281/zenodo.6563074
-    description: The versioned DOI for the version 1.1.0 of muspinsim.
+    value: 10.5281/zenodo.7026020
+    description: The versioned DOI for the version 1.2.0 of muspinsim.
 # references - to come!
 # references:
