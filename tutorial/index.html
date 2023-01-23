@@ -45,6 +45,10 @@
                 </li>
               </ul>
               <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
                 <li class="toctree-l1"><a class="reference internal" href="../theory_1/">Theory of spin dynamics - I</a>
                 </li>
               </ul>
@@ -109,55 +113,48 @@
 <h2 id="usage">Usage</h2>
 <h3 id="from-the-command-line">From the command line</h3>
 <p>Once installed, MuSpinSim will be available for command line use as <code>muspinsim</code>. To run it you may use the following syntax</p>
-<pre><code class="language-bash">muspinsim input_file.in
-</code></pre>
+<pre class="highlight"><code class="language-bash">muspinsim input_file.in</code></pre>
 <p>where the input file contains the parameters specifying the system and experiment details.</p>
 <p>For especially expensive calculations MuSpinSim can also be used in parallel with MPI. In that case, the command to run it is</p>
-<pre><code class="language-bash">mpirun -n &lt;number of cores&gt; muspinsim.mpi input_file.in
-</code></pre>
+<pre class="highlight"><code class="language-bash">mpirun -n &lt;number of cores&gt; muspinsim.mpi input_file.in</code></pre>
 <p>where <code>&lt;number of cores&gt;</code> is replaced by the number of desired cores on the given system.</p>
 <h4 id="example">Example</h4>
 <p>Create a file named <code>zeeman.in</code> with the following text</p>
-<pre><code class="language-plaintext">name
+<pre class="highlight"><code class="language-plaintext">name
     zeeman
 spins
     mu
 time
     range(0, 0.1, 100)
 zeeman 1
-    0 0 20.0/muon_gyr
-</code></pre>
+    0 0 20.0/muon_gyr</code></pre>
 <p>This represents the input file for a simple system with a single muon and static electric field aligned in the z axis. This gives the general structure of input files, for more information see <a href="../input">Input</a>. When you give this file as input to MuSpinSim it will compute and output the time evolution of the muon's polarisation (asymmetry) in the time range from 0 to 0.1 microseconds in 100 steps. To do this run the command</p>
-<pre><code class="language-bash">muspinsim zeeman.in
-</code></pre>
-<p>This will generate an output of the time and asymmetry values in <code>zeeman.dat</code>. The name of this file is the name given in the input file above. This output file will look something like</p>
-<pre><code class="language-plaintext"># MUSPINSIM v.1.2.0
+<pre class="highlight"><code class="language-bash">muspinsim zeeman.in</code></pre>
+<p>This will generate an output of the time and asymmetry values in <code>zeeman.dat</code>. The name of this file is the name given in the input file above. This output file will look something like
+<pre class="highlight"><code class="language-plaintext"># MUSPINSIM v.1.2.0
 # Output file written on Mon Nov  7 09:28:54 2022
 # Parameters used:
 #
 0.000000000000000000e+00 5.000000000000000000e-01
 1.010101010101010100e-03 4.959774064153976703e-01
 2.020202020202020200e-03 4.839743506981781240e-01
-...
-</code></pre>
-<p>The first value on each row is the time value, and the second is the computed asymmetry. You should also see the presence of a log file named <code>zeeman.log</code> which can give additional information on what MuSpinSim has done. For further information on this example as well as others see <a href="../examples">Examples</a>.</p>
+...</code></pre>
+The first value on each row is the time value, and the second is the computed asymmetry. You should also see the presence of a log file named <code>zeeman.log</code> which can give additional information on what MuSpinSim has done. For further information on this example as well as others see <a href="../examples">Examples</a>.</p>
 <h3 id="as-a-library">As a library</h3>
 <p>MuSpinSim can also be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the <code>MuSpinInput</code> class, then use it to create a <code>MuonExperimentalSetup</code> that runs the actual experiment. The minimal script is:</p>
-<pre><code class="language-python">from muspinsim import MuSpinInput, ExperimentRunner
+<pre class="highlight"><code class="language-python">from muspinsim import MuSpinInput, ExperimentRunner
 
 params = MuSpinInput(open('input_file.in'))
 experiment = ExperimentRunner(params)
 
-results = experiment.run()
-</code></pre>
+results = experiment.run()</code></pre>
 <p>In order to instead run a fitting calculation, the minimal script is</p>
-<pre><code class="language-python">from muspinsim import MuSpinInput, FittingRunner
+<pre class="highlight"><code class="language-python">from muspinsim import MuSpinInput, FittingRunner
 
 params = MuSpinInput(open('input_file.in'))
 optimizer = FittingRunner(params)
 
-solution = optimizer.run()
-</code></pre>
+solution = optimizer.run()</code></pre>
 <p>For parallel use, it's recommended to stick to using the provided <code>muspinsim.mpi</code> script.</p>
               
             </div>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Installation - MuSpinSim Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Installation";
+        var mkdocs_page_input_path = "installation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> MuSpinSim Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome to MuSpinSim's documentation</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Installation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#installing-with-pip-or-conda">Installing with pip or conda</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#installing-from-source">Installing from source</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#compiling-with-openmp">Compiling with OpenMP</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../theory_1/">Theory of spin dynamics - I</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../theory_2/">Theory of spin dynamics - II</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../hamiltonian/">Hamiltonian</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../input/">Input</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">MuSpinSim Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+      <li>Installation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h3 id="installing-muspinsim">Installing MuSpinSim</h3>
+<p>In this tutorial we'll go through the best ways to install MuSpinSim on
+any system of your interest. The first step is, of course, procuring Python
+itself. If you have not already done this, see the <a href="https://muon-spectroscopy-computational-project.github.io/tutorial-folder/python-setup">tutorial here</a>.</p>
+<h4 id="installing-with-pip-or-conda">Installing with pip or conda</h4>
+<p>Using either <code>pip</code> or <code>conda</code> will take care of installing all of the dependencies (other packages
+that <code>muspinsim</code> needs to run). Assuming you already have Python and <code>pip</code> installed on your system, then installing <code>muspinsim</code> from the command line is easy using</p>
+<p><pre class="highlight"><code class="language-bash">pip install muspinsim --user</code></pre>
+or if you are using Anaconda, you may also use</p>
+<pre class="highlight"><code class="language-bash">conda install muspinsim</code></pre>
+<p>and you'll be ready to go.</p>
+<p>You do not need to worry about the details on the reset of this page unless the
+above failed, or you wish to install from the source.</p>
+<h4 id="installing-from-source">Installing from source</h4>
+<p>To install from source you first need to ensure you have a suitable C++ compiler on
+your system. If you are on Linux or macOS, this is likely already the case, but for
+Windows you will likely need to install one such as <a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/">MSCV</a>. </p>
+<p>After this you should obtain the source from GitHub in one of two ways. If you have
+<code>git</code> installed and are familiar with its use you can simply clone the repository:</p>
+<pre class="highlight"><code class="language-bash">git clone https://github.com/muon-spectroscopy-computational-project/muspinsim.git</code></pre>
+<p>Otherwise, you can download it as a 
+<a href="https://github.com/muon-spectroscopy-computational-project/muspinsim/archive/main.zip">zip file</a>
+and unzip it in a folder of your choice.</p>
+<p>To install the downloaded source, navigate to the parent directory in your
+terminal. If you don't know how to do it,
+<a href="http://linuxcommand.org/lc3_lts0020.php">here's a handy guide for Linux and MacOS</a>
+and <a href="http://dosprompt.info/basics.asp">here's one for Windows</a>, which has a 
+different syntax. </p>
+<p>Once you are in the directory <em>above</em> the unzipped/cloned package, you can run:</p>
+<pre class="highlight"><code class="language-bash">pip install ./{package} --user</code></pre>
+<p>where <code>{package}</code> represents the name of the directory where you unzipped/cloned
+the package. In your case, if you didn't rename the unzipped directory, it should be:</p>
+<pre class="highlight"><code class="language-bash">pip install ./muspinsim --user</code></pre>
+<h5 id="compiling-with-openmp">Compiling with OpenMP</h5>
+<p>If installing using <code>pip</code> or <code>conda</code>, then parallelisation with OpenMP will be enabled. If 
+compiling from source, to allow parallelisation you can assign the environment variable
+<code>MUSPINSIM_WITH_OPENMP</code> prior to installation. To do this on Linux and macOS you may use</p>
+<pre class="highlight"><code class="language-bash">export MUSPINSIM_WITH_OPENMP=1</code></pre>
+<p>and for Windows</p>
+<pre class="highlight"><code class="language-bash">set MUSPINSIM_WITH_OPENMP=1</code></pre>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>While the default compiler on Linux and most Windows compilers support OpenMP,
+the default compiler on macOS does not. As a result you should install a
+compatible compiler first. We recommend using clang from homebrew's llvm
+package which can be installed via</p>
+<pre class="highlight"><code class="language-bash">brew install llvm</code></pre>
+<p>Then you need to add the following environment variables to point to the
+the new compilers instead of the default. The paths may differ for your
+system but are usually</p>
+<pre class="highlight"><code class="language-bash">export CC="/usr/local/opt/llvm/bin/clang"
+export CXX="/usr/local/opt/llvm/bin/clang++"</code></pre>
+<p>With these set, you can now install the downloaded source with</p>
+<pre class="highlight"><code class="language-bash">pip install ./muspinsim --user</code></pre>
+</div>
+<blockquote>
+<p><strong>For developers:</strong> You may also use <code>python setup.py --with-openmp build_ext --inplace</code> to compile the source with OpenMP while developing.</p>
+</blockquote>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Welcome to MuSpinSim's documentation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../theory_1/" class="btn btn-neutral float-right" title="Theory of spin dynamics - I">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../theory_1/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/config.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
