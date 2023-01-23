@@ -59,13 +59,13 @@ keywords:
 license: MIT
 # version data
 version: v2.0.0
-date-released: '2023-01-30'
+date-released: '2023-01-23'
 identifiers:
   - type: doi
     value: 10.5281/zenodo.6517626
     description: The concept DOI for the collection containing all versions of muspinsim.
   - type: doi
-    value: 10.5281/zenodo.7026020
-    description: The versioned DOI for the version 1.2.0 of muspinsim.
+    value: 10.5281/zenodo.7560584
+    description: The versioned DOI for the version 2.0.0 of muspinsim.
 # references - to come!
 # references:
