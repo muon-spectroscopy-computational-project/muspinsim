@@ -65,6 +65,12 @@ jobs:
         run: |
           python -m pip install build
           python -m build --sdist
+        # Ensure source distribution is actually buildable (in case any files are missing)
+      - name: Test sdist
+        run: |
+          mkdir ./muspinsim-sdist
+          tar -xf ./dist/muspinsim-*.tar.gz -C ./muspinsim-sdist --strip-components 1
+          pip install ./muspinsim-sdist
       - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
