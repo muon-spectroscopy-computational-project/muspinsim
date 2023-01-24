@@ -58,8 +58,8 @@ keywords:
   - "muon experiments: zero field"
 license: MIT
 # version data
-version: v2.0.0
-date-released: '2023-01-23'
+version: v2.0.1
+date-released: '2023-01-24'
 identifiers:
   - type: doi
     value: 10.5281/zenodo.6517626

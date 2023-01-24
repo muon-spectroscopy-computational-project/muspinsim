@@ -1,0 +1,5 @@
+recursive-include muspinsim *.pyx
+recursive-include muspinsim *.pxd
+recursive-include muspinsim *.hpp
+recursive-include muspinsim *.cpp
+recursive-include muspinsim *.h
