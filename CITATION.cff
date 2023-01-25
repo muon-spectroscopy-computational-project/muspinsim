@@ -65,7 +65,7 @@ identifiers:
     value: 10.5281/zenodo.6517626
     description: The concept DOI for the collection containing all versions of muspinsim.
   - type: doi
-    value: 10.5281/zenodo.7565071
-    description: The versioned DOI for the version 2.0.1 of muspinsim.
+    value: 10.5281/zenodo.7568830
+    description: The versioned DOI for the version 2.0.2 of muspinsim.
 # references - to come!
 # references:
