@@ -28,8 +28,8 @@ def ensure_dir_path_exists(path_string):
     if not os.path.isdir(path_string):
         try:
             os.makedirs(path_string)
-        except OSError:
-            raise NotADirectoryError(path_string)
+        except OSError as exc:
+            raise NotADirectoryError(path_string) from exc
     return path_string
 
 
@@ -80,9 +80,13 @@ def main(use_mpi=False):
         inp_file_name = os.path.basename(inp_filepath).split(".")[0]
         inp_dir = os.path.dirname(inp_filepath)
 
-        fs = open(inp_filepath)
+        fs = open(inp_filepath, encoding="utf-8")
         infile = MuSpinInput(fs)
         is_fitting = len(infile.variables) > 0
+
+        out_path = inp_dir
+        if args.out_dir:
+            out_path = ensure_dir_path_exists(args.out_dir)
 
         # Open logfile
         logfile = os.path.join(inp_dir, inp_file_name + ".log")
@@ -106,14 +110,12 @@ def main(use_mpi=False):
             force=True,
         )
 
-        logging.info(
-            "Launching MuSpinSim calculation from file: {0}".format(inp_filepath)
-        )
+        logging.info("Launching MuSpinSim calculation from file: %s", inp_filepath)
 
         if is_fitting:
             logging.info(
-                "Performing fitting in variables: "
-                "{0}".format(", ".join(infile.variables))
+                "Performing fitting in variables: %s",
+                ", ".join(infile.variables),
             )
 
         tstart = datetime.now()
@@ -122,10 +124,6 @@ def main(use_mpi=False):
         is_fitting = False
 
     is_fitting = mpi.broadcast(is_fitting)
-
-    out_path = inp_dir
-    if args.out_dir:
-        out_path = ensure_dir_path_exists(args.out_dir)
 
     if not is_fitting:
         # No fitting
@@ -141,7 +139,7 @@ def main(use_mpi=False):
 
         if mpi.is_root:
             rep_dname = inp_dir
-            rep_fname = "{0}_fit_report.txt".format(inp_file_name)
+            rep_fname = f"{inp_file_name}_fit_report.txt"
             if args.fit_report_path:
                 try:
                     # check if directory exists, if not create it
