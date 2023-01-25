@@ -110,14 +110,12 @@ def main(use_mpi=False):
             force=True,
         )
 
-        logging.info(
-            "Launching MuSpinSim calculation from file: %s", inp_filepath
-        )
+        logging.info("Launching MuSpinSim calculation from file: %s", inp_filepath)
 
         if is_fitting:
             logging.info(
                 "Performing fitting in variables: %s",
-                ", ".join(infile.variables)
+                ", ".join(infile.variables),
             )
 
         tstart = datetime.now()

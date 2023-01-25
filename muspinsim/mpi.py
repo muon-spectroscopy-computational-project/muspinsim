@@ -73,10 +73,8 @@ class MPIController(object):
             v = obj.__dict__.get(k, None)
             try:
                 v = self.comm.bcast(v, root=0)
-            except OverflowError as e:
-                raise OverflowError(
-                    "Overflow error on: {0}, {1}: {2}".format(k, v, str(e))
-                )
+            except OverflowError as exc:
+                raise OverflowError(f"Overflow error on: {k}, {v}: {str(exc)}") from exc
             obj.__setattr__(k, v)
 
     def broadcast_terms(self, lst):
@@ -98,10 +96,10 @@ class MPIController(object):
 
             try:
                 val = self.comm.bcast(val, root=0)
-            except OverflowError as e:
+            except OverflowError as exc:
                 raise OverflowError(
-                    "Overflow error broadcasting term {0}: {1}".format(val, str(e))
-                )
+                    f"Overflow error broadcasting term {val}: {str(exc)}"
+                ) from exc
             n_list.append(val)
         return n_list
 

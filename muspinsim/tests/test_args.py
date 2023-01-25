@@ -11,11 +11,11 @@ def set_sys_argv(vals):
     sys.argv[1:] = vals
 
 
-def run_experiment(inp_string, inp_file_path, cmd_args):
-    with open(inp_file_path, "w") as f:
+def run_experiment(inp_string, inp_file_path, cmd_args, use_mpi=False):
+    with open(inp_file_path, "w", encoding="utf-8") as f:
         f.write(inp_string)
     set_sys_argv([inp_file_path] + cmd_args)
-    main()
+    main(use_mpi=use_mpi)
 
 
 class TestCommandLineArgs(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestCommandLineArgs(unittest.TestCase):
         # default again and print to stdout to avoid FileNotFound errors
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG, force=True)
 
-    def test_main_default_args(self):
+    def _main_default_args(self, use_mpi):
         with tempfile.TemporaryDirectory() as tmp_dir:
             cmd_args = []
             inp_file_path = os.path.join(tmp_dir, "custom_args.in")
@@ -41,12 +41,19 @@ zeeman 1
 """,
                 inp_file_path,
                 cmd_args,
+                use_mpi=use_mpi,
             )
 
             self.assertTrue(os.path.exists(os.path.join(tmp_dir, "custom_args.log")))
-            self.assertTrue(os.path.exists("{0}/test_1.dat".format(tmp_dir)))
+            self.assertTrue(os.path.exists(f"{tmp_dir}/test_1.dat"))
 
-    def test_main_custom_args(self):
+    def test_main_default_args(self):
+        self._main_default_args(False)
+
+    def test_main_default_args_mpi(self):
+        self._main_default_args(True)
+
+    def _main_custom_args(self, use_mpi):
         with tempfile.TemporaryDirectory() as tmp_dir:
             with tempfile.TemporaryDirectory() as out_tmp_dir:
                 cmd_args = [
@@ -67,6 +74,7 @@ zeeman 1
 """,
                     inp_file_path,
                     cmd_args,
+                    use_mpi=use_mpi,
                 )
 
                 self.assertTrue(
@@ -74,7 +82,13 @@ zeeman 1
                 )
                 self.assertTrue(os.path.exists(os.path.join(out_tmp_dir, "test_2.dat")))
 
-    def test_main_fitting_default_args(self):
+    def test_main_custom_args(self):
+        self._main_custom_args(False)
+
+    def test_main_custom_args_mpi(self):
+        self._main_custom_args(True)
+
+    def _main_fitting_default_args(self, use_mpi):
         with tempfile.TemporaryDirectory() as tmp_dir:
             cmd_args = []
             inp_file_path = os.path.join(tmp_dir, "fitting_default_args.in")
@@ -96,6 +110,7 @@ dissipation 1
 """,
                 inp_file_path,
                 cmd_args,
+                use_mpi=use_mpi,
             )
 
             self.assertTrue(
@@ -108,7 +123,13 @@ dissipation 1
                 )
             )
 
-    def test_main_filenames_as_input(self):
+    def test_main_fitting_default_args(self):
+        self._main_fitting_default_args(False)
+
+    def test_main_fitting_default_args_mpi(self):
+        self._main_fitting_default_args(True)
+
+    def _main_filenames_as_input(self, use_mpi):
         with tempfile.TemporaryDirectory() as tmp_dir:
             cmd_args = ["-l", "new_test.log", "-f", "new_fit_report.txt"]
             inp_file_path = os.path.join(tmp_dir, "fitting_default_args.in")
@@ -130,13 +151,20 @@ dissipation 1
 """,
                 inp_file_path,
                 cmd_args,
+                use_mpi=use_mpi,
             )
 
-            self.assertTrue(os.path.exists("{0}/new_test.log".format(tmp_dir)))
-            self.assertTrue(os.path.exists("{0}/test_fitting.dat".format(tmp_dir)))
-            self.assertTrue(os.path.exists("{0}/new_fit_report.txt".format(tmp_dir)))
+            self.assertTrue(os.path.exists(f"{tmp_dir}/new_test.log"))
+            self.assertTrue(os.path.exists(f"{tmp_dir}/test_fitting.dat"))
+            self.assertTrue(os.path.exists(f"{tmp_dir}/new_fit_report.txt"))
 
-    def test_main_fitting_custom_args(self):
+    def test_main_filenames_as_input(self):
+        self._main_filenames_as_input(False)
+
+    def test_main_filenames_as_input_mpi(self):
+        self._main_filenames_as_input(True)
+
+    def _main_fitting_custom_args(self, use_mpi):
         with tempfile.TemporaryDirectory() as tmp_dir:
             with tempfile.TemporaryDirectory() as out_tmp_dir:
                 cmd_args = [
@@ -166,6 +194,7 @@ dissipation 1
 """,
                     inp_file_path,
                     cmd_args,
+                    use_mpi=use_mpi,
                 )
 
                 self.assertTrue(
@@ -177,3 +206,9 @@ dissipation 1
                 self.assertTrue(
                     os.path.exists(os.path.join(out_tmp_dir, "new_fit_report.txt"))
                 )
+
+    def test_main_fitting_custom_args(self):
+        self._main_fitting_custom_args(False)
+
+    def test_main_fitting_custom_args_mpi(self):
+        self._main_fitting_custom_args(True)
