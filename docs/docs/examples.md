@@ -201,7 +201,7 @@ Finally, we look at how we can use Celio's method to approximate a large system 
 > [Entanglement between Muon and $I > \frac{1}{2}$ Nuclear Spins as a Probe of Charge Environment](https://doi.org/10.1103/PhysRevLett.129.097205)
 > *Phys. Rev. Lett. **129**, 097205 – Published 26 August 2022*
 
-In brief since the Si atoms have 0 spin, we only consider the Vanadium atoms and then include the 4 nearest neighbours to the muon stopping site. We then consider the dipolar couplings of the Vanadium atoms with the muon and quadrupolar couplings of the Vanadium atoms. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via
+In brief, this system consists of Si atoms each with 0 spin, and Vanadium atoms each with a spin $\frac{7}{2}$. Since the Si atoms have 0 spin, we only consider interactions between the muon and the Vanadium atoms. We then find 4 closest Vanadium atoms to the muon stopping site and consider their dipolar couplings with the muon as well as their quadrupolar couplings. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via
 
 ```plaintext
 polarization
@@ -221,5 +221,5 @@ celio
 
 Where the first value is the trotter number $k = 10$, and the second value gets MuSpinSim to randomise the initial states and compute the average of 4 simulations for each initial polarisation direction.
 
-Running this example will take longer than the others due to the size of the problem, but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
+Running this example will take longer than the others due to the size of the problem (in this case we have a Hilbert space of dimension $2\times8^4 = 8192$), but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
 ![Plot of asymmetry simulated using Celio's method for 4 V atoms](./figExCelio.png)

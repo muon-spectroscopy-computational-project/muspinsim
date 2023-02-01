@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "docs/**"
+      - .github/workflows/build-docs.yml
+      - .github/workflows/citation-cff.yml
+      - .github/workflows/build.yml
 
 jobs:
   build_wheels:

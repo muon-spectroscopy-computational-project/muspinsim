@@ -11,12 +11,14 @@ on:
       - .github/workflows/build-docs.yml
       - CITATION.cff
       - .github/workflows/citation-cff.yml
+      - .github/workflows/build.yml
   pull_request:
     paths-ignore:
       - "docs/**"
       - .github/workflows/build-docs.yml
       - CITATION.cff
       - .github/workflows/citation-cff.yml
+      - .github/workflows/build.yml
 
 jobs:
   lint:
