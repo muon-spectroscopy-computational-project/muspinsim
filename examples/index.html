@@ -237,7 +237,7 @@ dissipation 1
 <a href="https://doi.org/10.1103/PhysRevLett.129.097205">Entanglement between Muon and <span class="arithmatex">\(I &gt; \frac{1}{2}\)</span> Nuclear Spins as a Probe of Charge Environment</a>
 <em>Phys. Rev. Lett. </em><em>129</em><em>, 097205 – Published 26 August 2022</em></p>
 </blockquote>
-<p>In brief since the Si atoms have 0 spin, we only consider the Vanadium atoms and then include the 4 nearest neighbours to the muon stopping site. We then consider the dipolar couplings of the Vanadium atoms with the muon and quadrupolar couplings of the Vanadium atoms. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via</p>
+<p>In brief, this system consists of Si atoms each with 0 spin, and Vanadium atoms each with a spin <span class="arithmatex">\(\frac{7}{2}\)</span>. Since the Si atoms have 0 spin, we only consider interactions between the muon and the Vanadium atoms. We then find 4 closest Vanadium atoms to the muon stopping site and consider their dipolar couplings with the muon as well as their quadrupolar couplings. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via</p>
 <pre class="highlight"><code class="language-plaintext">polarization
     1 0 0
     0 1 0
@@ -248,7 +248,7 @@ average_axes
 <pre class="highlight"><code class="language-plaintext">celio
     10 4</code></pre>
 <p>Where the first value is the trotter number <span class="arithmatex">\(k = 10\)</span>, and the second value gets MuSpinSim to randomise the initial states and compute the average of 4 simulations for each initial polarisation direction.</p>
-<p>Running this example will take longer than the others due to the size of the problem, but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
+<p>Running this example will take longer than the others due to the size of the problem (in this case we have a Hilbert space of dimension <span class="arithmatex">\(2\times8^4 = 8192\)</span>), but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
 <img alt="Plot of asymmetry simulated using Celio's method for 4 V atoms" src="../figExCelio.png" /></p>
               
             </div>
