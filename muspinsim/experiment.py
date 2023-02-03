@@ -245,6 +245,11 @@ class ExperimentRunner(object):
 
     @property
     def dissipation_operators(self):
+        if self._config.celio_k:
+            raise NotImplementedError(
+                "Dissipation is not supported when using Celio's method"
+            )
+
         if self._dops is None:
 
             # Create a copy of the system

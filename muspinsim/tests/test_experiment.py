@@ -270,6 +270,27 @@ celio
         with self.assertRaises(ValueError):
             results = ertest.run()
 
+        # Simple system that should fail as has dissipation
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+celio
+    10
+dissipation 1
+    0.5
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        with self.assertRaises(NotImplementedError):
+            results = ertest.run()
+
         # Simple system
         stest = StringIO(
             """
