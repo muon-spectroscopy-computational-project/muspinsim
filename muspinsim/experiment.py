@@ -77,13 +77,15 @@ class ExperimentRunner(object):
         self._config = config
         self._system = config.system
 
-        # Store single spin operators
-        self._single_spinops = np.array(
-            [
-                [self._system.operator({i: a}).matrix for a in "xyz"]
-                for i in range(len(self._system))
-            ]
-        )
+        # Store single spin operators (only needed for dispersion
+        # and non other non celio methods)
+        if not self.config.celio_k:
+            self._single_spinops = np.array(
+                [
+                    [self._system.operator({i: a}).matrix for a in "xyz"]
+                    for i in range(len(self._system))
+                ]
+            )
 
         # Parameters
         self._B = np.zeros(3)
