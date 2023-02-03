@@ -656,8 +656,8 @@ class MuonSpinSystem(SpinSystem):
         self._mu_i = self._spins.index("mu")
         self._e_i = set([i for i, s in enumerate(self.spins) if s == "e"])
 
-        # For convenience, store the operators for the muon
-        self._mu_ops = [self.operator({self._mu_i: e}) for e in "xyz"]
+        # Define only when needed (not needed for Celio's)
+        self._mu_ops = None
 
     @property
     def muon_index(self):
@@ -725,6 +725,12 @@ class MuonSpinSystem(SpinSystem):
 
         if len(v) != 3:
             raise ValueError("Vector passed to muon_operator must be three dimensional")
+
+        # Compute and store muon operators (for Celio's this method will not be called
+        # at all, but other times it may be called more than once and we dont want to
+        # recalculate all of the operators each time)
+        if self._mu_ops is None:
+            self._mu_ops = [self.operator({self._mu_i: e}) for e in "xyz"]
 
         op = [x * self._mu_ops[i] for i, x in enumerate(v)]
         op = sum(op[1:], op[0])

@@ -402,9 +402,6 @@ class ExperimentRunner(object):
 
         w = self.load_config(cfg_snap)
 
-        # Measurement operator?
-        S = self.p_operator
-
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
@@ -425,6 +422,9 @@ class ExperimentRunner(object):
                     True,
                 )
             else:
+                # Measurement operator
+                S = self.p_operator
+
                 # Use faster evolution if able to (Doesn't exist for Linbladian)
                 if self._T_inf_speedup and not isinstance(H, Lindbladian):
                     other_spins = list(range(0, len(self._system.spins)))
@@ -439,6 +439,9 @@ class ExperimentRunner(object):
                 else:
                     data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
         elif cfg_snap.y == "integral":
+            # Measurement operator
+            S = self.p_operator
+
             data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
 
         return np.real(data) * w
