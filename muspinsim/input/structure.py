@@ -12,7 +12,7 @@ class CellAtom:
     Dataclass storing information about an atom in a cell structure
     """
 
-    index: int  # Index is unchanged when creating a supercell
+    index: int  # Unchanged when creating a supercell
     symbol: str
     position: ArrayLike
     vector_from_muon: Optional[ArrayLike] = None
@@ -51,6 +51,8 @@ class MuonatedStructure:
         Raises:
             ValueError -- If the structure file has unit cell vector angles
                           different from [90, 90, 90].
+            ValueError -- If the structure file contains more than one muon
+                          with the given symbol.
             ValueError -- If the structure file has no muon with the given
                           symbol.
         """
@@ -77,7 +79,13 @@ class MuonatedStructure:
         # Store only needed data for calculations
         for i, loaded_atom in enumerate(loaded_atoms):
             if loaded_atom.symbol == muon_symbol:
-                self._muon_index = i
+                if muon_symbol is None:
+                    self._muon_index = i
+                else:
+                    raise ValueError(
+                        f"Structure file '{file_io}' has more than one muon "
+                        f"with symbol {muon_symbol}"
+                    )
 
             self._atoms[i] = CellAtom(i, loaded_atom.symbol, loaded_atom.position)
 
