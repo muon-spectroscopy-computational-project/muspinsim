@@ -12,7 +12,7 @@ class CellAtom:
     Dataclass storing information about an atom in a cell structure
     """
 
-    index: int  # Unchanged when creating a supercell
+    index: int  # Start from 1, unchanged when creating a supercell
     symbol: str
     position: ArrayLike
     vector_from_muon: Optional[ArrayLike] = None
@@ -79,7 +79,7 @@ class MuonatedStructure:
         # Store only needed data for calculations
         for i, loaded_atom in enumerate(loaded_atoms):
             if loaded_atom.symbol == muon_symbol:
-                if muon_symbol is None:
+                if self._muon_index is None:
                     self._muon_index = i
                 else:
                     raise ValueError(
@@ -87,7 +87,7 @@ class MuonatedStructure:
                         f"with symbol {muon_symbol}"
                     )
 
-            self._atoms[i] = CellAtom(i, loaded_atom.symbol, loaded_atom.position)
+            self._atoms[i] = CellAtom(i + 1, loaded_atom.symbol, loaded_atom.position)
 
         if self._muon_index is None:
             raise ValueError(

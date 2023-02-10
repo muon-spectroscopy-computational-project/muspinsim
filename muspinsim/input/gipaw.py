@@ -6,13 +6,13 @@ import numpy as np
 
 
 @dataclass
-class GIPAW_EFG:
+class GIPAWAtom:
     """
-    Stores data for an EFG tensor entry
+    Stores data for an atom from the output
     """
 
-    index: int
-    tensor: ArrayLike
+    index: int  # Starts from 1
+    efg_tensor: ArrayLike
 
 
 class GIPAWOutput:
@@ -22,7 +22,7 @@ class GIPAWOutput:
     work.
     """
 
-    _atom_efgs: List[GIPAW_EFG] = []
+    _atoms: List[GIPAWAtom] = []
 
     def __init__(self, file_io: Union[str, IO]):
         """Load a file containing output from GIPAW
@@ -53,9 +53,9 @@ class GIPAWOutput:
                 file_io.readline().strip(),
             ]
 
-            atom_efg = self._parse_efg(lines)
-            if atom_efg is not None:
-                self._atom_efgs.append(atom_efg)
+            atom = self._parse_efg(lines)
+            if atom is not None:
+                self._atoms.append(atom)
             else:
                 loop = False
 
@@ -64,7 +64,7 @@ class GIPAWOutput:
 
         file_io.close()
 
-    def _parse_efg(self, lines: List[str]) -> Optional[GIPAW_EFG]:
+    def _parse_efg(self, lines: List[str]) -> Optional[GIPAWAtom]:
         """Parse an EFG tensor given the 3 lines that represent it e.g.
 
         V    1       -0.008879        0.000000       -0.011803
@@ -112,4 +112,26 @@ class GIPAWOutput:
             efg_tensor[i, 2] = float(split[4])
 
         # Start indices from 0
-        return GIPAW_EFG(index=index - 1, tensor=efg_tensor)
+        return GIPAWAtom(index=index, efg_tensor=efg_tensor)
+
+    def find_atom(self, index: int) -> Optional[GIPAWAtom]:
+        """Attempt to find an EFG tensor for atom with the given index.
+
+        First assumes the relevant element is at the given index,
+        otherwise searches for it.
+
+        Arguments:
+            index {int} -- Index of the relevant atom (starting from 1)
+        Returns:
+            ArrayLike | None -- EFG tensor or None if not found
+        """
+        # Check if at index (faster)
+        if self._atoms[index - 1].index == index:
+            return self._atoms[index - 1]
+
+        found_atoms = list(
+            filter(lambda atom_efg: atom_efg.index == index, self._atoms)
+        )
+        if found_atoms:
+            return found_atoms[0]
+        return None
