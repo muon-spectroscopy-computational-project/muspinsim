@@ -112,7 +112,12 @@ def generate_input_file(params: GeneratorToolParams) -> str:
     input_file = ""
 
     for selected_atom in selected_atoms:
-        selected_symbols += f" {selected_atom.symbol}"
+        symbol = selected_atom.symbol
+
+        if selected_atom.isotope != 1:
+            symbol = f"{str(selected_atom.isotope)} {symbol}"
+
+        selected_symbols += f" {symbol}"
 
         for generator in params.generators:
             input_file += f"""{

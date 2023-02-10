@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import math
 from pathlib import PurePath
 from typing import IO, List, Optional, Union
 import numpy as np
@@ -14,9 +15,23 @@ class CellAtom:
 
     index: int  # Start from 1, unchanged when creating a supercell
     symbol: str
+    isotope: int
     position: ArrayLike
     vector_from_muon: Optional[ArrayLike] = None
     distance_from_muon: Optional[float] = None
+
+
+def _get_isotope(mass: float, default_mass: float) -> int:
+    """
+    Helper function to determine the isotope by comparing the found mass to
+    the default of the same element
+    """
+
+    # Expect close to whole division if valid
+    if not math.isclose(mass % default_mass, 0):
+        raise ValueError("Failed to identify isotope by the given masses")
+
+    return mass // default_mass
 
 
 class MuonatedStructure:
@@ -78,6 +93,13 @@ class MuonatedStructure:
 
         # Store only needed data for calculations
         for i, loaded_atom in enumerate(loaded_atoms):
+
+            # Determine isotope by looking at loaded mass
+            default_mass = ase.data.atomic_masses[
+                ase.data.atomic_numbers[loaded_atom.symbol]
+            ]
+            isotope = _get_isotope(loaded_atom.mass, default_mass)
+
             if loaded_atom.symbol == muon_symbol:
                 if self._muon_index is None:
                     self._muon_index = i
@@ -87,7 +109,9 @@ class MuonatedStructure:
                         f"with symbol {muon_symbol}"
                     )
 
-            self._atoms[i] = CellAtom(i + 1, loaded_atom.symbol, loaded_atom.position)
+            self._atoms[i] = CellAtom(
+                i + 1, loaded_atom.symbol, isotope, loaded_atom.position
+            )
 
         if self._muon_index is None:
             raise ValueError(
@@ -116,6 +140,7 @@ class MuonatedStructure:
                         CellAtom(
                             index=atom.index,
                             symbol=atom.symbol,
+                            isotope=atom.isotope,
                             position=atom.position + offset,
                         )
                     )
