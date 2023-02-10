@@ -151,6 +151,7 @@ def setup():
             "numpy",
             "scipy",
             "soprano",
+            "mendeleev",
             "lark",
             "qutip",
             "pybind11",
