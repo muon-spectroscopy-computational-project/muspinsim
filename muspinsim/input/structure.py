@@ -6,6 +6,8 @@ import numpy as np
 import ase.io
 from numpy.typing import ArrayLike
 
+from muspinsim.constants import spin
+
 
 @dataclass
 class CellAtom:
@@ -31,7 +33,7 @@ def _get_isotope(mass: float, default_mass: float) -> int:
     if not math.isclose(mass % default_mass, 0):
         raise ValueError("Failed to identify isotope by the given masses")
 
-    return mass // default_mass
+    return int(mass // default_mass)
 
 
 class MuonatedStructure:
@@ -45,6 +47,8 @@ class MuonatedStructure:
     _unit_angles: ArrayLike
     _atoms: List[CellAtom] = []
     _muon_index: int = None
+
+    _symbols_zero_spin: List[str] = []
 
     def __init__(
         self,
@@ -112,6 +116,14 @@ class MuonatedStructure:
             self._atoms[i] = CellAtom(
                 i + 1, loaded_atom.symbol, isotope, loaded_atom.position
             )
+
+            # Keep track of any atoms with zero spin (so can exclude later)
+            if (
+                loaded_atom.symbol not in self._symbols_zero_spin
+                and spin(elem=loaded_atom.symbol, iso=isotope if isotope > 1 else None)
+                == 0
+            ):
+                self._symbols_zero_spin.append(loaded_atom.symbol)
 
         if self._muon_index is None:
             raise ValueError(
@@ -256,3 +268,10 @@ class MuonatedStructure:
         return sorted(ordered_atoms, key=lambda atom: atom.distance_from_muon)[
             1 : (number + 1)
         ]
+
+    @property
+    def symbols_zero_spin(self) -> List[str]:
+        """
+        List of symbols that have zero spin
+        """
+        return self._symbols_zero_spin

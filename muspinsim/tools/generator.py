@@ -98,11 +98,13 @@ def generate_input_file(params: GeneratorToolParams) -> str:
         params {GeneratorToolParams} -- Parameters (see above for details)
     """
 
-    # Locate closest elements
+    # Locate closest elements (ignoring ones with zero spin)
     params.structure.layer_expand(params.layer_expand_number)
     params.structure.compute_distances()
 
-    selected_atoms = params.structure.get_closest(params.number_closest)
+    selected_atoms = params.structure.get_closest(
+        params.number_closest, params.structure.symbols_zero_spin
+    )
 
     # Generate input file
     selected_symbols = "mu"
