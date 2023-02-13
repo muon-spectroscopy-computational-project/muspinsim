@@ -27,13 +27,16 @@ def _get_isotope(mass: float, default_mass: float) -> int:
     """
     Helper function to determine the isotope by comparing the found mass to
     the default of the same element
+
+    At the moment will not return anything other than 1 as there is no where
+    to get the isotope masses from.
     """
 
     # Expect close to whole division if valid
-    if not math.isclose(mass % default_mass, 0):
+    if not math.isclose(mass, default_mass):
         raise ValueError("Failed to identify isotope by the given masses")
 
-    return int(mass // default_mass)
+    return 1
 
 
 class MuonatedStructure:
