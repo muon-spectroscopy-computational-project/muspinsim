@@ -3,9 +3,12 @@
 Collects methods to retrieve important physical constants
 """
 
+from typing import Optional
 import numpy as np
 from scipy import constants as cnst
 from soprano.nmr.utils import _get_isotope_data
+from mendeleev import Isotope, element, isotope
+from fractions import Fraction
 
 # Values taken from CODATA on 18/01/2021
 # Electron gyromagnetic ratio (MHz/T)
@@ -23,6 +26,46 @@ EFG_2_MHZ = (
     * 1e-37
     / cnst.h
 )
+
+
+def _get_isotope_data_new(elem: str, iso: Optional[int]) -> Isotope:
+    """Returns isotope data from mendeleev for the requested element isotope
+
+    Arguments:
+        elem {str} -- Element
+        iso {int} -- Desired isotope. If not specified, the most naturally
+                     abundant isotope is used. (default: {None})
+
+    Returns:
+        {Isotope} -- Isotope data from the mendeleev package
+
+    Raises:
+        ValueError -- When either the element or isotope is invalid
+    """
+
+    # Find most abundant
+    if iso is None:
+        try:
+            elem_data = element(elem)
+        except ValueError as exc:
+            raise ValueError(f"Invalid element {elem}") from exc
+
+        elem_isotopes = sorted(
+            elem_data.isotopes,
+            key=lambda isotope: isotope.abundance
+            # Abundance can be None => very small/unknown
+            if isotope.abundance is not None else 0,
+            reverse=True,
+        )
+        return elem_isotopes[0]
+
+    # Select a specific isotope
+    try:
+        isotope_data = isotope(symbol_or_atn=elem, mass_number=iso)
+    except ValueError as exc:
+        raise ValueError(f"Invalid element {elem} or isotope {iso}") from exc
+
+    return isotope_data
 
 
 def gyromagnetic_ratio(elem="mu", iso=None):
@@ -100,9 +143,22 @@ def spin(elem="mu", iso=None):
             raise ValueError(f"Invalid multiplicity {iso} for electron")
         return 0.5 * int(iso)
     else:
-        try:
-            val = _get_isotope_data([elem], "I", isotope_list=[iso])[0]
-        except RuntimeError as exc:
-            raise ValueError(f"Invalid isotope {iso} for element {elem}") from exc
+        spin_val = _get_isotope_data_new(elem=elem, iso=iso).spin
 
-        return val
+        Q_val = _get_isotope_data([elem], "Q", isotope_list=[iso])[0]
+        Q_val_new = _get_isotope_data_new(elem=elem, iso=iso).quadrupole_moment
+
+        gamma_val = _get_isotope_data([elem], "gamma", isotope_list=[iso])[0]
+        g_factor = _get_isotope_data_new(elem=elem, iso=iso).g_factor
+
+        gamma_val_new = None
+        if g_factor:
+            gamma_val_new = cnst.e * g_factor / (2 * cnst.m_p)
+
+        print(
+            f"Spin elem: {elem} iso: {iso} val: {float(Fraction(spin_val))} Q_val_old: {Q_val} Q_val_new: {Q_val_new} gamma_val: {gamma_val} gamma_val_new: {gamma_val_new}"
+        )
+
+        # Spins are provided as a string in the form of a fraction e.g. 7/2 so
+        # convert to float here
+        return float(Fraction(spin_val))
