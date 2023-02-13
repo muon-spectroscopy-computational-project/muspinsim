@@ -164,6 +164,7 @@ def setup():
             "console_scripts": [
                 "muspinsim = muspinsim.__main__:main",
                 "muspinsim.mpi = muspinsim.__main__:main_mpi",
+                "muspinsim-gen = muspinsim.tools.generator:main",
             ]
         },
         ext_modules=ext_modules,
