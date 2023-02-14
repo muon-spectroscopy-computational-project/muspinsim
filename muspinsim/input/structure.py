@@ -174,22 +174,12 @@ class MuonatedStructure:
         """
 
         # Construct the offsets
-        x_values = np.arange(
-            -layers * self._unit_lengths[0],
-            (layers + 1) * self._unit_lengths[0],
-            self._unit_lengths[0],
-        )
-        y_values = np.arange(
-            -layers * self._unit_lengths[1],
-            (layers + 1) * self._unit_lengths[1],
-            self._unit_lengths[1],
-        )
-        z_values = np.arange(
-            -layers * self._unit_lengths[2],
-            (layers + 1) * self._unit_lengths[2],
-            self._unit_lengths[2],
-        )
-        offsets = np.array(np.meshgrid(x_values, y_values, z_values)).T.reshape(-1, 3)
+        values = [np.arange(
+            -layers * self._unit_lengths[i],
+            (layers + 1) * self._unit_lengths[i],
+            self._unit_lengths[i],
+        ) for i in range(3)]
+        offsets = np.array(np.meshgrid(*values)).T.reshape(-1, 3)
         # Remove 0, 0, 0
         offsets = np.delete(offsets, int(np.floor(len(offsets) / 2)), axis=0)
 
@@ -198,8 +188,6 @@ class MuonatedStructure:
 
     def compute_distances(self):
         """Computes the vectors and distances between the muon and every atom.
-
-        Computes the vectors and distances between the muon and every atom.
         """
         muon = self._atoms[self._muon_index]
 

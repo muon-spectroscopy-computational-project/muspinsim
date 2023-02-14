@@ -17,13 +17,13 @@ class InteractionGenerator(ABC):
     def gen_config(
         self, muon_file_index: int, atom_file_index: int, atom: CellAtom
     ) -> str:
-        """Should return the config required for a given atom using this
-        generator
+        """Should return the config required for an interaction between the muon
+        and given atom using this generator
 
         Arguments:
             muon_file_index {int} -- Index of the muon in the file (starts
                                      from 1)
-            atom_file_index {int} -- Index of the muon in the file (starts
+            atom_file_index {int} -- Index of the atom in the file (starts
                                      from 1)
             atom {CellAtom} -- Atom to generate config for
         """
@@ -43,7 +43,7 @@ class DipoleIntGenerator(InteractionGenerator):
 
 class QuadrupoleIntGenerator(InteractionGenerator):
     """
-    Generator for the dipole interaction
+    Generator for the quadrupole interaction
     """
 
     _gipaw_file: GIPAWOutput
@@ -100,8 +100,9 @@ def generate_input_file(params: GeneratorToolParams) -> str:
     """Utility function for generating muspinsim input config given a
     structure as input
 
-    Will expand the muonated structure but the amount requested and
-    locate
+    Will expand the muonated structure by the amount requested and
+    locate the nearest neighbours in order to generate their interactions
+    for the config file.
 
     Arguments:
         params {GeneratorToolParams} -- Parameters (see above for details)
