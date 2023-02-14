@@ -80,9 +80,9 @@ class MuonatedStructure:
         """
 
         # Load the atomic data from the file
-        # NOTE: Calculator is loaded automatically - cant see a way to disable
-        # but this will cause warnings when reading CASTEP files without
-        # a CASTEP installation - these can be ignored
+        # NOTE: Calculator is loaded automatically - can't see a way to
+        # disable but this will cause warnings when reading CASTEP files
+        # without a CASTEP installation - these can be ignored
         loaded_atoms = ase.io.read(file_io, format=fmt)
 
         lengths_and_angles = loaded_atoms.get_cell_lengths_and_angles()
