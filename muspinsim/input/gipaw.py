@@ -22,7 +22,7 @@ class GIPAWOutput:
     work.
     """
 
-    _atoms: List[GIPAWAtom] = []
+    _atoms: List[GIPAWAtom]
 
     def __init__(self, file_io: Union[str, IO]):
         """Load a file containing output from GIPAW
@@ -32,6 +32,8 @@ class GIPAWOutput:
         Arguments:
             file_io {TextIOBase} -- File path, or IO stream
         """
+
+        self._atoms = []
 
         if isinstance(file_io, str):
             file_io = open(file_io, encoding="utf_8")

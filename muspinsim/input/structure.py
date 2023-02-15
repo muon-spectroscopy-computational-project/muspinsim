@@ -48,11 +48,11 @@ class MuonatedStructure:
     # Loaded data
     _unit_lengths: ArrayLike
     _unit_angles: ArrayLike
-    _cell_atoms: List[CellAtom] = []
+    _cell_atoms: List[CellAtom]
 
-    _muon_index: int = None
+    _muon_index: int
 
-    _symbols_zero_spin: List[str] = []
+    _symbols_zero_spin: List[str]
 
     def __init__(
         self,
@@ -79,6 +79,10 @@ class MuonatedStructure:
             ValueError -- If the structure file has no muon with the given
                           symbol.
         """
+
+        self._cell_atoms = []
+        self._muon_index = None
+        self._symbols_zero_spin = []
 
         # Load the atomic data from the file
         # NOTE: Calculator is loaded automatically - can't see a way to
@@ -280,18 +284,16 @@ class MuonatedStructure:
         layer = 1
 
         while continue_expansion:
-            # Sort by distance
+            # Sort by distance and obtain furthest distance of the desired
+            # atom
             atoms = sorted(atoms, key=lambda atom: atom.distance_from_muon)
-
-            # Obtain furthest distance of desired atom
             furthest_atom = atoms[min(number, len(atoms) - 1)]
 
-            # Compute another layer and sort those
+            # Compute another layer and find the closest
             new_atoms = self.compute_layer(layer, ignored_symbols)
             self._compute_distances(new_atoms)
             new_atoms = sorted(new_atoms, key=lambda atom: atom.distance_from_muon)
 
-            # Check if we need to include the new ones
             closest_new_atom = new_atoms[0]
 
             # Check whether we have just found atoms closer than the furthest

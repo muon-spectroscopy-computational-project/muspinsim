@@ -4,7 +4,9 @@ import numpy as np
 
 from muspinsim.input.gipaw import GIPAWAtom, GIPAWOutput
 
-TEST_GIPAW_FILE_DATA = """     ----- total EFG -----
+TEST_GIPAW_FILE_DATA = """     H  217        0.000008       -0.000024        0.068534
+
+     ----- total EFG -----
      V    1       -0.008877        0.000022       -0.011811
      V    1        0.000022       -0.030585        0.000005
      V    1       -0.011811        0.000005        0.039462
@@ -20,6 +22,9 @@ TEST_GIPAW_FILE_DATA = """     ----- total EFG -----
      H  217       -0.034266        0.000000        0.000000
      H  217        0.000000       -0.034268        0.000000
      H  217        0.000000        0.000000        0.068534
+
+
+     NQR/NMR SPECTROSCOPIC PARAMETERS:
 """
 
 

@@ -225,8 +225,6 @@ H             0.1666672745        0.0000018274        0.0833332099
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
         new_atoms = structure.compute_layer(1, ignored_symbols=["Si"])
 
-        print(new_atoms[11])
-
         self.assertEqual(len(new_atoms), 2 * 26)  # Copy everything but muon and silicon
         self.assertEqual(
             CellAtomMatcher(new_atoms[11]),
