@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import argparse
 from dataclasses import dataclass, field
+import logging
 from typing import List
 
 from muspinsim.input.structure import CellAtom, MuonatedStructure
@@ -151,6 +152,13 @@ def generate_input_file(params: GeneratorToolParams) -> str:
 
 def main():
     """Entrypoint for command line tool"""
+
+    # Setup so we can see the log output
+    logging.basicConfig(
+        format="[%(levelname)s] [%(asctime)s] %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     parser = argparse.ArgumentParser(
         description="""Generate a MuSpinSim input file using a structure file

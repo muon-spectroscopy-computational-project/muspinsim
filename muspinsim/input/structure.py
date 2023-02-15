@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 import math
 from pathlib import PurePath
 from typing import IO, List, Optional, Union
@@ -292,11 +293,20 @@ class MuonatedStructure:
         continue_expansion = True
         layer = 1
 
+        logging.info(
+            "Attempting to find the %s closest atoms to the muon in " "the structure",
+            number,
+        )
+        if not ignored_symbols is None:
+            logging.info("Ignoring the symbols %s", ", ".join(ignored_symbols))
+
         while continue_expansion:
             # Sort by distance and obtain furthest distance of the desired
             # atom
             atoms = sorted(atoms, key=lambda atom: atom.distance_from_muon)
             furthest_atom = atoms[min(number, len(atoms) - 1)]
+
+            logging.info("Expanding structure to layer: %d", layer)
 
             # Compute another layer and find the closest
             new_atoms = self.compute_layer(layer, ignored_symbols)
@@ -324,8 +334,17 @@ class MuonatedStructure:
                 # No more expansion needed
                 continue_expansion = False
 
-        # Return closest 'number' atoms (ignoring the muon itself)
-        return atoms[1 : (number + 1)]
+        # Ignore the muon and obtain only the atoms requested
+        atoms = atoms[1 : (number + 1)]
+
+        for atom in atoms:
+            logging.info(
+                "Found %s at a distance of %s from the muon",
+                atom.symbol,
+                atom.distance_from_muon,
+            )
+
+        return atoms
 
     @property
     def symbols_zero_spin(self) -> List[str]:
