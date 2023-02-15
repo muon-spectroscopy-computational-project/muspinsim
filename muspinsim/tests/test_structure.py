@@ -19,6 +19,14 @@ H             0.1666672745        0.0000018274        0.0833332099
 """
 
 
+def _optional_float_close(value1, value2):
+    # Compares two values that may be a float or none
+    if value1 is None or value2 is None:
+        return value1 == value2
+    else:
+        return np.isclose(value1, value2)
+
+
 def _optional_array_close(value1, value2):
     # Compares two values that may be an array or none
     if value1 is None or value2 is None:
@@ -44,7 +52,9 @@ class CellAtomMatcher:
             and _optional_array_close(
                 self.expected.vector_from_muon, other.vector_from_muon
             )
-            and np.isclose(self.expected.distance_from_muon, other.distance_from_muon)
+            and _optional_float_close(
+                self.expected.distance_from_muon, other.distance_from_muon
+            )
         )
 
 
@@ -52,10 +62,10 @@ class TestStructure(unittest.TestCase):
     def test_parsing(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
 
-        self.assertEqual(len(structure._atoms), 4)
+        self.assertEqual(len(structure._cell_atoms), 4)
         self.assertEqual(structure._muon_index, 3)
         self.assertEqual(
-            CellAtomMatcher(structure._atoms[2]),
+            CellAtomMatcher(structure._cell_atoms[2]),
             CellAtom(
                 index=3,
                 symbol="Si",
@@ -101,34 +111,56 @@ H             0.1666672745        0.0000018274        0.0833332099
 
     def test_layer_expand(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
-        structure.layer_expand(1)
+        new_atoms = structure.compute_layer(1)
 
-        self.assertEqual(len(structure._atoms), 1 + 3 * 27)  # Copy everything but muon
-        self.assertEqual(structure._muon_index, 3)
+        self.assertEqual(len(new_atoms), 3 * 26)  # Copy everything but muon
         self.assertEqual(
-            CellAtomMatcher(structure._atoms[11]),
+            CellAtomMatcher(new_atoms[11]),
             CellAtom(
-                index=2,
-                symbol="V",
+                index=3,
+                symbol="Si",
                 isotope=1,
-                position=np.array([-1.1888893, 14.18160826, -2.37447814]),
+                position=np.array([-7.09606527, 11.81519966, -2.36596844]),
                 vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
 
-    def test_compute_distances(self):
+    def test_layer_expand_ignore(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
-        structure.compute_distances()
+        new_atoms = structure.compute_layer(1, ignored_symbols=["Si"])
+
+        print(new_atoms[11])
+
+        self.assertEqual(len(new_atoms), 2 * 26)  # Copy everything but muon and silicon
+        self.assertEqual(
+            CellAtomMatcher(new_atoms[11]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([-1.18888930e00, 8.25794568e-06, 2.59887219e01]),
+                vector_from_muon=None,
+                distance_from_muon=None,
+            ),
+        )
+
+    def test_compute_closest(self):
+        structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+        closest_atoms = structure.compute_closest(1)
+
+        print(closest_atoms[0])
 
         self.assertEqual(
-            CellAtomMatcher(structure._atoms[2]),
+            CellAtomMatcher(closest_atoms[0]),
             CellAtom(
-                index=3,
-                symbol="Si",
+                index=1,
+                symbol="V",
                 isotope=1,
-                position=np.array([7.08553473, 11.81519966, 11.81563156]),
-                vector_from_muon=np.array([-4.7219261, -11.81517375, -10.63383331]),
-                distance_from_muon=16.58231972930012,
+                position=np.array([1.12255466e00, 8.30049048e-06, 2.42350038e00]),
+                vector_from_muon=np.array(
+                    [1.24105396e00, 1.76149654e-05, -1.24170213e00]
+                ),
+                distance_from_muon=1.7555737250028431,
             ),
         )

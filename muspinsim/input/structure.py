@@ -48,7 +48,8 @@ class MuonatedStructure:
     # Loaded data
     _unit_lengths: ArrayLike
     _unit_angles: ArrayLike
-    _atoms: List[CellAtom] = []
+    _cell_atoms: List[CellAtom] = []
+
     _muon_index: int = None
 
     _symbols_zero_spin: List[str] = []
@@ -96,7 +97,7 @@ class MuonatedStructure:
                 f"Structure file '{file_io}' has unsupported unit cell angles"
             )
 
-        self._atoms = [None] * len(loaded_atoms)
+        self._cell_atoms = [None] * len(loaded_atoms)
 
         # Store only needed data for calculations
         for i, loaded_atom in enumerate(loaded_atoms):
@@ -116,7 +117,7 @@ class MuonatedStructure:
                         f"with symbol {muon_symbol}"
                     )
 
-            self._atoms[i] = CellAtom(
+            self._cell_atoms[i] = CellAtom(
                 i + 1, loaded_atom.symbol, isotope, loaded_atom.position
             )
 
@@ -133,8 +134,10 @@ class MuonatedStructure:
                 f"Structure file '{file_io}' has no muon with symbol " f"{muon_symbol}"
             )
 
-    def expand(self, offsets: List[ArrayLike]):
-        """Expands the structure by duplicating loaded atoms (ignoring the
+    def expand(
+        self, offsets: List[ArrayLike], ignored_symbols: Optional[List[str]] = None
+    ) -> List[CellAtom]:
+        """Expands the structure by duplicating unit cell atoms (ignoring the
            muon)
 
         Expands the structure by cloning atoms (excluding the muon) given
@@ -145,12 +148,13 @@ class MuonatedStructure:
                                          added. For each offset will duplicate
                                          the current structure.
         """
-
         new_atoms = []
         for offset in offsets:
             # Copy everything but the muon
-            for i, atom in enumerate(self._atoms):
-                if i != self._muon_index:
+            for i, atom in enumerate(self._cell_atoms):
+                if i != self._muon_index and (
+                    ignored_symbols is None or atom.symbol not in ignored_symbols
+                ):
                     new_atoms.append(
                         CellAtom(
                             index=atom.index,
@@ -159,79 +163,84 @@ class MuonatedStructure:
                             position=atom.position + offset,
                         )
                     )
-        self._atoms.extend(new_atoms)
+        return new_atoms
 
-    def layer_expand(self, layers: int):
-        """Expands the structure outwards by duplicating it.
+    def compute_layer(
+        self, layer: int, ignored_symbols: Optional[List[str]] = None
+    ) -> List[CellAtom]:
+        """Duplicates atoms from the loaded cell by expanding outwards.
 
-        Expands the structure outwards by duplicating it a specified number of
-        layers.
+        Expands the structure outwards by duplicating it for a given layer
+        number.
 
         Arguments:
-            layers {int} -- Number of layers to append e.g. if layers = 1,
-                            will expand along the x, y and z axes creating a
-                            structure 9 times larger than the original.
+            layer {int} -- Index of layer e.g. if layer = 1, will expand
+                           along the x, y and z axes so that returned atoms
+                           will have been computed for the 26 surrounding
+                           cells. layer = 2 will then add compute those in
+                           the next layer, which will include 96 cells etc.
+            ignored_symbols {List[str]} -- List of symbols to ignore. May be
+                                None.
+        Returns:
+            new_atoms {List[CellAtom]} -- Additional atoms with their new
+                                          positions.
         """
 
-        # Construct the offsets
-        values = [np.arange(
-            -layers * self._unit_lengths[i],
-            (layers + 1) * self._unit_lengths[i],
-            self._unit_lengths[i],
-        ) for i in range(3)]
-        offsets = np.array(np.meshgrid(*values)).T.reshape(-1, 3)
-        # Remove 0, 0, 0
-        offsets = np.delete(offsets, int(np.floor(len(offsets) / 2)), axis=0)
+        # Compute all potential values for the x, y and z axes
+        potential_values = [
+            np.arange(
+                -layer * self._unit_lengths[i],
+                (layer + 1) * self._unit_lengths[i],
+                self._unit_lengths[i],
+            )
+            for i in range(3)
+        ]
 
-        # Now expand for each
-        self.expand(offsets)
+        # Obtain the extremes and values in between for each axis
+        extreme_values = [
+            [potential_values[i][0], potential_values[i][-1]] for i in range(3)
+        ]
+        middle_values = [potential_values[i][1:-1:] for i in range(3)]
 
-    def compute_distances(self):
-        """Computes the vectors and distances between the muon and every atom.
-        """
-        muon = self._atoms[self._muon_index]
+        # Compute combinations
+        offsets = []
 
-        for atom in self._atoms:
+        # Hold z fixed at one of the extreme values and vary others
+        for x_value in extreme_values[0]:
+            for y_value in potential_values[1]:
+                for z_value in potential_values[2]:
+                    offsets.append([x_value, y_value, z_value])
+
+        # Middle values for x
+        for x_value in middle_values[0]:
+            # Keep y at the extremes
+            for y_value in extreme_values[1]:
+                for z_value in potential_values[2]:
+                    offsets.append([x_value, y_value, z_value])
+
+            # Middle values for y, with z at extremes
+            for y_value in middle_values[1]:
+                for z_value in extreme_values[2]:
+                    offsets.append([x_value, y_value, z_value])
+
+        # Now expand for each computed offset
+        return self.expand(offsets, ignored_symbols)
+
+    def _compute_distances(self, atoms: List[CellAtom]):
+        """Computes the vectors and distances between the muon and every atom."""
+        muon = self._cell_atoms[self._muon_index]
+
+        for atom in atoms:
             atom.vector_from_muon = muon.position - atom.position
             atom.distance_from_muon = np.linalg.norm(atom.vector_from_muon)
 
-    def get_closer_than(
-        self, distance: float, ignored_symbols: Optional[List[str]] = None
-    ) -> List[CellAtom]:
-        """Returns atoms which are closer to the muon than a given distance
-
-        Expects compute_distances to have been called first.
-
-        Arguments:
-            distance {float} -- Distance that the returned atoms should be
-                                closer than.
-            ignored_symbols {List[str]} -- List of symbols to ignore. May be
-                                           None.
-
-        Returns:
-            List[CellAtom] -- List of atoms closer than the given distance
-        """
-
-        if ignored_symbols is None:
-            return filter(
-                lambda atom: atom.distance_from_muon < distance
-                and atom.distance_from_muon != 0.0,
-                self._atoms,
-            )
-        else:
-            return filter(
-                lambda atom: atom.distance_from_muon < distance
-                and atom.distance_from_muon != 0.0
-                and atom.symbol not in ignored_symbols,
-                self._atoms,
-            )
-
-    def get_closest(
+    def compute_closest(
         self, number: int, ignored_symbols: Optional[List[str]] = None
     ) -> List[CellAtom]:
         """Returns atoms the closest 'number' atoms to the muon.
 
-        Expects compute_distances to have been called first.
+        Expands structure outwards and computes distances until we are sure
+        we have found the desired number of closest atoms to the muon.
 
         Arguments:
             number {int} -- Number of closest atoms to return. If number > the
@@ -245,20 +254,51 @@ class MuonatedStructure:
                               (ignoring any in ignored_symbols)
         """
 
-        number = min(number, len(self._atoms))
+        # Current list of atoms in expanded supercell
+        atoms = self._cell_atoms
+        if ignored_symbols:
+            atoms = list(filter(lambda atom: atom.symbol not in ignored_symbols, atoms))
 
-        ordered_atoms = sorted(self._atoms, key=lambda atom: atom.distance_from_muon)
+        # Compute the distances within the cell
+        self._compute_distances(atoms)
 
-        # Remove any that should be ignored
-        if ignored_symbols is not None:
-            ordered_atoms = filter(
-                lambda atom: atom.symbol not in ignored_symbols, ordered_atoms
-            )
+        continue_expansion = True
+        layer = 1
+
+        while continue_expansion:
+            # Sort by distance
+            atoms = sorted(atoms, key=lambda atom: atom.distance_from_muon)
+
+            # Obtain furthest distance of desired atom
+            # TODO: Ensure expand when number in cell is less than wanted
+            # (muon should be first)
+            furthest_atom = atoms[min(number, len(atoms) - 1)]
+
+            # Compute another layer and sort those
+            new_atoms = self.compute_layer(layer, ignored_symbols)
+            self._compute_distances(new_atoms)
+            new_atoms = sorted(new_atoms, key=lambda atom: atom.distance_from_muon)
+
+            # Check if we need to include the new ones
+            closest_new_atom = new_atoms[0]
+
+            # Check whether we have just found atoms closer than the furthest
+            # previous one or we dont have enough atoms in the structure
+            if (
+                closest_new_atom.distance_from_muon < furthest_atom.distance_from_muon
+                or number + 1 > len(atoms)
+            ):
+                # Need this expansion to be included (and run at least
+                # once more to check if there are any more to include)
+                atoms.extend(new_atoms)
+
+                layer += 1
+            else:
+                # No more expansion needed
+                continue_expansion = False
 
         # Return closest 'number' atoms (ignoring the muon itself)
-        return sorted(ordered_atoms, key=lambda atom: atom.distance_from_muon)[
-            1 : (number + 1)
-        ]
+        return atoms[1 : (number + 1)]
 
     @property
     def symbols_zero_spin(self) -> List[str]:

@@ -78,8 +78,6 @@ class GeneratorToolParams:
         generators {List[InteractionGenerator]} -- List of generators for
                                                 generating interaction terms
         number_closest {int} -- Number of closest atoms to the muon to include
-        layer_expand_number {int} -- Number of layers to expand to for the
-                                     supercell
         muon_symbol {str} -- Symbol for the muon in the loaded files
         additional_ignored_symbols {List[str]} -- List of additional symbols
                                     to ignore when counting the closest atoms.
@@ -91,7 +89,6 @@ class GeneratorToolParams:
     structure: MuonatedStructure
     generators: List[InteractionGenerator]
     number_closest: int
-    layer_expand_number: int = 3
     muon_symbol: str = "H"
     additional_ignored_symbols: List[str] = field(default_factory=list)
 
@@ -109,10 +106,7 @@ def generate_input_file(params: GeneratorToolParams) -> str:
     """
 
     # Locate closest elements (ignoring ones with zero spin)
-    params.structure.layer_expand(params.layer_expand_number)
-    params.structure.compute_distances()
-
-    selected_atoms = params.structure.get_closest(
+    selected_atoms = params.structure.compute_closest(
         params.number_closest,
         params.structure.symbols_zero_spin + params.additional_ignored_symbols,
     )
@@ -193,15 +187,6 @@ include quadrupolar couplings.""",
         default="H",
     )
     parser.add_argument(
-        "--expand_number",
-        dest="expand_number",
-        type=int,
-        help="""Number of layers the structure should be expanded to before
-computing distances (default: 3). Larger values may be needed when searching
-for many atoms.""",
-        default=3,
-    )
-    parser.add_argument(
         "--ignore_symbol",
         dest="ignored_symbols",
         action="append",
@@ -224,7 +209,6 @@ symbol when finding the closest atoms.""",
         structure=MuonatedStructure(args.filepath),
         generators=generators,
         number_closest=args.number_closest,
-        layer_expand_number=args.expand_number,
         muon_symbol=args.muon_symbol,
         additional_ignored_symbols=args.ignored_symbols,
     )
