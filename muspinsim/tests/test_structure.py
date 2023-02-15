@@ -109,7 +109,49 @@ H             0.1666672745        0.0000018274        0.0833332099
                 fmt="castep-cell",
             )
 
-    def test_layer_expand(self):
+    def test_compute_layer_offsets(self):
+        structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+
+        offsets = structure._compute_layer_offsets(1)
+        self.assertEqual(len(offsets), 26)
+        self.assertTrue(
+            np.allclose(
+                offsets,
+                [
+                    [-14.1816, -14.1816, -14.1816],
+                    [-14.1816, -14.1816, 0.0],
+                    [-14.1816, -14.1816, 14.1816],
+                    [-14.1816, 0.0, -14.1816],
+                    [-14.1816, 0.0, 0.0],
+                    [-14.1816, 0.0, 14.1816],
+                    [-14.1816, 14.1816, -14.1816],
+                    [-14.1816, 14.1816, 0.0],
+                    [-14.1816, 14.1816, 14.1816],
+                    [14.1816, -14.1816, -14.1816],
+                    [14.1816, -14.1816, 0.0],
+                    [14.1816, -14.1816, 14.1816],
+                    [14.1816, 0.0, -14.1816],
+                    [14.1816, 0.0, 0.0],
+                    [14.1816, 0.0, 14.1816],
+                    [14.1816, 14.1816, -14.1816],
+                    [14.1816, 14.1816, 0.0],
+                    [14.1816, 14.1816, 14.1816],
+                    [0.0, -14.1816, -14.1816],
+                    [0.0, -14.1816, 0.0],
+                    [0.0, -14.1816, 14.1816],
+                    [0.0, 14.1816, -14.1816],
+                    [0.0, 14.1816, 0.0],
+                    [0.0, 14.1816, 14.1816],
+                    [0.0, 0.0, -14.1816],
+                    [0.0, 0.0, 14.1816],
+                ],
+            )
+        )
+
+        offsets = structure._compute_layer_offsets(2)
+        self.assertEqual(len(offsets), 98)
+
+    def test_compute_layer(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
         new_atoms = structure.compute_layer(1)
 
@@ -126,7 +168,7 @@ H             0.1666672745        0.0000018274        0.0833332099
             ),
         )
 
-    def test_layer_expand_ignore(self):
+    def test_compute_layer_ignore(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
         new_atoms = structure.compute_layer(1, ignored_symbols=["Si"])
 
@@ -149,8 +191,7 @@ H             0.1666672745        0.0000018274        0.0833332099
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
         closest_atoms = structure.compute_closest(1)
 
-        print(closest_atoms[0])
-
+        self.assertEqual(len(closest_atoms), 1)
         self.assertEqual(
             CellAtomMatcher(closest_atoms[0]),
             CellAtom(
@@ -162,5 +203,23 @@ H             0.1666672745        0.0000018274        0.0833332099
                     [1.24105396e00, 1.76149654e-05, -1.24170213e00]
                 ),
                 distance_from_muon=1.7555737250028431,
+            ),
+        )
+
+        more_closest_atoms = structure.compute_closest(6)
+
+        self.assertEqual(len(more_closest_atoms), 6)
+        self.assertEqual(CellAtomMatcher(closest_atoms[0]), more_closest_atoms[0])
+        self.assertEqual(
+            CellAtomMatcher(more_closest_atoms[5]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.29927107e01, 8.25794568e-06, -2.37447814e00]),
+                vector_from_muon=np.array(
+                    [-1.06291021e01, 1.76575102e-05, 3.55627639e00]
+                ),
+                distance_from_muon=11.208251995910084,
             ),
         )

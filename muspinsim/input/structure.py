@@ -165,25 +165,16 @@ class MuonatedStructure:
                     )
         return new_atoms
 
-    def compute_layer(
-        self, layer: int, ignored_symbols: Optional[List[str]] = None
-    ) -> List[CellAtom]:
-        """Duplicates atoms from the loaded cell by expanding outwards.
-
-        Expands the structure outwards by duplicating it for a given layer
-        number.
+    def _compute_layer_offsets(self, layer: int) -> List[ArrayLike]:
+        """Computes offsets for expanding this structure outwards
 
         Arguments:
-            layer {int} -- Index of layer e.g. if layer = 1, will expand
-                           along the x, y and z axes so that returned atoms
-                           will have been computed for the 26 surrounding
-                           cells. layer = 2 will then add compute those in
-                           the next layer, which will include 96 cells etc.
-            ignored_symbols {List[str]} -- List of symbols to ignore. May be
-                                None.
+            layer {int} -- Index of layer e.g. if layer = 1, will produce 8
+                           offsets along the x, y and z axes. layer = 2 will
+                           then produce another 26 offsets for expanding
+                           another layer outwards.
         Returns:
-            new_atoms {List[CellAtom]} -- Additional atoms with their new
-                                          positions.
+            offsets {List[ArrayLike]} -- List of computed offsets
         """
 
         # Compute all potential values for the x, y and z axes
@@ -223,8 +214,31 @@ class MuonatedStructure:
                 for z_value in extreme_values[2]:
                     offsets.append([x_value, y_value, z_value])
 
+        return offsets
+
+    def compute_layer(
+        self, layer: int, ignored_symbols: Optional[List[str]] = None
+    ) -> List[CellAtom]:
+        """Duplicates atoms from the loaded cell by expanding outwards.
+
+        Expands the structure outwards by duplicating it for a given layer
+        number.
+
+        Arguments:
+            layer {int} -- Index of layer e.g. if layer = 1, will expand
+                           along the x, y and z axes so that returned atoms
+                           will have been computed for the 26 surrounding
+                           cells. layer = 2 will then add compute those in
+                           the next layer, which will include 96 cells etc.
+            ignored_symbols {List[str]} -- List of symbols to ignore. May be
+                                           None.
+        Returns:
+            new_atoms {List[CellAtom]} -- Additional atoms with their new
+                                          positions.
+        """
+
         # Now expand for each computed offset
-        return self.expand(offsets, ignored_symbols)
+        return self.expand(self._compute_layer_offsets(layer), ignored_symbols)
 
     def _compute_distances(self, atoms: List[CellAtom]):
         """Computes the vectors and distances between the muon and every atom."""
@@ -270,8 +284,6 @@ class MuonatedStructure:
             atoms = sorted(atoms, key=lambda atom: atom.distance_from_muon)
 
             # Obtain furthest distance of desired atom
-            # TODO: Ensure expand when number in cell is less than wanted
-            # (muon should be first)
             furthest_atom = atoms[min(number, len(atoms) - 1)]
 
             # Compute another layer and sort those
