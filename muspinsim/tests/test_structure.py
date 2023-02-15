@@ -148,8 +148,61 @@ H             0.1666672745        0.0000018274        0.0833332099
             )
         )
 
+        # Check correct number for larger system
         offsets = structure._compute_layer_offsets(2)
         self.assertEqual(len(offsets), 98)
+
+        # Check offsets are correct for a system with different cell lengths
+        structure = MuonatedStructure(
+            StringIO(
+                """%BLOCK LATTICE_CART
+   14.18160000000000   0.000000000000000   0.000000000000000
+   0.000000000000000   20.00000000000000   0.000000000000000
+   0.000000000000000   0.000000000000000   8.000000000000000
+%ENDBLOCK LATTICE_CART
+
+%BLOCK POSITIONS_FRAC
+H             0.1666672745        0.0000018274        0.0833332099
+%ENDBLOCK POSITIONS_FRAC"""
+            ),
+            fmt="castep-cell",
+        )
+        offsets = structure._compute_layer_offsets(1)
+        self.assertTrue(
+            np.allclose(
+                offsets,
+                np.array(
+                    [
+                        [-14.1816, -20.0, -8.0],
+                        [-14.1816, -20.0, 0.0],
+                        [-14.1816, -20.0, 8.0],
+                        [-14.1816, 0.0, -8.0],
+                        [-14.1816, 0.0, 0.0],
+                        [-14.1816, 0.0, 8.0],
+                        [-14.1816, 20.0, -8.0],
+                        [-14.1816, 20.0, 0.0],
+                        [-14.1816, 20.0, 8.0],
+                        [14.1816, -20.0, -8.0],
+                        [14.1816, -20.0, 0.0],
+                        [14.1816, -20.0, 8.0],
+                        [14.1816, 0.0, -8.0],
+                        [14.1816, 0.0, 0.0],
+                        [14.1816, 0.0, 8.0],
+                        [14.1816, 20.0, -8.0],
+                        [14.1816, 20.0, 0.0],
+                        [14.1816, 20.0, 8.0],
+                        [0.0, -20.0, -8.0],
+                        [0.0, -20.0, 0.0],
+                        [0.0, -20.0, 8.0],
+                        [0.0, 20.0, -8.0],
+                        [0.0, 20.0, 0.0],
+                        [0.0, 20.0, 8.0],
+                        [0.0, 0.0, -8.0],
+                        [0.0, 0.0, 8.0],
+                    ]
+                ),
+            )
+        )
 
     def test_compute_layer(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")

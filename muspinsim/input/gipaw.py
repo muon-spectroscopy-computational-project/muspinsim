@@ -104,7 +104,7 @@ class GIPAWOutput:
             if identifier is None:
                 identifier = current_identifier
                 index = current_index
-            elif current_identifier != identifier or current_index != current_index:
+            elif current_identifier != identifier or current_index != index:
                 raise ValueError("Error while parsing EFG")
 
             efg_tensor[i, 0] = float(split[2])
@@ -126,7 +126,7 @@ class GIPAWOutput:
             ArrayLike | None -- EFG tensor or None if not found
         """
         # Check if at index (faster)
-        if self._atoms[index - 1].index == index:
+        if index < len(self._atoms) and self._atoms[index - 1].index == index:
             return self._atoms[index - 1]
 
         found_atoms = list(
