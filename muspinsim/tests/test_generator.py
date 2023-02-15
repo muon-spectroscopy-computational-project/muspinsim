@@ -57,7 +57,6 @@ class TestGenerator(unittest.TestCase):
                 QuadrupoleIntGenerator(GIPAWOutput(StringIO(TEST_GIPAW_FILE_DATA))),
             ],
             number_closest=4,
-            muon_symbol="H",
             additional_ignored_symbols=[],
         )
 
@@ -161,7 +160,6 @@ quadrupolar 5
                 ),
             ],
             number_closest=4,
-            muon_symbol="H",
             additional_ignored_symbols=[],
         )
 
@@ -182,13 +180,12 @@ quadrupolar 5
                 "--dipolar",
             ]
         )
-        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell")
+        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="H")
         mock_generate_input_file.assert_called_with(
             GeneratorToolParams(
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY],
                 number_closest=4,
-                muon_symbol="H",
                 additional_ignored_symbols=[],
                 max_layer=6,
             )
@@ -217,14 +214,13 @@ quadrupolar 5
                 "Cu",
             ]
         )
-        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell")
+        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="Cu")
         mock_GIPAWOutput.assert_called_with("./efg_nospin.out")
         mock_generate_input_file.assert_called_with(
             GeneratorToolParams(
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY, ANY],
                 number_closest=6,
-                muon_symbol="Cu",
                 additional_ignored_symbols=["Si", "F"],
                 max_layer=3,
             )

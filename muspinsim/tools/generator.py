@@ -80,7 +80,6 @@ class GeneratorToolParams:
         generators {List[InteractionGenerator]} -- List of generators for
                                                 generating interaction terms
         number_closest {int} -- Number of closest atoms to the muon to include
-        muon_symbol {str} -- Symbol for the muon in the loaded files
         additional_ignored_symbols {List[str]} -- List of additional symbols
                                     to ignore when counting the closest atoms.
                                     All spin 0 isotopes will be ignored by
@@ -93,7 +92,6 @@ class GeneratorToolParams:
     structure: MuonatedStructure
     generators: List[InteractionGenerator]
     number_closest: int
-    muon_symbol: str = "H"
     additional_ignored_symbols: List[str] = field(default_factory=list)
     max_layer: int = 6
 
@@ -227,10 +225,9 @@ searching for many atoms.""",
         generators.append(QuadrupoleIntGenerator(GIPAWOutput(args.gipaw_filepath)))
 
     generate_params = GeneratorToolParams(
-        structure=MuonatedStructure(args.filepath),
+        structure=MuonatedStructure(args.filepath, muon_symbol=args.muon_symbol),
         generators=generators,
         number_closest=args.number_closest,
-        muon_symbol=args.muon_symbol,
         additional_ignored_symbols=args.ignored_symbols,
         max_layer=args.max_layer,
     )
