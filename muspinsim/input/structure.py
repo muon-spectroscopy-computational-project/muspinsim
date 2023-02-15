@@ -253,7 +253,10 @@ class MuonatedStructure:
             atom.distance_from_muon = np.linalg.norm(atom.vector_from_muon)
 
     def compute_closest(
-        self, number: int, ignored_symbols: Optional[List[str]] = None
+        self,
+        number: int,
+        ignored_symbols: Optional[List[str]] = None,
+        max_layer: int = 6,
     ) -> List[CellAtom]:
         """Returns atoms the closest 'number' atoms to the muon.
 
@@ -266,10 +269,16 @@ class MuonatedStructure:
                             available.
             ignored_symbols {List[str]} -- List of symbols to ignore. May be
                                            None.
+            max_layer {int} -- Maximum layer to allow the expansion to (for
+                               avoiding any accidental long compute times)
 
         Returns:
             List[CellAtom] -- List of the found closest atoms to the muon
                               (ignoring any in ignored_symbols)
+
+        Raises:
+            RuntimeError -- When the expansion tries to go beyond the maximum
+                            limit given by max_layer.
         """
 
         # Current list of atoms in expanded supercell
@@ -307,6 +316,10 @@ class MuonatedStructure:
                 atoms.extend(new_atoms)
 
                 layer += 1
+
+                # Avoid taking forever
+                if layer > max_layer:
+                    raise RuntimeError("Trying to expand past the max_layer value")
             else:
                 # No more expansion needed
                 continue_expansion = False

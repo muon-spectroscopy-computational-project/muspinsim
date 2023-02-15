@@ -84,6 +84,8 @@ class GeneratorToolParams:
                                     All spin 0 isotopes will be ignored by
                                     default but currently this data is not
                                     reflected by soprano for Si.
+        max_layer {int} -- Maximum layer to allow the expansion to (for
+                           avoiding any long compute times)
     """
 
     structure: MuonatedStructure
@@ -91,6 +93,7 @@ class GeneratorToolParams:
     number_closest: int
     muon_symbol: str = "H"
     additional_ignored_symbols: List[str] = field(default_factory=list)
+    max_layer: int = 6
 
 
 def generate_input_file(params: GeneratorToolParams) -> str:
@@ -107,8 +110,10 @@ def generate_input_file(params: GeneratorToolParams) -> str:
 
     # Locate closest elements (ignoring ones with zero spin)
     selected_atoms = params.structure.compute_closest(
-        params.number_closest,
-        params.structure.symbols_zero_spin + params.additional_ignored_symbols,
+        number=params.number_closest,
+        ignored_symbols=params.structure.symbols_zero_spin
+        + params.additional_ignored_symbols,
+        max_layer=params.max_layer,
     )
 
     # Generate input file
@@ -190,9 +195,18 @@ include quadrupolar couplings.""",
         "--ignore_symbol",
         dest="ignored_symbols",
         action="append",
-        help="""Allows certain elements in the cell file to be ignored by their
-symbol when finding the closest atoms.""",
+        help="""Allows certain elements in the cell file to be ignored by
+their symbol when finding the closest atoms.""",
         default=[],
+    )
+    parser.add_argument(
+        "--max_layer",
+        dest="max_layer",
+        type=int,
+        help="""Maximum number of layers the structure can be expanded to
+before raising an error (default: 6). Larger values may be needed when
+searching for many atoms.""",
+        default=6,
     )
 
     args = parser.parse_args()
@@ -211,6 +225,7 @@ symbol when finding the closest atoms.""",
         number_closest=args.number_closest,
         muon_symbol=args.muon_symbol,
         additional_ignored_symbols=args.ignored_symbols,
+        max_layer=args.max_layer,
     )
 
     file_data = generate_input_file(generate_params)

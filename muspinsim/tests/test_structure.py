@@ -274,3 +274,9 @@ H             0.1666672745        0.0000018274        0.0833332099
                 distance_from_muon=11.208251995910084,
             ),
         )
+
+    def test_compute_closest_max_layer(self):
+        structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+
+        with self.assertRaises(RuntimeError):
+            structure.compute_closest(6, max_layer=1)
