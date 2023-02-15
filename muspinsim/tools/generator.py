@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import argparse
 from dataclasses import dataclass, field
 import logging
+import sys
 from typing import List
 
 from muspinsim.input.structure import CellAtom, MuonatedStructure
@@ -150,9 +151,7 @@ def generate_input_file(params: GeneratorToolParams) -> str:
     return input_file
 
 
-def main():
-    """Entrypoint for command line tool"""
-
+def _run_generator_tool(args):
     # Setup so we can see the log output
     logging.basicConfig(
         format="[%(levelname)s] [%(asctime)s] %(message)s",
@@ -217,7 +216,7 @@ searching for many atoms.""",
         default=6,
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     # Terms to generate
     generators = []
@@ -235,7 +234,6 @@ searching for many atoms.""",
         additional_ignored_symbols=args.ignored_symbols,
         max_layer=args.max_layer,
     )
-
     file_data = generate_input_file(generate_params)
 
     if args.output is not None:
@@ -243,3 +241,9 @@ searching for many atoms.""",
             file.write(file_data)
     else:
         print(file_data)
+
+
+def main():
+    """Entrypoint for command line tool"""
+
+    _run_generator_tool(sys.argv[1:])

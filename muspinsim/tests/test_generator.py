@@ -1,5 +1,6 @@
 from io import StringIO
 import unittest
+from unittest.mock import ANY, patch
 
 from muspinsim.input.gipaw import GIPAWOutput
 from muspinsim.input.structure import MuonatedStructure
@@ -7,6 +8,7 @@ from muspinsim.tools.generator import (
     DipoleIntGenerator,
     GeneratorToolParams,
     QuadrupoleIntGenerator,
+    _run_generator_tool,
     generate_input_file,
 )
 
@@ -165,3 +167,65 @@ quadrupolar 5
 
         with self.assertRaises(ValueError):
             generate_input_file(generate_params)
+
+    # Mock these so dont actually do anything, just want to check parameters
+    # used properly
+    @patch("muspinsim.tools.generator.MuonatedStructure")
+    @patch("muspinsim.tools.generator.generate_input_file")
+    def test_generate_tool_basic(
+        self, mock_generate_input_file, mock_MuonatedStructure
+    ):
+        _run_generator_tool(
+            [
+                "V3Si_SC.cell",
+                "4",
+                "--dipolar",
+            ]
+        )
+        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell")
+        mock_generate_input_file.assert_called_with(
+            GeneratorToolParams(
+                structure=mock_MuonatedStructure.return_value,
+                generators=[ANY],
+                number_closest=4,
+                muon_symbol="H",
+                additional_ignored_symbols=[],
+                max_layer=6,
+            )
+        )
+
+    @patch("muspinsim.tools.generator.GIPAWOutput")
+    @patch("muspinsim.tools.generator.MuonatedStructure")
+    @patch("muspinsim.tools.generator.generate_input_file")
+    def test_generate_tool(
+        self, mock_generate_input_file, mock_MuonatedStructure, mock_GIPAWOutput
+    ):
+        _run_generator_tool(
+            [
+                "V3Si_SC.cell",
+                "6",
+                "--dipolar",
+                "--quadrupolar",
+                "./efg_nospin.out",
+                "--ignore_symbol",
+                "Si",
+                "--ignore_symbol",
+                "F",
+                "--max_layer",
+                "3",
+                "--muon_symbol",
+                "Cu",
+            ]
+        )
+        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell")
+        mock_GIPAWOutput.assert_called_with("./efg_nospin.out")
+        mock_generate_input_file.assert_called_with(
+            GeneratorToolParams(
+                structure=mock_MuonatedStructure.return_value,
+                generators=[ANY, ANY],
+                number_closest=6,
+                muon_symbol="Cu",
+                additional_ignored_symbols=["Si", "F"],
+                max_layer=3,
+            )
+        )

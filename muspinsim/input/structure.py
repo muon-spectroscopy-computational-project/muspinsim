@@ -297,7 +297,7 @@ class MuonatedStructure:
             "Attempting to find the %s closest atoms to the muon in " "the structure",
             number,
         )
-        if not ignored_symbols is None:
+        if ignored_symbols is not None:
             logging.info("Ignoring the symbols %s", ", ".join(ignored_symbols))
 
         while continue_expansion:
