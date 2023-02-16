@@ -205,7 +205,7 @@ class CelioHamiltonian:
 
         return evol_op_contribs
 
-    def evolve(self, rho0, times, operators=[]):
+    def evolve(self, rho0, times, operators=None):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
@@ -231,6 +231,8 @@ class CelioHamiltonian:
             ValueError -- Invalid values of times or operators
             RuntimeError -- Hamiltonian is not hermitian
         """
+        if operators is None:
+            operators = []
 
         times = np.array(times)
         if isinstance(operators, SpinOperator):
@@ -479,7 +481,7 @@ class CelioHamiltonian:
         # 0.5 and -0.5
         return results * avg_factor * 0.5
 
-    def integrate_decaying(self, rho0, tau, operators=[]):
+    def integrate_decaying(self, rho0, tau, operators=None):
         """Called to integrate one or more expectation values in time with decay
 
         Raises:

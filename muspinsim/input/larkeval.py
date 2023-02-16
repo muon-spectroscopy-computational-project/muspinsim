@@ -2,6 +2,7 @@
 
 Evaluation functions and classes based off the Lark grammar parser"""
 
+from typing import Dict, List, Optional
 from lark import Lark
 from lark.exceptions import UnexpectedToken, UnexpectedInput
 
@@ -51,16 +52,14 @@ def lark_tokenize(line):
             try:
                 _expr_parser.parse(tk)
                 valid = True
-            except UnexpectedToken as e:
+            except UnexpectedToken as exc:
                 if len(ls) == 0:
                     raise RuntimeError(
-                        "Line can not be tokenized into valid expressions: {0}".format(
-                            str(e)
-                        )
-                    )
+                        f"Line can not be tokenized into valid expressions: {str(exc)}"
+                    ) from exc
                 tk = tk + ls.pop(0)
-            except UnexpectedInput as e:
-                raise LarkExpressionError("Could not parse input: {0}".format(e))
+            except UnexpectedInput as exc:
+                raise LarkExpressionError(f"Could not parse input: {str(exc)}") from exc
         tokens.append(tk)
 
     return tokens
@@ -70,8 +69,13 @@ class LarkExpressionError(Exception):
     pass
 
 
-class LarkExpression(object):
-    def __init__(self, source, variables=[], functions={}):
+class LarkExpression:
+    def __init__(
+        self,
+        source,
+        variables: Optional[List[str]] = None,
+        functions: Optional[Dict[str, callable]] = None,
+    ):
         """Create an expression to parse and evaluate with the Lark grammar
         parser. Variables and functions will be accepted only if included
         in the admissible ones.
@@ -85,6 +89,11 @@ class LarkExpression(object):
                                            functions
         """
 
+        if variables is None:
+            variables = []
+        if functions is None:
+            functions = {}
+
         # Start by parsing the expression
         self._source = source
         # check if source empty
@@ -92,10 +101,10 @@ class LarkExpression(object):
             raise LarkExpressionError("Empty String")
         try:
             self._tree = _expr_parser.parse(source)
-        except UnexpectedToken as e:
+        except UnexpectedToken as exc:
             raise LarkExpressionError(
-                "Invalid characters in LarkExpression: " "{0}".format(e)
-            )
+                f"Invalid characters in LarkExpression: {str(exc)}"
+            ) from exc
 
         # Find the variables and the function calls
         found_vars, found_funcs = self._analyse_tree(self._tree)
@@ -154,7 +163,9 @@ class LarkExpression(object):
 
         return found_vars, found_functions
 
-    def _evaluate_tree(self, root, variables={}):
+    def _evaluate_tree(self, root, variables=None):
+        if variables is None:
+            variables = []
 
         if hasattr(root, "data"):
             d = root.data
@@ -204,15 +215,13 @@ class LarkExpression(object):
         vset = set(variables.keys())
         if len(self.variables - vset) > 0:
             raise LarkExpressionError(
-                "Some necessary variable(s) {0} have not been "
-                "defined when evaluating LarkExpression".format(self.variables - vset)
+                f"Some necessary variable(s) {self.variables - vset} have not "
+                "been defined when evaluating LarkExpression"
             )
         elif len(vset - self._all_variables) > 0:
             raise LarkExpressionError(
-                "Some invalid variable(s) {0} have been "
-                "defined when evaluating LarkExpression".format(
-                    vset - self._all_variables
-                )
+                f"Some invalid variable(s) {vset - self._all_variables} have "
+                "been defined when evaluating LarkExpression"
             )
 
         if self._store_eval is not None:

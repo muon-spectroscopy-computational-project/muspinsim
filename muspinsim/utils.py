@@ -10,7 +10,7 @@ from ase.quaternions import Quaternion
 from soprano.calculate.powder import ZCW
 
 
-class Clonable(object):
+class Clonable:
     """A helper class; any object inheriting
     from this will have a .clone method that copies it easily."""
 
@@ -29,8 +29,7 @@ def deepmap(func, obj):
 
     if isinstance(obj, Iterable):
         return [deepmap(func, x) for x in obj]
-    else:
-        return func(obj)
+    return func(obj)
 
 
 def zcw_gen(N, mode="sphere"):

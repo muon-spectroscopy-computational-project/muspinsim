@@ -32,11 +32,11 @@ class TestMuSpinMPI(unittest.TestCase):
         self.assertTrue(np.all(split30[2][1] == [12, 13, 14, 15, 16]))
 
     def test_broadcast(self):
-        class A(object):
+        class A:
             def __init__(self, x):
                 self.x = x
 
-        class B(object):
+        class B:
             def __init__(self, x):
                 self.a = A(x)
 
