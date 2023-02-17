@@ -201,7 +201,7 @@ class MuonatedStructure:
         # Compute combinations
         offsets = []
 
-        # Hold z fixed at one of the extreme values and vary others
+        # Hold x fixed at one of the extreme values and vary others
         for x_value in extreme_values[0]:
             for y_value in potential_values[1]:
                 for z_value in potential_values[2]:
@@ -234,7 +234,7 @@ class MuonatedStructure:
                            along the x, y and z axes so that returned atoms
                            will have been computed for the 26 surrounding
                            cells. layer = 2 will then add compute those in
-                           the next layer, which will include 96 cells etc.
+                           the next layer, which will include 98 cells etc.
             ignored_symbols {List[str]} -- List of symbols to ignore. May be
                                            None.
         Returns:
