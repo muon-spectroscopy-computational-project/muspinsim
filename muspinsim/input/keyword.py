@@ -54,7 +54,7 @@ class MuSpinKeyword(object):
     expr_size_bounds = (1, np.inf)
     _validators = []
 
-    def __init__(self, block=[], args=[]):
+    def __init__(self, block=None, args=None):
         """Create an instance of a given keyword, passing the raw block of
         text as well as the arguments.
 
@@ -63,13 +63,17 @@ class MuSpinKeyword(object):
             args {[any]} -- Any arguments appearing after the keyword
 
         """
+        if block is None:
+            block = []
+        if args is None:
+            args = []
 
         # Sanity check
         if (
             self.block_size < self.block_size_bounds[0]
             or self.block_size > self.block_size_bounds[1]
         ):
-            raise RuntimeError("Invalid block_size for keyword {0}".format(self.name))
+            raise RuntimeError(f"Invalid block_size for keyword {self.name}")
 
         self._store_args(args)
 
@@ -77,15 +81,14 @@ class MuSpinKeyword(object):
         block = np.array(block)
         try:
             block = block.reshape((-1, self.block_size))
-        except ValueError:
+        except ValueError as exc:
             raise RuntimeError(
-                "Invalid number of entries for block, expected {0}, got {1}".format(
-                    self.block_size, len(block)
-                )
-            )
+                "Invalid number of entries for block, expected "
+                f"{self.block_size}, got {len(block)}"
+            ) from exc
         if not self.accept_range and len(block) > 1:
             raise RuntimeError(
-                "Can not accept range of values for keyword {0}".format(self.name)
+                f"Can not accept range of values for keyword {self.name}"
             )
 
         use_default = False
@@ -99,8 +102,8 @@ class MuSpinKeyword(object):
                 use_default = True
             else:
                 raise RuntimeError(
-                    "Input is empty and keyword '{0}' "
-                    "doesn't have a default value".format(self.name)
+                    f"Input is empty and keyword '{self.name}' "
+                    "doesn't have a default value"
                 )
 
         self._store_values(block)
@@ -111,7 +114,7 @@ class MuSpinKeyword(object):
         # expressions are within bounds (if not using defaults)
         # need to check after parsing to account for expressions and functions
         if not use_default:
-            if type(self._values) is np.ndarray:
+            if isinstance(self._values, np.ndarray):
                 entry_lengths = [
                     np.shape(self._values)[1] for _ in range(np.shape(self._values)[0])
                 ]
@@ -154,26 +157,25 @@ class MuSpinKeyword(object):
     def _store_args(self, args):
         try:
             self._args = self._default_args(*args)
-        except TypeError:
+        except TypeError as exc:
             if args:
                 raise RuntimeError(
-                    "Wrong number of in-line arguments given '{0}', "
-                    "expected {1}, got {2}".format(
-                        " ".join(args),
-                        len(inspect.signature(self._default_args).parameters),
-                        len(args),
-                    )
-                )
+                    f"""Wrong number of in-line arguments given '{
+                        ' '.join(args)
+                    }', expected {
+                        len(inspect.signature(self._default_args).parameters)
+                    }, got {len(args)}"""
+                ) from exc
             else:
                 raise RuntimeError(
-                    "This keyword requires {0} in-line arguments".format(
-                        len(inspect.signature(self._default_args).parameters),
-                    )
-                )
-        except ValueError as e:
+                    f"""This keyword requires {
+                        len(inspect.signature(self._default_args).parameters)
+                    } in-line arguments"""
+                ) from exc
+        except ValueError as exc:
             raise RuntimeError(
-                "Error parsing keyword argument(s) '{0}': {1}".format(self.name, str(e))
-            )
+                f"Error parsing keyword argument(s) '{self.name}': {str(exc)}"
+            ) from exc
 
     def _store_values(self, block):
         # Parse and store each value separately
@@ -219,7 +221,14 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
     _functions = {**_math_functions}
     _constants = {**_math_constants}
 
-    def __init__(self, block=[], args=[], variables=[]):
+    def __init__(self, block=None, args=None, variables=None):
+        # Fix W0102:dangerous-default-value
+        if block is None:
+            block = []
+        if args is None:
+            args = []
+        if variables is None:
+            variables = []
 
         cnames = set(self._constants.keys())
         fnames = set(self._functions.keys())
@@ -229,8 +238,7 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
         conflicts = conflicts.union(fnames.intersection(vnames))
         if len(conflicts) > 0:
             raise ValueError(
-                "Variable names {0}".format(conflicts)
-                + " conflict with existing constants"
+                f"Variable names '{conflicts}' conflict with existing constants"
             )
 
         self._variables = list(cnames.union(vnames))
@@ -292,7 +300,7 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
                 eval_values += [eval_line]
             else:
                 raise RuntimeError(
-                    "Unable to evaluate expression for keyword {0}".format(self.name)
+                    f"Unable to evaluate expression for keyword {self.name}"
                 )
 
         return eval_values
@@ -321,10 +329,10 @@ class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
         i = self._args.get("i")
         j = self._args.get("j")
         if i is not None:
-            id_str += "_{0}".format(i)
+            id_str += f"_{i}"
             if j is not None:
-                id_str += "_{0}".format(j)
-        return "{0}{1}".format(self.name, id_str)
+                id_str += f"_{j}"
+        return f"{self.name}{id_str}"
 
 
 # Now on to defining the actual keywords that are admitted in input files
@@ -533,9 +541,7 @@ class KWFittingVariables(MuSpinKeyword):
     default = ""
     _constants = {**_math_constants, **_phys_constants}
     _validators = [
-        lambda s: "Invalid value '{0}': variable name conflicts with a constant".format(
-            s.name
-        )
+        lambda s: f"Invalid value '{s.name}': variable name conflicts with a constant"
         if s.name in {**_math_constants, **_phys_constants}
         else ""
     ]
@@ -583,8 +589,8 @@ class KWFittingMethod(MuSpinKeyword):
     accept_range = False
     default = "nelder-mead"
     _validators = [
-        lambda s: "Invalid value {0}, accepted values {1}".format(
-            s[0].lower(), ["nelder-mead", "lbfgs"]
+        lambda s: (
+            f"Invalid value {s[0].lower()}, accepted values ['nelder-mead', 'lbfgs']"
         )
         if s[0].lower() not in ["nelder-mead", "lbfgs"]
         else ""
@@ -598,7 +604,7 @@ class KWFittingTolerance(MuSpinKeyword):
     accept_range = False
     default = "1e-3"
     _validators = [
-        lambda s: "Invalid value '{0}', accepts only single float value".format(s[0])
+        lambda s: f"Invalid value '{s[0]}', accepts only single float value"
         if not float(s[0])
         else "",
     ]

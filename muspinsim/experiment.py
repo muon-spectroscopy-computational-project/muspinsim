@@ -18,12 +18,12 @@ from muspinsim.hamiltonian import Hamiltonian
 from muspinsim.lindbladian import Lindbladian
 
 
-class ExperimentRunner(object):
+class ExperimentRunner:
     """A class meant to run experiments. Its main purpose as an object is to
     provide caching for any quantities that might not need to be recalculated
     between successive snapshots."""
 
-    def __init__(self, infile: MuSpinInput, variables: dict = {}):
+    def __init__(self, in_file: MuSpinInput, variables: dict = None):
         """Set up an experiment as defined by a MuSpinInput object
 
         Prepare a set of calculations (for multiple files and averages) as
@@ -31,18 +31,21 @@ class ExperimentRunner(object):
         care of parallelism, splitting calculations across nodes etc.
 
         Arguments:
-            infile {MuSpinInput} -- The input file object defining the
+            in_file {MuSpinInput} -- The input file object defining the
                                     calculations we need to perform.
             variables {dict} -- The values of any variables appearing in the input
                                 file
         """
+        # Fix W0102:dangerous-default-value
+        if variables is None:
+            variables = {}
 
         if mpi.is_root:
             # On root, we run the evaluation that gives us the actual possible
             # values for simulation configurations. These are then broadcast
             # across all nodes, each of which runs its own slice of them, and
             # finally gathered back together
-            config = MuSpinConfig(infile.evaluate(**variables))
+            config = MuSpinConfig(in_file.evaluate(**variables))
         else:
             config = MuSpinConfig()
 
@@ -170,7 +173,7 @@ class ExperimentRunner(object):
             mu_i = self._system.muon_index
             rhos = []
 
-            for i, s in enumerate(self._system.spins):
+            for i in range(len(self._system.spins)):
                 I = self._system.I(i)
                 if i == mu_i:
                     r = DensityOperator.from_vectors(I, muon_axis, 0)
@@ -205,8 +208,8 @@ class ExperimentRunner(object):
                 rhos.append(r)
 
             self._rho0 = rhos[0]
-            for r in rhos[1:]:
-                self._rho0 = self._rho0.kron(r)
+            for rho in rhos[1:]:
+                self._rho0 = self._rho0.kron(rho)
 
         return self._rho0
 

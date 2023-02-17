@@ -1,38 +1,35 @@
-"""variables.py
-
-Class defining a fitting variable with a starting value and bounds"""
-
 import numpy as np
 
 
-class FittingVariable(object):
-    def __init__(self, name, value=0.0, minv=-np.inf, maxv=np.inf):
+class FittingVariable:
+    """Class defining a fitting variable with a starting value and bounds"""
+
+    def __init__(self, name, value=0.0, min_value=-np.inf, max_value=np.inf):
 
         self._name = name
         self._value = float(value)
-        self._min = float(minv)
-        self._max = float(maxv)
+        self._min = float(min_value)
+        self._max = float(max_value)
 
         invalid = ""
         if self._max <= self._min:
             invalid += (
-                "Variable {0} has invalid range: "
-                "(max value {1} cannot be less than or equal to min value {2}"
-                ")\n".format(name, self._max, self._min)
+                f"Variable {name} has invalid range: "
+                f"(max value {self._max} cannot be less than or equal to min "
+                f"value {self._min}"
+                ")\n"
             )
         if self._value > self._max:
             invalid += (
-                "Variable {0} has invalid starting value: "
-                "(starting value {1} cannot be greater than max value {2})".format(
-                    name, self._value, self._max
-                )
+                f"Variable {name} has invalid starting value: "
+                f"(starting value {self._value} cannot be greater than max "
+                f"value {self._max})"
             )
         if self._value < self._min:
             invalid += (
-                "Variable {0} has invalid starting value: "
-                "(starting value {1} cannot be less than min value {2})".format(
-                    name, self._value, self._min
-                )
+                f"Variable {name} has invalid starting value: "
+                f"(starting value {self._value} cannot be less than min "
+                f"value {self._min})"
             )
 
         if invalid != "":

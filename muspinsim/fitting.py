@@ -12,7 +12,7 @@ from muspinsim.experiment import ExperimentRunner
 from muspinsim.mpi import mpi_controller as mpi
 
 
-class FittingRunner(object):
+class FittingRunner:
     def __init__(self, inpfile: MuSpinInput):
         """Initialise a FittingRunner object
 
@@ -132,23 +132,23 @@ class FittingRunner(object):
             if fname is None:
                 fname = config.name + "_fit_report.txt"
 
-            with open(os.path.join(path, fname), "w") as f:
-                f.write("Fitting process for {0} completed\n".format(config.name))
-                f.write("Success achieved: {0}\n".format(self._sol["success"]))
+            with open(os.path.join(path, fname), "w", encoding="utf-8") as file:
+                file.write("Fitting process for {0} completed\n".format(config.name))
+                file.write("Success achieved: {0}\n".format(self._sol["success"]))
                 if not self._sol["success"]:
-                    f.write("   Message: {0}\n".format(self._sol["message"]))
+                    file.write("   Message: {0}\n".format(self._sol["message"]))
 
-                f.write(
+                file.write(
                     "Final absolute error <|f-f_targ|>: "
                     "{0}\n".format(self._sol["fun"])
                 )
-                f.write("Number of simulations: {0}\n".format(self._sol["nfev"]))
-                f.write("Number of iterations: {0}\n".format(self._sol["nit"]))
+                file.write("Number of simulations: {0}\n".format(self._sol["nfev"]))
+                file.write("Number of iterations: {0}\n".format(self._sol["nit"]))
 
-                f.write("\n" + "=" * 20 + "\n")
-                f.write("\nValues found for fitting variables:\n\n")
+                file.write("\n" + "=" * 20 + "\n")
+                file.write("\nValues found for fitting variables:\n\n")
                 for name, val in variables.items():
-                    f.write("\t{0} = {1}\n".format(name, val))
+                    file.write("\t{0} = {1}\n".format(name, val))
 
     @property
     def solution(self):

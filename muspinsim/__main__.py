@@ -21,10 +21,11 @@ from muspinsim.input import MuSpinInput
 from muspinsim.experiment import ExperimentRunner
 from muspinsim.fitting import FittingRunner
 
-LOGFORMAT = "[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s"
+LOG_FORMAT = "[%(levelname)s] [%(threadName)s] [%(asctime)s] %(message)s"
 
 
 def ensure_dir_path_exists(path_string):
+    """Checks if a directory exists, and if not attempts to create it"""
     if not os.path.isdir(path_string):
         try:
             os.makedirs(path_string)
@@ -34,13 +35,15 @@ def ensure_dir_path_exists(path_string):
 
 
 def main(use_mpi=False):
+    """Entrypoint for MuSpinSim"""
+
     if use_mpi:
         mpi.connect()
 
     if mpi.is_root:
         # Entry point for script
         parser = ap.ArgumentParser(
-            description="Muspinsim - A program designed to carry out "
+            description="MuSpinSim - A program designed to carry out "
             "spin dynamics calculations for muon science experiments"
         )
         parser.add_argument(
@@ -48,27 +51,27 @@ def main(use_mpi=False):
             "--fit-report-path",
             type=str,
             default=None,
-            help="filepath to store fit report if fitting parameters given",
+            help="Filepath to store fit report if fitting parameters given",
         )
         parser.add_argument(
             "-l",
             "--log-path",
             type=str,
             default=None,
-            help="filepath to store simulation logs",
+            help="Filepath to store simulation logs",
         )
         parser.add_argument(
             "-o",
             "--out-dir",
             type=str,
             default=None,
-            help="folder to store the output .dat files",
+            help="Folder to store the output .dat files",
         )
         parser.add_argument(
             "input_file",
             type=ap.FileType("r"),
             default=None,
-            help="path to file specifying simulation input parameters. "
+            help="Path to file specifying simulation input parameters. "
             "For formatting and keywords, see https://"
             "muon-spectroscopy-computational-project.github.io"
             "/muspinsim/input/.",
@@ -80,9 +83,9 @@ def main(use_mpi=False):
         inp_file_name = os.path.basename(inp_filepath).split(".")[0]
         inp_dir = os.path.dirname(inp_filepath)
 
-        fs = open(inp_filepath, encoding="utf-8")
-        infile = MuSpinInput(fs)
-        is_fitting = len(infile.variables) > 0
+        with open(inp_filepath, encoding="utf-8") as file:
+            in_file = MuSpinInput(file)
+        is_fitting = len(in_file.variables) > 0
 
         out_path = inp_dir
         if args.out_dir:
@@ -105,7 +108,7 @@ def main(use_mpi=False):
             filename=logfile,
             filemode="w",
             level=logging.INFO,
-            format=LOGFORMAT,
+            format=LOG_FORMAT,
             datefmt="%Y-%m-%d %H:%M:%S",
             force=True,
         )
@@ -115,26 +118,26 @@ def main(use_mpi=False):
         if is_fitting:
             logging.info(
                 "Performing fitting in variables: %s",
-                ", ".join(infile.variables),
+                ", ".join(in_file.variables),
             )
 
-        tstart = datetime.now()
+        t_start = datetime.now()
     else:
-        infile = MuSpinInput()
+        in_file = MuSpinInput()
         is_fitting = False
 
     is_fitting = mpi.broadcast(is_fitting)
 
     if not is_fitting:
         # No fitting
-        runner = ExperimentRunner(infile, {})
+        runner = ExperimentRunner(in_file, {})
         runner.run()
 
         if mpi.is_root:
             # Output
             runner.config.save_output(name=None, path=out_path)
     else:
-        fitter = FittingRunner(infile)
+        fitter = FittingRunner(in_file)
         fitter.run(name=None, path=out_path)
 
         if mpi.is_root:
@@ -154,14 +157,15 @@ def main(use_mpi=False):
             fitter.write_report(fname=rep_fname, path=rep_dname)
 
     if mpi.is_root:
-        tend = datetime.now()
-        simtime = (tend - tstart).total_seconds()
-        logging.info("Simulation completed in {0:.3f} seconds".format(simtime))
+        t_end = datetime.now()
+        sim_time = (t_end - t_start).total_seconds()
+        logging.info("Simulation completed in %.3f seconds", sim_time)
 
     logging.shutdown()
 
 
 def main_mpi():
+    """Entrypoint for MPI"""
     main(use_mpi=True)
 
 

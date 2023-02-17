@@ -14,6 +14,7 @@ from itertools import product
 import numpy as np
 from ase.quaternions import Quaternion
 
+from muspinsim.version import __version__
 from muspinsim.spinsys import MuonSpinSystem
 from muspinsim.utils import quat_from_polar
 
@@ -61,14 +62,11 @@ def _validate_shape(v, target_shape=(3,), name="vector"):
 
 
 # Another utility function
-
-
 def _elems_from_arrayodict(inds, odict):
     return {k: v[inds[i]] for i, (k, v) in enumerate(odict.items())}
 
 
 def _log_dictranges(rdict):
-
     for k, r in rdict.items():
         logging.info("\t\t{k} => {n} points".format(k=k, n=len(r)))
 
@@ -77,7 +75,7 @@ class MuSpinConfigError(Exception):
     pass
 
 
-class MuSpinConfig(object):
+class MuSpinConfig:
     """A class to store a configuration for a MuSpinSim simulation, including
     any ranges of parameters as determined by the input file."""
 
@@ -110,8 +108,8 @@ class MuSpinConfig(object):
         # Identify ranges
         try:
             x = _CDICT[params["x_axis"].value[0][0]]
-        except KeyError:
-            raise MuSpinConfigError("Invalid x axis name in input file")
+        except KeyError as exc:
+            raise MuSpinConfigError("Invalid x axis name in input file") from exc
         self._x_range[x] = None
 
         for a in params["average_axes"].value.reshape((-1,)):
@@ -120,8 +118,10 @@ class MuSpinConfig(object):
                 continue
             try:
                 self._avg_ranges[_CDICT[a]] = None
-            except KeyError:
-                raise MuSpinConfigError("Invalid average axis name in input file")
+            except KeyError as exc:
+                raise MuSpinConfigError(
+                    "Invalid average axis name in input file"
+                ) from exc
 
         self._time_N = 0  # Number of time points. This is special
         self._time_isavg = "t" in self._avg_ranges  # Is time averaged over?
@@ -215,12 +215,11 @@ class MuSpinConfig(object):
             iname = idata.name
             try:
                 cname = _CSDICT[iname]
-            except KeyError:
+            except KeyError as exc:
                 raise MuSpinConfigError(
-                    "Invalid params object passed to "
-                    "MuSpinConfig: "
-                    "unknown {0} coupling".format(iname)
-                )
+                    "Invalid params object passed to MuSpinConfig: "
+                    f"unknown {iname} coupling"
+                ) from exc
 
             cval = self.validate(cname, idata.value, idata.args)[0]
 
@@ -274,14 +273,11 @@ class MuSpinConfig(object):
         self._avg_N = len(aconfigs)
 
         logging.info(
-            "Total number of configurations to simulate: "
-            "{0}".format(len(self._configurations))
+            "Total number of configurations to simulate: %s", len(self._configurations)
         )
-        logging.info(
-            "Total number of configurations to average: {0}".format(self._avg_N)
-        )
+        logging.info("Total number of configurations to average: %s", self._avg_N)
 
-    def validate(self, name, value, args={}):
+    def validate(self, name, value, args=None):
         """Validate an input parameter with a custom method, if present.
 
         Arguments:
@@ -294,8 +290,10 @@ class MuSpinConfig(object):
         Returns:
             value -- Validated and normalised value
         """
+        if args is None:
+            args = {}
 
-        vname = "_validate_{0}".format(name)
+        vname = f"_validate_{name}"
 
         if hasattr(self, vname):
             vfun = getattr(self, vname)
@@ -337,8 +335,6 @@ class MuSpinConfig(object):
             path {str} -- Folder path to save the files in
             extension {str} -- Extension to save the files with
         """
-
-        from muspinsim import __version__
 
         if name is None:
             name = self.name
@@ -453,13 +449,11 @@ Parameters used:
 
     def __getitem__(self, i):
 
-        isint = type(i) == int
+        isint = isinstance(i, int)
         if isint:
             i = slice(i, i + 1)
         elif type(i) != slice:
-            raise TypeError(
-                "Indices must be integer or slices, not {0}".format(type(i))
-            )
+            raise TypeError(f"Indices must be integer or slices, not {type(i)}")
 
         ans = []
 

@@ -112,7 +112,7 @@ class Lindbladian(SuperOperator):
 
         return result
 
-    def integrate_decaying(self, rho0, tau, operators=[]):
+    def integrate_decaying(self, rho0, tau, operators=None):
         """Integrate one or more expectation values in time with decay
 
         Perform an integral in time from 0 to +inf of an expectation value
@@ -136,6 +136,8 @@ class Lindbladian(SuperOperator):
             ValueError -- Invalid values of tau or operators
             RuntimeError -- Hamiltonian is not hermitian
         """
+        if operators is None:
+            operators = []
 
         if isinstance(operators, SpinOperator):
             operators = [operators]

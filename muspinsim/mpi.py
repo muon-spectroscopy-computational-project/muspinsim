@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 
-class MPIController(object):
+class MPIController:
     def __init__(self):
         self._MPI = None
         self._comm = None
@@ -42,7 +42,8 @@ class MPIController(object):
         return self._rank == 0
 
     def execute_on_root(self, func):
-        # A decorator making sure a function only executes on the root node
+        """A decorator making sure a function only executes on the root node"""
+
         def decfunc(*args, **kwargs):
             if not self.is_root:
                 return None
@@ -51,15 +52,15 @@ class MPIController(object):
         return decfunc
 
     def broadcast(self, var):
-        # A function to broadcast a single variable
+        """A function to broadcast a single variable"""
 
-        if not (self.comm is None):
+        if self.comm is not None:
             var = self.comm.bcast(var, root=0)
 
         return var
 
     def broadcast_object(self, obj, selected_attrs=None):
-        # A function to broadcast an object's members
+        """A function to broadcast an object's members"""
 
         if self.comm is None:
             return  # Nothing to do
