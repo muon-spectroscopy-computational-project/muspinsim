@@ -238,7 +238,7 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
         conflicts = conflicts.union(fnames.intersection(vnames))
         if len(conflicts) > 0:
             raise ValueError(
-                f"Variable names '{conflicts}' conflict with existing " "constants"
+                f"Variable names '{conflicts}' conflict with existing constants"
             )
 
         self._variables = list(cnames.union(vnames))
