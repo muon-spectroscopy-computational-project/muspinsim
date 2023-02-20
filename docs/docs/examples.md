@@ -201,7 +201,16 @@ Finally, we look at how we can use Celio's method to approximate a large system 
 > [Entanglement between Muon and $I > \frac{1}{2}$ Nuclear Spins as a Probe of Charge Environment](https://doi.org/10.1103/PhysRevLett.129.097205)
 > *Phys. Rev. Lett. **129**, 097205 – Published 26 August 2022*
 
-In brief, this system consists of Si atoms each with 0 spin, and Vanadium atoms each with a spin $\frac{7}{2}$. Since the Si atoms have 0 spin, we only consider interactions between the muon and the Vanadium atoms. We then find 4 closest Vanadium atoms to the muon stopping site and consider their dipolar couplings with the muon as well as their quadrupolar couplings. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via
+In brief, this system consists of Si atoms each with 0 spin, and Vanadium atoms each with a spin $\frac{7}{2}$. Since the Si atoms have 0 spin, we only consider interactions between the muon and the Vanadium atoms. We now want to find 4 closest Vanadium atoms to the muon stopping site and consider their dipole interactions with the muon as well as their quadrupole interactions. To do this we use [GIPAW](http://www.gipaw.net/) to [compute the EFG tensors](http://www.castep.org/Prop/NMR) required for the quadrupole interactions and use the [`muspinsim-gen`](./tools/#muspinsim-gen) tool to construct the beginnings of our input file using the command `muspinsim-gen ./V3Si_SC.cell 6 --dipolar --quadrupolar ./gipaw.out --ignore_symbol Si --out V3Si.in`. We then give it a name and define the time range we want to compute the asymmetry values for using
+
+```plaintext
+name
+    celio
+time
+    range(0, 10, 50)
+```
+
+Then we average over simulations with muons initially polarised in the x, y and z directions by adding
 
 ```plaintext
 polarization
@@ -212,7 +221,7 @@ average_axes
     polarization
 ```
 
-We then request that MuSpinSim uses Celio's method using
+Finally we request that MuSpinSim uses Celio's method using
 
 ```plaintext
 celio
@@ -221,5 +230,5 @@ celio
 
 Where the first value is the trotter number $k = 10$, and the second value gets MuSpinSim to randomise the initial states and compute the average of 4 simulations for each initial polarisation direction.
 
-Running this example will take longer than the others due to the size of the problem (in this case we have a Hilbert space of dimension $2\times8^4 = 8192$), but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
+Running this example will take longer than the others due to the size of the problem (in this case we have a Hilbert space of dimension $2\times8^4 = 8192$), but without using Celio's method it would have taken many times longer and would require a lot more memory. The result looks like Figure 2(a) in the paper:
 ![Plot of asymmetry simulated using Celio's method for 4 V atoms](./figExCelio.png)
