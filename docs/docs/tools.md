@@ -3,7 +3,7 @@
 
 ## `muspinsim-gen`
 
-`muspinsim-gen` is a command line tool made to help construct an input file given a cell structure file as input. At the moment it can take an input structure (defined in a file supported by `ase` e.g. a .cell or .cif), find a requested number of nearest neighbour atoms to the muon, and then output the muspinsim config defining these atoms and the dipolar interactions with the muon. It can also be linked to a file containing output defining EFG tensors from `GIPAW` in order to include quadrupole interactions.
+`muspinsim-gen` is a command line tool made to help construct an input file given a cell structure file as input. At the moment it can take an input structure (defined in a file supported by `ase` e.g. a .cell or .cif), find a requested number of nearest neighbour atoms to the muon, and then output the muspinsim config defining these atoms and the dipolar interactions with the muon. It can also (optionally) take a file containing output defining EFG tensors from `GIPAW` in order to include quadrupole interactions.
 
 The available command line options can be found by invoking `muspinsim-gen --help`.
 
