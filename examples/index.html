@@ -68,6 +68,10 @@
                 <li class="toctree-l1"><a class="reference internal" href="../input/">Input</a>
                 </li>
               </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tools/">Tools</a>
+                </li>
+              </ul>
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="./">Examples</a>
     <ul class="current">
@@ -237,24 +241,29 @@ dissipation 1
 <a href="https://doi.org/10.1103/PhysRevLett.129.097205">Entanglement between Muon and <span class="arithmatex">\(I &gt; \frac{1}{2}\)</span> Nuclear Spins as a Probe of Charge Environment</a>
 <em>Phys. Rev. Lett. </em><em>129</em><em>, 097205 – Published 26 August 2022</em></p>
 </blockquote>
-<p>In brief, this system consists of Si atoms each with 0 spin, and Vanadium atoms each with a spin <span class="arithmatex">\(\frac{7}{2}\)</span>. Since the Si atoms have 0 spin, we only consider interactions between the muon and the Vanadium atoms. We then find 4 closest Vanadium atoms to the muon stopping site and consider their dipolar couplings with the muon as well as their quadrupolar couplings. For the latter which requires EFG tensors, we use values obtained using GIPAW and average over simulations with muons initially polarised in the x, y and z directions via</p>
+<p>In brief, this system consists of Si atoms each with 0 spin, and Vanadium atoms each with a spin <span class="arithmatex">\(\frac{7}{2}\)</span>. Since the Si atoms have 0 spin, we only consider interactions between the muon and the Vanadium atoms. We now want to find 4 closest Vanadium atoms to the muon stopping site and consider their dipole interactions with the muon as well as their quadrupole interactions. To do this we use <a href="http://www.gipaw.net/">GIPAW</a> to <a href="http://www.castep.org/Prop/NMR">compute the EFG tensors</a> required for the quadrupole interactions and use the <a href="./tools/#muspinsim-gen"><code>muspinsim-gen</code></a> tool to construct the beginnings of our input file using the command <code>muspinsim-gen ./V3Si_SC.cell 6 --dipolar --quadrupolar ./gipaw.out --ignore_symbol Si --out V3Si.in</code>. We then give it a name and define the time range we want to compute the asymmetry values for using</p>
+<pre class="highlight"><code class="language-plaintext">name
+    celio
+time
+    range(0, 10, 50)</code></pre>
+<p>Then we average over simulations with muons initially polarised in the x, y and z directions by adding</p>
 <pre class="highlight"><code class="language-plaintext">polarization
     1 0 0
     0 1 0
     0 0 1
 average_axes
     polarization</code></pre>
-<p>We then request that MuSpinSim uses Celio's method using</p>
+<p>Finally we request that MuSpinSim uses Celio's method using</p>
 <pre class="highlight"><code class="language-plaintext">celio
     10 4</code></pre>
 <p>Where the first value is the trotter number <span class="arithmatex">\(k = 10\)</span>, and the second value gets MuSpinSim to randomise the initial states and compute the average of 4 simulations for each initial polarisation direction.</p>
-<p>Running this example will take longer than the others due to the size of the problem (in this case we have a Hilbert space of dimension <span class="arithmatex">\(2\times8^4 = 8192\)</span>), but without using Celio's method it would have taken many times longer and would require a lot more memory. The result should look like Figure 2(a) in the paper:
+<p>Running this example will take longer than the others due to the size of the problem (in this case we have a Hilbert space of dimension <span class="arithmatex">\(2\times8^4 = 8192\)</span>), but without using Celio's method it would have taken many times longer and would require a lot more memory. The result looks like Figure 2(a) in the paper:
 <img alt="Plot of asymmetry simulated using Celio's method for 4 V atoms" src="../figExCelio.png" /></p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../input/" class="btn btn-neutral float-left" title="Input"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../tools/" class="btn btn-neutral float-left" title="Tools"><span class="icon icon-circle-arrow-left"></span> Previous</a>
     </div>
 
   <hr/>
@@ -277,7 +286,7 @@ average_axes
   <span class="rst-current-version" data-toggle="rst-current-version">
     
     
-      <span><a href="../input/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../tools/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
   </span>

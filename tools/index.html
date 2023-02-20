@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Tools - MuSpinSim Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Tools";
+        var mkdocs_page_input_path = "tools.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> MuSpinSim Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome to MuSpinSim's documentation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../theory_1/">Theory of spin dynamics - I</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../theory_2/">Theory of spin dynamics - II</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../hamiltonian/">Hamiltonian</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../tutorial/">Tutorial</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../input/">Input</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Tools</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#muspinsim-gen">muspinsim-gen</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">MuSpinSim Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li>
+      <li>Tools</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="tools">Tools</h1>
+<h2 id="muspinsim-gen"><code>muspinsim-gen</code></h2>
+<p><code>muspinsim-gen</code> is a command line tool made to help construct an input file given a cell structure file as input. At the moment it can take an input structure (defined in a file supported by <code>ase</code> e.g. a .cell or .cif), find a requested number of nearest neighbour atoms to the muon, and then output the muspinsim config defining these atoms and the dipolar interactions with the muon. It can also (optionally) take a file containing output defining EFG tensors from <code>GIPAW</code> in order to include quadrupole interactions.</p>
+<p>The available command line options can be found by invoking <code>muspinsim-gen --help</code>.</p>
+<h3 id="example">Example</h3>
+<p>Taking a cell file named <code>V3Si.cell</code> you may use
+<pre class="highlight"><code class="language-bash">muspinsim-gen ./V3Si.cell 6 --dipolar --out V3Si.in</code></pre></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The muon is assumed to be defined in the structure as <code>H</code>, this can be modified by the command line option <code>--muon_symbol MUON_SYMBOL</code>.</p>
+</div>
+<p>This takes the cell file, then iteratively expands the structure outwards to find the closest 6 atoms to the muon. Then it computes vectors between each of the found atoms and the muon before outputting the muspinsim config into the file <code>V3Si.in</code> which looks like</p>
+<pre class="highlight"><code class="language-plaintext">spins
+    mu V V V V Si Si
+dipolar 1 2
+    5.8867821595143255e-06 -1.2410298376667999 1.2417097773151198
+dipolar 1 3
+    -1.2410421175142399 1.7637655919999997e-05 -1.2417029559655202
+dipolar 1 4
+    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
+dipolar 1 5
+    5.8811095198230134e-06 1.2410652462856788 1.2417072770990398
+dipolar 1 6
+    5.84849183971059e-06 -2.377947784716 -1.18857807822936
+dipolar 1 7
+    -2.37795896407128 1.786314336e-05 1.18858129319808</code></pre>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>By default, MuSpinSim assumes that the atoms present have a non-zero spin (in this case, 29Si with a spin of 1/2). To avoid interactions between the muon and Si (effectively treating it as the more abundant, spin-zero 28Si) we can use <code>--ignore_symbol Si</code>. Additional ignored symbols can be added by repeating this option.</p>
+</div>
+<p>To add quadrupole interactions you may use <code>--quadrupolar GIPAW_FILEPATH</code>. This file should contain the output of GIPAW from calculating the EFG tensors on the same structure. These will then be matched to the found atoms and will be output into the file.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../input/" class="btn btn-neutral float-left" title="Input"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../examples/" class="btn btn-neutral float-right" title="Examples">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../input/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/config.js" defer></script>
+      <script src="https://polyfill.io/v3/polyfill.min.js?features=es6" defer></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
