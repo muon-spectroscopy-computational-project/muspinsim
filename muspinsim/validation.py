@@ -1,6 +1,7 @@
+from numbers import Number
+
 import numpy as np
 
-from numbers import Number
 from muspinsim.spinop import DensityOperator, SpinOperator
 
 

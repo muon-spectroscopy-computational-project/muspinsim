@@ -407,10 +407,10 @@ notakeyword 1
             ).evaluate()
         self.assertEqual(
             str(err.exception),
-            "Found 1 Error(s) whilst trying to parse keywords: \n\n"
+            "Found 1 error(s) whilst trying to parse keywords: \n\n"
             "Error occurred when parsing keyword 'notakeyword' "
             "(block starting at line 6):\n"
-            "Invalid keyword notakeyword found in input file",
+            "Invalid keyword 'notakeyword' found in input file",
         )
 
     def test_input_fitting(self):

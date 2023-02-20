@@ -5,8 +5,8 @@ A class to hold a given spin system, defined by specific nuclei
 
 import logging
 
-import numpy as np
 from numbers import Number
+import numpy as np
 import scipy.constants as cnst
 from scipy import sparse
 from qutip import sigmax, sigmay, sigmaz
@@ -166,7 +166,7 @@ class DissipationTerm(Clonable):
 
 
 class SpinSystem(Clonable):
-    def __init__(self, spins=[], celio_k=0):
+    def __init__(self, spins=None, celio_k=0):
         """Create a SpinSystem object
 
         Create an object representing a system of particles with spins (muons,
@@ -181,6 +181,8 @@ class SpinSystem(Clonable):
                              method is to be used. When this is 0, Celio's
                              method is not used.
         """
+        if spins is None:
+            spins = []
 
         gammas = []
         Qs = []
@@ -218,7 +220,7 @@ class SpinSystem(Clonable):
             "{1}{0}".format(*s) if (type(s) == tuple) else str(s) for s in self._spins
         ]
         logging.info("Created spin system with spins:")
-        logging.info("\t\t{0}".format(" ".join(snames)))
+        logging.info("\t\t%s", " ".join(snames))
 
     @property
     def spins(self):
@@ -375,7 +377,7 @@ class SpinSystem(Clonable):
 
         B = np.array(B)
 
-        logging.info("Adding Zeeman term to spin {0}".format(i + 1))
+        logging.info("Adding Zeeman term to spin %s", i + 1)
 
         return self.add_linear_term(i, B * self.gamma(i), "Zeeman")
 
@@ -413,7 +415,7 @@ class SpinSystem(Clonable):
         )  # MHz
         D *= dij
 
-        logging.info("Adding dipolar term to spins {0}-{1}".format(i + 1, j + 1))
+        logging.info("Adding dipolar term to spins %s-%s", i + 1, j + 1)
 
         return self.add_bilinear_term(i, j, D, "Dipolar")
 
@@ -442,7 +444,7 @@ class SpinSystem(Clonable):
 
         Qtens = EFG_2_MHZ * Q / (2 * I * (2 * I - 1)) * EFG
 
-        logging.info("Adding quadrupolar term to spin {0}".format(i + 1))
+        logging.info("Adding quadrupolar term to spin %s", i + 1)
 
         return self.add_bilinear_term(i, i, Qtens, "Quadrupolar")
 
@@ -547,7 +549,7 @@ class SpinSystem(Clonable):
 
         return self._Is[i]
 
-    def operator(self, terms={}, include_only_given=False):
+    def operator(self, terms=None, include_only_given=False):
         """Return an operator for this spin system
         Return a SpinOperator for this system containing the specified terms.
         Keyword Arguments:
@@ -563,6 +565,8 @@ class SpinSystem(Clonable):
         Returns:
             SpinOperator -- The requested operator
         """
+        if terms is None:
+            terms = {}
 
         def _get_term(i):
             # Default to identity of the appropriate size if not specified
@@ -607,10 +611,10 @@ class SpinSystem(Clonable):
         # Edit the terms
         try:
             rssys._terms = [t.rotate(rotmat) for t in terms]
-        except AttributeError:
+        except AttributeError as exc:
             raise RuntimeError(
                 "Can only rotate SpinSystems containing Single or Double terms"
-            )
+            ) from exc
 
         return rssys
 
@@ -706,7 +710,7 @@ class MuonSpinSystem(SpinSystem):
                 "First index in hyperfine coupling must not refer to an electron"
             )
 
-        logging.info("Adding hyperfine term to spins {0}-{1}".format(i + 1, j + 1))
+        logging.info("Adding hyperfine term to spins %s-%s", i + 1, j + 1)
 
         return self.add_bilinear_term(i, j, A, "Hyperfine")
 

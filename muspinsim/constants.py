@@ -47,8 +47,8 @@ def gyromagnetic_ratio(elem="mu", iso=None):
     else:
         try:
             val = _get_isotope_data([elem], "gamma", isotope_list=[iso])[0]
-        except RuntimeError:
-            raise ValueError("Invalid isotope {0} for element {1}".format(iso, elem))
+        except RuntimeError as exc:
+            raise ValueError(f"Invalid isotope {iso} for element {elem}") from exc
 
         return val / (2e6 * np.pi)
 
@@ -71,8 +71,8 @@ def quadrupole_moment(elem="mu", iso=None):
     else:
         try:
             val = _get_isotope_data([elem], "Q", isotope_list=[iso])[0]
-        except RuntimeError:
-            raise ValueError("Invalid isotope {0} for element {1}".format(iso, elem))
+        except RuntimeError as exc:
+            raise ValueError(f"Invalid isotope {iso} for element {elem}") from exc
 
         return val
 
@@ -97,12 +97,12 @@ def spin(elem="mu", iso=None):
     elif elem == "e":
         iso = iso or 1
         if iso < 1 or int(iso) != iso:
-            raise ValueError("Invalid multiplicity {0} for electron".format(iso))
+            raise ValueError(f"Invalid multiplicity {iso} for electron")
         return 0.5 * int(iso)
     else:
         try:
             val = _get_isotope_data([elem], "I", isotope_list=[iso])[0]
-        except RuntimeError:
-            raise ValueError("Invalid isotope {0} for element {1}".format(iso, elem))
+        except RuntimeError as exc:
+            raise ValueError(f"Invalid isotope {iso} for element {elem}") from exc
 
         return val

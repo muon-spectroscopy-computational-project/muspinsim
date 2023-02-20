@@ -3,10 +3,12 @@
 Utility class to create and manipulate spin operators
 """
 
-import numpy as np
 from numbers import Number
-from muspinsim.utils import Clonable
+
+import numpy as np
 from scipy import sparse
+
+from muspinsim.utils import Clonable
 
 
 def _mvals(I):
@@ -39,7 +41,7 @@ def _S0(mvals):
     return np.eye(len(mvals)) + 0.0j
 
 
-class Hermitian(object):
+class Hermitian:
     """A helper mixin for operators that are also Hermitian"""
 
     def __init__(self):
@@ -83,7 +85,7 @@ class Hermitian(object):
 
 
 class Operator(Clonable):
-    def __init__(self, matrix, dim=None, hermtol=1e-6):
+    def __init__(self, matrix, dim=None, herm_tol=1e-6):
         """Create a Operator object
 
         Create an object representing a spin operator. These can
@@ -99,16 +101,16 @@ class Operator(Clonable):
                                (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
                                If not specified, it's taken from the size of
                                the matrix (default: {None})
-            hermtol {float} -- Tolerance used to check for hermitianity of the
+            herm_tol {float} -- Tolerance used to check for hermitianity of the
                                matrix (default: {1e-6})
 
         Raises:
             ValueError -- Any of the passed values are invalid
         """
-        # use sparse matricies
+        # use sparse matrices
         self._matrix = sparse.csr_matrix(matrix)
 
-        if not (matrix.shape[0] == matrix.shape[1]):
+        if not matrix.shape[0] == matrix.shape[1]:
             raise ValueError("Matrix passed to Operator must be square")
 
         if dim is None:
@@ -118,7 +120,7 @@ class Operator(Clonable):
 
         self._dim = tuple(dim)
 
-        self._htol = hermtol
+        self._htol = herm_tol
 
         super(Operator, self).__init__()
 
@@ -369,10 +371,10 @@ class SpinOperator(Operator):
         for I, axis in zip(Is, axes):
 
             if I % 0.5 or I < 0.5:
-                raise ValueError("{0} is not a valid spin value".format(I))
+                raise ValueError(f"{I} is not a valid spin value")
 
-            if not (axis in "xyz+-0"):
-                raise ValueError("{0} is not a valid spin axis".format(axis))
+            if axis not in "xyz+-0":
+                raise ValueError(f"{axis} is not a valid spin axis")
 
             mvals = _mvals(I)
 
@@ -508,22 +510,25 @@ class DensityOperator(Operator):
         """Normalize this DensityOperator to have trace equal to one."""
         self._matrix = self._matrix.multiply(1 / self.trace)
 
-    def partial_trace(self, tracedim=[]):
+    def partial_trace(self, trace_dim=None):
         """Perform a partial trace operation
 
         Perform a partial trace over the specified dimensions and return the
         resulting DensityOperator.
 
         Keyword Arguments:
-            tracedim {[int]} -- Indices of dimensions to perform the partial
-                                trace over (default: {[]})
+            trace_dim {[int]} -- Indices of dimensions to perform the partial
+                                 trace over (default: {[]})
 
         Returns:
             DensityOperator -- Operator with partial trace
         """
 
+        if trace_dim is None:
+            trace_dim = []
+
         dim = list(self._dim)
-        tdim = list(sorted(tracedim))
+        tdim = list(sorted(trace_dim))
 
         m = self._matrix.toarray().reshape(dim + dim)
 
@@ -681,21 +686,21 @@ class SuperOperator(Operator):
 
     def __add__(self, x):
 
-        if isinstance(x, SuperOperator) or isinstance(x, Number):
+        if isinstance(x, (SuperOperator, Number)):
             return super(SuperOperator, self).__add__(x)
 
         raise TypeError("Unsupported operation for SuperOperator")
 
     def __sub__(self, x):
 
-        if isinstance(x, SuperOperator) or isinstance(x, Number):
+        if isinstance(x, (SuperOperator, Number)):
             return super(SuperOperator, self).__sub__(x)
 
         raise TypeError("Unsupported operation for SuperOperator")
 
     def __mul__(self, x):
 
-        if isinstance(x, SuperOperator) or isinstance(x, Number):
+        if isinstance(x, (SuperOperator, Number)):
             return super(SuperOperator, self).__mul__(x)
         elif isinstance(x, Operator):
             # Vectorize x

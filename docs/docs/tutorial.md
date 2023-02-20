@@ -55,7 +55,6 @@ This will generate an output of the time and asymmetry values in `zeeman.dat`. T
 ```
 The first value on each row is the time value, and the second is the computed asymmetry. You should also see the presence of a log file named `zeeman.log` which can give additional information on what MuSpinSim has done. For further information on this example as well as others see [Examples](../examples).
 
-
 ### As a library
 
 MuSpinSim can also be used as a Python library within larger programs. The simplest way to do so is to use an input file to configure a problem, read it in with the `MuSpinInput` class, then use it to create a `MuonExperimentalSetup` that runs the actual experiment. The minimal script is:

@@ -35,7 +35,7 @@ class Hamiltonian(Operator, Hermitian):
     def from_spin_operator(self, spinop):
         return self(spinop.matrix, spinop.dimension)
 
-    def evolve(self, rho0, times, operators=[]):
+    def evolve(self, rho0, times, operators=None):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
@@ -61,6 +61,8 @@ class Hamiltonian(Operator, Hermitian):
             ValueError -- Invalid values of times or operators
             RuntimeError -- Hamiltonian is not hermitian
         """
+        if operators is None:
+            operators = []
 
         times = np.array(times)
 
@@ -113,7 +115,7 @@ class Hamiltonian(Operator, Hermitian):
                 ]
         return result
 
-    def integrate_decaying(self, rho0, tau, operators=[]):
+    def integrate_decaying(self, rho0, tau, operators=None):
         """Integrate one or more expectation values in time with decay
 
         Perform an integral in time from 0 to +inf of an expectation value
@@ -137,6 +139,8 @@ class Hamiltonian(Operator, Hermitian):
             ValueError -- Invalid values of tau or operators
             RuntimeError -- Hamiltonian is not hermitian
         """
+        if operators is None:
+            operators = []
 
         if isinstance(operators, SpinOperator):
             operators = [operators]

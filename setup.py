@@ -107,7 +107,7 @@ def setup():
         long_description = fh.read()
 
     version = {}
-    with open("muspinsim/version.py") as fp:
+    with open("muspinsim/version.py", encoding="utf-8") as fp:
         exec(fp.read(), version)
 
     options = {}
@@ -164,6 +164,7 @@ def setup():
             "console_scripts": [
                 "muspinsim = muspinsim.__main__:main",
                 "muspinsim.mpi = muspinsim.__main__:main_mpi",
+                "muspinsim-gen = muspinsim.tools.generator:main",
             ]
         },
         ext_modules=ext_modules,
