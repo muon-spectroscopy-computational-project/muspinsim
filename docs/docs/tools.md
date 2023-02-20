@@ -35,4 +35,4 @@ dipolar 1 7
     -2.37795896407128 1.786314336e-05 1.18858129319808
 ```
 
-In this case, we may also decide to ignore the silicon atoms as they have a spin of 0. This can be achieved by using `--ignore_symbol Si`. Additional ignored symbols can be added by repeating this option. To add quadrupole interactions you may use `--quadrupolar GIPAW_FILEPATH`. This file should contain the output of GIPAW from calculating the EFG tensors on the same structure. These will then be matched to the found atoms and will be output into the file.
+By default, MuSpinSim assumes that the atoms present have a non-zero spin (in this case, 29Si with a spin of 1/2). To avoid interactions between the muon and Si (effectively treating it as the more abundant, spin-zero 28Si) we can use `--ignore_symbol Si`. Additional ignored symbols can be added by repeating this option. To add quadrupole interactions you may use `--quadrupolar GIPAW_FILEPATH`. This file should contain the output of GIPAW from calculating the EFG tensors on the same structure. These will then be matched to the found atoms and will be output into the file.
