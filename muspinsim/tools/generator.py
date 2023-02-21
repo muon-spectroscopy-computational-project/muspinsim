@@ -43,9 +43,9 @@ class DipoleIntGenerator(InteractionGenerator):
     {" ".join(map(str, atom.vector_from_muon))}"""
 
 
-class QuadrupoleIntGenerator(InteractionGenerator):
+class QuadrupoleIntGeneratorGIPAWOut(InteractionGenerator):
     """
-    Generator for the quadrupole interaction
+    Generator for the quadrupole interaction (From a GIPAW output file)
     """
 
     _gipaw_file: GIPAWOutput
@@ -64,6 +64,29 @@ class QuadrupoleIntGenerator(InteractionGenerator):
                 f"Unable to locate atom with index {atom.index} in GIPAW output file"
             )
         efg_tensor = gipaw_atom.efg_tensor
+
+        return f"""quadrupolar {atom_file_index}
+    {' '.join(map(str, efg_tensor[0]))}
+    {' '.join(map(str, efg_tensor[1]))}
+    {' '.join(map(str, efg_tensor[2]))}"""
+
+
+class QuadrupoleIntGenerator(InteractionGenerator):
+    """
+    Generator for the quadrupole interaction (From data loaded with the
+    structure file)
+    """
+
+    _structure: MuonatedStructure
+
+    def __init__(self, structure: MuonatedStructure):
+        self._structure = structure
+
+    def gen_config(
+        self, muon_file_index: int, atom_file_index: int, atom: CellAtom
+    ) -> str:
+        # Obtain corresponding EFG tensor
+        efg_tensor = self._structure.get_efg_tensor(atom_file_index)
 
         return f"""quadrupolar {atom_file_index}
     {' '.join(map(str, efg_tensor[0]))}
@@ -159,7 +182,7 @@ def _run_generator_tool(args):
 
     parser = argparse.ArgumentParser(
         description="""Generate a MuSpinSim input file using a structure file
-(.cell or .cif).""",
+(e.g. .cell, .cif, .magres).""",
     )
 
     # Required arguments
@@ -180,8 +203,12 @@ def _run_generator_tool(args):
         "--quadrupolar",
         dest="gipaw_filepath",
         type=str,
-        help="""Filepath for GIPAW output data defining the EFGs to be used to
-include quadrupolar couplings.""",
+        nargs="?",
+        const="",  # When specified gives "" unless given value, otherwise None
+        action="store",
+        help="""Specify to include quadrupolar couplings. If the given
+structure file is not a Magres file with EFG data a file path to a GIPAW
+output file will be required.""",
     )
     parser.add_argument(
         "--out",
@@ -216,16 +243,33 @@ searching for many atoms.""",
 
     args = parser.parse_args(args)
 
+    # Load the structure file
+    structure = MuonatedStructure(args.filepath, muon_symbol=args.muon_symbol)
+
     # Terms to generate
     generators = []
 
     if args.dipolar:
         generators.append(DipoleIntGenerator())
     if args.gipaw_filepath is not None:
-        generators.append(QuadrupoleIntGenerator(GIPAWOutput(args.gipaw_filepath)))
+        # Override if specified
+        if args.gipaw_filepath != "":
+            generators.append(
+                QuadrupoleIntGeneratorGIPAWOut(GIPAWOutput(args.gipaw_filepath))
+            )
+        else:
+            # Attempt to find in the structure file
+            if not structure.has_efg_tensors:
+                raise ValueError(
+                    """No EFGs found in the structure file, and
+no GIPAW output file given. Please specify either '--quadrupolar
+GIPAW_OUTPUT_FILEPATH' or supply a Magres structure file with EFG's provided."""
+                )
+
+            generators.append(QuadrupoleIntGenerator(structure))
 
     generate_params = GeneratorToolParams(
-        structure=MuonatedStructure(args.filepath, muon_symbol=args.muon_symbol),
+        structure=structure,
         generators=generators,
         number_closest=args.number_closest,
         additional_ignored_symbols=args.ignored_symbols,

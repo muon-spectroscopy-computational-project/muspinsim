@@ -55,6 +55,9 @@ class MuonatedStructure:
 
     _symbols_zero_spin: List[str]
 
+    # Parameter optionally loaded from certain files (in this case magres)
+    _efg_tensors: Optional[List[ArrayLike]]
+
     def __init__(
         self,
         file_io: Union[str, PurePath, IO],
@@ -85,6 +88,8 @@ class MuonatedStructure:
         self._muon_index = None
         self._symbols_zero_spin = []
 
+        self._efg_tensors = None
+
         # Load the atomic data from the file
         # NOTE: Calculator is loaded automatically - can't see a way to
         # disable but this will cause warnings when reading CASTEP files
@@ -101,6 +106,11 @@ class MuonatedStructure:
             raise ValueError(
                 f"Structure file '{file_io}' has unsupported unit cell angles"
             )
+
+        # Load optional data
+        if loaded_atoms.has("efg"):
+            # Load the efg tensors
+            self._efg_tensors = loaded_atoms.get_array("efg")
 
         self._cell_atoms = [None] * len(loaded_atoms)
 
@@ -352,3 +362,18 @@ class MuonatedStructure:
         List of symbols that have zero spin
         """
         return self._symbols_zero_spin
+
+    @property
+    def has_efg_tensors(self) -> bool:
+        """Returns whether we have found and loaded EFG tensors"""
+        return self._efg_tensors is not None
+
+    def get_efg_tensor(self, atom_index: int) -> ArrayLike:
+        """Returns the EFG tensor for a given atom index
+
+        Arguments:
+            index {int} -- Index of the relevant atom (starting from 1)
+        Returns:
+            efg_tensor {ArrayLike}: EFG tensor for the atom at the given index
+        """
+        return self._efg_tensors[atom_index - 1]
