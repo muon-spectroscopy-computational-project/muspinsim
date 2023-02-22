@@ -86,7 +86,7 @@ class QuadrupoleIntGenerator(InteractionGenerator):
         self, muon_file_index: int, atom_file_index: int, atom: CellAtom
     ) -> str:
         # Obtain corresponding EFG tensor
-        efg_tensor = self._structure.get_efg_tensor(atom_file_index)
+        efg_tensor = self._structure.get_efg_tensor(atom.index)
 
         return f"""quadrupolar {atom_file_index}
     {' '.join(map(str, efg_tensor[0]))}
