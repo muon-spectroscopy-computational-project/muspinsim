@@ -18,6 +18,40 @@ H             0.1666672745        0.0000018274        0.0833332099
 %ENDBLOCK POSITIONS_FRAC
 """
 
+TEST_MAGRES_FILE_DATA = (
+    "#$magres-abinitio-v1.0\n"
+    "[atoms]\n"
+    "units lattice Angstrom\n"
+    "lattice          14.18160000000000   0.000000000000000   0.000000000000000"
+    "                 0.000000000000000   14.18160000000000   0.000000000000000"
+    "                 0.000000000000000   0.000000000000000   14.18160000000000\n"
+    "units atom Angstrom\n"
+    "atom V       V   1"
+    "     1.1225546637        0.0000083005        2.4235003801\n"
+    "atom V       V   2"
+    "     12.992710700        0.0000082580        11.807121856\n"
+    "atom Si      Si  3"
+    "     7.0855347250        11.815199663        11.815631556\n"
+    "atom H:mu    H:mu   1"
+    "     2.3636086201        0.0000259155        1.1817982368\n"
+    "[/atoms]\n"
+    "[magres]\n"
+    "units efg au\n"
+    "efg V  1         -0.008877        0.000022       -0.011811"
+    "                  0.000022       -0.030585        0.000005"
+    "                 -0.011811        0.000005        0.039462\n"
+    "efg V  2          0.221597       -0.000002       -0.009013"
+    "                 -0.000002       -0.109627       -0.000009"
+    "                 -0.009013       -0.000009       -0.111970\n"
+    "efg Si 3         -0.002604       -0.000000       -0.000001"
+    "                 -0.000000       -0.002551       -0.000009"
+    "                 -0.000001       -0.000009        0.005154\n"
+    "efg H:mu  1      -0.034266        0.000000        0.000000"
+    "                  0.000000       -0.034268        0.000000"
+    "                  0.000000        0.000000        0.068534\n"
+    "[/magres]\n"
+)
+
 
 def _optional_float_close(value1, value2):
     # Compares two values that may be a float or none
@@ -59,7 +93,8 @@ class CellAtomMatcher:
 
 
 class TestStructure(unittest.TestCase):
-    def test_parsing(self):
+    def test_parsing_cell(self):
+        # CASTEP cell file
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
 
         self.assertEqual(len(structure._cell_atoms), 4)
@@ -74,6 +109,36 @@ class TestStructure(unittest.TestCase):
                 vector_from_muon=None,
                 distance_from_muon=None,
             ),
+        )
+        self.assertEqual(structure.has_efg_tensors, False)
+
+    def test_parsing_magres(self):
+        # Magres file
+        structure = MuonatedStructure(StringIO(TEST_MAGRES_FILE_DATA), fmt="magres")
+
+        self.assertEqual(len(structure._cell_atoms), 4)
+        self.assertEqual(structure._muon_index, 3)
+        self.assertEqual(
+            CellAtomMatcher(structure._cell_atoms[2]),
+            CellAtom(
+                index=3,
+                symbol="Si",
+                isotope=1,
+                position=np.array([7.08553473, 11.81519966, 11.81563156]),
+                vector_from_muon=None,
+                distance_from_muon=None,
+            ),
+        )
+        self.assertEqual(structure.has_efg_tensors, True)
+        self.assertTrue(
+            np.allclose(
+                structure.get_efg_tensor(3),
+                [
+                    [-2.604e-03, -0.000e00, -1.000e-06],
+                    [-0.000e00, -2.551e-03, -9.000e-06],
+                    [-1.000e-06, -9.000e-06, 5.154e-03],
+                ],
+            )
         )
 
     def test_invalid_vector_angels(self):
