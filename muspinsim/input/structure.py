@@ -18,18 +18,18 @@ class CellAtom:
 
     index: int  # Start from 1, unchanged when creating a supercell
     symbol: str
-    isotope: int
+    isotope: Optional[int]
     position: ArrayLike
     vector_from_muon: Optional[ArrayLike] = None
     distance_from_muon: Optional[float] = None
 
 
-def _get_isotope(mass: float, default_mass: float) -> int:
+def _get_isotope(mass: float, default_mass: float) -> Optional[int]:
     """
     Helper function to determine the isotope by comparing the found mass to
     the default of the same element
 
-    At the moment will not return anything other than 1 as there is no where
+    At the moment will not return anything other than None as there is nowhere
     to get the isotope masses from.
     """
 
@@ -37,7 +37,7 @@ def _get_isotope(mass: float, default_mass: float) -> int:
     if not math.isclose(mass, default_mass):
         raise ValueError("Failed to identify isotope by the given masses")
 
-    return 1
+    return None
 
 
 class MuonatedStructure:
@@ -139,8 +139,7 @@ class MuonatedStructure:
             # Keep track of any atoms with zero spin (so can exclude later)
             if (
                 loaded_atom.symbol not in self._symbols_zero_spin
-                and spin(elem=loaded_atom.symbol, iso=isotope if isotope > 1 else None)
-                == 0
+                and spin(elem=loaded_atom.symbol, iso=isotope) == 0
             ):
                 self._symbols_zero_spin.append(loaded_atom.symbol)
 
