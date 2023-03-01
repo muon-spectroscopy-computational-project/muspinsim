@@ -130,25 +130,17 @@ class GeneratorToolParams:
     max_layer: int = 6
 
 
-def generate_input_file(params: GeneratorToolParams) -> str:
-    """Utility function for generating muspinsim input config given a
-    structure as input
-
-    Will expand the muonated structure by the amount requested and
-    locate the nearest neighbours in order to generate their interactions
-    for the config file.
+def generate_input_file_from_selection(
+    params: GeneratorToolParams, selected_atoms: List[CellAtom]
+) -> str:
+    """Utility function for generating muspinsim from a list of selected atoms
+    obtained from a structure
 
     Arguments:
         params {GeneratorToolParams} -- Parameters (see above for details)
+        selected_atoms {List[CellAtom]} -- Selected atoms to be included in
+                                           the generated config
     """
-
-    # Locate closest elements (ignoring ones with zero spin)
-    selected_atoms = params.structure.compute_closest(
-        number=params.number_closest,
-        ignored_symbols=params.structure.symbols_zero_spin
-        + params.additional_ignored_symbols,
-        max_layer=params.max_layer,
-    )
 
     selected_symbols = "mu"
     input_file = ""
@@ -208,6 +200,30 @@ def generate_input_file(params: GeneratorToolParams) -> str:
 {input_file}"""
 
     return input_file
+
+
+def generate_input_file(params: GeneratorToolParams) -> str:
+    """Utility function for generating muspinsim input config given a
+    structure as input
+
+    Will expand the muonated structure by the amount requested and
+    locate the nearest neighbours in order to generate their interactions
+    for the config file.
+
+    Arguments:
+        params {GeneratorToolParams} -- Parameters (see above for details)
+    """
+
+    return generate_input_file_from_selection(
+        params,
+        # Locate closest elements (ignoring ones with zero spin)
+        params.structure.compute_closest(
+            number=params.number_closest,
+            ignored_symbols=params.structure.symbols_zero_spin
+            + params.additional_ignored_symbols,
+            max_layer=params.max_layer,
+        ),
+    )
 
 
 def _run_generator_tool(args):
