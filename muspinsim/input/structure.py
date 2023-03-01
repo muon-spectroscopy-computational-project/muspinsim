@@ -376,3 +376,8 @@ class MuonatedStructure:
             efg_tensor {ArrayLike}: EFG tensor for the atom at the given index
         """
         return self._efg_tensors[atom_index - 1]
+    
+    @property
+    def muon(self) -> List[str]:
+        """Returns the muon object from this structure"""
+        return self._cell_atoms[self._muon_index]
