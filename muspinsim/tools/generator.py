@@ -68,7 +68,8 @@ class QuadrupoleIntGeneratorGIPAWOut(InteractionGenerator):
 
         if gipaw_atom is None:
             raise ValueError(
-                f"Unable to locate atom with index {atoms[0].index} in GIPAW output file"
+                f"""Unable to locate atom with index {atoms[0].index} in GIPAW
+output file"""
             )
         efg_tensor = gipaw_atom.efg_tensor
 
@@ -190,7 +191,10 @@ def generate_input_file_from_selection(
 
                 input_file += f"""{
                     generator.gen_config(
-                        atom_file_indices=[selected_atom1_file_index, selected_atom2_file_index],
+                        atom_file_indices=[
+                            selected_atom1_file_index,
+                            selected_atom2_file_index
+                        ],
                         atoms=[selected_atom1, selected_atom2],
                     )
                 }\n"""

@@ -94,6 +94,7 @@ class TestGenerator(unittest.TestCase):
                 ),
             ],
             number_closest=4,
+            include_interatomic=False,
             additional_ignored_symbols=[],
         )
 
@@ -102,30 +103,30 @@ class TestGenerator(unittest.TestCase):
             input_file_text,
             """spins
     mu V V Si Si
-dipolar 1 2
-    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
 quadrupolar 2
     -0.008877 2.2e-05 -0.011811
     2.2e-05 -0.030585 5e-06
     -0.011811 5e-06 0.039462
-dipolar 1 3
-    3.5524979205813603 1.7657510159999996e-05 3.5562763937592
+dipolar 1 2
+    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
 quadrupolar 3
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
+dipolar 1 3
+    3.5524979205813603 1.7657510159999996e-05 3.5562763937592
+quadrupolar 4
+    -0.002604 -0.0 -1e-06
+    -0.0 -0.002551 -9e-06
+    -1e-06 -9e-06 0.005154
 dipolar 1 4
     -4.72192610499264 2.366426252954879 3.54776669347968
-quadrupolar 4
+quadrupolar 5
     -0.002604 -0.0 -1e-06
     -0.0 -0.002551 -9e-06
     -1e-06 -9e-06 0.005154
 dipolar 1 5
     9.45967389500736 2.366426252954879 3.54776669347968
-quadrupolar 5
-    -0.002604 -0.0 -1e-06
-    -0.0 -0.002551 -9e-06
-    -1e-06 -9e-06 0.005154
 """,
         )
 
@@ -137,30 +138,76 @@ quadrupolar 5
             input_file_text,
             """spins
     mu V V V V
-dipolar 1 2
-    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
 quadrupolar 2
     -0.008877 2.2e-05 -0.011811
     2.2e-05 -0.030585 5e-06
     -0.011811 5e-06 0.039462
+dipolar 1 2
+    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
+quadrupolar 3
+    0.221597 -2e-06 -0.009013
+    -2e-06 -0.109627 -9e-06
+    -0.009013 -9e-06 -0.11197
 dipolar 1 3
     3.5524979205813603 1.7657510159999996e-05 3.5562763937592
-quadrupolar 3
+quadrupolar 4
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
 dipolar 1 4
     3.5524979205813603 1.7657510159999996e-05 -10.6253236062408
-quadrupolar 4
+quadrupolar 5
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
 dipolar 1 5
     -10.62910207941864 1.7657510159999996e-05 3.5562763937592
+""",
+        )
+
+        # Include interatomic interactions
+        generate_params.include_interatomic = True
+        input_file_text = generate_input_file(generate_params)
+        self.assertEqual(
+            input_file_text,
+            """spins
+    mu V V V V
+quadrupolar 2
+    -0.008877 2.2e-05 -0.011811
+    2.2e-05 -0.030585 5e-06
+    -0.011811 5e-06 0.039462
+dipolar 1 2
+    1.2410539563139198 1.7614965359999998e-05 -1.2417021305964
+dipolar 2 3
+    2.3114439642674407 4.25447999999999e-08 4.7979785243555995
+dipolar 2 4
+    2.3114439642674407 4.25447999999999e-08 -9.3836214756444
+dipolar 2 5
+    -11.87015603573256 4.25447999999999e-08 4.7979785243555995
+quadrupolar 3
+    0.221597 -2e-06 -0.009013
+    -2e-06 -0.109627 -9e-06
+    -0.009013 -9e-06 -0.11197
+dipolar 1 3
+    3.5524979205813603 1.7657510159999996e-05 3.5562763937592
+dipolar 3 4
+    0.0 0.0 -14.1816
+dipolar 3 5
+    -14.1816 0.0 0.0
+quadrupolar 4
+    0.221597 -2e-06 -0.009013
+    -2e-06 -0.109627 -9e-06
+    -0.009013 -9e-06 -0.11197
+dipolar 1 4
+    3.5524979205813603 1.7657510159999996e-05 -10.6253236062408
+dipolar 4 5
+    -14.1816 0.0 14.1816
 quadrupolar 5
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
+dipolar 1 5
+    -10.62910207941864 1.7657510159999996e-05 3.5562763937592
 """,
         )
 
@@ -174,6 +221,7 @@ quadrupolar 5
                 QuadrupoleIntGenerator(structure),
             ],
             number_closest=4,
+            include_interatomic=False,
             additional_ignored_symbols=[],
         )
 
@@ -182,30 +230,30 @@ quadrupolar 5
             input_file_text,
             """spins
     mu V V Si Si
-dipolar 1 2
-    1.2410539564 1.7615e-05 -1.2417021433000002
 quadrupolar 2
     -0.008877 2.2e-05 -0.011811
     2.2e-05 -0.030585 5e-06
     -0.011811 5e-06 0.039462
-dipolar 1 3
-    3.5524979200999995 1.7657499999999998e-05 3.556276380799999
+dipolar 1 2
+    1.2410539564 1.7615e-05 -1.2417021433000002
 quadrupolar 3
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
+dipolar 1 3
+    3.5524979200999995 1.7657499999999998e-05 3.556276380799999
+quadrupolar 4
+    -0.002604 -0.0 -1e-06
+    -0.0 -0.002551 -9e-06
+    -1e-06 -9e-06 0.005154
 dipolar 1 4
     -4.7219261049 2.3664262525 3.5477666807999997
-quadrupolar 4
+quadrupolar 5
     -0.002604 -0.0 -1e-06
     -0.0 -0.002551 -9e-06
     -1e-06 -9e-06 0.005154
 dipolar 1 5
     9.4596738951 2.3664262525 3.5477666807999997
-quadrupolar 5
-    -0.002604 -0.0 -1e-06
-    -0.0 -0.002551 -9e-06
-    -1e-06 -9e-06 0.005154
 """,
         )
 
@@ -217,30 +265,77 @@ quadrupolar 5
             input_file_text,
             """spins
     mu V V V V
-dipolar 1 2
-    1.2410539564 1.7615e-05 -1.2417021433000002
 quadrupolar 2
     -0.008877 2.2e-05 -0.011811
     2.2e-05 -0.030585 5e-06
     -0.011811 5e-06 0.039462
+dipolar 1 2
+    1.2410539564 1.7615e-05 -1.2417021433000002
+quadrupolar 3
+    0.221597 -2e-06 -0.009013
+    -2e-06 -0.109627 -9e-06
+    -0.009013 -9e-06 -0.11197
 dipolar 1 3
     3.5524979200999995 1.7657499999999998e-05 3.556276380799999
-quadrupolar 3
+quadrupolar 4
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
 dipolar 1 4
     3.5524979200999995 1.7657499999999998e-05 -10.6253236192
-quadrupolar 4
+quadrupolar 5
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
 dipolar 1 5
     -10.6291020799 1.7657499999999998e-05 3.556276380799999
+""",
+        )
+
+        # Include interatomic interactions
+        generate_params.include_interatomic = True
+        input_file_text = generate_input_file(generate_params)
+        print(input_file_text)
+        self.assertEqual(
+            input_file_text,
+            """spins
+    mu V V V V
+quadrupolar 2
+    -0.008877 2.2e-05 -0.011811
+    2.2e-05 -0.030585 5e-06
+    -0.011811 5e-06 0.039462
+dipolar 1 2
+    1.2410539564 1.7615e-05 -1.2417021433000002
+dipolar 2 3
+    2.3114439636999995 4.2500000000000017e-08 4.7979785240999995
+dipolar 2 4
+    2.3114439636999995 4.2500000000000017e-08 -9.3836214759
+dipolar 2 5
+    -11.8701560363 4.2500000000000017e-08 4.7979785240999995
+quadrupolar 3
+    0.221597 -2e-06 -0.009013
+    -2e-06 -0.109627 -9e-06
+    -0.009013 -9e-06 -0.11197
+dipolar 1 3
+    3.5524979200999995 1.7657499999999998e-05 3.556276380799999
+dipolar 3 4
+    0.0 0.0 -14.1816
+dipolar 3 5
+    -14.1816 0.0 0.0
+quadrupolar 4
+    0.221597 -2e-06 -0.009013
+    -2e-06 -0.109627 -9e-06
+    -0.009013 -9e-06 -0.11197
+dipolar 1 4
+    3.5524979200999995 1.7657499999999998e-05 -10.6253236192
+dipolar 4 5
+    -14.1816 0.0 14.1816
 quadrupolar 5
     0.221597 -2e-06 -0.009013
     -2e-06 -0.109627 -9e-06
     -0.009013 -9e-06 -0.11197
+dipolar 1 5
+    -10.6291020799 1.7657499999999998e-05 3.556276380799999
 """,
         )
 
@@ -277,6 +372,7 @@ quadrupolar 5
                 ),
             ],
             number_closest=4,
+            include_interatomic=False,
             additional_ignored_symbols=[],
         )
 
@@ -303,6 +399,7 @@ quadrupolar 5
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY],
                 number_closest=4,
+                include_interatomic=False,
                 additional_ignored_symbols=[],
                 max_layer=6,
             )
@@ -338,6 +435,7 @@ quadrupolar 5
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY, ANY],
                 number_closest=6,
+                include_interatomic=False,
                 additional_ignored_symbols=["Si", "F"],
                 max_layer=3,
             )
@@ -388,6 +486,25 @@ quadrupolar 5
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY, ANY],
                 number_closest=6,
+                include_interatomic=False,
+                additional_ignored_symbols=[],
+                max_layer=6,
+            )
+        )
+
+    @patch("muspinsim.tools.generator.MuonatedStructure")
+    @patch("muspinsim.tools.generator.generate_input_file")
+    def test_generate_tool_include_interatomic(
+        self, mock_generate_input_file, mock_MuonatedStructure
+    ):
+        _run_generator_tool(["V3Si_SC.cell", "4", "--dipolar", "--include_interatomic"])
+        mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="H")
+        mock_generate_input_file.assert_called_with(
+            GeneratorToolParams(
+                structure=mock_MuonatedStructure.return_value,
+                generators=[ANY],
+                number_closest=4,
+                include_interatomic=True,
                 additional_ignored_symbols=[],
                 max_layer=6,
             )
