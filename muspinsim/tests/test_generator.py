@@ -10,7 +10,8 @@ from muspinsim.tools.generator import (
     QuadrupoleIntGenerator,
     QuadrupoleIntGeneratorGIPAWOut,
     _run_generator_tool,
-    generate_input_file,
+    _select_atoms,
+    generate_input_file_from_selection,
 )
 
 TEST_CELL_FILE_DATA = """%BLOCK LATTICE_CART
@@ -98,7 +99,9 @@ class TestGenerator(unittest.TestCase):
             additional_ignored_symbols=[],
         )
 
-        input_file_text = generate_input_file(generate_params)
+        input_file_text = generate_input_file_from_selection(
+            generate_params, _select_atoms(generate_params)
+        )
         self.assertEqual(
             input_file_text,
             """spins
@@ -133,7 +136,9 @@ dipolar 1 5
         # Ignore Si
         generate_params.additional_ignored_symbols = ["Si"]
 
-        input_file_text = generate_input_file(generate_params)
+        input_file_text = generate_input_file_from_selection(
+            generate_params, _select_atoms(generate_params)
+        )
         self.assertEqual(
             input_file_text,
             """spins
@@ -167,7 +172,9 @@ dipolar 1 5
 
         # Include interatomic interactions
         generate_params.include_interatomic = True
-        input_file_text = generate_input_file(generate_params)
+        input_file_text = generate_input_file_from_selection(
+            generate_params, _select_atoms(generate_params)
+        )
         self.assertEqual(
             input_file_text,
             """spins
@@ -225,7 +232,9 @@ dipolar 1 5
             additional_ignored_symbols=[],
         )
 
-        input_file_text = generate_input_file(generate_params)
+        input_file_text = generate_input_file_from_selection(
+            generate_params, _select_atoms(generate_params)
+        )
         self.assertEqual(
             input_file_text,
             """spins
@@ -260,7 +269,9 @@ dipolar 1 5
         # Ignore Si
         generate_params.additional_ignored_symbols = ["Si"]
 
-        input_file_text = generate_input_file(generate_params)
+        input_file_text = generate_input_file_from_selection(
+            generate_params, _select_atoms(generate_params)
+        )
         self.assertEqual(
             input_file_text,
             """spins
@@ -294,8 +305,9 @@ dipolar 1 5
 
         # Include interatomic interactions
         generate_params.include_interatomic = True
-        input_file_text = generate_input_file(generate_params)
-        print(input_file_text)
+        input_file_text = generate_input_file_from_selection(
+            generate_params, _select_atoms(generate_params)
+        )
         self.assertEqual(
             input_file_text,
             """spins
@@ -377,24 +389,27 @@ dipolar 1 5
         )
 
         with self.assertRaises(ValueError):
-            generate_input_file(generate_params)
+            generate_input_file_from_selection(
+                generate_params, _select_atoms(generate_params)
+            )
 
     # Mock these so dont actually do anything, just want to check parameters
     # used properly
     @patch("muspinsim.tools.generator.MuonatedStructure")
-    @patch("muspinsim.tools.generator.generate_input_file")
+    @patch("muspinsim.tools.generator.generate_input_file_from_selection")
     def test_generate_tool_basic(
-        self, mock_generate_input_file, mock_MuonatedStructure
+        self, generate_input_file_from_selection, mock_MuonatedStructure
     ):
         _run_generator_tool(
             [
                 "V3Si_SC.cell",
                 "4",
                 "--dipolar",
-            ]
+            ],
+            _select_atoms,
         )
         mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="H")
-        mock_generate_input_file.assert_called_with(
+        generate_input_file_from_selection.assert_called_with(
             GeneratorToolParams(
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY],
@@ -402,14 +417,18 @@ dipolar 1 5
                 include_interatomic=False,
                 additional_ignored_symbols=[],
                 max_layer=6,
-            )
+            ),
+            mock_MuonatedStructure.return_value.compute_closest.return_value,
         )
 
     @patch("muspinsim.tools.generator.GIPAWOutput")
     @patch("muspinsim.tools.generator.MuonatedStructure")
-    @patch("muspinsim.tools.generator.generate_input_file")
+    @patch("muspinsim.tools.generator.generate_input_file_from_selection")
     def test_generate_tool_gipaw(
-        self, mock_generate_input_file, mock_MuonatedStructure, mock_GIPAWOutput
+        self,
+        mock_generate_input_file_from_selection,
+        mock_MuonatedStructure,
+        mock_GIPAWOutput,
     ):
         _run_generator_tool(
             [
@@ -426,11 +445,12 @@ dipolar 1 5
                 "3",
                 "--muon_symbol",
                 "Cu",
-            ]
+            ],
+            _select_atoms,
         )
         mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="Cu")
         mock_GIPAWOutput.assert_called_with("./efg_nospin.out")
-        mock_generate_input_file.assert_called_with(
+        mock_generate_input_file_from_selection.assert_called_with(
             GeneratorToolParams(
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY, ANY],
@@ -438,14 +458,18 @@ dipolar 1 5
                 include_interatomic=False,
                 additional_ignored_symbols=["Si", "F"],
                 max_layer=3,
-            )
+            ),
+            mock_MuonatedStructure.return_value.compute_closest.return_value,
         )
 
     @patch("muspinsim.tools.generator.GIPAWOutput")
     @patch("muspinsim.tools.generator.MuonatedStructure")
-    @patch("muspinsim.tools.generator.generate_input_file")
+    @patch("muspinsim.tools.generator.generate_input_file_from_selection")
     def test_generate_tool_invalid_quadrupolar(
-        self, mock_generate_input_file, mock_MuonatedStructure, mock_GIPAWOutput
+        self,
+        mock_generate_input_file_from_selection,
+        mock_MuonatedStructure,
+        mock_GIPAWOutput,
     ):
         # Don't supply a GIPAW file path while not using a magres file with
         # EFG tensors
@@ -458,15 +482,19 @@ dipolar 1 5
                     "6",
                     "--dipolar",
                     "--quadrupolar",
-                ]
+                ],
+                _select_atoms,
             )
         mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="H")
 
     @patch("muspinsim.tools.generator.GIPAWOutput")
     @patch("muspinsim.tools.generator.MuonatedStructure")
-    @patch("muspinsim.tools.generator.generate_input_file")
+    @patch("muspinsim.tools.generator.generate_input_file_from_selection")
     def test_generate_tool_magres(
-        self, mock_generate_input_file, mock_MuonatedStructure, mock_GIPAWOutput
+        self,
+        mock_generate_input_file_from_selection,
+        mock_MuonatedStructure,
+        mock_GIPAWOutput,
     ):
         # Don't supply a GIPAW file path while using a magres file with EFG
         # tensors
@@ -478,10 +506,11 @@ dipolar 1 5
                 "6",
                 "--dipolar",
                 "--quadrupolar",
-            ]
+            ],
+            _select_atoms,
         )
         mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="H")
-        mock_generate_input_file.assert_called_with(
+        mock_generate_input_file_from_selection.assert_called_with(
             GeneratorToolParams(
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY, ANY],
@@ -489,17 +518,20 @@ dipolar 1 5
                 include_interatomic=False,
                 additional_ignored_symbols=[],
                 max_layer=6,
-            )
+            ),
+            ANY,
         )
 
     @patch("muspinsim.tools.generator.MuonatedStructure")
-    @patch("muspinsim.tools.generator.generate_input_file")
+    @patch("muspinsim.tools.generator.generate_input_file_from_selection")
     def test_generate_tool_include_interatomic(
-        self, mock_generate_input_file, mock_MuonatedStructure
+        self, mock_generate_input_file_from_selection, mock_MuonatedStructure
     ):
-        _run_generator_tool(["V3Si_SC.cell", "4", "--dipolar", "--include_interatomic"])
+        _run_generator_tool(
+            ["V3Si_SC.cell", "4", "--dipolar", "--include_interatomic"], _select_atoms
+        )
         mock_MuonatedStructure.assert_called_with("V3Si_SC.cell", muon_symbol="H")
-        mock_generate_input_file.assert_called_with(
+        mock_generate_input_file_from_selection.assert_called_with(
             GeneratorToolParams(
                 structure=mock_MuonatedStructure.return_value,
                 generators=[ANY],
@@ -507,5 +539,6 @@ dipolar 1 5
                 include_interatomic=True,
                 additional_ignored_symbols=[],
                 max_layer=6,
-            )
+            ),
+            mock_MuonatedStructure.return_value.compute_closest.return_value,
         )

@@ -3,7 +3,7 @@ import argparse
 from dataclasses import dataclass, field
 import logging
 import sys
-from typing import List
+from typing import Callable, List
 
 from muspinsim.input.structure import CellAtom, MuonatedStructure
 from muspinsim.input.gipaw import GIPAWOutput
@@ -141,10 +141,12 @@ def generate_input_file_from_selection(
         params {GeneratorToolParams} -- Parameters (see above for details)
         selected_atoms {List[CellAtom]} -- Selected atoms to be included in
                                            the generated config
+    Returns:
+        input_file_text {str}: Generated muspinsim input file text
     """
 
     selected_symbols = "mu"
-    input_file = ""
+    input_file_text = ""
     muon = params.structure.muon
 
     # Split up generators based on how many inputs they take
@@ -168,7 +170,7 @@ def generate_input_file_from_selection(
 
         # Append config for single generators (using currently selected atom)
         for generator in single_input_generators:
-            input_file += f"""{
+            input_file_text += f"""{
                 generator.gen_config(
                     atom_file_indices=[selected_atom1_file_index],
                     atoms=[selected_atom1],
@@ -177,7 +179,7 @@ def generate_input_file_from_selection(
 
         # Apply double input generators (with muon as first input)
         for generator in double_input_generators:
-            input_file += f"""{
+            input_file_text += f"""{
                 generator.gen_config(
                     atom_file_indices=[1, selected_atom1_file_index],
                     atoms=[muon, selected_atom1],
@@ -189,7 +191,7 @@ def generate_input_file_from_selection(
             for j, selected_atom2 in enumerate(selected_atoms[i + 1 :], start=i + 1):
                 selected_atom2_file_index = j + 2
 
-                input_file += f"""{
+                input_file_text += f"""{
                     generator.gen_config(
                         atom_file_indices=[
                             selected_atom1_file_index,
@@ -199,38 +201,50 @@ def generate_input_file_from_selection(
                     )
                 }\n"""
 
-    input_file = f"""spins
+    input_file_text = f"""spins
     {selected_symbols}
-{input_file}"""
+{input_file_text}"""
 
-    return input_file
+    return input_file_text
 
 
-def generate_input_file(params: GeneratorToolParams) -> str:
-    """Utility function for generating muspinsim input config given a
-    structure as input
+def _select_atoms(params: GeneratorToolParams) -> List[CellAtom]:
+    """Selects atoms from a structure file to be used for generating a
+    muspinsim input config
 
-    Will expand the muonated structure by the amount requested and
-    locate the nearest neighbours in order to generate their interactions
-    for the config file.
+    Will expand a given muonated structure until the specified number
+    of nearest neighbours are found
 
     Arguments:
         params {GeneratorToolParams} -- Parameters (see above for details)
+
+    Returns:
+        selected_atoms {List[CellAtom]}: Selected list of atoms
     """
 
-    return generate_input_file_from_selection(
-        params,
-        # Locate closest elements (ignoring ones with zero spin)
-        params.structure.compute_closest(
-            number=params.number_closest,
-            ignored_symbols=params.structure.symbols_zero_spin
-            + params.additional_ignored_symbols,
-            max_layer=params.max_layer,
-        ),
+    return params.structure.compute_closest(
+        number=params.number_closest,
+        ignored_symbols=params.structure.symbols_zero_spin
+        + params.additional_ignored_symbols,
+        max_layer=params.max_layer,
     )
 
 
-def _run_generator_tool(args):
+def _run_generator_tool(
+    args: List[str], selection_function: Callable[[GeneratorToolParams], List[CellAtom]]
+):
+    """Parsed the generator tool arguments from a given list and then
+    runs it using the given selection_function to locate the nearest
+    neighbours
+
+    Arguments:
+        args {List[str]} -- Arguments from the command line
+        selection_function {function} -- Function that takes the generator
+                                         tool params and returns the selected
+                                         atoms to include in the config
+                                         produced
+    """
+
     # Setup so we can see the log output
     logging.basicConfig(
         format="[%(levelname)s] [%(asctime)s] %(message)s",
@@ -340,7 +354,9 @@ GIPAW_OUTPUT_FILEPATH' or supply a Magres structure file with EFG's provided."""
         additional_ignored_symbols=args.ignored_symbols,
         max_layer=args.max_layer,
     )
-    file_data = generate_input_file(generate_params)
+    file_data = generate_input_file_from_selection(
+        generate_params, selection_function(generate_params)
+    )
 
     if args.output is not None:
         with open(args.output, "w", encoding="utf-8") as file:
@@ -352,4 +368,4 @@ GIPAW_OUTPUT_FILEPATH' or supply a Magres structure file with EFG's provided."""
 def main():
     """Entrypoint for command line tool"""
 
-    _run_generator_tool(sys.argv[1:])
+    _run_generator_tool(sys.argv[1:], _select_atoms)

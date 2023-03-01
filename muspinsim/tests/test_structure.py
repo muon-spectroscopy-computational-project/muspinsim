@@ -361,3 +361,7 @@ H             0.1666672745        0.0000018274        0.0833332099
                 np.linalg.norm(closest_atoms[0].position - structure.muon.position), 1.0
             )
         )
+
+        # Should raise error if trying to move the muon
+        with self.assertRaises(NotImplementedError):
+            structure.move_atom(closest_atoms[0], structure.muon, 1)
