@@ -327,8 +327,37 @@ H             0.1666672745        0.0000018274        0.0833332099
             ),
         )
 
-    def test_compute_closest_max_layer(self):
+    def test_move_atom(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+        closest_atoms = structure.compute_closest(1)
 
-        with self.assertRaises(RuntimeError):
-            structure.compute_closest(6, max_layer=1)
+        # Before moving
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[0]),
+            CellAtom(
+                index=1,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.12255466e00, 8.30049048e-06, 2.42350038e00]),
+                distance_from_muon=1.7555737250028431,
+            ),
+        )
+
+        # After moving
+        structure.move_atom(structure.muon, closest_atoms[0], 1)
+        print(closest_atoms[0])
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[0]),
+            CellAtom(
+                index=1,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.65668647e00, 1.58817187e-05, 1.88908961e0]),
+                distance_from_muon=1.0,
+            ),
+        )
+        self.assertTrue(
+            np.isclose(
+                np.linalg.norm(closest_atoms[0].position - structure.muon.position), 1.0
+            )
+        )

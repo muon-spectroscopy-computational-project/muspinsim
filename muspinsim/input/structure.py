@@ -379,3 +379,42 @@ class MuonatedStructure:
     def muon(self) -> List[str]:
         """Returns the muon object from this structure"""
         return self._cell_atoms[self._muon_index]
+
+    def move_atom(self, atom1: CellAtom, atom2: CellAtom, new_distance: float):
+        """Moves atom2 to be a specific distance away from atom1, while preserving
+        the direction between them
+
+        Arguments:
+            atom1 {CellAtom} -- Atom to compute the current distance from
+            atom2 {CellAtom} -- Atom that will be moved
+            new_distance {float} -- New distance that should be between the
+                                    atoms after moving
+
+        Raised:
+            NotImplementedError: If atom2 is the muon (All the other positions would
+                        need recalculating otherwise)
+        """
+        if atom2 == self.muon:
+            raise NotImplementedError("Moving the muon is not supported")
+
+        vector_between = atom2.position - atom1.position
+        distance = np.linalg.norm(vector_between)
+
+        # old_pos + new_dist * direction
+        new_pos = atom1.position + ((new_distance / distance) * vector_between)
+
+        # Log what is happening so can keep track
+        logging.warning(
+            "Moving %s from %s to %s, changing the distance from %s to %s",
+            atom2.symbol,
+            atom2.position,
+            new_pos,
+            distance,
+            new_distance,
+        )
+
+        atom2.position = new_pos
+
+        # Update the distance to the muon if necessary
+        if atom1 == self.muon:
+            atom2.distance_from_muon = new_distance
