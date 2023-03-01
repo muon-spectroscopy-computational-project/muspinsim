@@ -83,9 +83,6 @@ class CellAtomMatcher:
             self.expected.index == other.index
             and self.expected.symbol == other.symbol
             and _optional_array_close(self.expected.position, other.position)
-            and _optional_array_close(
-                self.expected.vector_from_muon, other.vector_from_muon
-            )
             and _optional_float_close(
                 self.expected.distance_from_muon, other.distance_from_muon
             )
@@ -106,7 +103,6 @@ class TestStructure(unittest.TestCase):
                 symbol="Si",
                 isotope=1,
                 position=np.array([7.08553473, 11.81519966, 11.81563156]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -125,7 +121,6 @@ class TestStructure(unittest.TestCase):
                 symbol="Si",
                 isotope=1,
                 position=np.array([7.08553473, 11.81519966, 11.81563156]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -281,7 +276,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="Si",
                 isotope=1,
                 position=np.array([-7.09606527, 11.81519966, -2.36596844]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -298,7 +292,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="V",
                 isotope=1,
                 position=np.array([-1.18888930e00, 8.25794568e-06, 2.59887219e01]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -315,9 +308,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="V",
                 isotope=1,
                 position=np.array([1.12255466e00, 8.30049048e-06, 2.42350038e00]),
-                vector_from_muon=np.array(
-                    [1.24105396e00, 1.76149654e-05, -1.24170213e00]
-                ),
                 distance_from_muon=1.7555737250028431,
             ),
         )
@@ -333,9 +323,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="V",
                 isotope=1,
                 position=np.array([1.29927107e01, 8.25794568e-06, -2.37447814e00]),
-                vector_from_muon=np.array(
-                    [-1.06291021e01, 1.76575102e-05, 3.55627639e00]
-                ),
                 distance_from_muon=11.208251995910084,
             ),
         )

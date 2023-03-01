@@ -20,7 +20,6 @@ class CellAtom:
     symbol: str
     isotope: Optional[int]
     position: ArrayLike
-    vector_from_muon: Optional[ArrayLike] = None
     distance_from_muon: Optional[float] = None
 
 
@@ -259,8 +258,7 @@ class MuonatedStructure:
         muon = self._cell_atoms[self._muon_index]
 
         for atom in atoms:
-            atom.vector_from_muon = muon.position - atom.position
-            atom.distance_from_muon = np.linalg.norm(atom.vector_from_muon)
+            atom.distance_from_muon = np.linalg.norm(muon.position - atom.position)
 
     def compute_closest(
         self,
