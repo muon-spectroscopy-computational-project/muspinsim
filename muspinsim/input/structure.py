@@ -404,7 +404,7 @@ class MuonatedStructure:
         new_pos = atom1.position + ((new_distance / distance) * vector_between)
 
         # Log what is happening so can keep track
-        logging.warning(
+        logging.info(
             "Moving %s from %s to %s, changing the distance from %s to %s",
             atom2.symbol,
             atom2.position,
