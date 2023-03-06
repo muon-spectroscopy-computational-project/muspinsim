@@ -54,3 +54,43 @@ muspinsim-gen ./V3Si.cell 6 --dipolar --quadrupolar V3Si_EFGs.out --out V3Si.in
 #### Adding dipole interactions between the atoms
 
 The above example only adds dipole interactions between the muon and each found atom from the structure. You may also wish to add dipole interactions between each of these atoms themselves i.e. between V-V, V-Si and Si-Si in the example above. To do this simply add `--include_interatomic` to the command.
+
+### Advanced usage as a library
+
+When using muspinsim as a library it is possible to use this tool and modify its behaviour for making adjustments to the selected atoms. This may be useful in cases where DFT may underestimate the distance between the muon and its nearest neighbours. In this case you may use code like the following to make adjustments before the tool generates the output.
+
+```python
+
+import sys
+
+from muspinsim.tools.generator import GeneratorToolParams, _run_generator_tool
+
+def select_atoms(params: GeneratorToolParams):
+    # Select the closest atoms
+    structure = params.structure
+
+    selected_atoms = structure.compute_closest(
+        number=params.number_closest,
+        ignored_symbols=structure.symbols_zero_spin + params.additional_ignored_symbols,
+        max_layer=params.max_layer,
+    )
+
+    muon = structure.muon
+
+    # Move the 2 closest to be 1.21 Angstrom away from the muon
+    structure.move_atom(muon, selected_atoms[0], 1.21)
+    structure.move_atom(muon, selected_atoms[1], 1.21)
+
+    return selected_atoms
+
+def main():
+    """Entrypoint for command line tool"""
+
+    _run_generator_tool(sys.argv[1:], select_atoms)
+
+
+if __name__ == "__main__":
+    main()
+```
+
+This will retain the command line functionality, but moves the first two found atoms to be a distance of 1.21 Angstrom from the muon.
