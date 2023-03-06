@@ -376,13 +376,16 @@ class MuonatedStructure:
         return self._efg_tensors[atom_index - 1]
 
     @property
-    def muon(self) -> List[str]:
+    def muon(self) -> CellAtom:
         """Returns the muon object from this structure"""
         return self._cell_atoms[self._muon_index]
 
     def move_atom(self, atom1: CellAtom, atom2: CellAtom, new_distance: float):
         """Moves atom2 to be a specific distance away from atom1, while preserving
         the direction between them
+
+        Useful for adjusting distances where DFT calculations may be
+        underestimating distances between the muon and its nearest neighbours
 
         Arguments:
             atom1 {CellAtom} -- Atom to compute the current distance from
@@ -415,6 +418,10 @@ class MuonatedStructure:
 
         atom2.position = new_pos
 
-        # Update the distance to the muon if necessary
+        # Update the distance to the muon (calculate if haven't already)
         if atom1 == self.muon:
             atom2.distance_from_muon = new_distance
+        else:
+            atom2.distance_from_muon = np.linalg.norm(
+                atom2.position - self.muon.position
+            )

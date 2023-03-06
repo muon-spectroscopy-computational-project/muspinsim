@@ -327,9 +327,15 @@ H             0.1666672745        0.0000018274        0.0833332099
             ),
         )
 
+    def test_compute_closest_max_layer(self):
+        structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+
+        with self.assertRaises(RuntimeError):
+            structure.compute_closest(6, max_layer=1)
+
     def test_move_atom(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
-        closest_atoms = structure.compute_closest(1)
+        closest_atoms = structure.compute_closest(2)
 
         # Before moving
         self.assertEqual(
@@ -342,10 +348,19 @@ H             0.1666672745        0.0000018274        0.0833332099
                 distance_from_muon=1.7555737250028431,
             ),
         )
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[1]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([-1.18888930e00, 8.25794568e-06, -2.37447814e00]),
+                distance_from_muon=5.0266632336825205,
+            ),
+        )
 
-        # After moving
+        # After moving atom closer to muon
         structure.move_atom(structure.muon, closest_atoms[0], 1)
-        print(closest_atoms[0])
         self.assertEqual(
             CellAtomMatcher(closest_atoms[0]),
             CellAtom(
@@ -356,9 +371,39 @@ H             0.1666672745        0.0000018274        0.0833332099
                 distance_from_muon=1.0,
             ),
         )
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[1]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([-1.18888930e00, 8.25794568e-06, -2.37447814e00]),
+                distance_from_muon=5.0266632336825205,
+            ),
+        )
         self.assertTrue(
             np.isclose(
                 np.linalg.norm(closest_atoms[0].position - structure.muon.position), 1.0
+            )
+        )
+
+        # Try moving the two non muon's closer to ensure the distance to the
+        # muon is recalculated
+        structure.move_atom(closest_atoms[0], closest_atoms[1], 1)
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[1]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.10155453e00, 1.43944274e-05, 1.05732731e00]),
+                distance_from_muon=1.2681772563431124,
+            ),
+        )
+        self.assertTrue(
+            np.isclose(
+                np.linalg.norm(closest_atoms[1].position - closest_atoms[0].position),
+                1.0,
             )
         )
 
