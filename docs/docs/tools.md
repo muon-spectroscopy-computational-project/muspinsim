@@ -38,7 +38,7 @@ dipolar 1 7
 !!! warning
     By default, MuSpinSim assumes that the atoms present have a non-zero spin (in this case, 29Si with a spin of 1/2). To avoid interactions between the muon and Si (effectively treating it as the more abundant, spin-zero 28Si) we can use `--ignore_symbol Si`. Additional ignored symbols can be added by repeating this option.
 
-### Adding quadrupole interactions
+#### Adding quadrupole interactions
 To add quadrupole interactions you have two options. First you may use a Magres file containing the calculated EFG tensors from CASTEP as your input structure file. In this case you can simply add `--quadrupolar` e.g.
 
 ```bash
@@ -50,3 +50,7 @@ Alternatively if you are using GIPAW from Quantum ESPRESSO to calculate the EFG 
 ```bash
 muspinsim-gen ./V3Si.cell 6 --dipolar --quadrupolar V3Si_EFGs.out --out V3Si.in
 ```
+
+#### Adding dipole interactions between the atoms
+
+The above example only adds dipole interactions between the muon and each found atom from the structure. You may also wish to add dipole interactions between each of these atoms themselves i.e. between V-V, V-Si and Si-Si in the example above. To do this simply add `--include_interatomic` to the command.
