@@ -83,9 +83,6 @@ class CellAtomMatcher:
             self.expected.index == other.index
             and self.expected.symbol == other.symbol
             and _optional_array_close(self.expected.position, other.position)
-            and _optional_array_close(
-                self.expected.vector_from_muon, other.vector_from_muon
-            )
             and _optional_float_close(
                 self.expected.distance_from_muon, other.distance_from_muon
             )
@@ -106,7 +103,6 @@ class TestStructure(unittest.TestCase):
                 symbol="Si",
                 isotope=1,
                 position=np.array([7.08553473, 11.81519966, 11.81563156]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -125,7 +121,6 @@ class TestStructure(unittest.TestCase):
                 symbol="Si",
                 isotope=1,
                 position=np.array([7.08553473, 11.81519966, 11.81563156]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -281,7 +276,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="Si",
                 isotope=1,
                 position=np.array([-7.09606527, 11.81519966, -2.36596844]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -298,7 +292,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="V",
                 isotope=1,
                 position=np.array([-1.18888930e00, 8.25794568e-06, 2.59887219e01]),
-                vector_from_muon=None,
                 distance_from_muon=None,
             ),
         )
@@ -315,9 +308,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="V",
                 isotope=1,
                 position=np.array([1.12255466e00, 8.30049048e-06, 2.42350038e00]),
-                vector_from_muon=np.array(
-                    [1.24105396e00, 1.76149654e-05, -1.24170213e00]
-                ),
                 distance_from_muon=1.7555737250028431,
             ),
         )
@@ -333,9 +323,6 @@ H             0.1666672745        0.0000018274        0.0833332099
                 symbol="V",
                 isotope=1,
                 position=np.array([1.29927107e01, 8.25794568e-06, -2.37447814e00]),
-                vector_from_muon=np.array(
-                    [-1.06291021e01, 1.76575102e-05, 3.55627639e00]
-                ),
                 distance_from_muon=11.208251995910084,
             ),
         )
@@ -345,3 +332,81 @@ H             0.1666672745        0.0000018274        0.0833332099
 
         with self.assertRaises(RuntimeError):
             structure.compute_closest(6, max_layer=1)
+
+    def test_move_atom(self):
+        structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+        closest_atoms = structure.compute_closest(2)
+
+        # Before moving
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[0]),
+            CellAtom(
+                index=1,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.12255466e00, 8.30049048e-06, 2.42350038e00]),
+                distance_from_muon=1.7555737250028431,
+            ),
+        )
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[1]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([-1.18888930e00, 8.25794568e-06, -2.37447814e00]),
+                distance_from_muon=5.0266632336825205,
+            ),
+        )
+
+        # After moving atom closer to muon
+        structure.move_atom(structure.muon, closest_atoms[0], 1)
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[0]),
+            CellAtom(
+                index=1,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.65668647e00, 1.58817187e-05, 1.88908961e0]),
+                distance_from_muon=1.0,
+            ),
+        )
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[1]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([-1.18888930e00, 8.25794568e-06, -2.37447814e00]),
+                distance_from_muon=5.0266632336825205,
+            ),
+        )
+        self.assertTrue(
+            np.isclose(
+                np.linalg.norm(closest_atoms[0].position - structure.muon.position), 1.0
+            )
+        )
+
+        # Try moving the two non muon's closer to ensure the distance to the
+        # muon is recalculated
+        structure.move_atom(closest_atoms[0], closest_atoms[1], 1)
+        self.assertEqual(
+            CellAtomMatcher(closest_atoms[1]),
+            CellAtom(
+                index=2,
+                symbol="V",
+                isotope=1,
+                position=np.array([1.10155453e00, 1.43944274e-05, 1.05732731e00]),
+                distance_from_muon=1.2681772563431124,
+            ),
+        )
+        self.assertTrue(
+            np.isclose(
+                np.linalg.norm(closest_atoms[1].position - closest_atoms[0].position),
+                1.0,
+            )
+        )
+
+        # Should raise error if trying to move the muon
+        with self.assertRaises(NotImplementedError):
+            structure.move_atom(closest_atoms[0], structure.muon, 1)

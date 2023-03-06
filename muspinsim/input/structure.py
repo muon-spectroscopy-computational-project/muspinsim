@@ -18,18 +18,17 @@ class CellAtom:
 
     index: int  # Start from 1, unchanged when creating a supercell
     symbol: str
-    isotope: int
+    isotope: Optional[int]
     position: ArrayLike
-    vector_from_muon: Optional[ArrayLike] = None
     distance_from_muon: Optional[float] = None
 
 
-def _get_isotope(mass: float, default_mass: float) -> int:
+def _get_isotope(mass: float, default_mass: float) -> Optional[int]:
     """
     Helper function to determine the isotope by comparing the found mass to
     the default of the same element
 
-    At the moment will not return anything other than 1 as there is no where
+    At the moment will not return anything other than None as there is nowhere
     to get the isotope masses from.
     """
 
@@ -37,7 +36,7 @@ def _get_isotope(mass: float, default_mass: float) -> int:
     if not math.isclose(mass, default_mass):
         raise ValueError("Failed to identify isotope by the given masses")
 
-    return 1
+    return None
 
 
 class MuonatedStructure:
@@ -139,8 +138,7 @@ class MuonatedStructure:
             # Keep track of any atoms with zero spin (so can exclude later)
             if (
                 loaded_atom.symbol not in self._symbols_zero_spin
-                and spin(elem=loaded_atom.symbol, iso=isotope if isotope > 1 else None)
-                == 0
+                and spin(elem=loaded_atom.symbol, iso=isotope) == 0
             ):
                 self._symbols_zero_spin.append(loaded_atom.symbol)
 
@@ -260,8 +258,7 @@ class MuonatedStructure:
         muon = self._cell_atoms[self._muon_index]
 
         for atom in atoms:
-            atom.vector_from_muon = muon.position - atom.position
-            atom.distance_from_muon = np.linalg.norm(atom.vector_from_muon)
+            atom.distance_from_muon = np.linalg.norm(muon.position - atom.position)
 
     def compute_closest(
         self,
@@ -377,3 +374,54 @@ class MuonatedStructure:
             efg_tensor {ArrayLike}: EFG tensor for the atom at the given index
         """
         return self._efg_tensors[atom_index - 1]
+
+    @property
+    def muon(self) -> CellAtom:
+        """Returns the muon object from this structure"""
+        return self._cell_atoms[self._muon_index]
+
+    def move_atom(self, atom1: CellAtom, atom2: CellAtom, new_distance: float):
+        """Moves atom2 to be a specific distance away from atom1, while preserving
+        the direction between them
+
+        Useful for adjusting distances where DFT calculations may be
+        underestimating distances between the muon and its nearest neighbours
+
+        Arguments:
+            atom1 {CellAtom} -- Atom to compute the current distance from
+            atom2 {CellAtom} -- Atom that will be moved
+            new_distance {float} -- New distance that should be between the
+                                    atoms after moving
+
+        Raised:
+            NotImplementedError: If atom2 is the muon (All the other positions would
+                        need recalculating otherwise)
+        """
+        if atom2 == self.muon:
+            raise NotImplementedError("Moving the muon is not supported")
+
+        vector_between = atom2.position - atom1.position
+        distance = np.linalg.norm(vector_between)
+
+        # old_pos + new_dist * direction
+        new_pos = atom1.position + ((new_distance / distance) * vector_between)
+
+        # Log what is happening so can keep track
+        logging.info(
+            "Moving %s from %s to %s, changing the distance from %s to %s",
+            atom2.symbol,
+            atom2.position,
+            new_pos,
+            distance,
+            new_distance,
+        )
+
+        atom2.position = new_pos
+
+        # Update the distance to the muon (calculate if haven't already)
+        if atom1 == self.muon:
+            atom2.distance_from_muon = new_distance
+        else:
+            atom2.distance_from_muon = np.linalg.norm(
+                atom2.position - self.muon.position
+            )
