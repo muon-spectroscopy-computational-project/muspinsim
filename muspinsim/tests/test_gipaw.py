@@ -62,6 +62,15 @@ class TestGIPAW(unittest.TestCase):
             ),
         )
 
+    def test_load_error(self):
+        with self.assertRaises(ValueError):
+            GIPAWOutput(
+                StringIO(
+                    """some random text
+                       with newlines"""
+                )
+            )
+
     def test_parsing_errors(self):
         with self.assertRaises(ValueError):
             GIPAWOutput(
