@@ -39,18 +39,24 @@ class GIPAWOutput:
             file_io = open(file_io, encoding="utf_8")
 
         # Attempt to skip to relevant part of the file
-        while not file_io.readline().strip().startswith("----- total EFG -----"):
-            continue
+        file_valid = False
 
-        loop = True
-        while loop:
+        while line := file_io.readline():
+            if line.strip().startswith("----- total EFG -----"):
+                file_valid = True
+                break
+
+        if not file_valid:
+            raise ValueError(f"Failed to load file GIPAW output file {file_io}")
+
+        while line := file_io.readline():
             # Should be 3 lines at a time per element e.g.
             #      V    1       -0.008879        0.000000       -0.011803
             #      V    1        0.000000       -0.030597        0.000000
             #      V    1       -0.011803        0.000000        0.039476
 
             lines = [
-                file_io.readline().strip(),
+                line.strip(),
                 file_io.readline().strip(),
                 file_io.readline().strip(),
             ]
@@ -59,7 +65,7 @@ class GIPAWOutput:
             if atom is not None:
                 self._atoms.append(atom)
             else:
-                loop = False
+                break
 
             # Go to the next line
             file_io.readline()

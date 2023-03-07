@@ -18,18 +18,17 @@ class CellAtom:
 
     index: int  # Start from 1, unchanged when creating a supercell
     symbol: str
-    isotope: int
+    isotope: Optional[int]
     position: ArrayLike
-    vector_from_muon: Optional[ArrayLike] = None
     distance_from_muon: Optional[float] = None
 
 
-def _get_isotope(mass: float, default_mass: float) -> int:
+def _get_isotope(mass: float, default_mass: float) -> Optional[int]:
     """
     Helper function to determine the isotope by comparing the found mass to
     the default of the same element
 
-    At the moment will not return anything other than 1 as there is no where
+    At the moment will not return anything other than None as there is nowhere
     to get the isotope masses from.
     """
 
@@ -37,7 +36,7 @@ def _get_isotope(mass: float, default_mass: float) -> int:
     if not math.isclose(mass, default_mass):
         raise ValueError("Failed to identify isotope by the given masses")
 
-    return 1
+    return None
 
 
 class MuonatedStructure:
@@ -54,6 +53,9 @@ class MuonatedStructure:
     _muon_index: int
 
     _symbols_zero_spin: List[str]
+
+    # Parameter optionally loaded from certain files (in this case magres)
+    _efg_tensors: Optional[List[ArrayLike]]
 
     def __init__(
         self,
@@ -85,6 +87,8 @@ class MuonatedStructure:
         self._muon_index = None
         self._symbols_zero_spin = []
 
+        self._efg_tensors = None
+
         # Load the atomic data from the file
         # NOTE: Calculator is loaded automatically - can't see a way to
         # disable but this will cause warnings when reading CASTEP files
@@ -101,6 +105,11 @@ class MuonatedStructure:
             raise ValueError(
                 f"Structure file '{file_io}' has unsupported unit cell angles"
             )
+
+        # Load optional data
+        if loaded_atoms.has("efg"):
+            # Load the efg tensors
+            self._efg_tensors = loaded_atoms.get_array("efg")
 
         self._cell_atoms = [None] * len(loaded_atoms)
 
@@ -129,8 +138,7 @@ class MuonatedStructure:
             # Keep track of any atoms with zero spin (so can exclude later)
             if (
                 loaded_atom.symbol not in self._symbols_zero_spin
-                and spin(elem=loaded_atom.symbol, iso=isotope if isotope > 1 else None)
-                == 0
+                and spin(elem=loaded_atom.symbol, iso=isotope) == 0
             ):
                 self._symbols_zero_spin.append(loaded_atom.symbol)
 
@@ -250,8 +258,7 @@ class MuonatedStructure:
         muon = self._cell_atoms[self._muon_index]
 
         for atom in atoms:
-            atom.vector_from_muon = muon.position - atom.position
-            atom.distance_from_muon = np.linalg.norm(atom.vector_from_muon)
+            atom.distance_from_muon = np.linalg.norm(muon.position - atom.position)
 
     def compute_closest(
         self,
@@ -297,8 +304,8 @@ class MuonatedStructure:
             "Attempting to find the %s closest atoms to the muon in " "the structure",
             number,
         )
-        if ignored_symbols is not None:
-            logging.info("Ignoring the symbols %s", ", ".join(ignored_symbols))
+        if ignored_symbols:
+            logging.info("Ignoring the symbols: %s", ", ".join(ignored_symbols))
 
         while continue_expansion:
             # Sort by distance and obtain furthest distance of the desired
@@ -352,3 +359,69 @@ class MuonatedStructure:
         List of symbols that have zero spin
         """
         return self._symbols_zero_spin
+
+    @property
+    def has_efg_tensors(self) -> bool:
+        """Returns whether we have found and loaded EFG tensors"""
+        return self._efg_tensors is not None
+
+    def get_efg_tensor(self, atom_index: int) -> ArrayLike:
+        """Returns the EFG tensor for a given atom index
+
+        Arguments:
+            index {int} -- Index of the relevant atom (starting from 1)
+        Returns:
+            efg_tensor {ArrayLike}: EFG tensor for the atom at the given index
+        """
+        return self._efg_tensors[atom_index - 1]
+
+    @property
+    def muon(self) -> CellAtom:
+        """Returns the muon object from this structure"""
+        return self._cell_atoms[self._muon_index]
+
+    def move_atom(self, atom1: CellAtom, atom2: CellAtom, new_distance: float):
+        """Moves atom2 to be a specific distance away from atom1, while preserving
+        the direction between them
+
+        Useful for adjusting distances where DFT calculations may be
+        underestimating distances between the muon and its nearest neighbours
+
+        Arguments:
+            atom1 {CellAtom} -- Atom to compute the current distance from
+            atom2 {CellAtom} -- Atom that will be moved
+            new_distance {float} -- New distance that should be between the
+                                    atoms after moving
+
+        Raised:
+            NotImplementedError: If atom2 is the muon (All the other positions would
+                        need recalculating otherwise)
+        """
+        if atom2 == self.muon:
+            raise NotImplementedError("Moving the muon is not supported")
+
+        vector_between = atom2.position - atom1.position
+        distance = np.linalg.norm(vector_between)
+
+        # old_pos + new_dist * direction
+        new_pos = atom1.position + ((new_distance / distance) * vector_between)
+
+        # Log what is happening so can keep track
+        logging.info(
+            "Moving %s from %s to %s, changing the distance from %s to %s",
+            atom2.symbol,
+            atom2.position,
+            new_pos,
+            distance,
+            new_distance,
+        )
+
+        atom2.position = new_pos
+
+        # Update the distance to the muon (calculate if haven't already)
+        if atom1 == self.muon:
+            atom2.distance_from_muon = new_distance
+        else:
+            atom2.distance_from_muon = np.linalg.norm(
+                atom2.position - self.muon.position
+            )
