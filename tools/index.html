@@ -74,6 +74,14 @@
     <li class="toctree-l2"><a class="reference internal" href="#muspinsim-gen">muspinsim-gen</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#adding-quadrupole-interactions">Adding quadrupole interactions</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#adding-dipole-interactions-between-the-atoms">Adding dipole interactions between the atoms</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#advanced-usage-as-a-library">Advanced usage as a library</a>
     </li>
         </ul>
     </li>
@@ -109,7 +117,7 @@
               
                 <h1 id="tools">Tools</h1>
 <h2 id="muspinsim-gen"><code>muspinsim-gen</code></h2>
-<p><code>muspinsim-gen</code> is a command line tool made to help construct an input file given a cell structure file as input. At the moment it can take an input structure (defined in a file supported by <code>ase</code> e.g. a .cell or .cif), find a requested number of nearest neighbour atoms to the muon, and then output the muspinsim config defining these atoms and the dipolar interactions with the muon. It can also (optionally) take a file containing output defining EFG tensors from <code>GIPAW</code> in order to include quadrupole interactions.</p>
+<p><code>muspinsim-gen</code> is a command line tool made to help construct an input file given a cell structure file as input. At the moment it can take an input structure (defined in a file supported by <code>ase</code> e.g. a .cell, .cif or .magres), find a requested number of nearest neighbour atoms to the muon, and then output the muspinsim config defining these atoms and any interactions requested (currently either dipole between the muon and atom, or quadrupole interactions for the atoms).</p>
 <p>The available command line options can be found by invoking <code>muspinsim-gen --help</code>.</p>
 <h3 id="example">Example</h3>
 <p>Taking a cell file named <code>V3Si.cell</code> you may use
@@ -118,7 +126,7 @@
 <p class="admonition-title">Note</p>
 <p>The muon is assumed to be defined in the structure as <code>H</code>, this can be modified by the command line option <code>--muon_symbol MUON_SYMBOL</code>.</p>
 </div>
-<p>This takes the cell file, then iteratively expands the structure outwards to find the closest 6 atoms to the muon. Then it computes vectors between each of the found atoms and the muon before outputting the muspinsim config into the file <code>V3Si.in</code> which looks like</p>
+<p>This takes the cell file, then iteratively expands the structure outwards to find the closest 6 atoms to the muon. Then it computes vectors between each of the found atoms and the muon before outputting the muspinsim config with dipole interactions between the muon and each of the atoms into the file <code>V3Si.in</code>. This output looks like</p>
 <pre class="highlight"><code class="language-plaintext">spins
     mu V V V V Si Si
 dipolar 1 2
@@ -137,7 +145,47 @@ dipolar 1 7
 <p class="admonition-title">Warning</p>
 <p>By default, MuSpinSim assumes that the atoms present have a non-zero spin (in this case, 29Si with a spin of 1/2). To avoid interactions between the muon and Si (effectively treating it as the more abundant, spin-zero 28Si) we can use <code>--ignore_symbol Si</code>. Additional ignored symbols can be added by repeating this option.</p>
 </div>
-<p>To add quadrupole interactions you may use <code>--quadrupolar GIPAW_FILEPATH</code>. This file should contain the output of GIPAW from calculating the EFG tensors on the same structure. These will then be matched to the found atoms and will be output into the file.</p>
+<h4 id="adding-quadrupole-interactions">Adding quadrupole interactions</h4>
+<p>To add quadrupole interactions you have two options. First you may use a Magres file containing the calculated EFG tensors from CASTEP as your input structure file. In this case you can simply add <code>--quadrupolar</code> e.g.</p>
+<pre class="highlight"><code class="language-bash">muspinsim-gen ./V3Si.magres 6 --dipolar --quadrupolar --out V3Si.in</code></pre>
+<p>Alternatively if you are using GIPAW from Quantum ESPRESSO to calculate the EFG tensors, you may use <code>--quadrupolar GIPAW_FILEPATH</code>. This file should contain the output of GIPAW from calculating the EFG tensors on the same structure. These will then be matched to the found atoms and will be output into the file. e.g.</p>
+<pre class="highlight"><code class="language-bash">muspinsim-gen ./V3Si.cell 6 --dipolar --quadrupolar V3Si_EFGs.out --out V3Si.in</code></pre>
+<h4 id="adding-dipole-interactions-between-the-atoms">Adding dipole interactions between the atoms</h4>
+<p>The above example only adds dipole interactions between the muon and each found atom from the structure. You may also wish to add dipole interactions between each of these atoms themselves i.e. between V-V, V-Si and Si-Si in the example above. To do this simply add <code>--include_interatomic</code> to the command.</p>
+<h3 id="advanced-usage-as-a-library">Advanced usage as a library</h3>
+<p>When using muspinsim as a library it is possible to use this tool and modify its behaviour for making adjustments to the selected atoms. This may be useful in cases where DFT may underestimate the distance between the muon and its nearest neighbours. In this case you may use code like the following to make adjustments before the tool generates the output.</p>
+<pre class="highlight"><code class="language-python">
+import sys
+
+from muspinsim.tools.generator import GeneratorToolParams, _run_generator_tool
+
+def select_atoms(params: GeneratorToolParams):
+    # Select the closest atoms
+    structure = params.structure
+
+    selected_atoms = structure.compute_closest(
+        number=params.number_closest,
+        ignored_symbols=structure.symbols_zero_spin + params.additional_ignored_symbols,
+        max_layer=params.max_layer,
+    )
+
+    muon = structure.muon
+
+    # Move the 2 closest to be 1.21 Angstrom away from the muon
+    structure.move_atom(muon, selected_atoms[0], 1.21)
+    structure.move_atom(muon, selected_atoms[1], 1.21)
+
+    return selected_atoms
+
+def main():
+    """Entrypoint for command line tool"""
+
+    _run_generator_tool(sys.argv[1:], select_atoms)
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+<p>This will retain the command line functionality, but moves the first two found atoms to be a distance of 1.21 Angstrom from the muon.</p>
               
             </div>
           </div><footer>
