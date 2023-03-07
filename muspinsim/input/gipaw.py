@@ -64,6 +64,8 @@ class GIPAWOutput:
             atom = self._parse_efg(lines)
             if atom is not None:
                 self._atoms.append(atom)
+            else:
+                break
 
             # Go to the next line
             file_io.readline()
