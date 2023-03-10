@@ -85,6 +85,11 @@ def _make_blocks(file_stream):
                     raise RuntimeError("Badly formatted input file") from exc
         else:
             curr_block = l.strip()
+
+            # Check if the block has already been defined before
+            if curr_block in raw_blocks:
+                raise RuntimeError(f"Redefinition of '{curr_block}' in input file")
+
             raw_blocks[curr_block] = []
             block_line_nums[curr_block] = i + 1
             indent = None  # Reset for each block
