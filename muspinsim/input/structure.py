@@ -50,6 +50,7 @@ class MuonatedStructure:
     _unit_angles: ArrayLike
     _cell_atoms: List[CellAtom]
 
+    _muon_symbol: str
     _muon_index: int
 
     _symbols_zero_spin: List[str]
@@ -85,6 +86,7 @@ class MuonatedStructure:
 
         self._cell_atoms = []
         self._muon_index = None
+        self._muon_symbol = muon_symbol
         self._symbols_zero_spin = []
 
         self._efg_tensors = None
@@ -285,6 +287,7 @@ class MuonatedStructure:
                               (ignoring any in ignored_symbols)
 
         Raises:
+            ValueError -- When the muon_symbol is given in ignored_symbols
             RuntimeError -- When the expansion tries to go beyond the maximum
                             limit given by max_layer.
             RuntimeError -- When no atoms are found
@@ -293,9 +296,16 @@ class MuonatedStructure:
         # Current list of atoms in expanded supercell
         atoms = self._cell_atoms
         if ignored_symbols:
+            # Ensure we are not trying to ignore the muon as well (this will
+            # already be ignored in expansions anyway)
+            if self._muon_symbol in ignored_symbols:
+                raise ValueError(f"Cannot ignore the muon_symbol: {self._muon_symbol}")
+
             atoms = list(filter(lambda atom: atom.symbol not in ignored_symbols, atoms))
 
-        if len(atoms) == 0:
+        # Due to the above validation, we must at least have a muon in the
+        # system
+        if len(atoms) <= 1:
             raise RuntimeError(
                 "Failed to find any closest atoms, are they all in ignored_symbols?"
             )
