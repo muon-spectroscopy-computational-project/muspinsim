@@ -49,8 +49,8 @@ y_axis
 
 def write_error(keyword, block_line_num, err):
     return (
-        "Error occurred when parsing keyword '{0}' "
-        "(block starting at line {1}):\n{2}".format(keyword, block_line_num, str(err))
+        f"Error occurred when parsing keyword '{keyword}' "
+        f"(block starting at line {block_line_num}):\n{str(err)}"
     )
 
 
@@ -77,18 +77,20 @@ def _make_blocks(file_stream):
             if indent is None:
                 indent = m.groups()[0]
             if m.groups()[0] != indent:
-                raise RuntimeError("Invalid indent in input file")
+                raise MuSpinInputError("Invalid indent in input file")
             else:
                 try:
                     raw_blocks[curr_block].append(l.strip())
                 except KeyError as exc:
-                    raise RuntimeError("Badly formatted input file") from exc
+                    raise MuSpinInputError("Badly formatted input file") from exc
         else:
             curr_block = l.strip()
 
             # Check if the block has already been defined before
             if curr_block in raw_blocks:
-                raise RuntimeError(f"Redefinition of '{curr_block}' in input file")
+                raise MuSpinInputError(
+                    f"Redefinition of '{curr_block}' found in input file"
+                )
 
             raw_blocks[curr_block] = []
             block_line_nums[curr_block] = i + 1
