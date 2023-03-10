@@ -327,6 +327,11 @@ H             0.1666672745        0.0000018274        0.0833332099
             ),
         )
 
+    def test_compute_closest_ignore_all(self):
+        structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
+        with self.assertRaises(RuntimeError):
+            structure.compute_closest(1, ignored_symbols=["V", "Si", "H"])
+
     def test_compute_closest_max_layer(self):
         structure = MuonatedStructure(StringIO(TEST_CELL_FILE_DATA), fmt="castep-cell")
 

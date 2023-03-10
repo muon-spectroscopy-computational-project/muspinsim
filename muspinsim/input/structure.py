@@ -287,12 +287,18 @@ class MuonatedStructure:
         Raises:
             RuntimeError -- When the expansion tries to go beyond the maximum
                             limit given by max_layer.
+            RuntimeError -- When no atoms are found
         """
 
         # Current list of atoms in expanded supercell
         atoms = self._cell_atoms
         if ignored_symbols:
             atoms = list(filter(lambda atom: atom.symbol not in ignored_symbols, atoms))
+
+        if len(atoms) == 0:
+            raise RuntimeError(
+                "Failed to find any closest atoms, are they all in ignored_symbols?"
+            )
 
         # Compute the distances within the cell
         self._compute_distances(atoms)
@@ -301,7 +307,7 @@ class MuonatedStructure:
         layer = 1
 
         logging.info(
-            "Attempting to find the %s closest atoms to the muon in " "the structure",
+            "Attempting to find the %s closest atoms to the muon in the structure",
             number,
         )
         if ignored_symbols:
