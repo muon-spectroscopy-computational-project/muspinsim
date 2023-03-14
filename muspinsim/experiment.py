@@ -413,22 +413,28 @@ class ExperimentRunner:
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
-            # Use faster more approximate method of Celio's if requested
-            if isinstance(H, CelioHamiltonian) and self.config.celio_averages:
-                # Ensure the system is valid for its use
-                if self.T != np.inf:
-                    raise ValueError(
-                        "The fast version of Celio's method requires T -> inf. "
-                        "Either remove the number of averages or don't use "
-                        "celio."
-                    )
+            # Use Celio's method if requested
+            if isinstance(H, CelioHamiltonian):
+                # Check for fast version
+                if self.config.celio_averages:
+                    # Ensure the system is valid for its use
+                    if self.T != np.inf:
+                        raise ValueError(
+                            "The fast version of Celio's method requires T -> inf. "
+                            "Either remove the number of averages or don't use "
+                            "celio."
+                        )
 
-                data = H.fast_evolve(
-                    self._system.sigma_mu(self.p),
-                    cfg_snap.t,
-                    self.config.celio_averages,
-                    True,
-                )
+                    data = H.fast_evolve(
+                        self._system.sigma_mu(self.p),
+                        cfg_snap.t,
+                        self.config.celio_averages,
+                        True,
+                    )
+                else:
+                    data = H.evolve(self.rho0, cfg_snap.t, operators=[self.p_operator])[
+                        :, 0
+                    ]
             else:
                 # Measurement operator
                 S = self.p_operator
