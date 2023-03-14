@@ -356,7 +356,7 @@ zeeman 1
 
     def test_input_invalid_formatting(self):
         # read improperly formatted file
-        with self.assertRaises(RuntimeError) as err:
+        with self.assertRaises(MuSpinInputError) as err:
             MuSpinInput(
                 StringIO(
                     """
@@ -373,7 +373,7 @@ zeeman 1
 
     def test_input_invalid_indent_inside_block(self):
         # indent in between keyword values does not match
-        with self.assertRaises(RuntimeError) as err:
+        with self.assertRaises(MuSpinInputError) as err:
             MuSpinInput(
                 StringIO(
                     """
@@ -411,6 +411,79 @@ notakeyword 1
             "Error occurred when parsing keyword 'notakeyword' "
             "(block starting at line 6):\n"
             "Invalid keyword 'notakeyword' found in input file",
+        )
+
+    def test_input_redefinition(self):
+        # File defining two zeeman terms with different parameters
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+zeeman 1
+    0 1 0
+"""
+                )
+            ).evaluate()
+        self.assertEqual(
+            str(err.exception), "Redefinition of 'zeeman 1' found in input file"
+        )
+
+        # File defining two hyperfine terms with different parameters
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+name
+    test_1
+spins
+    mu H
+hyperfine 2
+    580 5   10
+    5   580 9
+    10  9   580
+hyperfine 2
+    150 3   4
+    3   150 5
+    4   5   150
+"""
+                )
+            ).evaluate()
+        self.assertEqual(
+            str(err.exception), "Redefinition of 'hyperfine 2' found in input file"
+        )
+
+        # File defining two names terms with different parameters
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+hyperfine 2
+    580 5   10
+    5   580 9
+    10  9   580
+hyperfine 3
+    150 3   4
+    3   150 5
+    4   5   150
+name
+    another_name
+"""
+                )
+            ).evaluate()
+        self.assertEqual(
+            str(err.exception), "Redefinition of 'name' found in input file"
         )
 
     def test_input_fitting(self):

@@ -131,12 +131,10 @@ class MuSpinConfig:
 
             try:
                 p = params[iname]
-            except KeyError:
+            except KeyError as exc:
                 raise MuSpinConfigError(
-                    "Invalid params object passed to "
-                    "MuSpinConfig: "
-                    "missing {0}".format(iname)
-                )
+                    f"Invalid params object passed to MuSpinConfig: missing {iname}"
+                ) from exc
 
             v = self.validate(cname, p.value, p.args)
 
