@@ -413,49 +413,48 @@ class ExperimentRunner:
         H = self.Htot
 
         if cfg_snap.y == "asymmetry":
-            # Use Celio's method if requested
-            if isinstance(H, CelioHamiltonian):
-                # Check for fast version
-                if self.config.celio_averages:
-                    # Ensure the system is valid for its use
-                    if self.T != np.inf:
-                        raise ValueError(
-                            "The fast version of Celio's method requires T -> inf. "
-                            "Either remove the number of averages or don't use "
-                            "celio."
-                        )
+            if isinstance(H, CelioHamiltonian) and self.config.celio_averages:
+                # Fast version of Celio's method with averaging
 
-                    data = H.fast_evolve(
-                        self._system.sigma_mu(self.p),
-                        cfg_snap.t,
-                        self.config.celio_averages,
-                        True,
+                # Ensure the system is valid for its use
+                if self.T != np.inf:
+                    raise ValueError(
+                        "The fast version of Celio's method requires T -> inf. "
+                        "Either remove the number of averages or don't use "
+                        "celio."
                     )
-                else:
-                    data = H.evolve(self.rho0, cfg_snap.t, operators=[self.p_operator])[
-                        :, 0
-                    ]
+
+                data = H.fast_evolve(
+                    self._system.sigma_mu(self.p),
+                    cfg_snap.t,
+                    self.config.celio_averages,
+                    True,
+                )
+            elif (
+                self._T_inf_speedup
+                and not isinstance(H, Lindbladian)
+                and not isinstance(H, CelioHamiltonian)
+            ):
+                # Use faster evolution if able to
+                # (doesn't apply to plain Celio's or the Linbladian)
+
+                other_spins = list(range(0, len(self._system.spins)))
+                other_spins.remove(self._system.muon_index)
+                other_dimension = np.prod(
+                    [self._system.dimension[i] for i in other_spins]
+                )
+
+                data = H.fast_evolve(
+                    self._system.sigma_mu(self.p), cfg_snap.t, other_dimension
+                )
             else:
-                # Measurement operator
-                S = self.p_operator
-
-                # Use faster evolution if able to (Doesn't exist for Linbladian)
-                if self._T_inf_speedup and not isinstance(H, Lindbladian):
-                    other_spins = list(range(0, len(self._system.spins)))
-                    other_spins.remove(self._system.muon_index)
-                    other_dimension = np.prod(
-                        [self._system.dimension[i] for i in other_spins]
-                    )
-
-                    data = H.fast_evolve(
-                        self._system.sigma_mu(self.p), cfg_snap.t, other_dimension
-                    )
-                else:
-                    data = H.evolve(self.rho0, cfg_snap.t, operators=[S])[:, 0]
+                data = H.evolve(self.rho0, cfg_snap.t, operators=[self.p_operator])[
+                    :, 0
+                ]
         elif cfg_snap.y == "integral":
-            # Measurement operator
-            S = self.p_operator
-
-            data = H.integrate_decaying(self.rho0, MU_TAU, operators=[S])[0] / MU_TAU
+            data = (
+                H.integrate_decaying(self.rho0, MU_TAU, operators=[self.p_operator])[0]
+                / MU_TAU
+            )
 
         return np.real(data) * w
