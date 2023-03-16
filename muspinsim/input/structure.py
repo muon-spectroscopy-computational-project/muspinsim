@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import logging
 import math
 from pathlib import PurePath
+import re
 from typing import IO, List, Optional, Union
 import numpy as np
 import ase.io
@@ -55,8 +56,9 @@ class MuonatedStructure:
 
     _symbols_zero_spin: List[str]
 
-    # Parameter optionally loaded from certain files (in this case magres)
+    # Parameters optionally loaded from certain files (in this case magres)
     _efg_tensors: Optional[List[ArrayLike]]
+    _hyperfine_tensors: Optional[List[ArrayLike]]
 
     def __init__(
         self,
@@ -76,6 +78,8 @@ class MuonatedStructure:
             muon_symbol {str} -- Symbol that should represent a muon.
 
         Raises:
+            ValueError -- If file_io is given as something other than a string
+                          and fmt is not specified
             ValueError -- If the structure file has unit cell vector angles
                           different from [90, 90, 90].
             ValueError -- If the structure file contains more than one muon
@@ -90,6 +94,14 @@ class MuonatedStructure:
         self._symbols_zero_spin = []
 
         self._efg_tensors = None
+        self._hyperfine_tensors = None
+
+        # As we will require knowledge of the type of file like ASE either
+        # from the file extension or having been explicitly given (for
+        # loading additional Magres data ASE can't load), we will enforce
+        # either we are given a path to the file, or we have a format defined
+        if not isinstance(file_io, str) and fmt == None:
+            raise ValueError("File format must be specified when not providing a path")
 
         # Load the atomic data from the file
         # NOTE: Calculator is loaded automatically - can't see a way to
@@ -148,6 +160,179 @@ class MuonatedStructure:
             raise ValueError(
                 f"Structure file '{file_io}' has no muon with symbol " f"{muon_symbol}"
             )
+
+        # Load other data e.g. hyperfine if file type is magres
+        if fmt == "magres" or (
+            isinstance(file_io, str) and file_io.endswith(".magres")
+        ):
+            if isinstance(file_io, str):
+                with open(file_io, "r", encoding="utf-8") as file_stream:
+                    self._load_additional_magres_data(file_stream)
+            else:
+                self._load_additional_magres_data(file_io)
+
+    def _load_additional_magres_data(self, file_io: IO):
+        """Attempts to load additional data e.g. the hyperfine tensors from a
+        Magres file
+
+        Ideally this would be handled by ASE in the future but it seems Magres
+        files output from CASTEP only provides hyperfine tensors in the
+        [magres_old] section of the file.
+        """
+
+        # Locate the [magres_old] section
+        found_old_magres = False
+        while line := file_io.readline():
+            if line.strip() == "[magres_old]":
+                found_old_magres = True
+                break
+
+        if found_old_magres:
+            # Now we potentially have more data to load
+
+            # Sections in the file will look something like
+
+            # ==========================================================================
+            #   Using the following values of the electric quadrupole moment
+            #   F      No EFG isotope defined. Q =    1.0000 Barn
+            #   Sc     Isotope  45             Q =   -0.2200 Barn
+            #   H:mu   Isotope   2             Q =    0.0029 Barn
+            # ==========================================================================
+
+            # ============
+            # Atom: F        1
+            # ============
+            # F        1 Coordinates      2.012   -0.424    0.000   A
+
+            # TOTAL tensor
+
+            #                0.6090      0.0000      0.0000
+            #                0.0000     -0.2682     -0.0000
+            #                0.0000     -0.0000     -0.3408
+            # ============
+            # Atom: F        2
+            # ============
+            # ...
+
+            # Here we will attempt to locate these
+
+            current_section_name = None
+
+            # 16 or more equal signs
+            section_header_pattern = re.compile(r"\={16,}")
+            # Between 6 and 14 equal signs
+            atom_header_pattern = re.compile(r"\={6,14}")
+
+            while line := file_io.readline():
+                line = line.strip()
+
+                if section_header_pattern.match(line):
+                    # Skip 1 line and attempt to extract the name
+                    line = file_io.readline().strip()
+
+                    # Sanity check it is what we expect
+                    if not line.startswith("Using the following values of the "):
+                        raise RuntimeError("Unable to parse magres file")
+
+                    current_section_name = line.split(
+                        "Using the following values of the "
+                    )[1].replace(" ", "_")
+
+                    # Skip to the end of the header
+                    while line := file_io.readline():
+                        if section_header_pattern.match(line.strip()):
+                            break
+
+                    # Now inside the section defining values for each atom
+                    # We will assume that like the EFG's we will have one
+                    # for each where the index is always in order
+                    current_atom_index = 0
+
+                    # Look for an atom definition
+                    while line := file_io.readline():
+                        line = line.strip()
+
+                        if atom_header_pattern.match(line):
+                            # Skip one line, should see the atom name and index
+                            line = file_io.readline().strip()
+
+                            # Sanity check it is what we expect
+                            if not line.startswith("Atom: "):
+                                raise RuntimeError("Unable to parse magres file")
+
+                            # Obtain the atom symbol and sanity check it against the index
+                            # May also be H:mu, account for that here
+                            splt = line.split()
+
+                            atom_symbol = splt[1].split(":")[0]
+                            atom_index = int(splt[2])
+
+                            # The indices given in the sections are different
+                            # to those of the whole system, in the file here
+                            # all F's values are listed one after each other
+                            # then the indices are reset when listing all Sc's
+                            # so can't compare directly here
+                            if (
+                                self._cell_atoms[current_atom_index].symbol
+                                != atom_symbol
+                            ):
+                                raise RuntimeError("Unable to parse magres file")
+
+                            # Skip to the end of the header
+                            while line := file_io.readline():
+                                if atom_header_pattern.match(line.strip()):
+                                    current_atom_index += 1
+                                    break
+
+                            # Now we are finally able to get to the data
+                            # defined for the atom
+                            if current_section_name == "magnetogyric_ratio":
+                                # This section corresponds to hyperfine terms
+                                if self._hyperfine_tensors is None:
+                                    self._hyperfine_tensors = []
+
+                                # Locate the tensor
+                                found_tensor = False
+                                while line := file_io.readline():
+                                    if line.strip() == "TOTAL tensor":
+                                        found_tensor = True
+                                        break
+
+                                if not found_tensor:
+                                    raise RuntimeError("Unable to parse magres file")
+
+                                # Skip a line to get the actual data
+                                file_io.readline()
+
+                                # Now obtain the tensor
+                                tensor = np.zeros((3, 3))
+
+                                for i in range(0, 3):
+                                    # Split by at least one space
+                                    split = re.split(
+                                        r"\s{1,}", file_io.readline().strip()
+                                    )
+
+                                    if len(split) != 3:
+                                        raise RuntimeError(
+                                            "Unable to parse magres file"
+                                        )
+
+                                    tensor[i, 0] = float(split[0])
+                                    tensor[i, 1] = float(split[1])
+                                    tensor[i, 2] = float(split[2])
+
+                                self._hyperfine_tensors.append(tensor)
+
+                        if current_atom_index == len(self._cell_atoms):
+                            # Locate next section if have finished loading
+                            # this one (assumes each section defines references
+                            # each atom once)
+                            break
+
+                elif line == "[/magres_old]":
+                    # Nothing more to load
+                    break
 
     def expand(
         self, offsets: List[ArrayLike], ignored_symbols: Optional[List[str]] = None
@@ -390,6 +575,22 @@ class MuonatedStructure:
             efg_tensor {ArrayLike}: EFG tensor for the atom at the given index
         """
         return self._efg_tensors[atom_index - 1]
+
+    @property
+    def has_hyperfine_tensors(self) -> bool:
+        """Returns whether we have found and loaded hyperfine tensors"""
+        return self._hyperfine_tensors is not None
+
+    def get_hyperfine_tensor(self, atom_index: int) -> ArrayLike:
+        """Returns the EFG tensor for a given atom index
+
+        Arguments:
+            index {int} -- Index of the relevant atom (starting from 1)
+        Returns:
+            hyperfine_tensor {ArrayLike}: Hyperfine tensor for the atom at the
+                                          given index
+        """
+        return self._hyperfine_tensors[atom_index - 1]
 
     @property
     def muon(self) -> CellAtom:

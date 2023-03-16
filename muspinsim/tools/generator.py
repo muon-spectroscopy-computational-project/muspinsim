@@ -102,6 +102,29 @@ class QuadrupoleIntGenerator(InteractionGenerator):
     {' '.join(map(str, efg_tensor[2]))}"""
 
 
+class HyperfineIntGenerator(InteractionGenerator):
+    """
+    Generator for the hyperfine interaction (From data loaded with the
+    structure file)
+    """
+
+    _structure: MuonatedStructure
+
+    def __init__(self, structure: MuonatedStructure):
+        super().__init__(num_inputs=1)
+
+        self._structure = structure
+
+    def gen_config(self, atom_file_indices: List[int], atoms: List[CellAtom]) -> str:
+        # Obtain corresponding EFG tensor
+        efg_tensor = self._structure.get_hyperfine_tensor(atoms[0].index)
+
+        return f"""hyperfine {atom_file_indices[0]}
+    {' '.join(map(str, efg_tensor[0]))}
+    {' '.join(map(str, efg_tensor[1]))}
+    {' '.join(map(str, efg_tensor[2]))}"""
+
+
 @dataclass
 class GeneratorToolParams:
     """Structure for storing parameters for the interaction generator tool
@@ -283,6 +306,13 @@ structure file is not a Magres file with EFG data a file path to a GIPAW
 output file will be required.""",
     )
     parser.add_argument(
+        "--hyperfine",
+        dest="hyperfine",
+        action="store_true",
+        help="""Specify to include hyperfine couplings (Required a Magres file
+with hyperfine tensors calculated using CASTEP)""",
+    )
+    parser.add_argument(
         "--include_interatomic",
         dest="include_interatomic",
         action="store_true",
@@ -345,6 +375,16 @@ GIPAW_OUTPUT_FILEPATH' or supply a Magres structure file with EFG's provided."""
                 )
 
             generators.append(QuadrupoleIntGenerator(structure))
+    if args.hyperfine:
+        # Ensure we have found hyperfine tensors in the structure file
+        if not structure.has_hyperfine_tensors:
+            raise ValueError(
+                """No hyperfine tensors found in the structure file. Please
+                ensure you are loading a .magres file with hyperfine tensors
+                calculated using CASTEP."""
+            )
+
+        generators.append(HyperfineIntGenerator(structure))
 
     generate_params = GeneratorToolParams(
         structure=structure,
