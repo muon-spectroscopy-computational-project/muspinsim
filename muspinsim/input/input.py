@@ -229,7 +229,10 @@ class MuSpinInput:
                 # Special case where we don't want to evaluate the expression
                 # yet
                 elif name in ["results_function"]:
-                    result[name] = self._keywords[name]
+                    if name in self._keywords:
+                        result[name] = self._keywords[name]
+                    elif KWClass.default is not None:
+                        result[name] = KWClass()
                 elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}

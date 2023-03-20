@@ -622,7 +622,7 @@ class KWResultsFunction(MuSpinExpandKeyword):
     name = "results_function"
     block_size = 1
     accept_range = False
-    default = "x"
+    default = "y"
     _special_variables = ["x", "y"]
 
 
