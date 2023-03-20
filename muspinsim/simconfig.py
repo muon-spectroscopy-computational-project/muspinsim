@@ -104,6 +104,7 @@ class MuSpinConfig:
         self._spins = self.validate("spins", params["spins"].value[0])
         self._celio = self._validate_celio(params["celio"].value[0])
         self._y_axis = self.validate("y", params["y_axis"].value[0])[0]
+        self._results_function = params["results_function"]
 
         # Identify ranges
         try:
@@ -441,6 +442,10 @@ Parameters used:
     @property
     def y_axis(self):
         return self._y_axis
+
+    @property
+    def results_function(self):
+        return self._results_function
 
     def __len__(self):
         return len(self._configurations)

@@ -6,6 +6,7 @@ Classes to define and read conveniently individual keywords of an input file
 import re
 import sys
 import inspect
+from typing import List
 import numpy as np
 
 from muspinsim.constants import MU_GAMMA
@@ -221,6 +222,10 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
     _functions = {**_math_functions}
     _constants = {**_math_constants}
 
+    # Special variables that should be accepted by the keyword, but do not
+    # automatically have values
+    _special_variables: List[str] = None
+
     def __init__(self, block=None, args=None, variables=None):
         # Fix W0102:dangerous-default-value
         if block is None:
@@ -231,6 +236,8 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
             variables = []
 
         cnames = set(self._constants.keys())
+        if self._special_variables:
+            cnames.update(set(self._special_variables))
         fnames = set(self._functions.keys())
         vnames = set(variables)
 
@@ -536,7 +543,7 @@ class KWFittingVariables(MuSpinKeyword):
 
     name = "fitting_variables"
     block_size = 1
-    expr_size_bounds = (1, 4)
+    expr_size_bounds = (1, np.inf)
     accept_range = True
     default = ""
     _constants = {**_math_constants, **_phys_constants}
@@ -608,6 +615,15 @@ class KWFittingTolerance(MuSpinKeyword):
         if not float(s[0])
         else "",
     ]
+
+
+class KWResultsFunction(MuSpinExpandKeyword):
+
+    name = "results_function"
+    block_size = 1
+    accept_range = False
+    default = "x"
+    _special_variables = ["x", "y"]
 
 
 # Special configuration keyword

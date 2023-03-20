@@ -40,6 +40,9 @@ class ExperimentRunner:
         if variables is None:
             variables = {}
 
+        # Required later for results_function
+        self._variables = variables
+
         if mpi.is_root:
             # On root, we run the evaluation that gives us the actual possible
             # values for simulation configurations. These are then broadcast
@@ -339,8 +342,18 @@ class ExperimentRunner:
             dataslice = self.run_single(cfg)
             self._config.store_time_slice(cfg.id, dataslice)
 
-        self._config.results = mpi.sum_data(self._config.results)
+        results = mpi.sum_data(self._config.results)
 
+        # Apply the results function
+        # We expect muspinsim to output arrays with shape N here
+        # but the evaluation will return an array with shape (1, N) instead
+        results = np.array(
+            self._config.results_function.evaluate(
+                **self._variables, x=self._config.x_axis_values, y=results
+            )
+        ).reshape(len(results))
+
+        self._config.results = results
         return self._config.results
 
     def load_config(self, cfg_snap: ConfigSnapshot):

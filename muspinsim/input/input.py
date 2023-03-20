@@ -111,7 +111,13 @@ class MuSpinInput:
 
         self._keywords = {}
         self._variables = {}
-        self._fitting_info = {"fit": False, "data": None, "method": None, "rtol": None}
+        self._fitting_info = {
+            "fit": False,
+            "data": None,
+            "method": None,
+            "rtol": None,
+            "function": None,
+        }
 
         if file_stream is not None:
 
@@ -176,6 +182,7 @@ class MuSpinInput:
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
+
                 except (ValueError, LarkExpressionError, RuntimeError) as exc:
                     errors_found += [
                         write_error(name, block_line_nums[header], str(exc))
@@ -219,6 +226,10 @@ class MuSpinInput:
                     "fitting_method",
                 ]:
                     pass
+                # Special case where we don't want to evaluate the expression
+                # yet
+                elif name in ["results_function"]:
+                    result[name] = self._keywords[name]
                 elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}
