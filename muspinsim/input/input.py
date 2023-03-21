@@ -117,6 +117,8 @@ class MuSpinInput:
             "method": None,
             "rtol": None,
             "function": None,
+            # When true indicates all fitting can be done after the simulation
+            "single_simulation": True,
         }
 
         if file_stream is not None:
@@ -172,6 +174,20 @@ class MuSpinInput:
 
                     if issubclass(KWClass, MuSpinEvaluateKeyword):
                         kw = KWClass(block, args=args, variables=self._variables)
+
+                        # In cases where fitting parameters are only used
+                        # as variables for 'results_function' and no where
+                        # else we only need to run the simulation once
+                        if self._fitting_info["single_simulation"]:
+                            for value in kw._values[0]:
+                                if name != "results_function":
+                                    if np.any(
+                                        np.in1d(
+                                            list(self._variables.keys()),
+                                            list(value._variables),
+                                        )
+                                    ):
+                                        self._fitting_info["single_simulation"] = False
                     else:
                         kw = KWClass(block, args=args)
 

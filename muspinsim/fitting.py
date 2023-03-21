@@ -3,6 +3,7 @@
 A class that takes care of runs where the goal is to fit some given data"""
 
 import os
+import sys
 import numpy as np
 from scipy.optimize import minimize
 
@@ -53,6 +54,7 @@ class FittingRunner:
 
         self._done = False
         self._sol = None
+        self._cached_results = None
 
     def run(self, name=None, path="."):
         """Run a fitting calculation using Scipy, and returns the solution
@@ -81,6 +83,13 @@ class FittingRunner:
 
             mpi.broadcast_object(self, ["_sol"])
 
+            # As we are fitting, the config will only contain the results
+            # prior to the applying results_function, so update the actual
+            # values now
+            self._runner._config.results = self._runner._apply_results_function(
+                self._runner._config.results, dict(zip(self._xnames, self._x))
+            )
+
             # And now save the last result
             self._runner.config.save_output(name=name, path=path)
         else:
@@ -90,6 +99,17 @@ class FittingRunner:
             mpi.broadcast_object(self, ["_sol"])
 
         return self._sol
+
+    def _obtain_results(self, vardict: dict):
+        # Obtain cached results if available
+        if self._fitinfo["single_simulation"]:
+            if self._cached_results is None:
+                self._runner = ExperimentRunner(self._input, variables=vardict)
+                self._cached_results = self._runner.run()
+            return self._cached_results
+        else:
+            self._runner = ExperimentRunner(self._input, variables=vardict)
+            return self._runner.run()
 
     def _targfun(self, x):
 
@@ -102,8 +122,10 @@ class FittingRunner:
             return
 
         vardict = dict(zip(self._xnames, self._x))
-        self._runner = ExperimentRunner(self._input, variables=vardict)
-        y = self._runner.run()
+        y = self._obtain_results(vardict)
+
+        # Apply the results function
+        y = self._runner._apply_results_function(y, vardict)
 
         if mpi.is_root:
             # Compare with target data
@@ -142,7 +164,15 @@ class FittingRunner:
                     "Final absolute error <|f-f_targ|>: "
                     "{0}\n".format(self._sol["fun"])
                 )
-                file.write("Number of simulations: {0}\n".format(self._sol["nfev"]))
+                num_simulations = self._sol["nfev"]
+                if self._fitinfo["single_simulation"]:
+                    num_simulations = 1
+                    file.write(
+                        "Number of 'results_function' evaluations: {0}\n".format(
+                            self._sol["nfev"]
+                        )
+                    )
+                file.write("Number of simulations: {0}\n".format(num_simulations))
                 file.write("Number of iterations: {0}\n".format(self._sol["nit"]))
 
                 file.write("\n" + "=" * 20 + "\n")

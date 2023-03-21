@@ -4,6 +4,7 @@ Classes and functions to perform actual experiments"""
 
 import logging
 import numpy as np
+from numpy.typing import ArrayLike
 import scipy.constants as cnst
 
 from muspinsim.celio import CelioHamiltonian
@@ -34,7 +35,8 @@ class ExperimentRunner:
             in_file {MuSpinInput} -- The input file object defining the
                                     calculations we need to perform.
             variables {dict} -- The values of any variables appearing in the input
-                                file
+                                file. When specified it will be assumed that we
+                                are running a fitting calculation.
         """
         # Fix W0102:dangerous-default-value
         if variables is None:
@@ -327,6 +329,15 @@ class ExperimentRunner:
     def p_operator(self):
         return self._system.muon_operator(self.p)
 
+    def _apply_results_function(self, results: ArrayLike, variables: dict):
+        # We expect muspinsim to output arrays with shape N here
+        # but the evaluation will return an array with shape (1, N) instead
+        return np.array(
+            self._config.results_function.evaluate(
+                **variables, x=self._config.x_axis_values, y=results
+            )
+        ).reshape(len(results))
+
     def run(self):
         """Run the experiment
 
@@ -344,14 +355,11 @@ class ExperimentRunner:
 
         results = mpi.sum_data(self._config.results)
 
-        # Apply the results function
-        # We expect muspinsim to output arrays with shape N here
-        # but the evaluation will return an array with shape (1, N) instead
-        results = np.array(
-            self._config.results_function.evaluate(
-                **self._variables, x=self._config.x_axis_values, y=results
-            )
-        ).reshape(len(results))
+        # Apply the results function (only if not fitting, otherwise let
+        # FittingRunner handle it so we can optimise and avoid repeated calls
+        # to this function)
+        if not self._variables:
+            results = self._apply_results_function(results, self._variables)
 
         self._config.results = results
         return self._config.results
