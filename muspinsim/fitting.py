@@ -3,7 +3,6 @@
 A class that takes care of runs where the goal is to fit some given data"""
 
 import os
-import sys
 import numpy as np
 from scipy.optimize import minimize
 

@@ -125,8 +125,10 @@ def main(use_mpi=False):
     else:
         in_file = MuSpinInput()
         is_fitting = False
+        out_path = None
 
     is_fitting = mpi.broadcast(is_fitting)
+    out_path = mpi.broadcast(out_path)
 
     if not is_fitting:
         # No fitting
