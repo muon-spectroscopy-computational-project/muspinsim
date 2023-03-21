@@ -236,10 +236,10 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
             variables = []
 
         cnames = set(self._constants.keys())
-        if self._special_variables:
-            cnames.update(set(self._special_variables))
         fnames = set(self._functions.keys())
         vnames = set(variables)
+        if self._special_variables:
+            vnames.update(set(self._special_variables))
 
         conflicts = cnames.intersection(vnames)
         conflicts = conflicts.union(fnames.intersection(vnames))

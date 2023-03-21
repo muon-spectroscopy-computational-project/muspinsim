@@ -15,7 +15,7 @@ from muspinsim.input.keyword import (
     MuSpinCouplingKeyword,
 )
 
-from muspinsim.input.larkeval import LarkExpressionError
+from muspinsim.input.larkeval import LarkExpression, LarkExpressionError
 
 
 class MuSpinInputError(Exception):
@@ -171,7 +171,6 @@ class MuSpinInput:
                         raise RuntimeError(
                             f"Invalid keyword '{name}' found in input file"
                         ) from exc
-
                     if issubclass(KWClass, MuSpinEvaluateKeyword):
                         kw = KWClass(block, args=args, variables=self._variables)
 
@@ -179,8 +178,12 @@ class MuSpinInput:
                         # as variables for 'results_function' and no where
                         # else we only need to run the simulation once
                         if self._fitting_info["single_simulation"]:
-                            for value in kw._values[0]:
-                                if name != "results_function":
+                            # Flatten here as may have array of arrays e.g.
+                            # hyperfine
+                            for value in np.array(kw._values[0]).flatten():
+                                if name != "results_function" and isinstance(
+                                    value, LarkExpression
+                                ):
                                     if np.any(
                                         np.in1d(
                                             list(self._variables.keys()),
@@ -248,7 +251,13 @@ class MuSpinInput:
                     if name in self._keywords:
                         result[name] = self._keywords[name]
                     elif KWClass.default is not None:
-                        result[name] = KWClass()
+                        v = (
+                            variables
+                            if issubclass(KWClass, MuSpinEvaluateKeyword)
+                            else {}
+                        )
+
+                        result[name] = KWClass(variables=v)
                 elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}

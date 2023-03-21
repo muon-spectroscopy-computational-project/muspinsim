@@ -85,8 +85,8 @@ class FittingRunner:
             # As we are fitting, the config will only contain the results
             # prior to the applying results_function, so update the actual
             # values now
-            self._runner._config.results = self._runner._apply_results_function(
-                self._runner._config.results, dict(zip(self._xnames, self._x))
+            self._runner.config.results = self._runner._apply_results_function(
+                self._runner.config.results, dict(zip(self._xnames, self._sol["x"]))
             )
 
             # And now save the last result
@@ -154,30 +154,26 @@ class FittingRunner:
                 fname = config.name + "_fit_report.txt"
 
             with open(os.path.join(path, fname), "w", encoding="utf-8") as file:
-                file.write("Fitting process for {0} completed\n".format(config.name))
-                file.write("Success achieved: {0}\n".format(self._sol["success"]))
+                file.write(f"Fitting process for {config.name} completed\n")
+                file.write(f"Success achieved: {self._sol['success']}\n")
                 if not self._sol["success"]:
-                    file.write("   Message: {0}\n".format(self._sol["message"]))
+                    file.write(f"   Message: {self._sol['message']}\n")
 
-                file.write(
-                    "Final absolute error <|f-f_targ|>: "
-                    "{0}\n".format(self._sol["fun"])
-                )
+                file.write(f"Final absolute error <|f-f_targ|>: {self._sol['fun']}\n")
                 num_simulations = self._sol["nfev"]
                 if self._fitinfo["single_simulation"]:
                     num_simulations = 1
                     file.write(
-                        "Number of 'results_function' evaluations: {0}\n".format(
-                            self._sol["nfev"]
-                        )
+                        "Number of 'results_function' evaluations: "
+                        f"{self._sol['nfev']}\n"
                     )
-                file.write("Number of simulations: {0}\n".format(num_simulations))
-                file.write("Number of iterations: {0}\n".format(self._sol["nit"]))
+                file.write(f"Number of simulations: {num_simulations}\n")
+                file.write(f"Number of iterations: {self._sol['nit']}\n")
 
                 file.write("\n" + "=" * 20 + "\n")
                 file.write("\nValues found for fitting variables:\n\n")
                 for name, val in variables.items():
-                    file.write("\t{0} = {1}\n".format(name, val))
+                    file.write(f"\t{name} = {val}\n")
 
     @property
     def solution(self):
