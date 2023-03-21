@@ -36,7 +36,9 @@ class ExperimentRunner:
                                     calculations we need to perform.
             variables {dict} -- The values of any variables appearing in the input
                                 file. When specified it will be assumed that we
-                                are running a fitting calculation.
+                                are running a fitting calculation and
+                                results_function will not be used when 'run' is
+                                called.
         """
         # Fix W0102:dangerous-default-value
         if variables is None:

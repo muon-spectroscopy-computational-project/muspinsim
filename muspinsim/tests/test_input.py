@@ -353,6 +353,10 @@ zeeman 1
         self.assertEqual(e1["name"].value[0], "test_1")
         self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
         self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+        results_function_exp = e1["results_function"]._values[0][0]
+        np.testing.assert_allclose(
+            results_function_exp.evaluate(y=np.arange(0, 10)), np.arange(0, 10)
+        )
 
     def test_input_invalid_formatting(self):
         # read improperly formatted file
@@ -486,6 +490,55 @@ name
             str(err.exception), "Redefinition of 'name' found in input file"
         )
 
+    def test_input_valid_results_function(self):
+        # read valid file
+        e1 = MuSpinInput(
+            StringIO(
+                """
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+results_function
+    y
+"""
+            )
+        ).evaluate()
+
+        self.assertEqual(e1["name"].value[0], "test_1")
+        self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+        results_function_exp = e1["results_function"]._values[0][0]
+        np.testing.assert_allclose(
+            results_function_exp.evaluate(y=np.arange(0, 10)), np.arange(0, 10)
+        )
+
+        e1 = MuSpinInput(
+            StringIO(
+                """
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+results_function
+    2*y+sin(x)
+"""
+            )
+        ).evaluate()
+
+        self.assertEqual(e1["name"].value[0], "test_1")
+        self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+        results_function_exp = e1["results_function"]._values[0][0]
+        np.testing.assert_allclose(
+            results_function_exp.evaluate(y=np.arange(0, 5), x=np.arange(0, 5)),
+            2 * np.arange(0, 5) + np.sin(np.arange(0, 5)),
+        )
+
     def test_input_fitting(self):
         # Test input focused around fitting
 
@@ -520,6 +573,83 @@ zeeman 1
 
         self.assertEqual(variables["x"].value, 1.0)
         self.assertEqual(variables["x"].bounds, (0.0, 2.0))
+
+        self.assertFalse(i1.fitting_info["single_simulation"])
+
+    def test_input_fitting_results_function(self):
+        # Test input focused around fitting 'results_function'
+
+        # Should detect only need a single simulation
+        i1 = MuSpinInput(
+            StringIO(
+                """
+fitting_variables
+    A 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2
+zeeman 1
+    1 1 0
+results_function
+    2*A
+"""
+            )
+        )
+
+        self.assertTrue(i1.fitting_info["fit"])
+
+        data = i1.fitting_info["data"]
+        self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
+
+        e1 = i1.evaluate(A=2.0)
+        self.assertEqual(e1["field"].value[0][0], 2.0)
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 1, 0]).all())
+
+        variables = i1.variables
+
+        self.assertEqual(variables["A"].value, 1.0)
+        self.assertEqual(variables["A"].bounds, (0.0, 2.0))
+        self.assertTrue(i1.fitting_info["single_simulation"])
+
+        # Should detect need multiple simulations
+        i1 = MuSpinInput(
+            StringIO(
+                """
+fitting_variables
+    A 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*A
+zeeman 1
+    1 1 0
+results_function
+    2*A
+"""
+            )
+        )
+
+        self.assertTrue(i1.fitting_info["fit"])
+
+        data = i1.fitting_info["data"]
+        self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
+
+        e1 = i1.evaluate(A=2.0)
+        self.assertEqual(e1["field"].value[0][0], 4.0)
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 1, 0]).all())
+
+        variables = i1.variables
+
+        self.assertEqual(variables["A"].value, 1.0)
+        self.assertEqual(variables["A"].bounds, (0.0, 2.0))
+        self.assertFalse(i1.fitting_info["single_simulation"])
 
     def _write_temp_file(self, tdata):
         tfile = NamedTemporaryFile(mode="w", delete=False)
