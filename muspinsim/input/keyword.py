@@ -600,15 +600,18 @@ class KWFittingData(MuSpinExpandKeyword):
 
 class KWFittingMethod(MuSpinKeyword):
 
+    ACCEPTED_FITTING_METHODS = ["nelder-mead", "lbfgs", "least-squares"]
+
     name = "fitting_method"
     block_size = 1
     accept_range = False
     default = "nelder-mead"
     _validators = [
         lambda s: (
-            f"Invalid value {s[0].lower()}, accepted values ['nelder-mead', 'lbfgs']"
+            f"Invalid value {s[0].lower()}, accepted values "
+            f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
         )
-        if s[0].lower() not in ["nelder-mead", "lbfgs"]
+        if s[0].lower() not in KWFittingMethod.ACCEPTED_FITTING_METHODS
         else ""
     ]
 

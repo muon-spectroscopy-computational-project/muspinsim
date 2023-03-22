@@ -4,7 +4,7 @@ A class that takes care of runs where the goal is to fit some given data"""
 
 import os
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import minimize, least_squares
 
 from muspinsim.input import MuSpinInput
 from muspinsim.simconfig import MuSpinConfig
@@ -31,6 +31,7 @@ class FittingRunner:
 
         # Identify variables
         self._fitinfo = inpfile.fitting_info
+        self._fitinfo["method"] = self._fitinfo["method"].lower()
 
         if mpi.is_root:
             self._ytarg = self._fitinfo["data"][:, 1]
@@ -65,17 +66,34 @@ class FittingRunner:
         if mpi.is_root:
 
             # Get the correct string for the method
-            method = {"nelder-mead": "nelder-mead", "lbfgs": "L-BFGS-B"}[
-                self._fitinfo["method"].lower()
-            ]
+            method = {
+                "nelder-mead": "nelder-mead",
+                "lbfgs": "L-BFGS-B",
+                "least-squares": "trf",
+            }[self._fitinfo["method"]]
 
-            self._sol = minimize(
-                self._targfun,
-                self._x,
-                method=method,
-                tol=self._fitinfo["rtol"],
-                bounds=self._xbounds,
-            )
+            # SciPy minimise
+            if self._fitinfo["method"] == "least-squares":
+                # Bounds used here are different to minimize, need all lower
+                # value and all upper values in separate arrays
+
+                # lbfgs uses gtol when using tol, so will do the same here
+                xbounds = np.array([np.array(elem) for elem in self._xbounds])
+                self._sol = least_squares(
+                    self._targfun,
+                    self._x,
+                    method="trf",
+                    gtol=self._fitinfo["rtol"],
+                    bounds=(xbounds[:, 0], xbounds[:, 1]),
+                )
+            else:
+                self._sol = minimize(
+                    self._targfun,
+                    self._x,
+                    method=method,
+                    tol=self._fitinfo["rtol"],
+                    bounds=self._xbounds,
+                )
 
             self._done = True
             mpi.broadcast_object(self, ["_x", "_done"])
@@ -168,7 +186,10 @@ class FittingRunner:
                         f"{self._sol['nfev']}\n"
                     )
                 file.write(f"Number of simulations: {num_simulations}\n")
-                file.write(f"Number of iterations: {self._sol['nit']}\n")
+
+                # Not relevant when using least-squares
+                if self._fitinfo["method"] != "least-squares":
+                    file.write(f"Number of iterations: {self._sol['nit']}\n")
 
                 file.write("\n" + "=" * 20 + "\n")
                 file.write("\nValues found for fitting variables:\n\n")

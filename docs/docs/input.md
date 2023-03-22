@@ -364,7 +364,7 @@ fitting_method
     lbfgs
 ```
 
-Method to use to fit the data. Currently available are only `nelder-mead` (default) and `lbfgs`.
+Method to use to fit the data. Currently available are `nelder-mead` (default), `lbfgs` and `least-squares`.
 
 ### fitting_tolerance
 
@@ -381,7 +381,7 @@ fitting_tolerance
     1e-4
 ```
 
-Tolerance for the fitting. Used as the `tol` parameter in Scipy's `scipy.optimize.minimize` method; exact meaning depends on fitting method. Check the [Scipy documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) for further details.
+Tolerance for the fitting. When using `nelder-mead` (default) or `lbfgs` it's used as the `tol` parameter in SciPy's `scipy.optimize.minimize` method; exact meaning depends on which of these are used. Check the [SciPy documentation here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) for further details on these. Alternatively for `least-squares` it represents the `gtol` parameter as found in the [SciPy documentation here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html)
 
 ### experiment
 

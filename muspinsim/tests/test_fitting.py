@@ -58,6 +58,54 @@ dissipation 1
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
+        # Try fitting a very basic exponential decay
+        # with lbfgs
+        s1 = StringIO(
+            f"""
+spins
+    mu
+fitting_method
+    lbfgs
+fitting_variables
+    g   0.5
+fitting_data
+{dblock}
+dissipation 1
+    g
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        sol = f1.run()
+
+        self.assertAlmostEqual(sol.x[0], g, 3)
+
+        # Try fitting a very basic exponential decay
+        # with least_squares
+        s1 = StringIO(
+            f"""
+spins
+    mu
+fitting_method
+    least-squares
+fitting_variables
+    g   0.5
+fitting_data
+{dblock}
+dissipation 1
+    g
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        sol = f1.run()
+
+        self.assertAlmostEqual(sol.x[0], g, 2)
+
     def test_fit_results_function(self):
 
         # Try fitting a basic cosine function
@@ -88,3 +136,53 @@ fitting_data
 
         self.assertAlmostEqual(sol.x[0], A, 3)
         self.assertAlmostEqual(sol.x[1], B, 3)
+
+        # Try fitting a basic cosine with lbfgs
+        s1 = StringIO(
+            f"""
+spins
+    mu
+results_function
+    A*cos(x)+B
+fitting_method
+    lbfgs
+fitting_variables
+    A 0.5
+    B 0.5
+fitting_data
+{dblock}
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        sol = f1.run()
+
+        self.assertAlmostEqual(sol.x[0], A, 1)
+        self.assertAlmostEqual(sol.x[1], B, 1)
+
+        # Try fitting a basic cosine with least_squares
+        s1 = StringIO(
+            f"""
+spins
+    mu
+results_function
+    A*cos(x)+B
+fitting_method
+    least-squares
+fitting_variables
+    A 0.5
+    B 0.5
+fitting_data
+{dblock}
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        sol = f1.run()
+
+        self.assertAlmostEqual(sol.x[0], A, 2)
+        self.assertAlmostEqual(sol.x[1], B, 2)
