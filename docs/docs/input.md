@@ -311,11 +311,14 @@ A function that should be applied on the results of a simulation it has two spec
 *Example:*
 ```plaintext
 fitting_variables
-    x
-    y  1.0  0.0 5.0
+    A
+    B  1.0  0.0 5.0
 ```
 
 Variables to fit to the experimental data. If present, the calculation is assumed to be a fitting, and the `fitting_data` keyword must be present too. The first letter in each row is the name of the variable; optionally, it can be followed in order by the starting value of the variable, the minimum bound, and the maximum bound (by default `0`, `-inf` and `+inf`). It is important to notice that while expressions are accepted in the definition of value, minimum, and maximum, these can not contain the name of other variables.
+
+!!! caution
+    Sometimes the fitting may converge to values you don't expect. To resolve this try specifying the starting value or assigning suitable bounds for the parameter.
 
 These variables can also be combined with `results_function` to perform fitting on the simulation results e.g.
 
