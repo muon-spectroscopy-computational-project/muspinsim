@@ -632,6 +632,7 @@ class KWResultsFunction(MuSpinExpandKeyword):
     block_size = 1
     accept_range = False
     default = "y"
+    _constants = {**_math_constants, **_phys_constants}
     _special_variables = ["x", "y"]
 
 

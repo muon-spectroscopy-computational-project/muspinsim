@@ -58,7 +58,7 @@ and the following functions:
 * `log(x)`: natural logarithm
 * `sqrt(x)`: square root
 
-These are all reserved names and can't be used as variable names.
+These are all reserved names and can't be used as variable names. There are also other reserved variable names `x` and `y` only for use with the `results_function` keyword.
 
 ### Using multiple lines for a keyword
 
@@ -281,6 +281,24 @@ temperature
 
 Temperature in Kelvin of the system. This is used to determine the initial density matrix of the system, as every spin that is not the muon is put in a thermal state, and in case of dissipative systems, to determine the coupling to the thermal bath. By default, it is set to infinity. A warning: both density matrices and dissipative couplings for finite temperatures are only calculated approximatively, based on the individual Hamiltonians for each spin which only account for the applied magnetic field. In other words, these approximations are meant for high field experiments, and break down in the low field regime. Therefore, caution should be used when changing this variable or interpreting the resulting simulations.
 
+### results_function
+
+| Keyword:                  |         `results_function` |
+|---------------------------|---------------------------:|
+| Allows multiple rows:     |                        No  |
+| Allows expressions:       |                        Yes |
+| Allows constants:         | default, `muon_gyr`, `MHz` |
+| Allows functions:         |                    default |
+| Allows special variables: |                   `x`, `y` |
+
+*Example:*
+```plaintext
+results_function
+    2*y
+```
+
+A function that should be applied on the results of a simulation it has two special variables available to it, `x` and `y` representing the x and y outputs of running a simulation (see [x_axis](#x_axis) and [y_axis](#y_axis)). The default value of `y` has no effect on the results.
+
 ### fitting_variables
 | Keyword:              |        `fitting_variables` |
 |-----------------------|---------------------------:|
@@ -298,6 +316,19 @@ fitting_variables
 ```
 
 Variables to fit to the experimental data. If present, the calculation is assumed to be a fitting, and the `fitting_data` keyword must be present too. The first letter in each row is the name of the variable; optionally, it can be followed in order by the starting value of the variable, the minimum bound, and the maximum bound (by default `0`, `-inf` and `+inf`). It is important to notice that while expressions are accepted in the definition of value, minimum, and maximum, these can not contain the name of other variables.
+
+These variables can also be combined with `results_function` to perform fitting on the simulation results e.g.
+
+```plaintext
+fitting_variables
+    A 1
+    B 1
+results_function
+    Ax+B
+```
+
+!!! note
+    When all defined `fitting_variables` are used only in `results_function` the simulation will only be run once. But when introducing any fitting parameters elsewhere the simulation will run for each new combination of parameters during fitting which may take a lot longer for large systems.
 
 ### fitting_data
 
@@ -348,7 +379,6 @@ fitting_tolerance
 ```
 
 Tolerance for the fitting. Used as the `tol` parameter in Scipy's `scipy.optimize.minimize` method; exact meaning depends on fitting method. Check the [Scipy documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) for further details.
-
 
 ### experiment
 
