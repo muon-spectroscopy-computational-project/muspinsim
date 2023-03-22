@@ -81,6 +81,11 @@ dissipation 2
         self.assertIn("t", cfg._x_range)
         self.assertIn("orient", cfg._avg_ranges)
 
+        array = np.arange(0, 5)
+        np.testing.assert_allclose(
+            cfg.results_function.evaluate(x=array * 2, y=array)[0], array
+        )
+
         # Now try a few errors
 
         stest = StringIO(

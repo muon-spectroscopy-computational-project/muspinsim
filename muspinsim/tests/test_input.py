@@ -579,7 +579,7 @@ zeeman 1
     def test_input_fitting_results_function(self):
         # Test input focused around fitting 'results_function'
 
-        # Should detect only need a single simulation
+        # Should detect we only need a single simulation
         i1 = MuSpinInput(
             StringIO(
                 """
@@ -615,7 +615,7 @@ results_function
         self.assertEqual(variables["A"].bounds, (0.0, 2.0))
         self.assertTrue(i1.fitting_info["single_simulation"])
 
-        # Should detect need multiple simulations
+        # Should detect the need for multiple simulations
         i1 = MuSpinInput(
             StringIO(
                 """
@@ -650,6 +650,28 @@ results_function
         self.assertEqual(variables["A"].value, 1.0)
         self.assertEqual(variables["A"].bounds, (0.0, 2.0))
         self.assertFalse(i1.fitting_info["single_simulation"])
+
+        # Should detect we only need a single simulation
+        i1 = MuSpinInput(
+            StringIO(
+                """
+fitting_variables
+    A 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2/muon_gyr
+zeeman 1
+    1 1 0
+results_function
+    2*A
+"""
+            )
+        )
+        self.assertTrue(i1.fitting_info["single_simulation"])
 
     def _write_temp_file(self, tdata):
         tfile = NamedTemporaryFile(mode="w", delete=False)

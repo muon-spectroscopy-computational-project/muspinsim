@@ -39,18 +39,16 @@ fitting_data
         dblock = "\n".join(["\t{0} {1}".format(*d) for d in data])
 
         s1 = StringIO(
-            """
+            f"""
 spins
     mu
 fitting_variables
     g   0.5
 fitting_data
-{data}
+{dblock}
 dissipation 1
     g
-""".format(
-                data=dblock
-            )
+"""
         )
 
         i1 = MuSpinInput(s1)
@@ -59,3 +57,34 @@ dissipation 1
         sol = f1.run()
 
         self.assertAlmostEqual(sol.x[0], g, 3)
+
+    def test_fit_results_function(self):
+
+        # Try fitting a basic cosine function
+        A = 2
+        B = 1
+        x_values = np.arange(0, 10)
+        y_values = A * np.cos(x_values) + B
+        dblock = "\n".join(["\t{0} {1}".format(*d) for d in zip(x_values, y_values)])
+
+        s1 = StringIO(
+            f"""
+spins
+    mu
+results_function
+    A*cos(x)+B
+fitting_variables
+    A 0.5
+    B 0.5
+fitting_data
+{dblock}
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        sol = f1.run()
+
+        self.assertAlmostEqual(sol.x[0], A, 3)
+        self.assertAlmostEqual(sol.x[1], B, 3)

@@ -204,6 +204,71 @@ intrinsic_field
 
         self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi**2 * tau**2))
 
+    def test_run_results_function(self):
+
+        # Empty system, modifying range to be 0 to 1
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+results_function
+    2*y
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+
+        self.assertTrue(np.all(results == 1))
+
+        # Simple system
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+zeeman 2
+    0 0 1.0/muon_gyr
+results_function
+    2*y/e
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        times = ertest.config.x_axis_values
+
+        self.assertTrue(np.all(np.isclose(results, np.cos(2 * np.pi * times) / np.e)))
+
+        # Results function is expected to be ignored by experiment when
+        # fitting variables are introduced
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+results_function
+    2*y
+fitting_variables
+    g
+fitting_data
+    0 0.5
+    10 0.5
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest, variables={"g": 1.0})
+
+        results = ertest.run()
+
+        self.assertTrue(np.all(results == 0.5))
+
     def test_run_intrinsic_field(self):
         # Check results from rotating are different when using field or intrinsic_field
         stest = StringIO(

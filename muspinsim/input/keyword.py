@@ -37,6 +37,9 @@ _phys_constants = {"muon_gyr": MU_GAMMA, "MHz": 1.0 / (2 * MU_GAMMA)}
 
 _pwd_functions = {"zcw": zcw_gen, "eulrange": eulrange_gen}
 
+# Reserved variables that should not be allowed as fitting parameter names
+_reserved_variables = {"x", "y"}
+
 
 # Expansion functions
 def _range(x1, x2, n=100):
@@ -550,7 +553,13 @@ class KWFittingVariables(MuSpinKeyword):
     _validators = [
         lambda s: f"Invalid value '{s.name}': variable name conflicts with a constant"
         if s.name in {**_math_constants, **_phys_constants}
-        else ""
+        else "",
+        lambda s: (
+            f"Invalid value '{s.name}': variable name conflicts with a reserved "
+            "variable name"
+        )
+        if s.name in _reserved_variables
+        else "",
     ]
 
     def _store_values(self, block):
