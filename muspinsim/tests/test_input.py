@@ -4,6 +4,7 @@ from io import StringIO
 from tempfile import NamedTemporaryFile
 
 from muspinsim.input.keyword import (
+    KWFittingMethod,
     MuSpinKeyword,
     MuSpinEvaluateKeyword,
     MuSpinExpandKeyword,
@@ -183,6 +184,30 @@ class TestInput(unittest.TestCase):
             }
         )
 
+    def test_keyword_intrinsic_field_range(self):
+        self._eval_kw(
+            {
+                "kw": "intrinsic_field",
+                "args": [],
+                "in": ["range(0, 20, 21)"],
+                "out": np.arange(21)[:, None],
+            }
+        )
+
+    def test_keyword_intrinsic_field_mhz(self):
+        kw = InputKeywords["intrinsic_field"](["500*MHz"])
+        self.assertTrue(np.isclose(kw.evaluate()[0][0], 1.84449016))
+
+    def test_keyword_intrinsic_field_defaults(self):
+        self._eval_kw(
+            {
+                "kw": "intrinsic_field",
+                "args": [],
+                "in": [],
+                "out": np.array([0]),
+            }
+        )
+
     def test_keyword_time_defaults(self):
         self._eval_kw(
             {
@@ -333,6 +358,87 @@ class TestInput(unittest.TestCase):
                 "in": [],
                 "out": np.array([0, 0, 0]),
             }
+        )
+
+    def test_keyword_fitting_method(self):
+        self._eval_kw(
+            {
+                "kw": "fitting_method",
+                "args": [],
+                "in": ["nelder-mead"],
+                "out": np.array(["nelder-mead"]),
+            }
+        )
+
+        self._eval_kw(
+            {
+                "kw": "fitting_method",
+                "args": [],
+                "in": ["lbfgs"],
+                "out": np.array(["lbfgs"]),
+            }
+        )
+
+        self._eval_kw(
+            {
+                "kw": "fitting_method",
+                "args": [],
+                "in": ["least-squares"],
+                "out": np.array(["least-squares"]),
+            }
+        )
+
+    def test_keyword_fitting_method_invalid(self):
+        with self.assertRaises(ValueError) as err:
+            InputKeywords["fitting_method"](
+                ["something"], args=[]
+            )  # Invalid value for argument
+        self.assertEqual(
+            str(err.exception),
+            (
+                "Invalid value 'something', accepted values "
+                f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
+            ),
+        )
+
+    def test_keyword_celio(self):
+        self._eval_kw(
+            {
+                "kw": "celio",
+                "args": [],
+                "in": ["1"],
+                "out": np.array(["1"]),
+            }
+        )
+
+        self._eval_kw(
+            {
+                "kw": "celio",
+                "args": [],
+                "in": ["1 2"],
+                "out": np.array(["1", "2"]),
+            }
+        )
+
+    def test_keyword_celio_defaults(self):
+        self._eval_kw(
+            {
+                "kw": "celio",
+                "args": [],
+                "in": [],
+                "out": np.array(["0", "0"]),
+            }
+        )
+
+    def test_keyword_celio_invalid(self):
+        with self.assertRaises(RuntimeError) as err:
+            InputKeywords["celio"](["1 2 3"], args=[])  # Invalid value for argument
+        self.assertEqual(
+            str(err.exception),
+            (
+                "Incorrect number of args for entry '1 2 3', "
+                "expected between 1 and 2, got 3"
+            ),
         )
 
     def test_input_valid(self):

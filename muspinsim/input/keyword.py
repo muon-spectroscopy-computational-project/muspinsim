@@ -608,7 +608,7 @@ class KWFittingMethod(MuSpinKeyword):
     default = "nelder-mead"
     _validators = [
         lambda s: (
-            f"Invalid value {s[0].lower()}, accepted values "
+            f"Invalid value '{s[0].lower()}', accepted values "
             f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
         )
         if s[0].lower() not in KWFittingMethod.ACCEPTED_FITTING_METHODS
