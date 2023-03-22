@@ -12,8 +12,8 @@ class TestFitting(unittest.TestCase):
         s1 = StringIO(
             """
 fitting_variables
-    x  0.0
-    y  1.0 0 2.0
+    A  0.0
+    B  1.0 0 2.0
 fitting_data
     0   0.5
     1   0.5
@@ -24,7 +24,7 @@ fitting_data
         i1 = MuSpinInput(s1)
         f1 = FittingRunner(i1)
 
-        self.assertEqual(f1._xnames, ("x", "y"))
+        self.assertEqual(f1._xnames, ("A", "B"))
         self.assertTrue((f1._x == [0, 1]).all())
         self.assertEqual(f1._xbounds[0], (-np.inf, np.inf))
         self.assertEqual(f1._xbounds[1], (0.0, 2.0))

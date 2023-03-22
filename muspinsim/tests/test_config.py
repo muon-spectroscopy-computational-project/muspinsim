@@ -292,7 +292,7 @@ orientation
         stest = StringIO(
             """
 fitting_variables
-    x
+    A
 fitting_data
     0   0.5
     1   0.2
@@ -300,7 +300,7 @@ fitting_data
         )
 
         itest = MuSpinInput(stest)
-        cfg = MuSpinConfig(itest.evaluate(x=0.0))
+        cfg = MuSpinConfig(itest.evaluate(A=0.0))
         # Check that the time axis has been overridden
         self.assertTrue((np.array(cfg._x_range["t"]) == [0, 1]).all())
 
@@ -308,7 +308,7 @@ fitting_data
         stest = StringIO(
             """
 fitting_variables
-    x
+    A
 fitting_data
     0   0.5
     1   0.2
@@ -322,4 +322,4 @@ orientation
 
         itest = MuSpinInput(stest)
         with self.assertRaises(MuSpinConfigError):
-            cfg = MuSpinConfig(itest.evaluate(x=0.0))
+            cfg = MuSpinConfig(itest.evaluate(A=0.0))

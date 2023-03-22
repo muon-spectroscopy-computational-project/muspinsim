@@ -546,16 +546,16 @@ results_function
             StringIO(
                 """
 fitting_variables
-    x 1.0 0.0 2.0
+    A 1.0 0.0 2.0
 fitting_data
     0  0.0
     1  1.0
     2  4.0
     3  9.0
 field
-    2*x
+    2*A
 zeeman 1
-    x x 0
+    A A 0
 """
             )
         )
@@ -565,14 +565,14 @@ zeeman 1
         data = i1.fitting_info["data"]
         self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
 
-        e1 = i1.evaluate(x=2.0)
+        e1 = i1.evaluate(A=2.0)
         self.assertEqual(e1["field"].value[0][0], 4.0)
         self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [2, 2, 0]).all())
 
         variables = i1.variables
 
-        self.assertEqual(variables["x"].value, 1.0)
-        self.assertEqual(variables["x"].bounds, (0.0, 2.0))
+        self.assertEqual(variables["A"].value, 1.0)
+        self.assertEqual(variables["A"].bounds, (0.0, 2.0))
 
         self.assertFalse(i1.fitting_info["single_simulation"])
 
@@ -693,7 +693,7 @@ results_function
             StringIO(
                 """
 fitting_variables
-    x
+    A
 fitting_data
     load("{fname}")
 fitting_method
@@ -719,7 +719,7 @@ fitting_method
                 StringIO(
                     """
 fitting_variables
-    x 1.0 0.0 5.0
+    A 1.0 0.0 5.0
 """
                 )
             )
@@ -742,24 +742,24 @@ fitting_variables
                 StringIO(
                     """
 fitting_variables
-    x 1.0 0.0 -5.0
+    A 1.0 0.0 -5.0
 fitting_data
     load("{fname}")
 fitting_method
     nelder-mead
 field
-    2*x
+    2*A
 zeeman 1
-    x x 0
+    A A 0
 """.format(
                         fname=tfile.name
                     )
                 )
             )
         self.assertTrue(
-            "Variable x has invalid range: "
+            "Variable A has invalid range: "
             "(max value -5.0 cannot be less than or equal to min value 0.0)\n"
-            "Variable x has invalid starting value: "
+            "Variable A has invalid starting value: "
             "(starting value 1.0 cannot be greater than max value -5.0)"
             in str(err.exception)
         )
@@ -778,7 +778,7 @@ fitting_data
     2  4.0
     3  9.0
 field
-    2*x
+    2*A
 zeeman 1
     MHz 0 0
 """
@@ -790,4 +790,57 @@ zeeman 1
             "Error occurred when parsing keyword 'fitting_variables' "
             "(block starting at line 2):\n"
             "Invalid value 'MHz': variable name conflicts with a constant",
+        )
+
+        # variable name clashes with reserved variables
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+fitting_variables
+    x 1.0 0.0 5.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*x
+zeeman 1
+    MHz 0 0
+"""
+                )
+            )
+        self.assertEqual(
+            str(err.exception),
+            "Found 1 Error(s) whilst trying to parse fitting keywords: \n\n"
+            "Error occurred when parsing keyword 'fitting_variables' "
+            "(block starting at line 2):\n"
+            "Invalid value 'x': variable name conflicts with a reserved variable name",
+        )
+
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+fitting_variables
+    y 1.0 0.0 5.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*y
+zeeman 1
+    MHz 0 0
+"""
+                )
+            )
+        self.assertEqual(
+            str(err.exception),
+            "Found 1 Error(s) whilst trying to parse fitting keywords: \n\n"
+            "Error occurred when parsing keyword 'fitting_variables' "
+            "(block starting at line 2):\n"
+            "Invalid value 'y': variable name conflicts with a reserved variable name",
         )
