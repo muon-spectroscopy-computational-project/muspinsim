@@ -8,6 +8,7 @@ import scipy.constants as cnst
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
+from muspinsim.hamiltonian2 import Hamiltonian2
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
@@ -220,14 +221,29 @@ class ExperimentRunner:
         if self._Hz is None:
             # Compute Zeeman Hamiltonian contribution
             if not self._config.celio_k:
-                B = self._B
-                g = self._system.gammas
-                Bg = B[None, :] * g[:, None]
+                # B = self._B
+                # g = self._system.gammas
+                # Bg = B[None, :] * g[:, None]
 
-                Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
-                Hz = np.sum(Hz_sp_list)
+                # Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+                # Hz = np.sum(Hz_sp_list)
 
-                self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+                # self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+
+                extra_terms = []
+                # Add zeeman terms only if there is a field present to avoid
+                # making Celio's method unnecessarily expensive
+                if not np.array_equal(self._B, [0, 0, 0]):
+                    for i in range(len(self._system.spins)):
+                        extra_terms.append(
+                            SingleTerm(
+                                self._system,
+                                i,
+                                self._B * self._system.gammas[i],
+                                label="Zeeman",
+                            )
+                        )
+                self._Hz = Hamiltonian2(extra_terms, self._system)
             else:
                 extra_terms = []
                 # Add zeeman terms only if there is a field present to avoid

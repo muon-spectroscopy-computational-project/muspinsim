@@ -12,6 +12,7 @@ from scipy import sparse
 from qutip import sigmax, sigmay, sigmaz
 
 from muspinsim.celio import CelioHamiltonian
+from muspinsim.hamiltonian2 import Hamiltonian2
 from muspinsim.utils import Clonable
 from muspinsim.spinop import SpinOperator
 from muspinsim.hamiltonian import Hamiltonian
@@ -49,7 +50,7 @@ class InteractionTerm(Clonable):
                 op = (
                     self._spinsys.operator(
                         {self.indices[0]: ["xyz"[ii[0]], "xyz"[ii[1]]]},
-                        include_only_given=self._spinsys.celio_k,
+                        include_only_given=True,
                     )
                     * self._tensor[tuple(ii)]
                 )
@@ -58,7 +59,7 @@ class InteractionTerm(Clonable):
                 op = (
                     self._spinsys.operator(
                         {ind: "xyz"[ii[i]] for i, ind in enumerate(self._indices)},
-                        include_only_given=self._spinsys.celio_k,
+                        include_only_given=True,
                     )
                     * self._tensor[tuple(ii)]
                 )
@@ -622,12 +623,13 @@ class SpinSystem(Clonable):
     def hamiltonian(self):
         H = None
         if not self._celio_k:
-            if len(self._terms) == 0:
-                n = np.prod(self.dimension)
-                H = sparse.csr_matrix((n, n))
-            else:
-                H = np.sum([t.matrix for t in self._terms], axis=0)
-            H = Hamiltonian(H, dim=self.dimension)
+            # if len(self._terms) == 0:
+            #     n = np.prod(self.dimension)
+            #     H = sparse.csr_matrix((n, n))
+            # else:
+            #     H = np.sum([t.matrix for t in self._terms], axis=0)
+            # H = Hamiltonian(H, dim=self.dimension)
+            H = Hamiltonian2(self._terms, self)
         else:
             H = CelioHamiltonian(self._terms, self._celio_k, self)
 
