@@ -329,9 +329,8 @@ class Operator(Clonable):
         """
 
         ans = self.clone()
-        basis = sparse.csr_matrix(basis)
         x = basis.T.conjugate()
-        ans._matrix = x.dot(ans._matrix).dot(basis)
+        ans._matrix = x @ ans._matrix @ basis
 
         return ans
 

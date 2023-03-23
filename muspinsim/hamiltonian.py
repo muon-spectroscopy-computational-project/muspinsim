@@ -76,12 +76,10 @@ class Hamiltonian(Operator, Hermitian):
 
         # Turn the density matrix in the right basis
         dim = rho0.dimension
-        rho0 = rho0.basis_change(evecs).matrix.toarray()
+        rho0 = rho0.basis_change(evecs).matrix
 
         # Same for operators
-        operatorsT = np.array(
-            [o.basis_change(evecs).matrix.T.toarray() for o in operators]
-        )
+        operatorsT = np.array([o.basis_change(evecs).matrix.T for o in operators])
 
         # Matrix of evolution operators
         ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
@@ -151,16 +149,13 @@ class Hamiltonian(Operator, Hermitian):
         evals, evecs = self.diag()
 
         # Turn the density matrix in the right basis
-        rho0 = rho0.basis_change(evecs).matrix.toarray()
+        rho0 = rho0.basis_change(evecs).matrix
 
         ll = 2.0j * np.pi * (evals[:, None] - evals[None, :])
 
         # Integral operators
         intops = np.array(
-            [
-                (-o.basis_change(evecs).matrix.toarray() / (ll - 1.0 / tau)).T
-                for o in operators
-            ]
+            [(-o.basis_change(evecs).matrix / (ll - 1.0 / tau)).T for o in operators]
         )
 
         result = np.sum(rho0[None, :, :] * intops[:, :, :], axis=(1, 2))
