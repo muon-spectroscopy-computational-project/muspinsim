@@ -17,19 +17,21 @@ from muspinsim.validation import (
 
 
 class Hamiltonian(Operator, Hermitian):
-    def __init__(self, matrix, dim=None):
+    def __init__(self, matrix, dim=None, use_sparse=True):
         """Create an Hamiltonian
 
         Create an Hamiltonian from a hermitian complex matrix
 
         Arguments:
             matrix {ndarray} -- Matrix representation of the Hamiltonian
+            dim {(int,...)} -- See Operator
+            use_sparse {bool} -- See Operator
 
         Raises:
             ValueError -- Matrix isn't square or hermitian
         """
 
-        super(Hamiltonian, self).__init__(matrix, dim)
+        super(Hamiltonian, self).__init__(matrix, dim, use_sparse=use_sparse)
 
     @classmethod
     def from_spin_operator(self, spinop):
