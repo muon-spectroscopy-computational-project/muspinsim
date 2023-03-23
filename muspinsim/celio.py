@@ -12,6 +12,7 @@ import logging
 from typing import List
 import numpy as np
 from scipy import sparse
+import scipy
 from qutip import Qobj
 
 from muspinsim.cpp import (
@@ -161,9 +162,9 @@ class CelioHamiltonian:
         for H_contrib in H_contribs:
             # The matrix is currently stored in csr format, but expm wants it
             # in csc so convert here
-            evol_op_contrib = sparse.linalg.expm(
-                -2j * np.pi * H_contrib.matrix.tocsc() * time_step / self._k
-            ).tocsr()
+            evol_op_contrib = scipy.linalg.expm(
+                -2j * np.pi * H_contrib.matrix * time_step / self._k
+            )
 
             if cpp:
                 # C++ version - No kronecker products required - just an array

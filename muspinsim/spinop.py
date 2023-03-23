@@ -68,7 +68,7 @@ class Hermitian:
             pass
 
         # need to convert this to use sparse matrices instead
-        eigh = np.linalg.eigh(self._matrix.toarray())
+        eigh = np.linalg.eigh(self._matrix)
 
         # setting k is important
         # too big will cause memory issues
@@ -108,7 +108,7 @@ class Operator(Clonable):
             ValueError -- Any of the passed values are invalid
         """
         # use sparse matrices
-        self._matrix = sparse.csr_matrix(matrix)
+        self._matrix = np.array(matrix)
 
         if not matrix.shape[0] == matrix.shape[1]:
             raise ValueError("Matrix passed to Operator must be square")
@@ -179,7 +179,7 @@ class Operator(Clonable):
         elif isinstance(x, Number):
 
             ans = self.clone()
-            ans._matrix += sparse.eye(ans._matrix.shape[0]) * x
+            ans._matrix += np.eye(ans._matrix.shape[0]) * x
 
             return ans
 
@@ -215,14 +215,14 @@ class Operator(Clonable):
                 )
 
             ans = self.clone()
-            ans._matrix = ans._matrix.dot(x._matrix)
+            ans._matrix = np.dot(ans._matrix, x._matrix)
 
             return ans
 
         elif isinstance(x, Number):
 
             ans = self.clone()
-            ans._matrix = ans._matrix.multiply(x)
+            ans._matrix *= x
 
             return ans
 
@@ -277,7 +277,7 @@ class Operator(Clonable):
         # Doing it this way saves some time
         ans = self.__class__.__new__(self.__class__)
         ans._dim = self._dim + x._dim
-        ans._matrix = sparse.kron(self._matrix, x._matrix, format="csr")
+        ans._matrix = np.kron(self._matrix, x._matrix)
 
         return ans
 
@@ -312,7 +312,7 @@ class Operator(Clonable):
         A = self.matrix
         B = x.matrix
 
-        return A.conjugate().T.dot(B).trace().item()
+        return np.trace(np.dot(A.conj().T, B))
 
     def basis_change(self, basis):
         """Return a version of this Operator with different basis
@@ -329,8 +329,7 @@ class Operator(Clonable):
         """
 
         ans = self.clone()
-        x = basis.T.conjugate()
-        ans._matrix = x @ ans._matrix @ basis
+        ans._matrix = np.linalg.multi_dot([basis.T.conj(), ans._matrix, basis])
 
         return ans
 
@@ -387,7 +386,7 @@ class SpinOperator(Operator):
         for m in matrices[1:]:
             M = np.kron(M, m)
 
-        return self(sparse.csr_matrix(M), dim=dim)
+        return self(M, dim=dim)
 
 
 class DensityOperator(Operator):
@@ -499,15 +498,15 @@ class DensityOperator(Operator):
         for m in matrices[1:]:
             M = np.kron(M, m)
 
-        return self(sparse.csr_matrix(M), dim=dim)
+        return self(M, dim=dim)
 
     @property
     def trace(self):
-        return self._matrix.trace()
+        return np.trace(self._matrix)
 
     def normalize(self):
         """Normalize this DensityOperator to have trace equal to one."""
-        self._matrix = self._matrix.multiply(1 / self.trace)
+        self._matrix *= 1 / self.trace
 
     def partial_trace(self, trace_dim=None):
         """Perform a partial trace operation
@@ -529,7 +528,7 @@ class DensityOperator(Operator):
         dim = list(self._dim)
         tdim = list(sorted(trace_dim))
 
-        m = self._matrix.toarray().reshape(dim + dim)
+        m = self._matrix.reshape(dim + dim)
 
         while len(tdim) > 0:
             td = tdim.pop(-1)
@@ -565,7 +564,7 @@ class DensityOperator(Operator):
                 "SpinOperator and DensityOperator do not have compatible dimensions"
             )
 
-        return operator.matrix.multiply(self.matrix.T).sum()
+        return np.sum(operator.matrix * self.matrix.T)
 
 
 class SuperOperator(Operator):
@@ -599,7 +598,7 @@ class SuperOperator(Operator):
         m = operator.matrix
         d = operator.dimension
 
-        M = sparse.kron(m, sparse.eye(m.shape[0]))
+        M = np.kron(np.eye(m.shape[0]), m.T)
 
         return self(M, d + d)
 
@@ -621,7 +620,7 @@ class SuperOperator(Operator):
         m = operator.matrix
         d = operator.dimension
 
-        M = sparse.kron(sparse.eye(m.shape[0]), m.T)
+        M = np.kron(np.eye(m.shape[0]), m.T)
 
         return self(M, d + d)
 
@@ -679,7 +678,7 @@ class SuperOperator(Operator):
         m = operator.matrix
         d = operator.dimension
 
-        M = sparse.kron(m, m.conjugate())
+        M = np.kron(m, m.conj())
 
         return self(M, d + d)
 
@@ -705,8 +704,8 @@ class SuperOperator(Operator):
             # Vectorize x
             m = x.matrix
             s = m.shape
-            m = m.toarray().reshape((-1,))
-            m = self.matrix.dot(m).reshape(s)
+            m = m.reshape((-1,))
+            m = np.dot(self.matrix, m).reshape(s)
             return Operator(m, x.dimension)
 
         raise TypeError("Unsupported operation for Operator")

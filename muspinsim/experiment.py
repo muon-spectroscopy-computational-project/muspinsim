@@ -186,7 +186,7 @@ class ExperimentRunner:
                         ],
                         axis=0,
                     )
-                    evals, evecs = np.linalg.eigh(Hz.toarray())
+                    evals, evecs = np.linalg.eigh(Hz)
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
@@ -220,10 +220,12 @@ class ExperimentRunner:
             if not self._config.celio_k:
                 B = self._B
                 g = self._system.gammas
-                Bg = B[None, :] * g[:, None]
-
-                Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
-                Hz = np.sum(Hz_sp_list)
+                Hz = np.sum(
+                    B[None, :, None, None]
+                    * g[:, None, None, None]
+                    * self._single_spinops,
+                    axis=(0, 1),
+                )
 
                 self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
             else:
