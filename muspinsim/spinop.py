@@ -416,7 +416,7 @@ class SpinOperator(Operator):
 
 
 class DensityOperator(Operator):
-    def __init__(self, matrix, dim=None, use_sparse=True):
+    def __init__(self, matrix, dim=None, use_sparse=False):
         """Create a DensityOperator object
 
         Create an object representing a density operator. These can
@@ -532,7 +532,10 @@ class DensityOperator(Operator):
 
     def normalize(self):
         """Normalize this DensityOperator to have trace equal to one."""
-        self._matrix = self._matrix.multiply(1 / self.trace)
+        if self._sparse:
+            self._matrix = self._matrix.multiply(1 / self.trace)
+        else:
+            self._matrix *= 1 / self.trace
 
     def partial_trace(self, trace_dim=None):
         """Perform a partial trace operation

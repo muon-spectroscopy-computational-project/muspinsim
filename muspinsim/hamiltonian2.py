@@ -301,8 +301,6 @@ class Hamiltonian2(Operator, Hermitian):
         if N > 1900:
             print(TOTAL_TIME)
 
-        print(type(rho0.matrix))
-
         # Turn the density matrix in the right basis
         rho0 = rho0.basis_change(evecs).matrix
 
