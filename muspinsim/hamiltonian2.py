@@ -3,9 +3,17 @@
 A class describing a spin Hamiltonian with various terms
 """
 
+import time
+from typing import List
 import numpy as np
+from dataclasses import dataclass
+import itertools
+import logging
+from typing import List
+from qutip import Qobj
 
 from scipy import sparse
+from muspinsim.celio import CelioHContrib
 
 from muspinsim.cython import parallel_fast_time_evolve
 from muspinsim.spinop import SpinOperator, DensityOperator, Operator, Hermitian
@@ -15,27 +23,165 @@ from muspinsim.validation import (
     validate_times,
 )
 
+TOTAL_TIME = 0
+N = 0
 
-class Hamiltonian(Operator, Hermitian):
-    def __init__(self, matrix, dim=None, use_sparse=True):
-        """Create an Hamiltonian
 
-        Create an Hamiltonian from a hermitian complex matrix
+class Hamiltonian2(Operator, Hermitian):
+    def __init__(self, terms, spinsys):
+        """Create a CelioHamiltonian
+
+        Create a CelioHamiltonian for applying Celio's method
 
         Arguments:
-            matrix {ndarray} -- Matrix representation of the Hamiltonian
-            dim {(int,...)} -- See Operator
-            use_sparse {bool} -- See Operator
+            terms {[InteractionTerm]} -- Interaction terms that will form part of the
+                                         Trotter expansion
+            k {int} -- Factor to be used in the Trotter expansion
+            spinsys {SpinSystem} -- SpinSystem required for computing the time evolution
+        """
+        self._terms = terms
+        self._spinsys = spinsys
 
-        Raises:
-            ValueError -- Matrix isn't square or hermitian
+    def __add__(self, x):
+        return Hamiltonian2(self._terms + x._terms, self._spinsys)
+
+    def _calc_H_contribs(self) -> List[CelioHContrib]:
+        """Calculates and returns the Hamiltonian contributions required for Celio's
+           method
+
+        Returns the hamiltonian contributions defined by this system of spins and the
+        given interactions. In general these are split up per group of indices defined
+        in interactions to minimise the need of matrix exponentials.
+
+        Returns:
+            H_contribs {[CelioHContrib]} -- List of matrices representing contributions
+                                            to the total system hamiltonians referred to
+                                            in Celio's method as H_i
         """
 
-        super(Hamiltonian, self).__init__(matrix, dim, use_sparse=use_sparse)
+        spin_indices = range(0, len(self._spinsys.spins))
+
+        H_contribs = []
+
+        for i in spin_indices:
+            # Only want to include each interaction once, will make the choice here to
+            # only add it to the H_i for the first particle listed in the interactions
+
+            # Find the terms that have the current spin as its first or only index
+            spin_ints = [term for term in (self._terms) if i == term.indices[0]]
+
+            # List of spin indices not included here
+            other_spins = list(range(0, len(self._spinsys.spins)))
+            other_spins.remove(i)
+
+            # Only include necessary terms
+            if len(spin_ints) != 0:
+                # Sum matrices with the same indices so we avoid lots of matrix
+                # exponentials
+                for indices, group in itertools.groupby(
+                    spin_ints, lambda term: term.indices
+                ):
+
+                    grouped_spin_ints = list(group)
+                    H_contrib = np.sum(
+                        [term.matrix for term in grouped_spin_ints], axis=0
+                    )
+
+                    # Find indices of spins not involved in the current interactions
+                    uninvolved_spins = other_spins.copy()
+                    for term in grouped_spin_ints:
+                        for j in term.indices:
+                            if j in uninvolved_spins:
+                                uninvolved_spins.remove(j)
+
+                    other_dimension = np.product(
+                        [self._spinsys.dimension[j] for j in uninvolved_spins]
+                    )
+
+                    # Detect Quadrupolar terms which will have the same index twice
+                    indices = list(indices)
+                    if len(indices) == 2 and indices[0] == indices[1]:
+                        # Only include one of them for the ordering
+                        indices.pop()
+
+                    # Order in which kronecker products will be performed in Celio's
+                    # method and the corresponding dimensions
+                    spin_order = indices + uninvolved_spins
+                    spin_dimensions = [self._spinsys.dimension[i] for i in spin_order]
+
+                    H_contribs.append(
+                        CelioHContrib(
+                            H_contrib,
+                            other_dimension,
+                            spin_order,
+                            spin_dimensions,
+                        )
+                    )
+
+        return H_contribs
+
+    def _calc_full_hamiltonian(self):
+        """Calculates and returns the contributions to the Trotter expansion of
+        the time evolution operator computed from the Hamiltonian contributions
+
+        Arguments:
+            time_step {float} -- Timestep that will be used during the evolution
+            cpp {boolean} -- When true will calculate ready for use with the C++
+                             version
+
+        Returns:
+            evol_op_contribs {[matrix]} -- Contributions to the Trotter expansion
+                                           of the evolution operator
+        """
+
+        H_contribs = self._calc_H_contribs()
+
+        total_H = None
+
+        for H_contrib in H_contribs:
+            # The matrix is currently stored in csr format, but expm wants it
+            # in csc so convert here
+            evol_op_contrib = H_contrib.matrix
+
+            # Python version - requires kronecker products
+            if H_contrib.other_dimension > 1:
+                evol_op_contrib = np.kron(
+                    evol_op_contrib,
+                    np.eye(H_contrib.other_dimension, H_contrib.other_dimension),
+                )
+
+            # For particle interactions that are not neighbors we must use
+            # a swap gate
+            qtip_obj = Qobj(
+                inpt=evol_op_contrib,
+                dims=[H_contrib.spin_dimensions, H_contrib.spin_dimensions],
+            )
+            # Order we need to permute in order to obtain the same order
+            # as was given in the input
+            permute_order = np.argsort(H_contrib.spin_order)
+
+            qtip_obj = qtip_obj.permute(permute_order)
+
+            evol_op_contrib = qtip_obj.data.toarray()
+
+            if total_H is None:
+                total_H = evol_op_contrib
+            else:
+                total_H += evol_op_contrib
+
+        return total_H
 
     @classmethod
     def from_spin_operator(self, spinop):
         return self(spinop.matrix, spinop.dimension)
+
+    def diag(self):
+        global TOTAL_TIME
+        start_t = time.time()
+        total_H = self._calc_full_hamiltonian()
+        TOTAL_TIME += time.time() - start_t
+
+        return np.linalg.eigh(total_H)
 
     def evolve(self, rho0, times, operators=None):
         """Time evolution of a state under this Hamiltonian
@@ -149,6 +295,11 @@ class Hamiltonian(Operator, Hermitian):
 
         # Diagonalize self
         evals, evecs = self.diag()
+
+        global TOTAL_TIME, N
+        N += 1
+        if N > 1900:
+            print(TOTAL_TIME)
 
         # Turn the density matrix in the right basis
         rho0 = rho0.basis_change(evecs).matrix

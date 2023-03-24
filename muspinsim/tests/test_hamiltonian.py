@@ -31,7 +31,7 @@ class TestHamiltonian(unittest.TestCase):
 
         Hrot = H.basis_change(evecs)
 
-        self.assertTrue(np.all(np.isclose(Hrot.matrix.toarray(), np.diag(evals))))
+        self.assertTrue(np.all(np.isclose(Hrot.matrix, np.diag(evals))))
 
     def test_evolve(self):
 

@@ -8,6 +8,7 @@ import scipy.constants as cnst
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.constants import MU_TAU
+from muspinsim.hamiltonian2 import Hamiltonian2
 from muspinsim.utils import get_xy
 from muspinsim.mpi import mpi_controller as mpi
 from muspinsim.simconfig import MuSpinConfig, ConfigSnapshot
@@ -82,13 +83,14 @@ class ExperimentRunner:
 
         # Store single spin operators (only needed for dispersion
         # and non other non celio methods)
-        if not self.config.celio_k:
-            self._single_spinops = np.array(
-                [
-                    [self._system.operator({i: a}).matrix for a in "xyz"]
-                    for i in range(len(self._system))
-                ]
-            )
+        # Large source of memory usage
+        # if not self.config.celio_k:
+        #     self._single_spinops = np.array(
+        #         [
+        #             [self._system.operator({i: a}).matrix for a in "xyz"]
+        #             for i in range(len(self._system))
+        #         ]
+        #     )
 
         # Parameters
         self._B = np.zeros(3)
@@ -179,14 +181,16 @@ class ExperimentRunner:
                     r = DensityOperator.from_vectors(I, muon_axis, 0)
                 else:
                     # Get the Zeeman Hamiltonian for this field
+                    # Don't bother using sparse, we need them dense for eigh
+                    # anyway
                     Hz = np.sum(
                         [
-                            B[j] * SpinOperator.from_axes(I, e).matrix
+                            B[j] * SpinOperator.from_axes(I, e, use_sparse=False).matrix
                             for j, e in enumerate("xyz")
                         ],
                         axis=0,
                     )
-                    evals, evecs = np.linalg.eigh(Hz.toarray())
+                    evals, evecs = np.linalg.eigh(Hz)
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
@@ -218,14 +222,29 @@ class ExperimentRunner:
         if self._Hz is None:
             # Compute Zeeman Hamiltonian contribution
             if not self._config.celio_k:
-                B = self._B
-                g = self._system.gammas
-                Bg = B[None, :] * g[:, None]
+                # B = self._B
+                # g = self._system.gammas
+                # Bg = B[None, :] * g[:, None]
 
-                Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
-                Hz = np.sum(Hz_sp_list)
+                # Hz_sp_list = (self._single_spinops * Bg).flatten().tolist()
+                # Hz = np.sum(Hz_sp_list)
 
-                self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+                # self._Hz = Hamiltonian(Hz, dim=self._system.dimension)
+
+                extra_terms = []
+                # Add zeeman terms only if there is a field present to avoid
+                # making Celio's method unnecessarily expensive
+                if not np.array_equal(self._B, [0, 0, 0]):
+                    for i in range(len(self._system.spins)):
+                        extra_terms.append(
+                            SingleTerm(
+                                self._system,
+                                i,
+                                self._B * self._system.gammas[i],
+                                label="Zeeman",
+                            )
+                        )
+                self._Hz = Hamiltonian2(extra_terms, self._system)
             else:
                 extra_terms = []
                 # Add zeeman terms only if there is a field present to avoid
