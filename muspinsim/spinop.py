@@ -427,6 +427,12 @@ class DensityOperator(Operator):
             matrix {ndarray} -- Matrix describing the operator (must be a
                                 square hermitian 2D array and have non-zero
                                 trace; will be normalised to have trace 1)
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+                               If not specified, it's taken from the size of
+                               the matrix (default: {None})
+            use_sparse {bool} -- Determines whether to use sparse matrices for
+                                 storing this operator's matrix
 
         Keyword Arguments:
             dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
@@ -451,7 +457,7 @@ class DensityOperator(Operator):
             raise ValueError("DensityOperator must be hermitian!")
 
     @classmethod
-    def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0):
+    def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0, use_sparse=True):
         """Construct a density matrix state from real space vectors
 
         Construct a density matrix state by specifying a number of spins and
@@ -469,6 +475,8 @@ class DensityOperator(Operator):
                                  if it's only one value. All off-diagonal
                                  elements for each corresponding density matrix
                                  will be multiplied by 1-gamma. (default: {0})
+            use_sparse {bool} -- Whether to use a sparse matrix for storing the
+                                 generated operator's matrix
 
         Returns:
             DensityOperator -- The composite density operator
@@ -497,13 +505,13 @@ class DensityOperator(Operator):
         for I, vec, gamma in zip(Is, vectors, gammas):
 
             if I % 0.5 or I < 0.5:
-                raise ValueError("{0} is not a valid spin value".format(I))
+                raise ValueError(f"{I} is not a valid spin value")
 
             if not len(vec) == 3:
-                raise ValueError("{0} is not a valid 3D vector".format(vec))
+                raise ValueError(f"{vec} is not a valid 3D vector")
 
             if gamma < 0 or gamma > 1:
-                raise ValueError("{0} is not a valid gamma value".format(gamma))
+                raise ValueError(f"{gamma} is not a valid gamma value")
 
             mvals = _mvals(I)
 
@@ -524,7 +532,7 @@ class DensityOperator(Operator):
         for m in matrices[1:]:
             M = np.kron(M, m)
 
-        return self(M, dim=dim)
+        return self(M, dim=dim, use_sparse=use_sparse)
 
     @property
     def trace(self):
@@ -532,7 +540,10 @@ class DensityOperator(Operator):
 
     def normalize(self):
         """Normalize this DensityOperator to have trace equal to one."""
-        self._matrix = self._matrix.multiply(1 / self.trace)
+        if self._sparse:
+            self._matrix = self._matrix.multiply(1 / self.trace)
+        else:
+            self._matrix = np.multiply(self._matrix, 1 / self.trace)
 
     def partial_trace(self, trace_dim=None):
         """Perform a partial trace operation
@@ -554,7 +565,8 @@ class DensityOperator(Operator):
         dim = list(self._dim)
         tdim = list(sorted(trace_dim))
 
-        m = self._matrix.toarray().reshape(dim + dim)
+        m = self._matrix.toarray() if self._sparse else self._matrix
+        m = m.reshape(dim + dim)
 
         while len(tdim) > 0:
             td = tdim.pop(-1)
@@ -562,7 +574,7 @@ class DensityOperator(Operator):
             m = np.trace(m, axis1=td, axis2=td + len(dim))
             dim.pop(td)  # Reduce dimension accordingly
 
-        return DensityOperator(m, dim)
+        return DensityOperator(m, dim, use_sparse=self._sparse)
 
     def expectation(self, operator):
         """Compute expectation value of one operator

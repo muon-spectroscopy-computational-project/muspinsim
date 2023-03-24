@@ -198,6 +198,40 @@ class TestSpinOperator(unittest.TestCase):
             )
         )
 
+        # Normalisation
+        density_op = DensityOperator(np.eye(4) * 10)
+        density_op.normalize()
+        np.testing.assert_allclose(density_op.matrix.toarray(), np.eye(4) / 4)
+
+    def test_density_dense(self):
+
+        rho = DensityOperator(np.eye(6) / 6.0, (2, 3), use_sparse=False)
+        rhosmall = rho.partial_trace([1])
+
+        self.assertEqual(rhosmall.dimension, (2,))
+        self.assertTrue(np.all(np.isclose(rhosmall.matrix, np.eye(2) / 2)))
+
+        with self.assertRaises(ValueError):
+            DensityOperator(np.array([[0, 1], [1, 0]]), use_sparse=False)
+
+        with self.assertRaises(ValueError):
+            DensityOperator(np.array([[1, 1], [0, 1]]), use_sparse=False)
+
+        rho = DensityOperator.from_vectors(0.5, [1, 0, 0], use_sparse=False)
+
+        self.assertTrue(np.all(rho.matrix == np.ones((2, 2)) * 0.5))
+
+        rho = DensityOperator.from_vectors(0.5, [0, 1, 0], 0.5, use_sparse=False)
+
+        self.assertTrue(
+            np.all(np.isclose(rho.matrix, np.array([[0.5, -0.25j], [0.25j, 0.5]])))
+        )
+
+        # Normalisation
+        density_op = DensityOperator(np.eye(4) * 10, use_sparse=False)
+        density_op.normalize()
+        np.testing.assert_allclose(density_op.matrix, np.eye(4) / 4)
+
     def test_superoperator(self):
 
         sx = SpinOperator.from_axes()
