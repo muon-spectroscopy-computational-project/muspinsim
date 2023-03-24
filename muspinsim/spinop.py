@@ -85,7 +85,7 @@ class Hermitian:
 
 
 class Operator(Clonable):
-    def __init__(self, matrix, dim=None, herm_tol=1e-6, use_sparse=True):
+    def __init__(self, matrix, dim=None, herm_tol=1e-6, use_sparse=False):
         """Create a Operator object
 
         Create an object representing a spin operator. These can
@@ -360,7 +360,7 @@ class Operator(Clonable):
 
 class SpinOperator(Operator):
     @classmethod
-    def from_axes(self, Is=0.5, axes="x", use_sparse=True):
+    def from_axes(self, Is=0.5, axes="x", use_sparse=False):
         """Construct a SpinOperator from spins and axes
 
         Construct a SpinOperator from a list of spin values and directions. For

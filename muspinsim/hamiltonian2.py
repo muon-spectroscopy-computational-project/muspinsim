@@ -3,6 +3,7 @@
 A class describing a spin Hamiltonian with various terms
 """
 
+import time
 from typing import List
 import numpy as np
 from dataclasses import dataclass
@@ -21,6 +22,9 @@ from muspinsim.validation import (
     validate_integrate_decaying_params,
     validate_times,
 )
+
+TOTAL_TIME = 0
+N = 0
 
 
 class Hamiltonian2(Operator, Hermitian):
@@ -79,7 +83,9 @@ class Hamiltonian2(Operator, Hermitian):
                 ):
 
                     grouped_spin_ints = list(group)
-                    H_contrib = np.sum([term.matrix for term in grouped_spin_ints])
+                    H_contrib = np.sum(
+                        [term.matrix for term in grouped_spin_ints], axis=0
+                    )
 
                     # Find indices of spins not involved in the current interactions
                     uninvolved_spins = other_spins.copy()
@@ -139,9 +145,9 @@ class Hamiltonian2(Operator, Hermitian):
 
             # Python version - requires kronecker products
             if H_contrib.other_dimension > 1:
-                evol_op_contrib = sparse.kron(
+                evol_op_contrib = np.kron(
                     evol_op_contrib,
-                    sparse.identity(H_contrib.other_dimension, format="csr"),
+                    np.eye(H_contrib.other_dimension, H_contrib.other_dimension),
                 )
 
             # For particle interactions that are not neighbors we must use
@@ -155,7 +161,8 @@ class Hamiltonian2(Operator, Hermitian):
             permute_order = np.argsort(H_contrib.spin_order)
 
             qtip_obj = qtip_obj.permute(permute_order)
-            evol_op_contrib = qtip_obj.data
+
+            evol_op_contrib = qtip_obj.data.toarray()
 
             if total_H is None:
                 total_H = evol_op_contrib
@@ -169,9 +176,12 @@ class Hamiltonian2(Operator, Hermitian):
         return self(spinop.matrix, spinop.dimension)
 
     def diag(self):
+        global TOTAL_TIME
+        start_t = time.time()
         total_H = self._calc_full_hamiltonian()
+        TOTAL_TIME += time.time() - start_t
 
-        return np.linalg.eigh(total_H.toarray())
+        return np.linalg.eigh(total_H)
 
     def evolve(self, rho0, times, operators=None):
         """Time evolution of a state under this Hamiltonian
@@ -285,6 +295,13 @@ class Hamiltonian2(Operator, Hermitian):
 
         # Diagonalize self
         evals, evecs = self.diag()
+
+        global TOTAL_TIME, N
+        N += 1
+        if N > 1900:
+            print(TOTAL_TIME)
+
+        print(type(rho0.matrix))
 
         # Turn the density matrix in the right basis
         rho0 = rho0.basis_change(evecs).matrix

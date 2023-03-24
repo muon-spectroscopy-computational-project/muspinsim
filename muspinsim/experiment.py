@@ -83,6 +83,7 @@ class ExperimentRunner:
 
         # Store single spin operators (only needed for dispersion
         # and non other non celio methods)
+        # Large source of memory usage
         if not self.config.celio_k:
             self._single_spinops = np.array(
                 [
