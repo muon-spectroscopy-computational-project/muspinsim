@@ -250,14 +250,9 @@ class MuSpinInput:
                 elif name in ["results_function"]:
                     if name in self._keywords:
                         result[name] = self._keywords[name]
-                    elif KWClass.default is not None:
-                        v = (
-                            variables
-                            if issubclass(KWClass, MuSpinEvaluateKeyword)
-                            else {}
-                        )
-
-                        result[name] = KWClass(variables=v)
+                    else:
+                        # Default
+                        result[name] = KWClass(variables=variables)
                 elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}

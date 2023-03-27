@@ -35,10 +35,10 @@ class ExperimentRunner:
             in_file {MuSpinInput} -- The input file object defining the
                                     calculations we need to perform.
             variables {dict} -- The values of any variables appearing in the input
-                                file. When specified it will be assumed that we
-                                are running a fitting calculation and
-                                results_function will not be used when 'run' is
-                                called.
+                                file. Should only be specified when
+                                running a fitting calculation, in which case
+                                results_function will not be applied when 'run' is
+                                called as it is already applied by the FittingRunner.
         """
         # Fix W0102:dangerous-default-value
         if variables is None:
@@ -331,7 +331,7 @@ class ExperimentRunner:
     def p_operator(self):
         return self._system.muon_operator(self.p)
 
-    def _apply_results_function(self, results: ArrayLike, variables: dict):
+    def apply_results_function(self, results: ArrayLike, variables: dict):
         # We expect muspinsim to output arrays with shape N here
         # but the evaluation will return an array with shape (1, N) instead
         return np.array(
@@ -361,7 +361,7 @@ class ExperimentRunner:
         # FittingRunner handle it so we can optimise and avoid repeated calls
         # to this function)
         if not self._variables:
-            results = self._apply_results_function(results, self._variables)
+            results = self.apply_results_function(results, {})
 
         self._config.results = results
         return self._config.results

@@ -78,7 +78,7 @@ class FittingRunner:
                 # value and all upper values in separate arrays
 
                 # lbfgs uses gtol when using tol, so will do the same here
-                xbounds = np.array([np.array(elem) for elem in self._xbounds])
+                xbounds = np.array(self._xbounds)
                 self._sol = least_squares(
                     self._targfun,
                     self._x,
@@ -103,7 +103,7 @@ class FittingRunner:
             # As we are fitting, the config will only contain the results
             # prior to the applying results_function, so update the actual
             # values now
-            self._runner.config.results = self._runner._apply_results_function(
+            self._runner.config.results = self._runner.apply_results_function(
                 self._runner.config.results, dict(zip(self._xnames, self._sol["x"]))
             )
 
@@ -142,7 +142,7 @@ class FittingRunner:
         y = self._obtain_results(vardict)
 
         # Apply the results function
-        y = self._runner._apply_results_function(y, vardict)
+        y = self._runner.apply_results_function(y, vardict)
 
         if mpi.is_root:
             # Compare with target data

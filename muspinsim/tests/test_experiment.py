@@ -246,7 +246,8 @@ results_function
         self.assertTrue(np.all(np.isclose(results, np.cos(2 * np.pi * times) / np.e)))
 
         # Results function is expected to be ignored by experiment when
-        # fitting variables are introduced
+        # fitting variables are introduced (as it would be applied by
+        # FittingRunner in normal, command-line usage)
         stest = StringIO(
             """
 spins
