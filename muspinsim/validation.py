@@ -56,6 +56,7 @@ def validate_celio_params(terms, times):
     Raises:
         ValueError -- If there are no terms to evolve with
         ValueError -- If the first time does not start at 0
+        ValueError -- If the times have uneven spacing
     """
 
     if len(terms) == 0:
@@ -63,6 +64,11 @@ def validate_celio_params(terms, times):
 
     if times[0] != 0:
         raise ValueError("Cannot use Celio's method with a non-zero start time")
+
+    # Ensure the spacing is identical between all the values
+    differences = np.diff(times)
+    if not np.isclose(differences, differences[0]).all():
+        raise ValueError("Cannot use Celio's method with uneven spacing between times")
 
 
 def validate_integrate_decaying_params(rho0, tau, operators):

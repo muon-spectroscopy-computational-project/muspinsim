@@ -63,6 +63,10 @@ class TestValidation(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_celio_params(interaction_terms, np.array([1, 2, 3]))
 
+        # Uneven spacing between times
+        with self.assertRaises(ValueError):
+            validate_celio_params(interaction_terms, np.array([0, 1, 2.5, 3]))
+
     def test_validate_integrate_decaying_params(self):
         # Should work
         validate_integrate_decaying_params(

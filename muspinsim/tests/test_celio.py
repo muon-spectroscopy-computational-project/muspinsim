@@ -7,7 +7,7 @@ from muspinsim.spinop import DensityOperator
 from muspinsim.spinsys import MuonSpinSystem, SingleTerm, SpinSystem
 
 
-class TestCelioHamilto(unittest.TestCase):
+class TestCelioHamiltonian(unittest.TestCase):
     def test_sum(self):
         ssys = SpinSystem(["mu", "e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
