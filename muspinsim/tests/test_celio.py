@@ -126,7 +126,7 @@ class TestCelioHamilto(unittest.TestCase):
 
         self.assertTrue(isinstance(H, CelioHamiltonian))
 
-        evol = H.evolve(rho0, t, ssys.operator({0: "z"}))
+        evol = H.evolve(rho0, t, [ssys.operator({0: "z"})])
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
 

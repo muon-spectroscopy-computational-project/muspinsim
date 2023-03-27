@@ -2,8 +2,10 @@ import unittest
 
 import numpy as np
 from muspinsim.spinop import DensityOperator, SpinOperator
+from muspinsim.spinsys import InteractionTerm, MuonSpinSystem
 
 from muspinsim.validation import (
+    validate_celio_params,
     validate_evolve_params,
     validate_integrate_decaying_params,
     validate_times,
@@ -46,6 +48,20 @@ class TestValidation(unittest.TestCase):
                 np.array([0, 1]),
                 [SpinOperator.from_axes(), 2],
             )
+
+    def test_validate_celio(self):
+        # Should work
+        spin_system = MuonSpinSystem(["e", "mu"])
+        interaction_terms = [InteractionTerm(spin_system)]
+        validate_celio_params(interaction_terms, np.array([0, 1, 2]))
+
+        # No terms
+        with self.assertRaises(ValueError):
+            validate_celio_params([], np.array([0, 1, 2]))
+
+        # Invalid initial time
+        with self.assertRaises(ValueError):
+            validate_celio_params(interaction_terms, np.array([1, 2, 3]))
 
     def test_validate_integrate_decaying_params(self):
         # Should work

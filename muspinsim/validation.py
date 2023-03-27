@@ -45,6 +45,26 @@ def validate_evolve_params(rho0, times, operators):
         )
 
 
+def validate_celio_params(terms, times):
+    """Validates the required parameters for any method using Celio's
+
+    Arguments:
+        terms {[InteractionTerm]} -- Interaction terms that will form part of the
+                                     Trotter expansion
+        times {ndarray} -- Times to compute the evolution for, in microseconds
+
+    Raises:
+        ValueError -- If there are no terms to evolve with
+        ValueError -- If the first time does not start at 0
+    """
+
+    if len(terms) == 0:
+        raise ValueError("No interaction terms to evolve")
+
+    if times[0] != 0:
+        raise ValueError("Cannot use Celio's method with a non-zero start time")
+
+
 def validate_integrate_decaying_params(rho0, tau, operators):
     """Validates the required parameters for 'integrate_decaying' methods
        in the Hamiltonian and Linbladian classes
