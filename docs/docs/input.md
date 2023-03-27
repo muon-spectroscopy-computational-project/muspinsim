@@ -297,7 +297,7 @@ results_function
     2*y
 ```
 
-A function that should be applied on the results of a simulation it has two special variables available to it, `x` and `y` representing the x and y outputs of running a simulation (see [x_axis](#x_axis) and [y_axis](#y_axis)). The default value of `y` has no effect on the results.
+A function that should be applied on the results of a simulation. It has two special variables available to it, `x` and `y` representing the x and y outputs of running a simulation (see [x_axis](#x_axis) and [y_axis](#y_axis)). The default value of `y` has no effect on the results.
 
 ### fitting_variables
 | Keyword:              |        `fitting_variables` |
