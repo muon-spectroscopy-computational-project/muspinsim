@@ -345,7 +345,7 @@ results_function
 *Example:*
 ```plaintext
 fitting_data
-    load('results.dat')
+    load("results.dat")
 ```
 
 Block of data to fit. Must have two columns: the first one is the `x_axis` (for example, time), while the second is the expected result of the simulation. The function `load` can be used to load it from an ASCII tabulated file on disk, as long as it has only two columns. Note that the data must be normalized properly to match the conventions of MuSpinSim's output, so for example it must start from 0.5 at t = 0 (as that's the moment of the muon before it has had any time to evolve).

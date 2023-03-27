@@ -180,6 +180,9 @@ class MuSpinConfig:
         if finfo["fit"]:
             if len(self._file_ranges) > 0:
                 raise MuSpinConfigError("Can not have file ranges when fitting")
+            logging.warning(
+                "'x_axis' values will be overwritten by the experimental data"
+            )
             # The x axis is overridden, whatever it is
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
