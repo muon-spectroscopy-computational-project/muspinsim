@@ -60,6 +60,11 @@ class TestHamiltonian(unittest.TestCase):
         # No operators => return a list of density operators
         evol = H.evolve(rho0, t)
 
+        print(evol[0].matrix)
+        print(evol[1].matrix)
+        print(evol[2].matrix)
+        print(evol[3].matrix)
+
         self.assertEqual(len(evol), 4)
         self.assertTrue(
             np.allclose(
