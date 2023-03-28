@@ -130,6 +130,17 @@ class TestCelioHamiltonian(unittest.TestCase):
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
 
+    def test_evolve_invalid(self):
+        ssys = SpinSystem(["e"], celio_k=10)
+        ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
+        H = ssys.hamiltonian
+        rho0 = DensityOperator.from_vectors()  # Start along z
+        t = np.linspace(0, 1, 100)
+
+        # No SpinOperator
+        with self.assertRaises(ValueError):
+            H.evolve(rho0, t, [])
+
     def test_fast_evolve(self):
         ssys = MuonSpinSystem(["mu", "e"], celio_k=10)
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x

@@ -90,3 +90,7 @@ class TestValidation(unittest.TestCase):
                 10,
                 [SpinOperator.from_axes(), 2],
             )
+
+        # No SpinOperators
+        with self.assertRaises(TypeError):
+            validate_integrate_decaying_params(10, 10, [])

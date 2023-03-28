@@ -84,14 +84,18 @@ def validate_integrate_decaying_params(rho0, tau, operators):
     Raises:
         TypeError -- Invalid operators
         ValueError -- Invalid values of tau or operators
+        ValueError -- If 'operators' is empty
     """
     if not isinstance(rho0, DensityOperator):
-        raise TypeError("rho0 must be a valid DensityOperator")
+        raise TypeError("'rho0' must be a valid DensityOperator")
 
     if not (isinstance(tau, Number) and np.isreal(tau) and tau > 0):
-        raise ValueError("tau must be a real number > 0")
+        raise ValueError("'tau' must be a real number > 0")
+
+    if not operators:
+        raise ValueError("At least one SpinOperator must be present in 'operators'")
 
     if not all([isinstance(o, SpinOperator) for o in operators]):
         raise ValueError(
-            "operators must be a SpinOperator or a list of SpinOperator objects"
+            "'operators' must be a SpinOperator or a list of SpinOperator objects"
         )

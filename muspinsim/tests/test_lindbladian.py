@@ -82,6 +82,55 @@ class TestLindbladian(unittest.TestCase):
             self.assertTrue(np.all(np.isclose(evol[:, 0], solx)))
             self.assertTrue(np.all(np.isclose(evol[:, 1], solz)))
 
+    def test_evolve_density(self):
+
+        # Basic test - no operator given so should return density matrices
+        sx = SpinOperator.from_axes()
+        sp = SpinOperator.from_axes(0.5, "+")
+        sm = SpinOperator.from_axes(0.5, "-")
+        sz = SpinOperator.from_axes(0.5, "z")
+
+        H = Hamiltonian(sz.matrix)
+        L = Lindbladian.from_hamiltonian(H)
+        rho0 = DensityOperator.from_vectors(0.5, [1, 0, 0], 0)
+        t = np.linspace(0, 1, 4)
+
+        evol = L.evolve(rho0, t)
+        self.assertEqual(len(evol), 4)
+        self.assertTrue(
+            np.allclose(
+                evol[0].matrix.toarray(),
+                np.array([[0.5 + 0.0j, 0.5 + 0.0j], [0.5 + 0.0j, 0.5 + 0.0j]]),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                evol[1].matrix.toarray(),
+                np.array(
+                    [[0.5 + 0.0j, -0.25 - 0.4330127j], [-0.25 + 0.4330127j, 0.5 + 0.0j]]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                evol[2].matrix.toarray(),
+                np.array(
+                    [[0.5 + 0.0j, -0.25 + 0.4330127j], [-0.25 - 0.4330127j, 0.5 + 0.0j]]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                evol[3].matrix.toarray(),
+                np.array(
+                    [
+                        [0.5 + 0.0j, 0.5 + 0.0j],
+                        [0.5 + 0.0j, 0.5 + 0.0j],
+                    ]
+                ),
+            )
+        )
+
     def test_integrate(self):
 
         # Basic test

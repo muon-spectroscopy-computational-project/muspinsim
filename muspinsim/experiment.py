@@ -186,14 +186,16 @@ class ExperimentRunner:
                     r = DensityOperator.from_vectors(I, muon_axis, 0)
                 else:
                     # Get the Zeeman Hamiltonian for this field
+                    # Don't bother using sparse, we need them dense for eigh
+                    # anyway
                     Hz = np.sum(
                         [
-                            B[j] * SpinOperator.from_axes(I, e).matrix
+                            B[j] * SpinOperator.from_axes(I, e, use_sparse=False).matrix
                             for j, e in enumerate("xyz")
                         ],
                         axis=0,
                     )
-                    evals, evecs = np.linalg.eigh(Hz.toarray())
+                    evals, evecs = np.linalg.eigh(Hz)
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:

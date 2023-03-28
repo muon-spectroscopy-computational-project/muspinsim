@@ -31,7 +31,7 @@ class TestHamiltonian(unittest.TestCase):
 
         Hrot = H.basis_change(evecs)
 
-        self.assertTrue(np.all(np.isclose(Hrot.matrix.toarray(), np.diag(evals))))
+        self.assertTrue(np.all(np.isclose(Hrot.matrix, np.diag(evals))))
 
     def test_evolve(self):
 
@@ -46,6 +46,65 @@ class TestHamiltonian(unittest.TestCase):
         evol = H.evolve(rho0, t, ssys.operator({0: "z"}))
 
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
+
+    def test_evolve_density(self):
+
+        ssys = SpinSystem(["e"])
+        ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
+        H = ssys.hamiltonian
+        rho0 = DensityOperator.from_vectors()  # Start along z
+        t = np.linspace(0, 1, 4)
+
+        self.assertTrue(isinstance(H, Hamiltonian))
+
+        # No operators => return a list of density operators
+        evol = H.evolve(rho0, t)
+
+        self.assertEqual(len(evol), 4)
+        self.assertTrue(
+            np.allclose(
+                evol[0].matrix.toarray(),
+                np.array(
+                    [
+                        [1.0 + 0.0j, 0.0 + 0.0j],
+                        [0.0 + 0.0j, 0.0 + 0.0j],
+                    ]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                evol[1].matrix.toarray(),
+                np.array(
+                    [
+                        [0.25 + 0.0j, 0.0 + 0.433012702j],
+                        [0.0 - 0.433012702j, 0.75 + 0.0j],
+                    ]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                evol[2].matrix.toarray(),
+                np.array(
+                    [
+                        [0.25 - 0.0j, 0.0 - 0.433012702j],
+                        [0.0 + 0.433012702j, 0.75 + 0.0j],
+                    ]
+                ),
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                evol[3].matrix.toarray(),
+                np.array(
+                    [
+                        [1.0 + 0.0j, 0.0 + 0.0j],
+                        [0.0 + 0.0j, 0.0 + 0.0j],
+                    ]
+                ),
+            )
+        )
 
     def test_fast_evolve(self):
 

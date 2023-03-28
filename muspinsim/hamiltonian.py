@@ -17,19 +17,21 @@ from muspinsim.validation import (
 
 
 class Hamiltonian(Operator, Hermitian):
-    def __init__(self, matrix, dim=None):
+    def __init__(self, matrix, dim=None, use_sparse=True):
         """Create an Hamiltonian
 
         Create an Hamiltonian from a hermitian complex matrix
 
         Arguments:
             matrix {ndarray} -- Matrix representation of the Hamiltonian
+            dim {(int,...)} -- See Operator
+            use_sparse {bool} -- See Operator
 
         Raises:
             ValueError -- Matrix isn't square or hermitian
         """
 
-        super(Hamiltonian, self).__init__(matrix, dim)
+        super(Hamiltonian, self).__init__(matrix, dim, use_sparse=use_sparse)
 
     @classmethod
     def from_spin_operator(self, spinop):
@@ -76,12 +78,10 @@ class Hamiltonian(Operator, Hermitian):
 
         # Turn the density matrix in the right basis
         dim = rho0.dimension
-        rho0 = rho0.basis_change(evecs).matrix.toarray()
+        rho0 = rho0.basis_change(evecs).matrix
 
         # Same for operators
-        operatorsT = np.array(
-            [o.basis_change(evecs).matrix.T.toarray() for o in operators]
-        )
+        operatorsT = np.array([o.basis_change(evecs).matrix.T for o in operators])
 
         # Matrix of evolution operators
         ll = -2.0j * np.pi * (evals[:, None] - evals[None, :])
@@ -107,15 +107,16 @@ class Hamiltonian(Operator, Hermitian):
                     result = np.concatenate(([result, single_res]), axis=0)
         else:
             sceve = evecs.T.conj()
-            for i in range(times.shape[0]):
-                # Just return density matrices
-                result = [
-                    DensityOperator(calc_single_rho(i), dim).basis_change(sceve)
-                    for i in range(times.shape[0])
-                ]
+            # Just return density matrices
+            result = [
+                DensityOperator(calc_single_rho(i)[0], dim).basis_change(
+                    sceve, use_sparse=True
+                )
+                for i in range(times.shape[0])
+            ]
         return result
 
-    def integrate_decaying(self, rho0, tau, operators=None):
+    def integrate_decaying(self, rho0, tau, operators):
         """Integrate one or more expectation values in time with decay
 
         Perform an integral in time from 0 to +inf of an expectation value
@@ -129,7 +130,7 @@ class Hamiltonian(Operator, Hermitian):
 
         Keyword Arguments:
             operators {list} -- Operators to compute the expectation values
-                                of (default: {[]})
+                                of
 
         Returns:
             ndarray -- List of integral values
@@ -139,8 +140,6 @@ class Hamiltonian(Operator, Hermitian):
             ValueError -- Invalid values of tau or operators
             RuntimeError -- Hamiltonian is not hermitian
         """
-        if operators is None:
-            operators = []
 
         if isinstance(operators, SpinOperator):
             operators = [operators]
@@ -151,16 +150,13 @@ class Hamiltonian(Operator, Hermitian):
         evals, evecs = self.diag()
 
         # Turn the density matrix in the right basis
-        rho0 = rho0.basis_change(evecs).matrix.toarray()
+        rho0 = rho0.basis_change(evecs).matrix
 
         ll = 2.0j * np.pi * (evals[:, None] - evals[None, :])
 
         # Integral operators
         intops = np.array(
-            [
-                (-o.basis_change(evecs).matrix.toarray() / (ll - 1.0 / tau)).T
-                for o in operators
-            ]
+            [(-o.basis_change(evecs).matrix / (ll - 1.0 / tau)).T for o in operators]
         )
 
         result = np.sum(rho0[None, :, :] * intops[:, :, :], axis=(1, 2))

@@ -111,6 +111,48 @@ class TestSpinOperator(unittest.TestCase):
         sx = SpinOperator.from_axes(0.5, "x")
         self.assertEqual(2 * np.real(rho.hilbert_schmidt(sx)), 0.5**0.5)
 
+    def test_operations_dense(self):
+
+        sx = SpinOperator.from_axes(0.5, "x", use_sparse=False)
+        sy = SpinOperator.from_axes(0.5, "y", use_sparse=False)
+        sz = SpinOperator.from_axes(0.5, "z", use_sparse=False)
+
+        # Scalar operations
+        self.assertTrue(np.all((2 * sx).matrix == [[0, 1], [1, 0]]))
+        self.assertTrue(np.all((sx / 2).matrix == [[0, 0.25], [0.25, 0]]))
+
+        # Operators (test commutation relations)
+        self.assertTrue(np.all((sx * sy - sy * sx).matrix == (1.0j * sz).matrix))
+        self.assertTrue(np.all((sy * sz - sz * sy).matrix == (1.0j * sx).matrix))
+        self.assertTrue(np.all((sz * sx - sx * sz).matrix == (1.0j * sy).matrix))
+
+        self.assertTrue(np.all((sx + 0.5).matrix == 0.5 * np.ones((2, 2))))
+        self.assertTrue(np.all((sz - 0.5).matrix == np.diag([0, -1])))
+
+        # Test equality
+        self.assertTrue(
+            np.allclose(
+                sx.matrix.data,
+                SpinOperator.from_axes(0.5, "x", use_sparse=False).matrix.data,
+            )
+        )
+        self.assertFalse(SpinOperator(np.eye(4)) == SpinOperator(np.eye(4), (2, 2)))
+
+        # Test Kronecker product
+        sxsz = sx.kron(sz)
+        self.assertEqual(sxsz.dimension, (2, 2))
+        self.assertTrue(
+            np.all(
+                4 * sxsz.matrix
+                == [[0, 0, 1, 0], [0, 0, 0, -1], [1, 0, 0, 0], [0, -1, 0, 0]]
+            )
+        )
+
+        # Test Hilbert-Schmidt product
+        rho = DensityOperator.from_vectors(0.5, np.array([1, 1, 0]) / 2**0.5)
+        sx = SpinOperator.from_axes(0.5, "x", use_sparse=False)
+        self.assertEqual(2 * np.real(rho.hilbert_schmidt(sx)), 0.5**0.5)
+
     def test_multi(self):
 
         Sx = SpinOperator.from_axes()
@@ -155,6 +197,40 @@ class TestSpinOperator(unittest.TestCase):
                 )
             )
         )
+
+        # Normalisation
+        density_op = DensityOperator(np.eye(4) * 10)
+        density_op.normalize()
+        np.testing.assert_allclose(density_op.matrix.toarray(), np.eye(4) / 4)
+
+    def test_density_dense(self):
+
+        rho = DensityOperator(np.eye(6) / 6.0, (2, 3), use_sparse=False)
+        rhosmall = rho.partial_trace([1])
+
+        self.assertEqual(rhosmall.dimension, (2,))
+        self.assertTrue(np.all(np.isclose(rhosmall.matrix, np.eye(2) / 2)))
+
+        with self.assertRaises(ValueError):
+            DensityOperator(np.array([[0, 1], [1, 0]]), use_sparse=False)
+
+        with self.assertRaises(ValueError):
+            DensityOperator(np.array([[1, 1], [0, 1]]), use_sparse=False)
+
+        rho = DensityOperator.from_vectors(0.5, [1, 0, 0], use_sparse=False)
+
+        self.assertTrue(np.all(rho.matrix == np.ones((2, 2)) * 0.5))
+
+        rho = DensityOperator.from_vectors(0.5, [0, 1, 0], 0.5, use_sparse=False)
+
+        self.assertTrue(
+            np.all(np.isclose(rho.matrix, np.array([[0.5, -0.25j], [0.25j, 0.5]])))
+        )
+
+        # Normalisation
+        density_op = DensityOperator(np.eye(4) * 10, use_sparse=False)
+        density_op.normalize()
+        np.testing.assert_allclose(density_op.matrix, np.eye(4) / 4)
 
     def test_superoperator(self):
 
