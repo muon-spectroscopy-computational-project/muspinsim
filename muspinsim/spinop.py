@@ -152,6 +152,10 @@ class Operator(Clonable):
         y = self._matrix
         return np.abs(y - x).max() < self._htol
 
+    @property
+    def is_sparse(self):
+        return self._sparse
+
     def dagger(self):
         """Return the transpose conjugate of this Operator
 
@@ -337,7 +341,7 @@ class Operator(Clonable):
 
         return A.conjugate().T.dot(B).trace().item()
 
-    def basis_change(self, basis):
+    def basis_change(self, basis, use_sparse=False):
         """Return a version of this Operator with different basis
 
         Transform this Operator to use a different basis. The basis
@@ -346,14 +350,21 @@ class Operator(Clonable):
 
         Arguments:
             basis {ndarray} -- Basis to transform the operator to.
+            use_sparse -- Whether the computed matrix will be converted to
+                          a sparse format or not.
 
         Returns:
-            Operator -- Basis transformed version of this operator
+            Operator -- Basis transformed version of this operator (Note:
+                        this operator will then be dense unless
+                        use_sparse=True)
         """
 
         ans = self.clone()
         x = basis.T.conjugate()
         ans._matrix = x @ ans._matrix @ basis
+        if use_sparse:
+            ans._matrix = sparse.csr_matrix(ans._matrix)
+        ans._sparse = use_sparse
 
         return ans
 
