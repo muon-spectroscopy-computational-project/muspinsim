@@ -45,6 +45,32 @@ def validate_evolve_params(rho0, times, operators):
         )
 
 
+def validate_celio_params(terms, times):
+    """Validates the required parameters for any method using Celio's
+
+    Arguments:
+        terms {[InteractionTerm]} -- Interaction terms that will form part of the
+                                     Trotter expansion
+        times {ndarray} -- Times to compute the evolution for, in microseconds
+
+    Raises:
+        ValueError -- If there are no terms to evolve with
+        ValueError -- If the first time does not start at 0
+        ValueError -- If the times have uneven spacing
+    """
+
+    if len(terms) == 0:
+        raise ValueError("No interaction terms to evolve")
+
+    if times[0] != 0:
+        raise ValueError("Cannot use Celio's method with a non-zero start time")
+
+    # Ensure the spacing is identical between all the values
+    differences = np.diff(times)
+    if not np.isclose(differences, differences[0]).all():
+        raise ValueError("Cannot use Celio's method with uneven spacing between times")
+
+
 def validate_integrate_decaying_params(rho0, tau, operators):
     """Validates the required parameters for 'integrate_decaying' methods
        in the Hamiltonian and Linbladian classes

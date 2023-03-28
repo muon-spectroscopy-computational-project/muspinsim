@@ -4,6 +4,7 @@ from io import StringIO
 from tempfile import NamedTemporaryFile
 
 from muspinsim.input.keyword import (
+    KWFittingMethod,
     MuSpinKeyword,
     MuSpinEvaluateKeyword,
     MuSpinExpandKeyword,
@@ -183,6 +184,30 @@ class TestInput(unittest.TestCase):
             }
         )
 
+    def test_keyword_intrinsic_field_range(self):
+        self._eval_kw(
+            {
+                "kw": "intrinsic_field",
+                "args": [],
+                "in": ["range(0, 20, 21)"],
+                "out": np.arange(21)[:, None],
+            }
+        )
+
+    def test_keyword_intrinsic_field_mhz(self):
+        kw = InputKeywords["intrinsic_field"](["500*MHz"])
+        self.assertTrue(np.isclose(kw.evaluate()[0][0], 1.84449016))
+
+    def test_keyword_intrinsic_field_defaults(self):
+        self._eval_kw(
+            {
+                "kw": "intrinsic_field",
+                "args": [],
+                "in": [],
+                "out": np.array([0]),
+            }
+        )
+
     def test_keyword_time_defaults(self):
         self._eval_kw(
             {
@@ -335,6 +360,87 @@ class TestInput(unittest.TestCase):
             }
         )
 
+    def test_keyword_fitting_method(self):
+        self._eval_kw(
+            {
+                "kw": "fitting_method",
+                "args": [],
+                "in": ["nelder-mead"],
+                "out": np.array(["nelder-mead"]),
+            }
+        )
+
+        self._eval_kw(
+            {
+                "kw": "fitting_method",
+                "args": [],
+                "in": ["lbfgs"],
+                "out": np.array(["lbfgs"]),
+            }
+        )
+
+        self._eval_kw(
+            {
+                "kw": "fitting_method",
+                "args": [],
+                "in": ["least-squares"],
+                "out": np.array(["least-squares"]),
+            }
+        )
+
+    def test_keyword_fitting_method_invalid(self):
+        with self.assertRaises(ValueError) as err:
+            InputKeywords["fitting_method"](
+                ["something"], args=[]
+            )  # Invalid value for argument
+        self.assertEqual(
+            str(err.exception),
+            (
+                "Invalid value 'something', accepted values "
+                f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
+            ),
+        )
+
+    def test_keyword_celio(self):
+        self._eval_kw(
+            {
+                "kw": "celio",
+                "args": [],
+                "in": ["1"],
+                "out": np.array(["1"]),
+            }
+        )
+
+        self._eval_kw(
+            {
+                "kw": "celio",
+                "args": [],
+                "in": ["1 2"],
+                "out": np.array(["1", "2"]),
+            }
+        )
+
+    def test_keyword_celio_defaults(self):
+        self._eval_kw(
+            {
+                "kw": "celio",
+                "args": [],
+                "in": [],
+                "out": np.array(["0", "0"]),
+            }
+        )
+
+    def test_keyword_celio_invalid(self):
+        with self.assertRaises(RuntimeError) as err:
+            InputKeywords["celio"](["1 2 3"], args=[])  # Invalid value for argument
+        self.assertEqual(
+            str(err.exception),
+            (
+                "Incorrect number of args for entry '1 2 3', "
+                "expected between 1 and 2, got 3"
+            ),
+        )
+
     def test_input_valid(self):
         # read valid file
         e1 = MuSpinInput(
@@ -353,6 +459,10 @@ zeeman 1
         self.assertEqual(e1["name"].value[0], "test_1")
         self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
         self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+        results_function_exp = e1["results_function"]._values[0][0]
+        np.testing.assert_allclose(
+            results_function_exp.evaluate(y=np.arange(0, 10)), np.arange(0, 10)
+        )
 
     def test_input_invalid_formatting(self):
         # read improperly formatted file
@@ -486,6 +596,55 @@ name
             str(err.exception), "Redefinition of 'name' found in input file"
         )
 
+    def test_input_valid_results_function(self):
+        # read valid file
+        e1 = MuSpinInput(
+            StringIO(
+                """
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+results_function
+    y
+"""
+            )
+        ).evaluate()
+
+        self.assertEqual(e1["name"].value[0], "test_1")
+        self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+        results_function_exp = e1["results_function"]._values[0][0]
+        np.testing.assert_allclose(
+            results_function_exp.evaluate(y=np.arange(0, 10)), np.arange(0, 10)
+        )
+
+        e1 = MuSpinInput(
+            StringIO(
+                """
+name
+    test_1
+spins
+    mu H
+zeeman 1
+    1 0 0
+results_function
+    2*y+sin(x)
+"""
+            )
+        ).evaluate()
+
+        self.assertEqual(e1["name"].value[0], "test_1")
+        self.assertTrue((e1["spins"].value[0] == ["mu", "H"]).all())
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 0, 0]).all())
+        results_function_exp = e1["results_function"]._values[0][0]
+        np.testing.assert_allclose(
+            results_function_exp.evaluate(y=np.arange(0, 5), x=np.arange(0, 5)),
+            2 * np.arange(0, 5) + np.sin(np.arange(0, 5)),
+        )
+
     def test_input_fitting(self):
         # Test input focused around fitting
 
@@ -493,16 +652,16 @@ name
             StringIO(
                 """
 fitting_variables
-    x 1.0 0.0 2.0
+    A 1.0 0.0 2.0
 fitting_data
     0  0.0
     1  1.0
     2  4.0
     3  9.0
 field
-    2*x
+    2*A
 zeeman 1
-    x x 0
+    A A 0
 """
             )
         )
@@ -512,14 +671,113 @@ zeeman 1
         data = i1.fitting_info["data"]
         self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
 
-        e1 = i1.evaluate(x=2.0)
+        e1 = i1.evaluate(A=2.0)
         self.assertEqual(e1["field"].value[0][0], 4.0)
         self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [2, 2, 0]).all())
 
         variables = i1.variables
 
-        self.assertEqual(variables["x"].value, 1.0)
-        self.assertEqual(variables["x"].bounds, (0.0, 2.0))
+        self.assertEqual(variables["A"].value, 1.0)
+        self.assertEqual(variables["A"].bounds, (0.0, 2.0))
+
+        self.assertFalse(i1.fitting_info["single_simulation"])
+
+    def test_input_fitting_results_function(self):
+        # Test input focused around fitting 'results_function'
+
+        # Should detect we only need a single simulation
+        i1 = MuSpinInput(
+            StringIO(
+                """
+fitting_variables
+    A 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2
+zeeman 1
+    1 1 0
+results_function
+    2*A
+"""
+            )
+        )
+
+        self.assertTrue(i1.fitting_info["fit"])
+
+        data = i1.fitting_info["data"]
+        self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
+
+        e1 = i1.evaluate(A=2.0)
+        self.assertEqual(e1["field"].value[0][0], 2.0)
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 1, 0]).all())
+
+        variables = i1.variables
+
+        self.assertEqual(variables["A"].value, 1.0)
+        self.assertEqual(variables["A"].bounds, (0.0, 2.0))
+        self.assertTrue(i1.fitting_info["single_simulation"])
+
+        # Should detect the need for multiple simulations
+        i1 = MuSpinInput(
+            StringIO(
+                """
+fitting_variables
+    A 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*A
+zeeman 1
+    1 1 0
+results_function
+    2*A
+"""
+            )
+        )
+
+        self.assertTrue(i1.fitting_info["fit"])
+
+        data = i1.fitting_info["data"]
+        self.assertTrue((data == [[0, 0], [1, 1], [2, 4], [3, 9]]).all())
+
+        e1 = i1.evaluate(A=2.0)
+        self.assertEqual(e1["field"].value[0][0], 4.0)
+        self.assertTrue((e1["couplings"]["zeeman_1"].value[0] == [1, 1, 0]).all())
+
+        variables = i1.variables
+
+        self.assertEqual(variables["A"].value, 1.0)
+        self.assertEqual(variables["A"].bounds, (0.0, 2.0))
+        self.assertFalse(i1.fitting_info["single_simulation"])
+
+        # Should detect we only need a single simulation
+        i1 = MuSpinInput(
+            StringIO(
+                """
+fitting_variables
+    A 1.0 0.0 2.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2/muon_gyr
+zeeman 1
+    1 1 0
+results_function
+    2*A
+"""
+            )
+        )
+        self.assertTrue(i1.fitting_info["single_simulation"])
 
     def _write_temp_file(self, tdata):
         tfile = NamedTemporaryFile(mode="w", delete=False)
@@ -541,7 +799,7 @@ zeeman 1
             StringIO(
                 """
 fitting_variables
-    x
+    A
 fitting_data
     load("{fname}")
 fitting_method
@@ -567,7 +825,7 @@ fitting_method
                 StringIO(
                     """
 fitting_variables
-    x 1.0 0.0 5.0
+    A 1.0 0.0 5.0
 """
                 )
             )
@@ -590,24 +848,24 @@ fitting_variables
                 StringIO(
                     """
 fitting_variables
-    x 1.0 0.0 -5.0
+    A 1.0 0.0 -5.0
 fitting_data
     load("{fname}")
 fitting_method
     nelder-mead
 field
-    2*x
+    2*A
 zeeman 1
-    x x 0
+    A A 0
 """.format(
                         fname=tfile.name
                     )
                 )
             )
         self.assertTrue(
-            "Variable x has invalid range: "
+            "Variable A has invalid range: "
             "(max value -5.0 cannot be less than or equal to min value 0.0)\n"
-            "Variable x has invalid starting value: "
+            "Variable A has invalid starting value: "
             "(starting value 1.0 cannot be greater than max value -5.0)"
             in str(err.exception)
         )
@@ -626,7 +884,7 @@ fitting_data
     2  4.0
     3  9.0
 field
-    2*x
+    2*A
 zeeman 1
     MHz 0 0
 """
@@ -638,4 +896,57 @@ zeeman 1
             "Error occurred when parsing keyword 'fitting_variables' "
             "(block starting at line 2):\n"
             "Invalid value 'MHz': variable name conflicts with a constant",
+        )
+
+        # variable name clashes with reserved variables
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+fitting_variables
+    x 1.0 0.0 5.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*x
+zeeman 1
+    MHz 0 0
+"""
+                )
+            )
+        self.assertEqual(
+            str(err.exception),
+            "Found 1 Error(s) whilst trying to parse fitting keywords: \n\n"
+            "Error occurred when parsing keyword 'fitting_variables' "
+            "(block starting at line 2):\n"
+            "Invalid value 'x': variable name conflicts with a reserved variable name",
+        )
+
+        with self.assertRaises(MuSpinInputError) as err:
+            MuSpinInput(
+                StringIO(
+                    """
+fitting_variables
+    y 1.0 0.0 5.0
+fitting_data
+    0  0.0
+    1  1.0
+    2  4.0
+    3  9.0
+field
+    2*y
+zeeman 1
+    MHz 0 0
+"""
+                )
+            )
+        self.assertEqual(
+            str(err.exception),
+            "Found 1 Error(s) whilst trying to parse fitting keywords: \n\n"
+            "Error occurred when parsing keyword 'fitting_variables' "
+            "(block starting at line 2):\n"
+            "Invalid value 'y': variable name conflicts with a reserved variable name",
         )

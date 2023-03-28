@@ -18,8 +18,11 @@ from muspinsim.cpp import (
     Celio_EvolveContrib,
     celio_evolve,
 )
-from muspinsim.spinop import SpinOperator
-from muspinsim.validation import validate_evolve_params, validate_times
+from muspinsim.validation import (
+    validate_evolve_params,
+    validate_times,
+    validate_celio_params,
+)
 
 
 @dataclass
@@ -235,13 +238,9 @@ class CelioHamiltonian:
             operators = []
 
         times = np.array(times)
-        if isinstance(operators, SpinOperator):
-            operators = [operators]
 
         validate_evolve_params(rho0, times, operators)
-
-        if len(self._terms) == 0:
-            raise ValueError("No interaction terms to evolve")
+        validate_celio_params(self._terms, times)
 
         time_step = times[1] - times[0]
         rho0 = rho0.matrix
@@ -350,12 +349,10 @@ class CelioHamiltonian:
         times = np.array(times)
 
         validate_times(times)
+        validate_celio_params(self._terms, times)
 
         if averages <= 0:
             raise ValueError("averages must be a positive integer")
-
-        if len(self._terms) == 0:
-            raise ValueError("No interaction terms to evolve")
 
         # Due to computation of of psi we assume the muon is first in
         # the system so ensure this is the case here, otherwise

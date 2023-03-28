@@ -6,6 +6,7 @@ Classes to define and read conveniently individual keywords of an input file
 import re
 import sys
 import inspect
+from typing import List
 import numpy as np
 
 from muspinsim.constants import MU_GAMMA
@@ -35,6 +36,9 @@ _phys_constants = {"muon_gyr": MU_GAMMA, "MHz": 1.0 / (2 * MU_GAMMA)}
 # Functions for powder orientation
 
 _pwd_functions = {"zcw": zcw_gen, "eulrange": eulrange_gen}
+
+# Reserved variables that should not be allowed as fitting parameter names
+_reserved_variables = {"x", "y"}
 
 
 # Expansion functions
@@ -221,6 +225,10 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
     _functions = {**_math_functions}
     _constants = {**_math_constants}
 
+    # Special variables that should be accepted by the keyword, but do not
+    # automatically have values
+    _special_variables: List[str] = None
+
     def __init__(self, block=None, args=None, variables=None):
         # Fix W0102:dangerous-default-value
         if block is None:
@@ -233,6 +241,8 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
         cnames = set(self._constants.keys())
         fnames = set(self._functions.keys())
         vnames = set(variables)
+        if self._special_variables:
+            vnames.update(set(self._special_variables))
 
         conflicts = cnames.intersection(vnames)
         conflicts = conflicts.union(fnames.intersection(vnames))
@@ -536,14 +546,20 @@ class KWFittingVariables(MuSpinKeyword):
 
     name = "fitting_variables"
     block_size = 1
-    expr_size_bounds = (1, 4)
+    expr_size_bounds = (1, np.inf)
     accept_range = True
     default = ""
     _constants = {**_math_constants, **_phys_constants}
     _validators = [
         lambda s: f"Invalid value '{s.name}': variable name conflicts with a constant"
         if s.name in {**_math_constants, **_phys_constants}
-        else ""
+        else "",
+        lambda s: (
+            f"Invalid value '{s.name}': variable name conflicts with a reserved "
+            "variable name"
+        )
+        if s.name in _reserved_variables
+        else "",
     ]
 
     def _store_values(self, block):
@@ -584,15 +600,18 @@ class KWFittingData(MuSpinExpandKeyword):
 
 class KWFittingMethod(MuSpinKeyword):
 
+    ACCEPTED_FITTING_METHODS = ["nelder-mead", "lbfgs", "least-squares"]
+
     name = "fitting_method"
     block_size = 1
     accept_range = False
     default = "nelder-mead"
     _validators = [
         lambda s: (
-            f"Invalid value {s[0].lower()}, accepted values ['nelder-mead', 'lbfgs']"
+            f"Invalid value '{s[0].lower()}', accepted values "
+            f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
         )
-        if s[0].lower() not in ["nelder-mead", "lbfgs"]
+        if s[0].lower() not in KWFittingMethod.ACCEPTED_FITTING_METHODS
         else ""
     ]
 
@@ -608,6 +627,16 @@ class KWFittingTolerance(MuSpinKeyword):
         if not float(s[0])
         else "",
     ]
+
+
+class KWResultsFunction(MuSpinExpandKeyword):
+
+    name = "results_function"
+    block_size = 1
+    accept_range = False
+    default = "y"
+    _constants = {**_math_constants, **_phys_constants}
+    _special_variables = ["x", "y"]
 
 
 # Special configuration keyword
