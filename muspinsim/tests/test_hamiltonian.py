@@ -60,19 +60,14 @@ class TestHamiltonian(unittest.TestCase):
         # No operators => return a list of density operators
         evol = H.evolve(rho0, t)
 
-        print(evol[0].matrix)
-        print(evol[1].matrix)
-        print(evol[2].matrix)
-        print(evol[3].matrix)
-
         self.assertEqual(len(evol), 4)
         self.assertTrue(
             np.allclose(
                 evol[0].matrix.toarray(),
                 np.array(
                     [
-                        [1.00000000e00 + 0.0j, 2.23711432e-17 + 0.0j],
-                        [0.00000000e00 + 0.0j, 0.00000000e00 + 0.0j],
+                        [1.0 + 0.0j, 0.0 + 0.0j],
+                        [0.0 + 0.0j, 0.0 + 0.0j],
                     ]
                 ),
             )
@@ -82,14 +77,8 @@ class TestHamiltonian(unittest.TestCase):
                 evol[1].matrix.toarray(),
                 np.array(
                     [
-                        [
-                            2.50000000e-01 + 1.93784882e-18j,
-                            8.96010176e-18 + 4.33012702e-01j,
-                        ],
-                        [
-                            2.15404613e-17 - 4.33012702e-01j,
-                            7.50000000e-01 - 1.93784882e-18j,
-                        ],
+                        [0.25 + 0.0j, 0.0 + 0.433012702j],
+                        [0.0 - 0.433012702j, 0.75 + 0.0j],
                     ]
                 ),
             )
@@ -99,14 +88,8 @@ class TestHamiltonian(unittest.TestCase):
                 evol[2].matrix.toarray(),
                 np.array(
                     [
-                        [
-                            2.50000000e-01 - 6.69995273e-18j,
-                            -1.14184615e-18 - 4.33012702e-01j,
-                        ],
-                        [
-                            1.20162535e-17 + 4.33012702e-01j,
-                            7.50000000e-01 + 6.69995273e-18j,
-                        ],
+                        [0.25 - 0.0j, 0.0 - 0.433012702j],
+                        [0.0 + 0.433012702j, 0.75 + 0.0j],
                     ]
                 ),
             )
@@ -116,14 +99,8 @@ class TestHamiltonian(unittest.TestCase):
                 evol[3].matrix.toarray(),
                 np.array(
                     [
-                        [
-                            1.00000000e00 + 2.79557852e-33j,
-                            2.23711432e-17 - 1.22464680e-16j,
-                        ],
-                        [
-                            0.00000000e00 + 1.22464680e-16j,
-                            0.00000000e00 - 2.79557852e-33j,
-                        ],
+                        [1.0 + 0.0j, 0.0 + 0.0j],
+                        [0.0 + 0.0j, 0.0 + 0.0j],
                     ]
                 ),
             )

@@ -124,8 +124,8 @@ class TestLindbladian(unittest.TestCase):
                 evol[3].matrix.toarray(),
                 np.array(
                     [
-                        [0.5 + 0.0000000e00j, 0.5 + 1.2246468e-16j],
-                        [0.5 - 1.2246468e-16j, 0.5 + 0.0000000e00j],
+                        [0.5 + 0.0j, 0.5 + 0.0j],
+                        [0.5 + 0.0j, 0.5 + 0.0j],
                     ]
                 ),
             )
