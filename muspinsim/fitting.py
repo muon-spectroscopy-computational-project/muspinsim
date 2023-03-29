@@ -46,7 +46,12 @@ class FittingRunner:
 
             self._xnames = tuple(sorted(variables.keys()))  # Order is important!
             self._x = np.array([variables[n].value for n in self._xnames])
-            self._xbounds = [variables[n].bounds for n in self._xnames]
+            self._xbounds = np.array([variables[n].bounds for n in self._xnames])
+
+            # Problem is constrained if the any of the bounds are not +/- inf
+            self._constrained = np.any(self._xbounds[:, 0] != -np.inf) or np.any(
+                self._xbounds[:, 1] != np.inf
+            )
 
             mpi.broadcast_object(self, ["_ytarg", "_x", "_xbounds", "_xnames"])
         else:
@@ -69,26 +74,29 @@ class FittingRunner:
             method = {
                 "nelder-mead": "nelder-mead",
                 "lbfgs": "L-BFGS-B",
-                "least-squares": "trf",
+                # To behave like curve_fit, use 'Levenberg-Marquardt' for
+                # unconstrained problems (as more efficient) and 'Trust
+                # Region Reflective' for constrained problems
+                "least-squares": "trf" if self._constrained else "lm",
             }[self._fitinfo["method"]]
 
             # SciPy minimise
             if self._fitinfo["method"] == "least-squares":
                 # Bounds used here are different to minimize, need all lower
                 # value and all upper values in separate arrays
+                bounds = (self._xbounds[:, 0], self._xbounds[:, 1])
 
                 # lbfgs uses gtol when using tol, so will do the same here
-                xbounds = np.array(self._xbounds)
                 self._sol = least_squares(
-                    self._targfun,
+                    self._targfun_residuals,
                     self._x,
-                    method="trf",
+                    method=method,
                     gtol=self._fitinfo["rtol"],
-                    bounds=(xbounds[:, 0], xbounds[:, 1]),
+                    bounds=bounds,
                 )
             else:
                 self._sol = minimize(
-                    self._targfun,
+                    self._targfun_minimise,
                     self._x,
                     method=method,
                     tol=self._fitinfo["rtol"],
@@ -128,9 +136,9 @@ class FittingRunner:
             self._runner = ExperimentRunner(self._input, variables=vardict)
             return self._runner.run()
 
-    def _targfun(self, x):
-
+    def _compute_result(self, x):
         self._x = x
+
         # Synchronize across nodes
         mpi.broadcast_object(self, ["_x", "_done"])
 
@@ -142,7 +150,30 @@ class FittingRunner:
         y = self._obtain_results(vardict)
 
         # Apply the results function
-        y = self._runner.apply_results_function(y, vardict)
+        return self._runner.apply_results_function(y, vardict)
+
+    def _targfun_residuals(self, x):
+        """Computes the residuals for the least-squares method for
+        a given set of input values
+
+        Returns one residual for each y value
+        """
+        y = self._compute_result(x)
+
+        if mpi.is_root:
+            # Compute residuals
+            err = y - self._ytarg
+            return err
+
+    def _targfun_minimise(self, x):
+        """Objective function for minimise methods
+
+        Returns a single float value representing the average absolute
+        difference between the target and found y values using the given
+        input values
+        """
+
+        y = self._compute_result(x)
 
         if mpi.is_root:
             # Compare with target data
@@ -177,7 +208,12 @@ class FittingRunner:
                 if not self._sol["success"]:
                     file.write(f"   Message: {self._sol['message']}\n")
 
+                if isinstance(self._sol["fun"], np.ndarray):
+                    # Compute average absolute error from the residuals when
+                    # using the residuals function
+                    self._sol["fun"] = np.average(np.abs(self._sol["fun"]))
                 file.write(f"Final absolute error <|f-f_targ|>: {self._sol['fun']}\n")
+
                 num_simulations = self._sol["nfev"]
                 if self._fitinfo["single_simulation"]:
                     num_simulations = 1

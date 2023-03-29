@@ -383,6 +383,8 @@ fitting_tolerance
 
 Tolerance for the fitting. When using `nelder-mead` (default) or `lbfgs` it's used as the `tol` parameter in SciPy's `scipy.optimize.minimize` method; exact meaning depends on which of these are used. Check the [SciPy documentation here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) for further details on these. Alternatively for `least-squares` it represents the `gtol` parameter as found in the [SciPy documentation here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html)
 
+When using `least-squares` the faster Levenberg-Marquardt algorithm will be used when all `fitting_variables` have their default bounds of `-inf` and `+inf`. When any of these bounds take specific values, the Trust Region Reflective algorithm will be used instead.
+
 ### experiment
 
 | Keyword:              | `experiment` |
