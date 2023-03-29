@@ -29,11 +29,10 @@ class FittingRunner:
         self._input = inpfile
         self._runner = None
 
-        # Identify variables
-        self._fitinfo = inpfile.fitting_info
-        self._fitinfo["method"] = self._fitinfo["method"].lower()
-
         if mpi.is_root:
+            # Identify variables
+            self._fitinfo = inpfile.fitting_info
+
             self._ytarg = self._fitinfo["data"][:, 1]
 
             variables = inpfile.variables
@@ -53,9 +52,13 @@ class FittingRunner:
                 self._xbounds[:, 1] != np.inf
             )
 
-            mpi.broadcast_object(self, ["_ytarg", "_x", "_xbounds", "_xnames"])
+            mpi.broadcast_object(
+                self, ["_fitinfo", "_ytarg", "_x", "_xbounds", "_xnames"]
+            )
         else:
-            mpi.broadcast_object(self, ["_ytarg", "_x", "_xbounds", "_xnames"])
+            mpi.broadcast_object(
+                self, ["_fitinfo", "_ytarg", "_x", "_xbounds", "_xnames"]
+            )
 
         self._done = False
         self._sol = None
@@ -80,7 +83,6 @@ class FittingRunner:
                 "least-squares": "trf" if self._constrained else "lm",
             }[self._fitinfo["method"]]
 
-            # SciPy minimise
             if self._fitinfo["method"] == "least-squares":
                 # Bounds used here are different to minimize, need all lower
                 # value and all upper values in separate arrays
@@ -119,7 +121,7 @@ class FittingRunner:
             self._runner.config.save_output(name=name, path=path)
         else:
             while not self._done:
-                self._targfun(self._x)
+                self._compute_result(self._x)
             # Receive solution
             mpi.broadcast_object(self, ["_sol"])
 
