@@ -323,3 +323,46 @@ orientation
         itest = MuSpinInput(stest)
         with self.assertRaises(MuSpinConfigError):
             cfg = MuSpinConfig(itest.evaluate(A=0.0))
+
+    def test_fitting_magnetic_fields(self):
+        # Special tests for fitting tasks with magnetic fields as axes
+
+        stest = StringIO(
+            """
+y_axis
+    integral
+x_axis
+    field
+fitting_variables
+    A
+fitting_data
+    0   0.5
+    1   0.2
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate(A=0.0))
+
+        self.assertTrue((np.array(cfg._x_range["B"]) == [[0, 0, 0], [0, 0, 1]]).all())
+
+        stest = StringIO(
+            """
+y_axis
+    integral
+x_axis
+    intrinsic_field
+fitting_variables
+    A
+fitting_data
+    0   0.5
+    1   0.2
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate(A=0.0))
+
+        self.assertTrue(
+            (np.array(cfg._x_range["intrinsic_B"]) == [[0, 0, 0], [0, 0, 1]]).all()
+        )

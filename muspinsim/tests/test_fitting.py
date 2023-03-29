@@ -186,3 +186,35 @@ fitting_data
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
+
+        # Try fitting a basic ALC experiment
+        s1 = StringIO(
+            """
+spins
+    mu e
+hyperfine 1
+    580 5   10
+    5   580 9
+    10  9   580
+orientation
+    zcw(10)
+field
+    range(1.8, 2.6, 2)
+experiment
+    alc
+results_function
+    A*y
+fitting_variables
+    A 0.5
+fitting_data
+    1.8 1
+    2.6 1
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        sol = f1.run()
+
+        self.assertAlmostEqual(sol.x[0], 2, 1)
