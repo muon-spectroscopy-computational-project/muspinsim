@@ -186,7 +186,17 @@ class MuSpinConfig:
             # The x axis is overridden, whatever it is
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
-            self._x_range[xname] = finfo["data"][:, 0]
+
+            # Special cases where loaded data will be a single value, but we
+            # actually need to load multiple
+            if xname in ["B", "intrinsic_B"]:
+                # Default to z axis (the same as in _validate_B below -
+                # the orientation is applied later)
+                self._x_range[xname] = np.array(
+                    [[0, 0, v] for v in finfo["data"][:, 0]]
+                )
+            else:
+                self._x_range[xname] = finfo["data"][:, 0]
             if xname == "t":
                 # Special case
                 self._time_N = len(self._x_range[xname])
