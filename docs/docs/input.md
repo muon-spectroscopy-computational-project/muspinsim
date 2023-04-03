@@ -58,7 +58,7 @@ and the following functions:
 * `log(x)`: natural logarithm
 * `sqrt(x)`: square root
 
-These are all reserved names and can't be used as variable names.
+These are all reserved names and can't be used as variable names. There are also other reserved variable names `x` and `y` only for use with the `results_function` keyword.
 
 ### Using multiple lines for a keyword
 
@@ -281,6 +281,24 @@ temperature
 
 Temperature in Kelvin of the system. This is used to determine the initial density matrix of the system, as every spin that is not the muon is put in a thermal state, and in case of dissipative systems, to determine the coupling to the thermal bath. By default, it is set to infinity. A warning: both density matrices and dissipative couplings for finite temperatures are only calculated approximatively, based on the individual Hamiltonians for each spin which only account for the applied magnetic field. In other words, these approximations are meant for high field experiments, and break down in the low field regime. Therefore, caution should be used when changing this variable or interpreting the resulting simulations.
 
+### results_function
+
+| Keyword:                  |         `results_function` |
+|---------------------------|---------------------------:|
+| Allows multiple rows:     |                        No  |
+| Allows expressions:       |                        Yes |
+| Allows constants:         | default, `muon_gyr`, `MHz` |
+| Allows functions:         |                    default |
+| Allows special variables: |                   `x`, `y` |
+
+*Example:*
+```plaintext
+results_function
+    2*y
+```
+
+A function that should be applied on the results of a simulation. It has two special variables available to it, `x` and `y` representing the x and y outputs of running a simulation (see [x_axis](#x_axis) and [y_axis](#y_axis)). The default value of `y` has no effect on the results.
+
 ### fitting_variables
 | Keyword:              |        `fitting_variables` |
 |-----------------------|---------------------------:|
@@ -293,11 +311,27 @@ Temperature in Kelvin of the system. This is used to determine the initial densi
 *Example:*
 ```plaintext
 fitting_variables
-    x
-    y  1.0  0.0 5.0
+    A
+    B  1.0  0.0 5.0
 ```
 
 Variables to fit to the experimental data. If present, the calculation is assumed to be a fitting, and the `fitting_data` keyword must be present too. The first letter in each row is the name of the variable; optionally, it can be followed in order by the starting value of the variable, the minimum bound, and the maximum bound (by default `0`, `-inf` and `+inf`). It is important to notice that while expressions are accepted in the definition of value, minimum, and maximum, these can not contain the name of other variables.
+
+!!! caution
+    Sometimes the fitting may converge to values you don't expect. To resolve this try specifying the starting value or assigning suitable bounds for the parameter.
+
+These variables can also be combined with `results_function` to perform fitting on the simulation results e.g.
+
+```plaintext
+fitting_variables
+    A 1
+    B 1
+results_function
+    Ax+B
+```
+
+!!! note
+    When all defined `fitting_variables` are used only in `results_function` the simulation will only be run once. But when introducing any fitting parameters elsewhere the simulation will run for each new combination of parameters during fitting which may take a lot longer for large systems.
 
 ### fitting_data
 
@@ -311,7 +345,7 @@ Variables to fit to the experimental data. If present, the calculation is assume
 *Example:*
 ```plaintext
 fitting_data
-    load('results.dat')
+    load("results.dat")
 ```
 
 Block of data to fit. Must have two columns: the first one is the `x_axis` (for example, time), while the second is the expected result of the simulation. The function `load` can be used to load it from an ASCII tabulated file on disk, as long as it has only two columns. Note that the data must be normalized properly to match the conventions of MuSpinSim's output, so for example it must start from 0.5 at t = 0 (as that's the moment of the muon before it has had any time to evolve).
@@ -330,7 +364,7 @@ fitting_method
     lbfgs
 ```
 
-Method to use to fit the data. Currently available are only `nelder-mead` (default) and `lbfgs`.
+Method to use to fit the data. Currently available are `nelder-mead` (default), `lbfgs` and `least-squares`.
 
 ### fitting_tolerance
 
@@ -347,8 +381,9 @@ fitting_tolerance
     1e-4
 ```
 
-Tolerance for the fitting. Used as the `tol` parameter in Scipy's `scipy.optimize.minimize` method; exact meaning depends on fitting method. Check the [Scipy documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) for further details.
+Tolerance for the fitting. When using `nelder-mead` (default) or `lbfgs` it's used as the `tol` parameter in SciPy's `scipy.optimize.minimize` method; exact meaning depends on which of these are used. Check the [SciPy documentation here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html) for further details on these. Alternatively for `least-squares` it represents the `gtol` parameter as found in the [SciPy documentation here](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.least_squares.html)
 
+When using `least-squares` the faster Levenberg-Marquardt algorithm will be used when all `fitting_variables` have their default bounds of `-inf` and `+inf`. When any of these bounds take specific values, the Trust Region Reflective algorithm will be used instead.
 
 ### experiment
 

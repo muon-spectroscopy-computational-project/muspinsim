@@ -85,7 +85,7 @@ class Hermitian:
 
 
 class Operator(Clonable):
-    def __init__(self, matrix, dim=None, herm_tol=1e-6):
+    def __init__(self, matrix, dim=None, herm_tol=1e-6, use_sparse=True):
         """Create a Operator object
 
         Create an object representing a spin operator. These can
@@ -103,12 +103,18 @@ class Operator(Clonable):
                                the matrix (default: {None})
             herm_tol {float} -- Tolerance used to check for hermitianity of the
                                matrix (default: {1e-6})
+            use_sparse {bool} -- Determines whether to use sparse matrices for
+                                 storing this operator's matrix
 
         Raises:
             ValueError -- Any of the passed values are invalid
         """
-        # use sparse matrices
-        self._matrix = sparse.csr_matrix(matrix)
+        self._sparse = use_sparse
+
+        if self._sparse:
+            self._matrix = sparse.csr_matrix(matrix)
+        else:
+            self._matrix = np.array(matrix)
 
         if not matrix.shape[0] == matrix.shape[1]:
             raise ValueError("Matrix passed to Operator must be square")
@@ -146,6 +152,10 @@ class Operator(Clonable):
         y = self._matrix
         return np.abs(y - x).max() < self._htol
 
+    @property
+    def is_sparse(self):
+        return self._sparse
+
     def dagger(self):
         """Return the transpose conjugate of this Operator
 
@@ -159,6 +169,7 @@ class Operator(Clonable):
         ans = MyClass.__new__(MyClass)
         ans._dim = tuple(self._dim)
         ans._matrix = self.matrix.conjugate().T
+        ans._sparse = self._sparse
 
         return ans
 
@@ -179,7 +190,10 @@ class Operator(Clonable):
         elif isinstance(x, Number):
 
             ans = self.clone()
-            ans._matrix += sparse.eye(ans._matrix.shape[0]) * x
+            if self._sparse:
+                ans._matrix += sparse.eye(ans._matrix.shape[0]) * x
+            else:
+                ans._matrix += np.eye(ans._matrix.shape[0]) * x
 
             return ans
 
@@ -215,14 +229,22 @@ class Operator(Clonable):
                 )
 
             ans = self.clone()
-            ans._matrix = ans._matrix.dot(x._matrix)
+
+            if self._sparse:
+                ans._matrix = ans._matrix.dot(x._matrix)
+            else:
+                ans._matrix = ans._matrix @ x._matrix
 
             return ans
 
         elif isinstance(x, Number):
 
             ans = self.clone()
-            ans._matrix = ans._matrix.multiply(x)
+
+            if self._sparse:
+                ans._matrix = ans._matrix.multiply(x)
+            else:
+                ans._matrix *= x
 
             return ans
 
@@ -277,7 +299,12 @@ class Operator(Clonable):
         # Doing it this way saves some time
         ans = self.__class__.__new__(self.__class__)
         ans._dim = self._dim + x._dim
-        ans._matrix = sparse.kron(self._matrix, x._matrix, format="csr")
+        ans._sparse = self._sparse
+
+        if self._sparse:
+            ans._matrix = sparse.kron(self._matrix, x._matrix, format="csr")
+        else:
+            ans._matrix = np.kron(self._matrix, x._matrix)
 
         return ans
 
@@ -314,7 +341,7 @@ class Operator(Clonable):
 
         return A.conjugate().T.dot(B).trace().item()
 
-    def basis_change(self, basis):
+    def basis_change(self, basis, use_sparse=False):
         """Return a version of this Operator with different basis
 
         Transform this Operator to use a different basis. The basis
@@ -323,22 +350,28 @@ class Operator(Clonable):
 
         Arguments:
             basis {ndarray} -- Basis to transform the operator to.
+            use_sparse -- Whether the computed matrix will be converted to
+                          a sparse format or not.
 
         Returns:
-            Operator -- Basis transformed version of this operator
+            Operator -- Basis transformed version of this operator (Note:
+                        this operator will then be dense unless
+                        use_sparse=True)
         """
 
         ans = self.clone()
-        basis = sparse.csr_matrix(basis)
         x = basis.T.conjugate()
-        ans._matrix = x.dot(ans._matrix).dot(basis)
+        ans._matrix = x @ ans._matrix @ basis
+        if use_sparse:
+            ans._matrix = sparse.csr_matrix(ans._matrix)
+        ans._sparse = use_sparse
 
         return ans
 
 
 class SpinOperator(Operator):
     @classmethod
-    def from_axes(self, Is=0.5, axes="x"):
+    def from_axes(self, Is=0.5, axes="x", use_sparse=True):
         """Construct a SpinOperator from spins and axes
 
         Construct a SpinOperator from a list of spin values and directions. For
@@ -351,6 +384,8 @@ class SpinOperator(Operator):
             axes {[str]} -- List of axes, can pass a single character if it's
                             only one value. Each value can be x, y, z, +, -,
                             or 0 (for the identity operator) (default: {'x'})
+            use_sparse {bool} -- Whether to use a sparse matrix for storing the
+                                 generated operator's matrix
 
         Returns:
             SpinOperator -- Operator built according to specifications
@@ -388,11 +423,11 @@ class SpinOperator(Operator):
         for m in matrices[1:]:
             M = np.kron(M, m)
 
-        return self(sparse.csr_matrix(M), dim=dim)
+        return self(M, dim=dim, use_sparse=use_sparse)
 
 
 class DensityOperator(Operator):
-    def __init__(self, matrix, dim=None):
+    def __init__(self, matrix, dim=None, use_sparse=True):
         """Create a DensityOperator object
 
         Create an object representing a density operator. These can
@@ -403,6 +438,12 @@ class DensityOperator(Operator):
             matrix {ndarray} -- Matrix describing the operator (must be a
                                 square hermitian 2D array and have non-zero
                                 trace; will be normalised to have trace 1)
+            dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
+                               (2,2) corresponds to two 1/2 spins and a 4x4 matrix.
+                               If not specified, it's taken from the size of
+                               the matrix (default: {None})
+            use_sparse {bool} -- Determines whether to use sparse matrices for
+                                 storing this operator's matrix
 
         Keyword Arguments:
             dim {(int,...)} -- Tuple of the dimensions of the operator. For example,
@@ -413,7 +454,7 @@ class DensityOperator(Operator):
         Raises:
             ValueError -- Any of the passed values are invalid
         """
-        super(DensityOperator, self).__init__(matrix, dim)
+        super(DensityOperator, self).__init__(matrix, dim, use_sparse=use_sparse)
         # Enforce unitarity
 
         tr = self._matrix.trace()
@@ -427,7 +468,7 @@ class DensityOperator(Operator):
             raise ValueError("DensityOperator must be hermitian!")
 
     @classmethod
-    def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0):
+    def from_vectors(self, Is=0.5, vectors=[0, 0, 1], gammas=0, use_sparse=True):
         """Construct a density matrix state from real space vectors
 
         Construct a density matrix state by specifying a number of spins and
@@ -445,6 +486,8 @@ class DensityOperator(Operator):
                                  if it's only one value. All off-diagonal
                                  elements for each corresponding density matrix
                                  will be multiplied by 1-gamma. (default: {0})
+            use_sparse {bool} -- Whether to use a sparse matrix for storing the
+                                 generated operator's matrix
 
         Returns:
             DensityOperator -- The composite density operator
@@ -473,13 +516,13 @@ class DensityOperator(Operator):
         for I, vec, gamma in zip(Is, vectors, gammas):
 
             if I % 0.5 or I < 0.5:
-                raise ValueError("{0} is not a valid spin value".format(I))
+                raise ValueError(f"{I} is not a valid spin value")
 
             if not len(vec) == 3:
-                raise ValueError("{0} is not a valid 3D vector".format(vec))
+                raise ValueError(f"{vec} is not a valid 3D vector")
 
             if gamma < 0 or gamma > 1:
-                raise ValueError("{0} is not a valid gamma value".format(gamma))
+                raise ValueError(f"{gamma} is not a valid gamma value")
 
             mvals = _mvals(I)
 
@@ -500,7 +543,7 @@ class DensityOperator(Operator):
         for m in matrices[1:]:
             M = np.kron(M, m)
 
-        return self(sparse.csr_matrix(M), dim=dim)
+        return self(M, dim=dim, use_sparse=use_sparse)
 
     @property
     def trace(self):
@@ -508,7 +551,10 @@ class DensityOperator(Operator):
 
     def normalize(self):
         """Normalize this DensityOperator to have trace equal to one."""
-        self._matrix = self._matrix.multiply(1 / self.trace)
+        if self._sparse:
+            self._matrix = self._matrix.multiply(1 / self.trace)
+        else:
+            self._matrix = np.multiply(self._matrix, 1 / self.trace)
 
     def partial_trace(self, trace_dim=None):
         """Perform a partial trace operation
@@ -530,7 +576,8 @@ class DensityOperator(Operator):
         dim = list(self._dim)
         tdim = list(sorted(trace_dim))
 
-        m = self._matrix.toarray().reshape(dim + dim)
+        m = self._matrix.toarray() if self._sparse else self._matrix
+        m = m.reshape(dim + dim)
 
         while len(tdim) > 0:
             td = tdim.pop(-1)
@@ -538,7 +585,7 @@ class DensityOperator(Operator):
             m = np.trace(m, axis1=td, axis2=td + len(dim))
             dim.pop(td)  # Reduce dimension accordingly
 
-        return DensityOperator(m, dim)
+        return DensityOperator(m, dim, use_sparse=self._sparse)
 
     def expectation(self, operator):
         """Compute expectation value of one operator

@@ -104,6 +104,7 @@ class MuSpinConfig:
         self._spins = self.validate("spins", params["spins"].value[0])
         self._celio = self._validate_celio(params["celio"].value[0])
         self._y_axis = self.validate("y", params["y_axis"].value[0])[0]
+        self._results_function = params["results_function"]
 
         # Identify ranges
         try:
@@ -179,10 +180,23 @@ class MuSpinConfig:
         if finfo["fit"]:
             if len(self._file_ranges) > 0:
                 raise MuSpinConfigError("Can not have file ranges when fitting")
+            logging.warning(
+                "'x_axis' values will be overwritten by the experimental data"
+            )
             # The x axis is overridden, whatever it is
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
-            self._x_range[xname] = finfo["data"][:, 0]
+
+            # Special cases where loaded data will be a single value, but we
+            # actually need to load multiple
+            if xname in ["B", "intrinsic_B"]:
+                # Default to z axis (the same as in _validate_B below -
+                # the orientation is applied later)
+                self._x_range[xname] = np.array(
+                    [[0, 0, v] for v in finfo["data"][:, 0]]
+                )
+            else:
+                self._x_range[xname] = finfo["data"][:, 0]
             if xname == "t":
                 # Special case
                 self._time_N = len(self._x_range[xname])
@@ -441,6 +455,10 @@ Parameters used:
     @property
     def y_axis(self):
         return self._y_axis
+
+    @property
+    def results_function(self):
+        return self._results_function
 
     def __len__(self):
         return len(self._configurations)

@@ -4,6 +4,7 @@ Classes and functions to perform actual experiments"""
 
 import logging
 import numpy as np
+from numpy.typing import ArrayLike
 import scipy.constants as cnst
 
 from muspinsim.celio import CelioHamiltonian
@@ -34,11 +35,17 @@ class ExperimentRunner:
             in_file {MuSpinInput} -- The input file object defining the
                                     calculations we need to perform.
             variables {dict} -- The values of any variables appearing in the input
-                                file
+                                file. Should only be specified when
+                                running a fitting calculation, in which case
+                                results_function will not be applied when 'run' is
+                                called as it is already applied by the FittingRunner.
         """
         # Fix W0102:dangerous-default-value
         if variables is None:
             variables = {}
+
+        # Required later for results_function
+        self._variables = variables
 
         if mpi.is_root:
             # On root, we run the evaluation that gives us the actual possible
@@ -179,14 +186,16 @@ class ExperimentRunner:
                     r = DensityOperator.from_vectors(I, muon_axis, 0)
                 else:
                     # Get the Zeeman Hamiltonian for this field
+                    # Don't bother using sparse, we need them dense for eigh
+                    # anyway
                     Hz = np.sum(
                         [
-                            B[j] * SpinOperator.from_axes(I, e).matrix
+                            B[j] * SpinOperator.from_axes(I, e, use_sparse=False).matrix
                             for j, e in enumerate("xyz")
                         ],
                         axis=0,
                     )
-                    evals, evecs = np.linalg.eigh(Hz.toarray())
+                    evals, evecs = np.linalg.eigh(Hz)
                     E = evals * 1e6 * self._system.gamma(i)
 
                     if T > 0:
@@ -324,6 +333,15 @@ class ExperimentRunner:
     def p_operator(self):
         return self._system.muon_operator(self.p)
 
+    def apply_results_function(self, results: ArrayLike, variables: dict):
+        # We expect muspinsim to output arrays with shape N here
+        # but the evaluation will return an array with shape (1, N) instead
+        return np.array(
+            self._config.results_function.evaluate(
+                **variables, x=self._config.x_axis_values, y=results
+            )
+        ).reshape(len(results))
+
     def run(self):
         """Run the experiment
 
@@ -339,8 +357,15 @@ class ExperimentRunner:
             dataslice = self.run_single(cfg)
             self._config.store_time_slice(cfg.id, dataslice)
 
-        self._config.results = mpi.sum_data(self._config.results)
+        results = mpi.sum_data(self._config.results)
 
+        # Apply the results function (only if not fitting, otherwise let
+        # FittingRunner handle it so we can optimise and avoid repeated calls
+        # to this function)
+        if not self._variables:
+            results = self.apply_results_function(results, {})
+
+        self._config.results = results
         return self._config.results
 
     def load_config(self, cfg_snap: ConfigSnapshot):

@@ -81,6 +81,11 @@ dissipation 2
         self.assertIn("t", cfg._x_range)
         self.assertIn("orient", cfg._avg_ranges)
 
+        array = np.arange(0, 5)
+        np.testing.assert_allclose(
+            cfg.results_function.evaluate(x=array * 2, y=array)[0], array
+        )
+
         # Now try a few errors
 
         stest = StringIO(
@@ -287,7 +292,7 @@ orientation
         stest = StringIO(
             """
 fitting_variables
-    x
+    A
 fitting_data
     0   0.5
     1   0.2
@@ -295,7 +300,7 @@ fitting_data
         )
 
         itest = MuSpinInput(stest)
-        cfg = MuSpinConfig(itest.evaluate(x=0.0))
+        cfg = MuSpinConfig(itest.evaluate(A=0.0))
         # Check that the time axis has been overridden
         self.assertTrue((np.array(cfg._x_range["t"]) == [0, 1]).all())
 
@@ -303,7 +308,7 @@ fitting_data
         stest = StringIO(
             """
 fitting_variables
-    x
+    A
 fitting_data
     0   0.5
     1   0.2
@@ -317,4 +322,47 @@ orientation
 
         itest = MuSpinInput(stest)
         with self.assertRaises(MuSpinConfigError):
-            cfg = MuSpinConfig(itest.evaluate(x=0.0))
+            cfg = MuSpinConfig(itest.evaluate(A=0.0))
+
+    def test_fitting_magnetic_fields(self):
+        # Special tests for fitting tasks with magnetic fields as axes
+
+        stest = StringIO(
+            """
+y_axis
+    integral
+x_axis
+    field
+fitting_variables
+    A
+fitting_data
+    0   0.5
+    1   0.2
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate(A=0.0))
+
+        self.assertTrue((np.array(cfg._x_range["B"]) == [[0, 0, 0], [0, 0, 1]]).all())
+
+        stest = StringIO(
+            """
+y_axis
+    integral
+x_axis
+    intrinsic_field
+fitting_variables
+    A
+fitting_data
+    0   0.5
+    1   0.2
+"""
+        )
+
+        itest = MuSpinInput(stest)
+        cfg = MuSpinConfig(itest.evaluate(A=0.0))
+
+        self.assertTrue(
+            (np.array(cfg._x_range["intrinsic_B"]) == [[0, 0, 0], [0, 0, 1]]).all()
+        )

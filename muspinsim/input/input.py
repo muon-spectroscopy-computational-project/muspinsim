@@ -15,7 +15,7 @@ from muspinsim.input.keyword import (
     MuSpinCouplingKeyword,
 )
 
-from muspinsim.input.larkeval import LarkExpressionError
+from muspinsim.input.larkeval import LarkExpression, LarkExpressionError
 
 
 class MuSpinInputError(Exception):
@@ -111,7 +111,15 @@ class MuSpinInput:
 
         self._keywords = {}
         self._variables = {}
-        self._fitting_info = {"fit": False, "data": None, "method": None, "rtol": None}
+        self._fitting_info = {
+            "fit": False,
+            "data": None,
+            "method": None,
+            "rtol": None,
+            "function": None,
+            # When true indicates all fitting can be done after the simulation
+            "single_simulation": True,
+        }
 
         if file_stream is not None:
 
@@ -163,9 +171,26 @@ class MuSpinInput:
                         raise RuntimeError(
                             f"Invalid keyword '{name}' found in input file"
                         ) from exc
-
                     if issubclass(KWClass, MuSpinEvaluateKeyword):
                         kw = KWClass(block, args=args, variables=self._variables)
+
+                        # In cases where fitting parameters are only used
+                        # as variables for 'results_function' and no where
+                        # else we only need to run the simulation once
+                        if self._fitting_info["single_simulation"]:
+                            # Flatten here as may have array of arrays e.g.
+                            # hyperfine
+                            for value in np.array(kw._values[0]).flatten():
+                                if name != "results_function" and isinstance(
+                                    value, LarkExpression
+                                ):
+                                    if np.any(
+                                        np.in1d(
+                                            list(self._variables.keys()),
+                                            list(value._variables),
+                                        )
+                                    ):
+                                        self._fitting_info["single_simulation"] = False
                     else:
                         kw = KWClass(block, args=args)
 
@@ -176,6 +201,7 @@ class MuSpinInput:
                         self._keywords[name][kwid] = kw
                     else:
                         self._keywords[name] = kw
+
                 except (ValueError, LarkExpressionError, RuntimeError) as exc:
                     errors_found += [
                         write_error(name, block_line_nums[header], str(exc))
@@ -219,6 +245,14 @@ class MuSpinInput:
                     "fitting_method",
                 ]:
                     pass
+                # Special case where we don't want to evaluate the expression
+                # yet
+                elif name in ["results_function"]:
+                    if name in self._keywords:
+                        result[name] = self._keywords[name]
+                    else:
+                        # Default
+                        result[name] = KWClass(variables=variables)
                 elif name in self._keywords:
                     kw = self._keywords[name]
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}

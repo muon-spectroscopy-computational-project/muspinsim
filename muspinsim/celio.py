@@ -18,8 +18,11 @@ from muspinsim.cpp import (
     Celio_EvolveContrib,
     celio_evolve,
 )
-from muspinsim.spinop import SpinOperator
-from muspinsim.validation import validate_evolve_params, validate_times
+from muspinsim.validation import (
+    validate_evolve_params,
+    validate_times,
+    validate_celio_params,
+)
 
 
 @dataclass
@@ -205,7 +208,7 @@ class CelioHamiltonian:
 
         return evol_op_contribs
 
-    def evolve(self, rho0, times, operators=None):
+    def evolve(self, rho0, times, operators):
         """Time evolution of a state under this Hamiltonian
 
         Perform an evolution of a state described by a DensityOperator under
@@ -219,29 +222,23 @@ class CelioHamiltonian:
         Keyword Arguments:
             operators {[SpinOperator]} -- List of SpinOperators to compute the
                                           expectation values of at each step.
-                                          If omitted, the states' density
-                                          matrices will be returned instead
-                                           (default: {[]})
 
         Returns:
-            [DensityOperator | ndarray] -- DensityOperators or expectation values
+            [ndarray] -- Expectation values
 
         Raises:
             TypeError -- Invalid operators
             ValueError -- Invalid values of times or operators
             RuntimeError -- Hamiltonian is not hermitian
         """
-        if operators is None:
-            operators = []
 
         times = np.array(times)
-        if isinstance(operators, SpinOperator):
-            operators = [operators]
+
+        if not operators:
+            raise ValueError("At least one SpinOperator must be present in 'operators'")
 
         validate_evolve_params(rho0, times, operators)
-
-        if len(self._terms) == 0:
-            raise ValueError("No interaction terms to evolve")
+        validate_celio_params(self._terms, times)
 
         time_step = times[1] - times[0]
         rho0 = rho0.matrix
@@ -350,12 +347,10 @@ class CelioHamiltonian:
         times = np.array(times)
 
         validate_times(times)
+        validate_celio_params(self._terms, times)
 
         if averages <= 0:
             raise ValueError("averages must be a positive integer")
-
-        if len(self._terms) == 0:
-            raise ValueError("No interaction terms to evolve")
 
         # Due to computation of of psi we assume the muon is first in
         # the system so ensure this is the case here, otherwise
@@ -481,7 +476,7 @@ class CelioHamiltonian:
         # 0.5 and -0.5
         return results * avg_factor * 0.5
 
-    def integrate_decaying(self, rho0, tau, operators=None):
+    def integrate_decaying(self, rho0, tau, operators):
         """Called to integrate one or more expectation values in time with decay
 
         Raises:
