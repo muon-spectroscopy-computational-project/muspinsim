@@ -271,7 +271,6 @@ class MuSpinEvaluateKeyword(MuSpinKeyword):
             self._values.append(b)
 
     def evaluate(self, **variables):
-
         allvars = {**variables, **self._constants}
 
         def expreval(expr):
@@ -288,8 +287,33 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
     block_size_bounds = (1, 1)
     _functions = {**_math_functions, "range": _range}
 
-    def evaluate(self, **variables):
+    def _reshape_value(
+        self, evaluated_line: np.ndarray, line_length: int
+    ) -> "list[np.ndarray]":
+        """Reshape evaluated values so they can be appended to the list of all
+        values.
 
+        Arguments:
+            evaluated_line {np.ndarray} -- Results of evaluating a line
+                                           representing LarkExpression(s)
+            line_length {int} -- Length of the LarkExpression(s), which may be
+                                 different from the dimensions of the evaluated
+                                 values
+
+        Returns:
+            {list[np.ndarray]} -- The evaluated line, as a list of ndarrays
+        """
+        if len(evaluated_line.shape) == 1:
+            return [evaluated_line]
+        elif line_length == 1:
+            if len(evaluated_line.shape) == 2:
+                return [evaluated_line[0]]
+            elif len(evaluated_line.shape) == 3:
+                return list(evaluated_line[0])
+        else:
+            raise RuntimeError(f"Unable to evaluate expression for keyword {self.name}")
+
+    def evaluate(self, **variables):
         allvars = {**variables, **self._constants}
 
         if self.block_size != 1:
@@ -301,23 +325,12 @@ class MuSpinExpandKeyword(MuSpinEvaluateKeyword):
         eval_values = []
         for line in self._values:
             eval_line = np.array([expreval(expr) for expr in line])
-
-            if len(line) == 1 and len(eval_line.shape) == 3:
-                eval_values += list(eval_line[0])
-            elif len(line) == 1 and len(eval_line.shape) == 2:
-                eval_values += [eval_line[0]]
-            elif len(eval_line.shape) == 1:
-                eval_values += [eval_line]
-            else:
-                raise RuntimeError(
-                    f"Unable to evaluate expression for keyword {self.name}"
-                )
+            eval_values += self._reshape_value(eval_line, len(line))
 
         return eval_values
 
 
 class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
-
     name = "coupling_keyword"
     block_size = 1
     default = "0 0 0"
@@ -347,7 +360,6 @@ class MuSpinCouplingKeyword(MuSpinEvaluateKeyword):
 
 # Now on to defining the actual keywords that are admitted in input files
 class KWName(MuSpinKeyword):
-
     name = "name"
     block_size = 1
     accept_range = False
@@ -355,7 +367,6 @@ class KWName(MuSpinKeyword):
 
 
 class KWSpins(MuSpinKeyword):
-
     name = "spins"
     expr_size_bounds = (1, np.inf)
     block_size = 1
@@ -364,7 +375,6 @@ class KWSpins(MuSpinKeyword):
 
 
 class KWCelio(MuSpinKeyword):
-
     name = "celio"
     expr_size_bounds = (1, 2)
     block_size = 1
@@ -373,7 +383,6 @@ class KWCelio(MuSpinKeyword):
 
 
 class KWPolarization(MuSpinExpandKeyword):
-
     name = "polarization"
     expr_size_bounds = (1, 3)
     block_size = 1
@@ -387,7 +396,6 @@ class KWPolarization(MuSpinExpandKeyword):
 
 
 class KWField(MuSpinExpandKeyword):
-
     name = "field"
     block_size = 1
     accept_range = True
@@ -397,7 +405,6 @@ class KWField(MuSpinExpandKeyword):
 
 
 class KWIntrinsicField(MuSpinExpandKeyword):
-
     name = "intrinsic_field"
     block_size = 1
     accept_range = True
@@ -407,7 +414,6 @@ class KWIntrinsicField(MuSpinExpandKeyword):
 
 
 class KWTime(MuSpinExpandKeyword):
-
     name = "time"
     block_size = 1
     accept_range = True
@@ -416,7 +422,6 @@ class KWTime(MuSpinExpandKeyword):
 
 
 class KWXAxis(MuSpinKeyword):
-
     name = "x_axis"
     block_size = 1
     accept_range = False
@@ -431,7 +436,6 @@ class KWXAxis(MuSpinKeyword):
 
 
 class KWYAxis(MuSpinKeyword):
-
     name = "y_axis"
     block_size = 1
     accept_range = False
@@ -444,7 +448,6 @@ class KWYAxis(MuSpinKeyword):
 
 
 class KWAverageAxes(MuSpinKeyword):
-
     name = "average_axes"
     block_size = 1
     accept_range = True
@@ -460,7 +463,6 @@ class KWAverageAxes(MuSpinKeyword):
 
 
 class KWOrientation(MuSpinExpandKeyword):
-
     name = "orientation"
     expr_size_bounds = (1, 4)
     block_size = 1
@@ -474,7 +476,6 @@ class KWOrientation(MuSpinExpandKeyword):
 
 
 class KWTemperature(MuSpinExpandKeyword):
-
     name = "temperature"
     block_size = 1
     accept_range = True
@@ -484,7 +485,6 @@ class KWTemperature(MuSpinExpandKeyword):
 
 # Couplings
 class KWZeeman(MuSpinCouplingKeyword):
-
     name = "zeeman"
     expr_size_bounds = (3, 3)
     block_size = 1
@@ -496,7 +496,6 @@ class KWZeeman(MuSpinCouplingKeyword):
 
 
 class KWDipolar(MuSpinCouplingKeyword):
-
     name = "dipolar"
     block_size = 1
     expr_size_bounds = (3, 3)
@@ -507,7 +506,6 @@ class KWDipolar(MuSpinCouplingKeyword):
 
 
 class KWHyperfine(MuSpinCouplingKeyword):
-
     name = "hyperfine"
     block_size = 3
     expr_size_bounds = (3, 3)
@@ -518,7 +516,6 @@ class KWHyperfine(MuSpinCouplingKeyword):
 
 
 class KWQuadrupolar(MuSpinCouplingKeyword):
-
     name = "quadrupolar"
     block_size = 3
     expr_size_bounds = (3, 3)
@@ -531,7 +528,6 @@ class KWQuadrupolar(MuSpinCouplingKeyword):
 
 
 class KWDissipation(MuSpinCouplingKeyword):
-
     name = "dissipation"
     block_size = 1
     expr_size_bounds = (1, 1)
@@ -543,7 +539,6 @@ class KWDissipation(MuSpinCouplingKeyword):
 
 # Fitting variables. This is a special case
 class KWFittingVariables(MuSpinKeyword):
-
     name = "fitting_variables"
     block_size = 1
     expr_size_bounds = (1, np.inf)
@@ -563,7 +558,6 @@ class KWFittingVariables(MuSpinKeyword):
     ]
 
     def _store_values(self, block):
-
         variables = list(self._constants.keys())
 
         self._values = []
@@ -588,7 +582,6 @@ class KWFittingVariables(MuSpinKeyword):
 
 # Other fitting-related keywords
 class KWFittingData(MuSpinExpandKeyword):
-
     name = "fitting_data"
     block_size = 1
     expr_size_bounds = (1, 2)
@@ -599,7 +592,6 @@ class KWFittingData(MuSpinExpandKeyword):
 
 
 class KWFittingMethod(MuSpinKeyword):
-
     ACCEPTED_FITTING_METHODS = ["nelder-mead", "lbfgs", "least-squares"]
 
     name = "fitting_method"
@@ -617,7 +609,6 @@ class KWFittingMethod(MuSpinKeyword):
 
 
 class KWFittingTolerance(MuSpinKeyword):
-
     name = "fitting_tolerance"
     block_size = 1
     accept_range = False
@@ -630,7 +621,6 @@ class KWFittingTolerance(MuSpinKeyword):
 
 
 class KWResultsFunction(MuSpinExpandKeyword):
-
     name = "results_function"
     block_size = 1
     accept_range = False
@@ -638,10 +628,27 @@ class KWResultsFunction(MuSpinExpandKeyword):
     _constants = {**_math_constants, **_phys_constants}
     _special_variables = ["x", "y"]
 
+    def _reshape_value(
+        self, evaluated_line: np.ndarray, line_length: int
+    ) -> "list[np.ndarray]":
+        """Reshaping should not be performed for results functions, which in
+        general may have any number of file ranges. This overrides and retains
+        the full dimensionality of the results, returning a list.
+
+        Arguments:
+            evaluated_line {np.ndarray} -- Results of evaluating a line
+                                           representing LarkExpression(s)
+            line_length {int} -- Unused
+
+        Returns:
+            {list[np.ndarray]} -- The first element from the evaluated line,
+                                  in a list
+        """
+        return [evaluated_line[0]]
+
 
 # Special configuration keyword
 class KWExperiment(MuSpinKeyword):
-
     name = "experiment"
     block_size = 1
     accept_range = False
