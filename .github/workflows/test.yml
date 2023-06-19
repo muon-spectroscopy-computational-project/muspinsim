@@ -105,6 +105,9 @@ jobs:
     - name: Install package
       env:
         MUSPINSIM_WITH_OPENMP: 1
-      run: pip install .
+      run: pip install -e .
     - name: Test with pytest
-      run: pytest --pyargs muspinsim
+      run: pytest --cov --cov-report xml --pyargs muspinsim
+    - name: Upload to Codecov
+      if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
+      uses: codecov/codecov-action@v3

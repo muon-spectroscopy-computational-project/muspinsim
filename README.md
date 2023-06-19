@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/muon-spectroscopy-computational-project/muspinsim/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/muon-spectroscopy-computational-project/muspinsim/actions/workflows/test.yml)
+[![Codecov](https://codecov.io/gh/muon-spectroscopy-computational-project/muspinsim/branch/main/graph/badge.svg)](https://codecov.io/gh/muon-spectroscopy-computational-project/muspinsim)
+
 # muspinsim
 
 MuSpinSim is a Python software meant to simulate muon spectroscopy experiments. In particular, it simulates the spin dynamics of a system of a muon plus other spins, namely electrons and atomic nuclei. It can simulate various common experimental setups and account for hyperfine, dipolar and quadrupolar couplings. It is also able to fit its simulations
