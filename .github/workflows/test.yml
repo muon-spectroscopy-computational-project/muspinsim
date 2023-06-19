@@ -44,7 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        os: [ubuntu-latest, macOS-11, windows-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
         # macOS-11 pinned here due to usage of $(brew --prefix llvm@15)
         # macOS-12 will become macOS-latest in the near future but
         # is currently still unstable
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-11, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -100,19 +100,22 @@ jobs:
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
           brew info libomp
-          ls -l /usr/local/Cellar/libomp
+          ls -l /usr/local/Cellar/libomp/16.0.5/*
           ls -l /usr/local/opt/libomp
           brew link libomp --force
           ls -l /usr/local/opt/libomp
           echo $LD_LIBRARY_PATH
           echo $LDFLAGS
           echo $CPPFLAGS
+          echo $LIBRARY_PATH
           export LDFLAGS="-L/usr/local/opt/libomp/lib"
           export CPPFLAGS="-I/usr/local/opt/libomp/include"
           export LD_LIBRARY_PATH="-L/usr/local/opt/libomp/lib"
+          export LD_LIBRARY_PATH="$LIBRARY_PATH:/usr/local/opt/libomp/lib"
           echo $LD_LIBRARY_PATH
           echo $LDFLAGS
           echo $CPPFLAGS
+          echo $LIBRARY_PATH
         fi
       shell: bash
 
