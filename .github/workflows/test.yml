@@ -75,7 +75,7 @@ jobs:
         # macOS-11 pinned here due to usage of $(brew --prefix llvm@15)
         # macOS-12 will become macOS-latest in the near future but
         # is currently still unstable
-        os: [ubuntu-latest, macOS-11, windows-latest]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -99,7 +99,8 @@ jobs:
         if [ "$RUNNER_OS" == 'macOS' ]; then
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
-          brew install libomp
+          brew info libomp
+          printenv LD_LIBRARY_PATH
         fi
       shell: bash
 
