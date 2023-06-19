@@ -100,7 +100,7 @@ jobs:
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
           brew info libomp
-          ls -l /usr/local/Cellar/libomp/16.0.5
+          ls -l /usr/local/Cellar/libomp
           ls -l /usr/local/opt/libomp
           brew link libomp --force
           ls -l /usr/local/opt/libomp
