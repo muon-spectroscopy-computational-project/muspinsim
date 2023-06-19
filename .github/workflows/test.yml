@@ -99,13 +99,14 @@ jobs:
         if [ "$RUNNER_OS" == 'macOS' ]; then
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
+          brew install libomp
         fi
       shell: bash
 
     - name: Install package
       env:
         MUSPINSIM_WITH_OPENMP: 1
-      run: pip install .
+      run: pip install -e .
     - name: Test with pytest
       run: pytest --cov --cov-report xml --pyargs muspinsim
     - name: Upload to Codecov
