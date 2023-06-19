@@ -100,7 +100,10 @@ jobs:
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
           brew info libomp
-          printenv LD_LIBRARY_PATH
+          echo "$LD_LIBRARY_PATH"
+          export LDFLAGS="-L/usr/local/opt/libomp/lib"
+          export CPPFLAGS="-I/usr/local/opt/libomp/include"
+          #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/custom/path/
         fi
       shell: bash
 
