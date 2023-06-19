@@ -44,7 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.10"]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-11, windows-latest]
 
     steps:
     - uses: actions/checkout@v3
@@ -100,22 +100,33 @@ jobs:
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
           brew info libomp
-          ls /usr/local/Cellar/libomp/16.0.5
-          ls /usr/local/opt
+          tree /usr/local/Cellar/libomp/16.0.5
+          ls -l /usr/local/opt/libomp
           brew link libomp --force
+          ls -l /usr/local/opt/libomp
           echo $LD_LIBRARY_PATH
           echo $LDFLAGS
           echo $CPPFLAGS
           export LDFLAGS="-L/usr/local/opt/libomp/lib"
           export CPPFLAGS="-I/usr/local/opt/libomp/include"
           #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/custom/path/
+          echo $LD_LIBRARY_PATH
+          echo $LDFLAGS
+          echo $CPPFLAGS
         fi
       shell: bash
 
+    - name: Install package with -e
+      env:
+        MUSPINSIM_WITH_OPENMP: 1
+      if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
+      run: pip install -e .
     - name: Install package
       env:
         MUSPINSIM_WITH_OPENMP: 1
-      run: pip install -e .
+      if: matrix.python-version != '3.10' || matrix.os != 'ubuntu-latest'
+      run: pip install .
+
     - name: Test with pytest
       run: pytest --cov --cov-report xml --pyargs muspinsim
     - name: Upload to Codecov
