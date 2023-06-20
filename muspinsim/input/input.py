@@ -11,6 +11,7 @@ import numpy as np
 
 from muspinsim.input.keyword import (
     InputKeywords,
+    KWXAxis,
     MuSpinEvaluateKeyword,
     MuSpinCouplingKeyword,
 )
@@ -66,7 +67,6 @@ def _make_blocks(file_stream):
     indent = None
 
     for i, l in enumerate(lines):
-
         # Remove any comments
         l = l.split("#", 1)[0]
 
@@ -119,10 +119,10 @@ class MuSpinInput:
             "function": None,
             # When true indicates all fitting can be done after the simulation
             "single_simulation": True,
+            "evaluate_x_axis": False,
         }
 
         if file_stream is not None:
-
             raw_blocks, block_line_nums = _make_blocks(file_stream)
 
             # if we find errors when parsing fitting variables, we post an error
@@ -228,7 +228,6 @@ class MuSpinInput:
         result = {"couplings": {}, "fitting_info": self.fitting_info}
 
         for name, KWClass in InputKeywords.items():
-
             if issubclass(KWClass, MuSpinCouplingKeyword):
                 if name in self._keywords:
                     for kwid, kw in self._keywords[name].items():
@@ -255,6 +254,13 @@ class MuSpinInput:
                         result[name] = KWClass(variables=variables)
                 elif name in self._keywords:
                     kw = self._keywords[name]
+                    print(kw.name)
+                    if kw.name == "x_axis" or kw.name == KWXAxis.default:
+                        # We perform the fitting on the experimental data, but
+                        # if the user has tried to specify x_axis, we should
+                        # evaluate on that for the output .dat file
+                        result["fitting_info"]["evaluate_x_axis"] = True
+
                     v = variables if issubclass(KWClass, MuSpinEvaluateKeyword) else {}
                     val = kw.evaluate(**v)
 

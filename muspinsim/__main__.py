@@ -140,7 +140,7 @@ def main(use_mpi=False):
             runner.config.save_output(name=None, path=out_path)
     else:
         fitter = FittingRunner(in_file)
-        fitter.run(name=None, path=out_path)
+        fitter.run()
 
         if mpi.is_root:
             rep_dname = inp_dir
@@ -157,6 +157,7 @@ def main(use_mpi=False):
                     rep_dname = inp_dir
 
             fitter.write_report(fname=rep_fname, path=rep_dname)
+            fitter.write_data(name=None, path=out_path)
 
     if mpi.is_root:
         t_end = datetime.now()

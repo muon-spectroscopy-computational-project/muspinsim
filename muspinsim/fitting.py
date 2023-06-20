@@ -64,7 +64,7 @@ class FittingRunner:
         self._sol = None
         self._cached_results = None
 
-    def run(self, name=None, path="."):
+    def run(self):
         """Run a fitting calculation using Scipy, and returns the solution
 
         Returns:
@@ -72,7 +72,6 @@ class FittingRunner:
         """
 
         if mpi.is_root:
-
             # Get the correct string for the method
             method = {
                 "nelder-mead": "nelder-mead",
@@ -116,9 +115,6 @@ class FittingRunner:
             self._runner.config.results = self._runner.apply_results_function(
                 self._runner.config.results, dict(zip(self._xnames, self._sol["x"]))
             )
-
-            # And now save the last result
-            self._runner.config.save_output(name=name, path=path)
         else:
             while not self._done:
                 self._compute_result(self._x)
@@ -182,6 +178,31 @@ class FittingRunner:
             err = np.average(np.abs(y - self._ytarg))
             return err
 
+    def write_data(self, name: str = None, path: str = "."):
+        """Write the .dat file, using the x_axis given by the user or if not
+        provided, use the experimental data x values as during the fitting.
+
+        Arguments:
+            name {str} -- Root name to use for the files
+            path {str} -- Folder path to save the files in
+        """
+        vardict = dict(zip(self._xnames, self._x))
+        runner = ExperimentRunner(
+            self._input, variables=vardict, use_experimental_x_axis=False
+        )
+        if (
+            runner.config.x_axis != self._runner.config.x_axis
+            or runner.config.x_axis_values != self._runner.config.x_axis_values
+        ):
+            # If our x_axis differs from the one used in the fitting, use the
+            # user specified values for evaluation
+            y = runner.run()
+            runner.apply_results_function(y, vardict)
+            runner.config.save_output(name=name, path=path)
+        else:
+            # Otherwise, can use the values from the final fitting runner
+            self._runner.config.save_output(name=name, path=path)
+
     def write_report(self, fname=None, path="./"):
         """Write a report file with the contents of the fitting optimisation.
 
@@ -196,7 +217,6 @@ class FittingRunner:
         """
 
         if mpi.is_root:
-
             # Final variable values
             variables = dict(zip(self._xnames, self._sol["x"]))
             config = MuSpinConfig(self._input.evaluate(**variables))

@@ -79,7 +79,7 @@ class MuSpinConfig:
     """A class to store a configuration for a MuSpinSim simulation, including
     any ranges of parameters as determined by the input file."""
 
-    def __init__(self, params={}):
+    def __init__(self, params={}, use_experimental_x_axis: bool = True):
         """Initialise a MuSpinConfig object
 
         Initialise a MuSpinConfig object from values produced by the
@@ -88,6 +88,9 @@ class MuSpinConfig:
         Arguments:
             params {dict} -- Dictionary of parameters as returned by
                              MuSpinInput.evaluate
+            use_experimental_x_axis {bool} -- Only used for fittings. If True, then any
+                                              x_axis specified by the user will be
+                                              overwritten. Default is True.
 
         """
 
@@ -129,7 +132,6 @@ class MuSpinConfig:
 
         # Now inspect all parameters
         for iname, cname in _CDICT.items():
-
             try:
                 p = params[iname]
             except KeyError as exc:
@@ -180,26 +182,31 @@ class MuSpinConfig:
         if finfo["fit"]:
             if len(self._file_ranges) > 0:
                 raise MuSpinConfigError("Can not have file ranges when fitting")
-            logging.warning(
-                "'x_axis' values will be overwritten by the experimental data"
-            )
-            # The x axis is overridden, whatever it is
+
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
 
-            # Special cases where loaded data will be a single value, but we
-            # actually need to load multiple
-            if xname in ["B", "intrinsic_B"]:
-                # Default to z axis (the same as in _validate_B below -
-                # the orientation is applied later)
-                self._x_range[xname] = np.array(
-                    [[0, 0, v] for v in finfo["data"][:, 0]]
-                )
-            else:
-                self._x_range[xname] = finfo["data"][:, 0]
-            if xname == "t":
-                # Special case
-                self._time_N = len(self._x_range[xname])
+            if use_experimental_x_axis:
+                if finfo["evaluate_x_axis"]:
+                    logging.info(
+                        "Fitting will be performed on experimental data-points, "
+                        "specified 'x_axis' will only be used to generate final "
+                        ".dat file"
+                    )
+
+                # Special cases where loaded data will be a single value, but we
+                # actually need to load multiple
+                if xname in ["B", "intrinsic_B"]:
+                    # Default to z axis (the same as in _validate_B below -
+                    # the orientation is applied later)
+                    self._x_range[xname] = np.array(
+                        [[0, 0, v] for v in finfo["data"][:, 0]]
+                    )
+                else:
+                    self._x_range[xname] = finfo["data"][:, 0]
+                if xname == "t":
+                    # Special case
+                    self._time_N = len(self._x_range[xname])
 
         # Check that a X axis was found
         if list(self._x_range.values())[0] is None:
@@ -464,7 +471,6 @@ Parameters used:
         return len(self._configurations)
 
     def __getitem__(self, i):
-
         isint = isinstance(i, int)
         if isint:
             i = slice(i, i + 1)
@@ -473,8 +479,7 @@ Parameters used:
 
         ans = []
 
-        for (fc, ac, xc) in self._configurations[i]:
-
+        for fc, ac, xc in self._configurations[i]:
             fd = _elems_from_arrayodict(fc, self._file_ranges)
             ad = _elems_from_arrayodict(ac, self._avg_ranges)
             xd = _elems_from_arrayodict(xc, self._x_range)
@@ -495,7 +500,6 @@ Parameters used:
         return v[0]
 
     def _validate_spins(self, v):
-
         # Find isotopes
         isore = re.compile("([0-9]+)([A-Z][a-z]*|e)")
         m = isore.match(v)
@@ -541,7 +545,6 @@ Parameters used:
         return v[0]
 
     def _validate_B(self, v):
-
         if len(v) == 1:
             v = np.array([0, 0, v[0]])  # The default direction is Z
         elif len(v) != 3:
@@ -550,7 +553,6 @@ Parameters used:
         return v
 
     def _validate_intrinsic_B(self, v):
-
         if len(v) == 1:
             v = np.array([0, 0, v[0]])  # The default direction is Z
         elif len(v) != 3:
@@ -568,7 +570,6 @@ Parameters used:
         return v
 
     def _validate_orient(self, v, mode):
-
         q = None
         w = 1.0  # Weight
         if len(v) == 2:
