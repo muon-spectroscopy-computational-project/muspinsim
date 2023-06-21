@@ -186,6 +186,13 @@ class MuSpinConfig:
             xname = list(self._x_range.keys())[0]
             self._constants.pop(xname, None)  # Just in case it was here
 
+            if self._x_range[xname] is None:
+                # Can happen when xname keyword is a single value, and so not assigned
+                # In this case, we must use the experimental data, as that's the only
+                # x_range we have
+                use_experimental_x_axis = True
+                finfo["evaluate_x_axis"] = False
+
             if use_experimental_x_axis:
                 # Special cases where loaded data will be a single value, but we
                 # actually need to load multiple
