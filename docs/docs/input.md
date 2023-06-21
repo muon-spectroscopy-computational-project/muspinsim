@@ -201,7 +201,7 @@ x_axis
     field
 ```
 
-Which range to use as the X axis of the simulation's output files. Must be another keyword that accepts a range, and the given keyword *must be specified as a range* in this input file. When fitting, this is also assumed to be the X axis of the data to fit, and the range specified for this keyword is overridden by the fitting data. By default it's `time`. 
+Which range to use as the X axis of the simulation's output files. Must be another keyword that accepts a range, and the given keyword *must be specified as a range* in this input file. When fitting, if x_axis is specified or the range for the default range `time` is set, then the user provided X values will not be used to perform the fit (as the fitting data's X values are used to optimise the `fitting_variables`). They will, however, be used to perform a final evaluation when writing the .dat file. This enables the fit to use all the available data, whilst also allowing the user to evaluate data for a particular region of interest, or at a different precision. If the range provided does not overlap with the experimental data, then the user will be warned that the they are extrapolating the result of the fit. By default it's `time`. 
 
 ### y_axis
 

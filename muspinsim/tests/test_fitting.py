@@ -8,9 +8,17 @@ from muspinsim.input import MuSpinInput
 from muspinsim.fitting import FittingRunner
 
 
-EXPECTED_LOG = (
+OVERWRITE_LOG = (
     "INFO:root:Fitting will be performed on experimental data-points, "
     "specified 'x_axis' will only be used to generate final .dat file"
+)
+EXTRAPOLATION_INFO = (
+    "INFO:root:Some points on specified 'x_axis' are outside the experimental range, "
+    "fitted parameters may not be appropriate for extrapolation"
+)
+EXTRAPOLATION_WARNING = (
+    "WARNING:root:All points on specified 'x_axis' are outside the experimental range, "
+    "fitted parameters may not be appropriate for extrapolation"
 )
 
 
@@ -62,7 +70,9 @@ dissipation 1
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
@@ -88,7 +98,9 @@ dissipation 1
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
@@ -136,7 +148,9 @@ dissipation 1
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 2)
 
@@ -163,7 +177,9 @@ dissipation 1
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 2)
 
@@ -194,7 +210,9 @@ fitting_data
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 3)
         self.assertAlmostEqual(sol.x[1], B, 3)
@@ -221,7 +239,9 @@ fitting_data
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 1)
         self.assertAlmostEqual(sol.x[1], B, 1)
@@ -250,7 +270,9 @@ fitting_data
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
@@ -279,7 +301,9 @@ fitting_data
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
@@ -308,7 +332,9 @@ fitting_data
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertNotIn(EXPECTED_LOG, context_manager.output)
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
@@ -345,7 +371,9 @@ fitting_data
         # x_axis for an alc experiment
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertIn(EXPECTED_LOG, context_manager.output)
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], 2, 1)
 
@@ -379,7 +407,9 @@ x_axis
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertIn(EXPECTED_LOG, context_manager.output)
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
@@ -387,7 +417,6 @@ x_axis
             f1.write_data(name="test", path=tmp_dir)
             with open(os.path.join(tmp_dir, "test.dat")) as f:
                 lines = f.readlines()
-                print(*lines)
                 self.assertEqual(len(lines), 105)
 
     def test_fit_time(self):
@@ -410,7 +439,7 @@ fitting_data
 dissipation 1
     g
 time
-    range(0, 1, 11)
+    range(9, 11, 11)
 """
         )
 
@@ -419,7 +448,9 @@ time
 
         with self.assertLogs() as context_manager:
             sol = f1.run()
-            self.assertIn(EXPECTED_LOG, context_manager.output)
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
@@ -427,5 +458,46 @@ time
             f1.write_data(name="test", path=tmp_dir)
             with open(os.path.join(tmp_dir, "test.dat")) as f:
                 lines = f.readlines()
-                print(*lines)
+                self.assertEqual(len(lines), 15)
+
+    def test_fit_extrapolate_all(self):
+        # Test that if an time is altered is provided that does not overlap with
+        # experiment, we evaluate the results on that whilst fitting on the
+        # experimental data and warn the user
+        data = np.zeros((100, 3))
+        data[:, 0] = np.linspace(0, 10.0, len(data))
+        g = 0.2
+        data[:, 1] = 0.5 * np.exp(-g * data[:, 0])
+        dblock = "\n".join(["\t{0} {1}".format(*d) for d in data])
+
+        s1 = StringIO(
+            f"""
+spins
+    mu
+fitting_variables
+    g   0.5
+fitting_data
+{dblock}
+dissipation 1
+    g
+time
+    range(11, 12, 11)
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertIn(EXTRAPOLATION_WARNING, context_manager.output)
+
+        self.assertAlmostEqual(sol.x[0], g, 3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            f1.write_data(name="test", path=tmp_dir)
+            with open(os.path.join(tmp_dir, "test.dat")) as f:
+                lines = f.readlines()
                 self.assertEqual(len(lines), 15)

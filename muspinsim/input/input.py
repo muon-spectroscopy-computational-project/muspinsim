@@ -254,7 +254,6 @@ class MuSpinInput:
                         result[name] = KWClass(variables=variables)
                 elif name in self._keywords:
                     kw = self._keywords[name]
-                    print(kw.name)
                     if kw.name == "x_axis" or kw.name == KWXAxis.default:
                         # We perform the fitting on the experimental data, but
                         # if the user has tried to specify x_axis, we should

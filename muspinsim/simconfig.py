@@ -187,23 +187,40 @@ class MuSpinConfig:
             self._constants.pop(xname, None)  # Just in case it was here
 
             if use_experimental_x_axis:
+                # Special cases where loaded data will be a single value, but we
+                # actually need to load multiple
+                if xname in ["B", "intrinsic_B"]:
+                    # Default to z axis (the same as in _validate_B below -
+                    # the orientation is applied later)
+                    experimental_x_range = np.array(
+                        [[0, 0, v] for v in finfo["data"][:, 0]]
+                    )
+                else:
+                    experimental_x_range = finfo["data"][:, 0]
+
                 if finfo["evaluate_x_axis"]:
                     logging.info(
                         "Fitting will be performed on experimental data-points, "
                         "specified 'x_axis' will only be used to generate final "
                         ".dat file"
                     )
+                    below_min = self._x_range[xname] < experimental_x_range[0]
+                    above_max = self._x_range[xname] > experimental_x_range[-1]
+                    if np.all(above_max) or np.all(below_min):
+                        logging.warning(
+                            "All points on specified 'x_axis' are outside the "
+                            "experimental range, fitted parameters may not be "
+                            "appropriate for extrapolation"
+                        )
+                    elif np.any(above_max) or np.any(below_min):
+                        logging.info(
+                            "Some points on specified 'x_axis' are outside the "
+                            "experimental range, fitted parameters may not be "
+                            "appropriate for extrapolation"
+                        )
 
-                # Special cases where loaded data will be a single value, but we
-                # actually need to load multiple
-                if xname in ["B", "intrinsic_B"]:
-                    # Default to z axis (the same as in _validate_B below -
-                    # the orientation is applied later)
-                    self._x_range[xname] = np.array(
-                        [[0, 0, v] for v in finfo["data"][:, 0]]
-                    )
-                else:
-                    self._x_range[xname] = finfo["data"][:, 0]
+                self._x_range[xname] = experimental_x_range
+
                 if xname == "t":
                     # Special case
                     self._time_N = len(self._x_range[xname])
