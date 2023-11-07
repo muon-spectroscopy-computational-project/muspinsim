@@ -11,7 +11,6 @@ from muspinsim.input import MuSpinInput
 
 class TestExperiment(unittest.TestCase):
     def test_create(self):
-
         gmu = constants.MU_GAMMA
         ge = constants.ELEC_GAMMA
 
@@ -73,7 +72,6 @@ spins
         self.assertAlmostEqual(ertest.rho0.expectation(Sz_e), 0.0)
 
     def test_rho0(self):
-
         stest = StringIO(
             """
 spins
@@ -117,7 +115,6 @@ spins
         )
 
     def test_run(self):
-
         # Empty system
         stest = StringIO(
             """
@@ -205,7 +202,6 @@ intrinsic_field
         self.assertAlmostEqual(results[0], 0.5 / (1.0 + 4 * np.pi**2 * tau**2))
 
     def test_run_results_function(self):
-
         # Empty system, modifying range to be 0 to 1
         stest = StringIO(
             """
@@ -270,6 +266,30 @@ fitting_data
 
         self.assertTrue(np.all(results == 0.5))
 
+    def test_file_range(self):
+        """Test that we get the expected shape of results when using using file
+        ranges.
+        """
+        stest = StringIO(
+            """
+spins
+    e mu
+time
+    range(0, 10)
+field
+    0
+    10
+temperature
+    inf
+    0
+"""
+        )
+        itest = MuSpinInput(stest)
+        ertest = ExperimentRunner(itest)
+
+        results = ertest.run()
+        self.assertTrue(results.shape == (2, 2, 100))
+
     def test_run_intrinsic_field(self):
         # Check results from rotating are different when using field or intrinsic_field
         stest = StringIO(
@@ -318,7 +338,6 @@ intrinsic_field
         )
 
     def test_run_celio(self):
-
         # Empty system
         stest = StringIO(
             """
@@ -449,7 +468,6 @@ temperature
     # For testing the faster time evolution method is run
     # correctly in the right scenarios
     def test_run_fast(self):
-
         # System without muon first should revert to the
         # slower method
         stest = StringIO(
@@ -561,7 +579,6 @@ zeeman 1
         self.assertFalse(ertest._T_inf_speedup)
 
     def test_dissipation(self):
-
         # Simple system
         g = 1.0
         stest = StringIO(

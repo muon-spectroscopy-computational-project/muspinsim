@@ -263,7 +263,6 @@ class ExperimentRunner:
             )
 
         if self._dops is None:
-
             # Create a copy of the system
             sys = self._system.clone()
 
@@ -298,7 +297,6 @@ class ExperimentRunner:
 
             self._dops = []
             for i, a in self._config.dissipation_terms.items():
-
                 op_x = sparse_sum(self._single_spinops[i, :, None] * x[:, None])
                 op_y = sparse_sum(self._single_spinops[i, :, None] * y[:, None])
                 op_p = SpinOperator(op_x + 1.0j * op_y, dim=self.system.dimension)
@@ -334,13 +332,15 @@ class ExperimentRunner:
         return self._system.muon_operator(self.p)
 
     def apply_results_function(self, results: ArrayLike, variables: dict):
-        # We expect muspinsim to output arrays with shape N here
-        # but the evaluation will return an array with shape (1, N) instead
+        # We expect muspinsim to output arrays with shape (M_1, M_2, ... N)
+        # here but the evaluation will return an array with shape
+        # (1, M_1, M_2, ... N) instead, where N denotes the x_axis and M any
+        # file ranges that are in use
         return np.array(
             self._config.results_function.evaluate(
                 **variables, x=self._config.x_axis_values, y=results
             )
-        ).reshape(len(results))
+        ).reshape(results.shape)
 
     def run(self):
         """Run the experiment
