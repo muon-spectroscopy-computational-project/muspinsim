@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 import numpy as np
 from io import StringIO
@@ -6,9 +8,22 @@ from muspinsim.input import MuSpinInput
 from muspinsim.fitting import FittingRunner
 
 
+OVERWRITE_LOG = (
+    "INFO:root:Fitting will be performed on experimental data-points, "
+    "specified 'x_axis' will only be used to generate final .dat file"
+)
+EXTRAPOLATION_INFO = (
+    "INFO:root:Some points on specified 'x_axis' are outside the experimental range, "
+    "fitted parameters may not be appropriate for extrapolation"
+)
+EXTRAPOLATION_WARNING = (
+    "WARNING:root:All points on specified 'x_axis' are outside the experimental range, "
+    "fitted parameters may not be appropriate for extrapolation"
+)
+
+
 class TestFitting(unittest.TestCase):
     def test_fitset(self):
-
         s1 = StringIO(
             """
 fitting_variables
@@ -30,7 +45,6 @@ fitting_data
         self.assertTrue((f1._xbounds[1] == [0.0, 2.0]).all())
 
     def test_fitrun(self):
-
         # Try fitting a very basic exponential decay
         data = np.zeros((100, 3))
         data[:, 0] = np.linspace(0, 10.0, len(data))
@@ -54,7 +68,11 @@ dissipation 1
         i1 = MuSpinInput(s1)
         f1 = FittingRunner(i1)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
@@ -78,7 +96,11 @@ dissipation 1
         i1 = MuSpinInput(s1)
         f1 = FittingRunner(i1)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 3)
 
@@ -124,7 +146,11 @@ dissipation 1
         f1 = FittingRunner(i1)
         self.assertFalse(f1._constrained)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 2)
 
@@ -149,12 +175,15 @@ dissipation 1
         f1 = FittingRunner(i1)
         self.assertTrue(f1._constrained)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], g, 2)
 
     def test_fit_results_function(self):
-
         # Try fitting a basic cosine function
         A = 2
         B = 1
@@ -179,7 +208,11 @@ fitting_data
         i1 = MuSpinInput(s1)
         f1 = FittingRunner(i1)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 3)
         self.assertAlmostEqual(sol.x[1], B, 3)
@@ -204,7 +237,11 @@ fitting_data
         i1 = MuSpinInput(s1)
         f1 = FittingRunner(i1)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 1)
         self.assertAlmostEqual(sol.x[1], B, 1)
@@ -231,7 +268,11 @@ fitting_data
         f1 = FittingRunner(i1)
         self.assertFalse(f1._constrained)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
@@ -258,7 +299,11 @@ fitting_data
         f1 = FittingRunner(i1)
         self.assertFalse(f1._constrained)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
@@ -285,7 +330,11 @@ fitting_data
         f1 = FittingRunner(i1)
         self.assertTrue(f1._constrained)
 
-        sol = f1.run()
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertNotIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], A, 2)
         self.assertAlmostEqual(sol.x[1], B, 2)
@@ -318,6 +367,137 @@ fitting_data
         i1 = MuSpinInput(s1)
         f1 = FittingRunner(i1)
 
-        sol = f1.run()
+        # Expect the warning, as we have specified field which is taken as
+        # x_axis for an alc experiment
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
 
         self.assertAlmostEqual(sol.x[0], 2, 1)
+
+    def test_fit_x_axis(self):
+        # Test that if an x_axis is provided, we evaluate the results on that
+        # whilst fitting on the experimental data (this will use the default
+        # range for time, which has 101 elements)
+        data = np.zeros((100, 3))
+        data[:, 0] = np.linspace(0, 10.0, len(data))
+        g = 0.2
+        data[:, 1] = 0.5 * np.exp(-g * data[:, 0])
+        dblock = "\n".join(["\t{0} {1}".format(*d) for d in data])
+
+        s1 = StringIO(
+            f"""
+spins
+    mu
+fitting_variables
+    g   0.5
+fitting_data
+{dblock}
+dissipation 1
+    g
+x_axis
+    time
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
+
+        self.assertAlmostEqual(sol.x[0], g, 3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            f1.write_data(name="test", path=tmp_dir)
+            with open(os.path.join(tmp_dir, "test.dat")) as f:
+                lines = f.readlines()
+                self.assertEqual(len(lines), 105)
+
+    def test_fit_time(self):
+        # Test that if an time is altered is provided, we evaluate the results
+        # on that whilst fitting on the experimental data
+        data = np.zeros((100, 3))
+        data[:, 0] = np.linspace(0, 10.0, len(data))
+        g = 0.2
+        data[:, 1] = 0.5 * np.exp(-g * data[:, 0])
+        dblock = "\n".join(["\t{0} {1}".format(*d) for d in data])
+
+        s1 = StringIO(
+            f"""
+spins
+    mu
+fitting_variables
+    g   0.5
+fitting_data
+{dblock}
+dissipation 1
+    g
+time
+    range(9, 11, 11)
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_WARNING, context_manager.output)
+
+        self.assertAlmostEqual(sol.x[0], g, 3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            f1.write_data(name="test", path=tmp_dir)
+            with open(os.path.join(tmp_dir, "test.dat")) as f:
+                lines = f.readlines()
+                self.assertEqual(len(lines), 15)
+
+    def test_fit_extrapolate_all(self):
+        # Test that if an time is altered is provided that does not overlap with
+        # experiment, we evaluate the results on that whilst fitting on the
+        # experimental data and warn the user
+        data = np.zeros((100, 3))
+        data[:, 0] = np.linspace(0, 10.0, len(data))
+        g = 0.2
+        data[:, 1] = 0.5 * np.exp(-g * data[:, 0])
+        dblock = "\n".join(["\t{0} {1}".format(*d) for d in data])
+
+        s1 = StringIO(
+            f"""
+spins
+    mu
+fitting_variables
+    g   0.5
+fitting_data
+{dblock}
+dissipation 1
+    g
+time
+    range(11, 12, 11)
+"""
+        )
+
+        i1 = MuSpinInput(s1)
+        f1 = FittingRunner(i1)
+
+        with self.assertLogs() as context_manager:
+            sol = f1.run()
+            self.assertIn(OVERWRITE_LOG, context_manager.output)
+            self.assertNotIn(EXTRAPOLATION_INFO, context_manager.output)
+            self.assertIn(EXTRAPOLATION_WARNING, context_manager.output)
+
+        self.assertAlmostEqual(sol.x[0], g, 3)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            f1.write_data(name="test", path=tmp_dir)
+            with open(os.path.join(tmp_dir, "test.dat")) as f:
+                lines = f.readlines()
+                self.assertEqual(len(lines), 15)

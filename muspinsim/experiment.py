@@ -24,7 +24,12 @@ class ExperimentRunner:
     provide caching for any quantities that might not need to be recalculated
     between successive snapshots."""
 
-    def __init__(self, in_file: MuSpinInput, variables: dict = None):
+    def __init__(
+        self,
+        in_file: MuSpinInput,
+        variables: dict = None,
+        use_experimental_x_axis: bool = True,
+    ):
         """Set up an experiment as defined by a MuSpinInput object
 
         Prepare a set of calculations (for multiple files and averages) as
@@ -39,6 +44,11 @@ class ExperimentRunner:
                                 running a fitting calculation, in which case
                                 results_function will not be applied when 'run' is
                                 called as it is already applied by the FittingRunner.
+            use_experimental_x_axis -- Only used for fittings. If True, then any x_axis
+                                       specified by the user will be overwritten (this
+                                       should be the case forfitting, but not for final
+                                       evaluation where the user may want a different
+                                       range), Default is True.
         """
         # Fix W0102:dangerous-default-value
         if variables is None:
@@ -52,7 +62,10 @@ class ExperimentRunner:
             # values for simulation configurations. These are then broadcast
             # across all nodes, each of which runs its own slice of them, and
             # finally gathered back together
-            config = MuSpinConfig(in_file.evaluate(**variables))
+            config = MuSpinConfig(
+                params=in_file.evaluate(**variables),
+                use_experimental_x_axis=use_experimental_x_axis,
+            )
         else:
             config = MuSpinConfig()
 
