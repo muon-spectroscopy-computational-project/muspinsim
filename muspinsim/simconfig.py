@@ -183,10 +183,10 @@ class MuSpinConfig:
             if len(self._file_ranges) > 0:
                 raise MuSpinConfigError("Can not have file ranges when fitting")
 
-            xname = list(self._x_range.keys())[0]
+            xname, xvalue = list(self._x_range.items())[0]
             self._constants.pop(xname, None)  # Just in case it was here
 
-            if self._x_range[xname] is None:
+            if xvalue is None:
                 # Can happen when xname keyword is a single value, and so not assigned
                 # In this case, we must use the experimental data, as that's the only
                 # x_range we have
@@ -211,8 +211,8 @@ class MuSpinConfig:
                         "specified 'x_axis' will only be used to generate final "
                         ".dat file"
                     )
-                    below_min = self._x_range[xname] < experimental_x_range[0]
-                    above_max = self._x_range[xname] > experimental_x_range[-1]
+                    below_min = xvalue < experimental_x_range[0]
+                    above_max = xvalue > experimental_x_range[-1]
                     if np.all(above_max) or np.all(below_min):
                         logging.warning(
                             "All points on specified 'x_axis' are outside the "
