@@ -45,6 +45,10 @@ jobs:
       matrix:
         python-version: ["3.10", "3.13"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
+        exclude:
+          # Issue with GHA runners for windows and Python3.11 https://github.com/python/cpython/issues/118973
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
     - uses: actions/checkout@v3
