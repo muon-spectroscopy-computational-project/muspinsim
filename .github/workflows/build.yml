@@ -57,7 +57,7 @@ jobs:
           output-dir: wheelhouse
           config-file: "{package}/pyproject.toml"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
@@ -76,6 +76,6 @@ jobs:
           mkdir ./muspinsim-sdist
           tar -xf ./dist/muspinsim-*.tar.gz -C ./muspinsim-sdist --strip-components 1
           pip install ./muspinsim-sdist
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz

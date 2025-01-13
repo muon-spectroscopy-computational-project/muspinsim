@@ -498,7 +498,7 @@ Parameters used:
         isint = isinstance(i, int)
         if isint:
             i = slice(i, i + 1)
-        elif type(i) != slice:
+        elif isinstance(i, slice):
             raise TypeError(f"Indices must be integer or slices, not {type(i)}")
 
         ans = []

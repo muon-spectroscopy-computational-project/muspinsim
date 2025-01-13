@@ -210,7 +210,7 @@ class SpinSystem(Clonable):
         self._celio_k = celio_k
 
         snames = [
-            "{1}{0}".format(*s) if (type(s) == tuple) else str(s) for s in self._spins
+            "{1}{0}".format(*s) if isinstance(s, tuple) else str(s) for s in self._spins
         ]
         logging.info("Created spin system with spins:")
         logging.info("\t\t%s", " ".join(snames))

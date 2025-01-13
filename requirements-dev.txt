@@ -9,7 +9,7 @@ Cython==0.29.33
 distlib==0.3.6
 exceptiongroup==1.1.0
 filelock==3.9.0
-flake8==6.0.0
+flake8==7.1.0
 fonttools==4.38.0
 identify==2.5.18
 importlib-resources==5.10.2
@@ -28,8 +28,6 @@ platformdirs==2.6.2
 pre-commit==3.0.4
 py==1.11.0
 pybind11==2.10.3
-pycodestyle==2.10.0
-pyflakes==3.0.1
 pyparsing==3.0.9
 pytest==8.3.4
 pytest-cov==6.0.0
