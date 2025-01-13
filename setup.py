@@ -170,7 +170,7 @@ def setup():
         ext_modules=ext_modules,
         # Build tool for pybind11 - searches for highest supported C++ standard
         cmdclass={"build_ext": build_ext},
-        python_requires=">=3.8",
+        python_requires=">=3.9",
     )
 
 

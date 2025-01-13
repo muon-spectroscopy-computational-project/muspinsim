@@ -13,8 +13,8 @@ build-backend = "setuptools.build_meta"
 [tool.cibuildwheel]
 
 skip = [
-    # Skip building on CPython 3.6 & 3.7 on all platforms as muspinsim requires >= 3.8
-    "cp36-*", "cp37-*",
+    # Skip building on CPython 3.6 & 3.7 on all platforms as muspinsim requires >= 3.9
+    "cp36-*", "cp37-*", "cp38-*",
     # The following are disabled due to errors - it seems other libraries
     # ignore these as well
     "pp*",

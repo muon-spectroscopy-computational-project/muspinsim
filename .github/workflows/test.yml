@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.13"]
+        python-version: ["3.9", "3.10", "3.13"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.13"]
+        python-version: ["3.9", "3.10", "3.13"]
         # macOS-11 pinned here due to usage of $(brew --prefix llvm@15)
         # macOS-12 will become macOS-latest in the near future but
         # is currently still unstable
