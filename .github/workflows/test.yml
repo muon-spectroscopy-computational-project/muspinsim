@@ -46,7 +46,7 @@ jobs:
         python-version: ["3.10", "3.13"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
         exclude:
-          # Issue with GHA runners for windows and Python3.11 https://github.com/python/cpython/issues/118973
+          # Issue with GHA runners for windows and Python3.13 https://github.com/python/cpython/issues/118973
           - os: windows-latest
             python-version: "3.13"
 
@@ -80,6 +80,11 @@ jobs:
         # macOS-12 will become macOS-latest in the near future but
         # is currently still unstable
         os: [ubuntu-latest, macOS-11, windows-latest]
+        exclude:
+          # Issue with GHA runners for windows and Python3.13 https://github.com/python/cpython/issues/118973
+          - os: windows-latest
+            python-version: "3.13"
+
 
     steps:
     - uses: actions/checkout@v3
