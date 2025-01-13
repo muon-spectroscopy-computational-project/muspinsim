@@ -6,7 +6,6 @@ from muspinsim.spinop import SpinOperator, DensityOperator, Operator, SuperOpera
 
 class TestSpinOperator(unittest.TestCase):
     def test_construct(self):
-
         data = np.eye(4)
 
         s = SpinOperator(data)
@@ -23,7 +22,6 @@ class TestSpinOperator(unittest.TestCase):
             SpinOperator(data, dim=(2, 3))  # Incompatible dimensions
 
     def test_clone(self):
-
         s = SpinOperator.from_axes()
 
         s2 = s.clone()
@@ -33,7 +31,6 @@ class TestSpinOperator(unittest.TestCase):
         self.assertNotIsInstance(s2, DensityOperator)
 
     def test_herm(self):
-
         data = np.array([[1, 1.0j], [0, 1]])
 
         s = SpinOperator(data)
@@ -42,7 +39,6 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(s.is_hermitian)
 
     def test_pauli(self):
-
         sx = SpinOperator.from_axes(0.5, "x")
         sy = SpinOperator.from_axes(0.5, "y")
         sz = SpinOperator.from_axes(0.5, "z")
@@ -52,7 +48,6 @@ class TestSpinOperator(unittest.TestCase):
         self.assertTrue(np.all(sz.matrix.toarray() == [[0.5, 0], [0, -0.5]]))
 
     def test_spin1(self):
-
         Sx = SpinOperator.from_axes(1, "x")
         Sz = SpinOperator.from_axes(1, "z")
 
@@ -67,7 +62,6 @@ class TestSpinOperator(unittest.TestCase):
         )
 
     def test_operations(self):
-
         sx = SpinOperator.from_axes(0.5, "x")
         sy = SpinOperator.from_axes(0.5, "y")
         sz = SpinOperator.from_axes(0.5, "z")
@@ -112,7 +106,6 @@ class TestSpinOperator(unittest.TestCase):
         self.assertEqual(2 * np.real(rho.hilbert_schmidt(sx)), 0.5**0.5)
 
     def test_operations_dense(self):
-
         sx = SpinOperator.from_axes(0.5, "x", use_sparse=False)
         sy = SpinOperator.from_axes(0.5, "y", use_sparse=False)
         sz = SpinOperator.from_axes(0.5, "z", use_sparse=False)
@@ -154,7 +147,6 @@ class TestSpinOperator(unittest.TestCase):
         self.assertEqual(2 * np.real(rho.hilbert_schmidt(sx)), 0.5**0.5)
 
     def test_multi(self):
-
         Sx = SpinOperator.from_axes()
         Ix = SpinOperator.from_axes(1.0, "x")
         SxIx = SpinOperator.from_axes([0.5, 1.0], "xx")
@@ -171,7 +163,6 @@ class TestSpinOperator(unittest.TestCase):
         )
 
     def test_density(self):
-
         rho = DensityOperator(np.eye(6) / 6.0, (2, 3))
         rhosmall = rho.partial_trace([1])
 
@@ -204,7 +195,6 @@ class TestSpinOperator(unittest.TestCase):
         np.testing.assert_allclose(density_op.matrix.toarray(), np.eye(4) / 4)
 
     def test_density_dense(self):
-
         rho = DensityOperator(np.eye(6) / 6.0, (2, 3), use_sparse=False)
         rhosmall = rho.partial_trace([1])
 
@@ -233,7 +223,6 @@ class TestSpinOperator(unittest.TestCase):
         np.testing.assert_allclose(density_op.matrix, np.eye(4) / 4)
 
     def test_superoperator(self):
-
         sx = SpinOperator.from_axes()
         rho0 = DensityOperator.from_vectors()
         lsx = SuperOperator.left_multiplier(sx)

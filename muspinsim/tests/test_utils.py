@@ -28,7 +28,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(tc.data["x"][0], 1)
 
     def test_deepmap(self):
-
         data = [[1, 2, 3], [4, 5], [6, [7, 8]]]
 
         def square(x):
@@ -42,7 +41,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(data2[2][1], [49, 64])
 
     def test_quat(self):
-
         q1 = quat_from_polar(np.pi / 4.0, 0)
         z1 = q1.rotate([0, 0, 1])
 
@@ -67,7 +65,6 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(np.isclose(z3, [-st * cp, st * sp, ct]).all())
 
     def test_zcw(self):
-
         N = 1000
         orients = zcw_gen(N)
 
@@ -76,7 +73,6 @@ class TestUtils(unittest.TestCase):
         self.assertAlmostEqual(np.average(f), 0.0, 5)
 
     def test_eulrange(self):
-
         N = 10
         ow = eulrange_gen(N)
 
@@ -85,7 +81,7 @@ class TestUtils(unittest.TestCase):
         Asum = np.zeros((3, 3))
         quats = [Quaternion.from_euler_angles(a, b, c).q for (a, b, c, w) in ow]
 
-        for (a, b, c, w) in ow:
+        for a, b, c, w in ow:
             q = Quaternion.from_euler_angles(a, b, c)
             R = q.rotation_matrix()
             Asum += (R @ A @ R.T) * w
@@ -98,7 +94,6 @@ class TestUtils(unittest.TestCase):
         self.assertLess(err, 1.0)
 
     def test_xy(self):
-
         z = np.array([0, 0, 1])
         x, y = get_xy(z)
 

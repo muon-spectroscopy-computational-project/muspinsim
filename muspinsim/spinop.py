@@ -45,12 +45,10 @@ class Hermitian:
     """A helper mixin for operators that are also Hermitian"""
 
     def __init__(self):
-
         if not self.is_hermitian:
             raise ValueError("Operator must be hermitian")
 
     def diag(self):
-
         """Diagonalise the operator
 
         Return eigenvalues and corresponding eigenvectors for this operator.
@@ -174,9 +172,7 @@ class Operator(Clonable):
         return ans
 
     def __add__(self, x):
-
         if isinstance(x, Operator):
-
             if self.dimension != x.dimension:
                 raise ArithmeticError(
                     "Can not add to Operators with different dimensions"
@@ -188,7 +184,6 @@ class Operator(Clonable):
             return ans
 
         elif isinstance(x, Number):
-
             ans = self.clone()
             if self._sparse:
                 ans._matrix += sparse.eye(ans._matrix.shape[0]) * x
@@ -200,9 +195,7 @@ class Operator(Clonable):
         raise TypeError("Unsupported operation for Operator")
 
     def __sub__(self, x):
-
         if isinstance(x, Operator):
-
             if self.dimension != x.dimension:
                 raise ArithmeticError(
                     "Can not subtract to Operators with different dimensions"
@@ -214,15 +207,12 @@ class Operator(Clonable):
             return ans
 
         elif isinstance(x, Number):
-
             return self + (-x)
 
         raise TypeError("Unsupported operation for Operator")
 
     def __mul__(self, x):
-
         if isinstance(x, Operator):
-
             if self.dimension != x.dimension:
                 raise ArithmeticError(
                     "Can not multiply to Operators with different dimensions"
@@ -238,7 +228,6 @@ class Operator(Clonable):
             return ans
 
         elif isinstance(x, Number):
-
             ans = self.clone()
 
             if self._sparse:
@@ -251,7 +240,6 @@ class Operator(Clonable):
         raise TypeError("Unsupported operation for Operator")
 
     def __rmul__(self, x):
-
         if isinstance(x, Number):
             return self.__mul__(x)
         elif isinstance(x, Operator):
@@ -260,7 +248,6 @@ class Operator(Clonable):
         raise TypeError("Unsupported operation for Operator")
 
     def __truediv__(self, x):
-
         if isinstance(x, Number):
             x = 1.0 / x
             return self * x
@@ -268,7 +255,6 @@ class Operator(Clonable):
         raise TypeError("Unsupported operation for Operator")
 
     def __eq__(self, x):
-
         if not isinstance(x, Operator):
             return False
 
@@ -404,7 +390,6 @@ class SpinOperator(Operator):
         matrices = []
 
         for I, axis in zip(Is, axes):
-
             if I % 0.5 or I < 0.5:
                 raise ValueError(f"{I} is not a valid spin value")
 
@@ -514,7 +499,6 @@ class DensityOperator(Operator):
         matrices = []
 
         for I, vec, gamma in zip(Is, vectors, gammas):
-
             if I % 0.5 or I < 0.5:
                 raise ValueError(f"{I} is not a valid spin value")
 
@@ -618,7 +602,6 @@ class DensityOperator(Operator):
 
 class SuperOperator(Operator):
     def __init__(self, matrix, dim=None):
-
         n = matrix.shape[0] ** 0.5
 
         if int(n) != n:
@@ -732,21 +715,18 @@ class SuperOperator(Operator):
         return self(M, d + d)
 
     def __add__(self, x):
-
         if isinstance(x, (SuperOperator, Number)):
             return super(SuperOperator, self).__add__(x)
 
         raise TypeError("Unsupported operation for SuperOperator")
 
     def __sub__(self, x):
-
         if isinstance(x, (SuperOperator, Number)):
             return super(SuperOperator, self).__sub__(x)
 
         raise TypeError("Unsupported operation for SuperOperator")
 
     def __mul__(self, x):
-
         if isinstance(x, (SuperOperator, Number)):
             return super(SuperOperator, self).__mul__(x)
         elif isinstance(x, Operator):
@@ -760,7 +740,6 @@ class SuperOperator(Operator):
         raise TypeError("Unsupported operation for Operator")
 
     def __rmul__(self, x):
-
         if isinstance(x, Number):
             return self.__mul__(x)
         elif isinstance(x, SuperOperator):
@@ -769,7 +748,6 @@ class SuperOperator(Operator):
         raise TypeError("Unsupported operation for Operator")
 
     def __truediv__(self, x):
-
         if isinstance(x, Number):
             x = 1.0 / x
             return self * x
@@ -777,7 +755,6 @@ class SuperOperator(Operator):
         raise TypeError("Unsupported operation for Operator")
 
     def __eq__(self, x):
-
         if not isinstance(x, Operator):
             return False
 

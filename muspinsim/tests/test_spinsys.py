@@ -15,7 +15,6 @@ from muspinsim.spinsys import (
 
 class TestSpinSystem(unittest.TestCase):
     def test_create(self):
-
         ssys = SpinSystem(["mu", ("H", 2)])
 
         # Test cloning
@@ -28,7 +27,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(ssys.spins, ["mu", ("H", 2)])
 
     def test_terms(self):
-
         ssys = SpinSystem(["mu", "e"])
 
         # A scalar term
@@ -78,7 +76,6 @@ class TestSpinSystem(unittest.TestCase):
         )
 
     def test_check(self):
-
         ssys = SpinSystem(["mu", "e"])
 
         self.assertEqual(ssys.gamma(0), constants.MU_GAMMA)
@@ -88,7 +85,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(ssys.dimension, (2, 2))
 
     def test_operator(self):
-
         ssys = SpinSystem(["mu", "e"])
 
         self.assertTrue(
@@ -108,7 +104,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(ssys.dimension, (2, 2))
 
     def test_operator_include_only_given(self):
-
         ssys = SpinSystem(["mu", "e"])
 
         self.assertTrue(
@@ -139,7 +134,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(ssys.dimension, (2, 2))
 
     def test_addterms(self):
-
         ssys = SpinSystem(["mu", "e"])
 
         t1 = ssys.add_linear_term(0, [1, 0, 1])
@@ -196,7 +190,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(H.matrix.toarray(), np.zeros((4, 4)))))
 
     def test_addterms_celio(self):
-
         ssys = SpinSystem(["mu", "e"], celio_k=10)
 
         t1 = ssys.add_linear_term(0, [1, 0, 1])
@@ -340,7 +333,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertEqual(len(evol_op_contribs), 0)
 
     def test_lindbladian(self):
-
         ssys = SpinSystem(["mu"])
         ssys.add_linear_term(0, [0, 0, 1])
 
@@ -361,7 +353,6 @@ class TestSpinSystem(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(L.matrix.toarray(), L1.matrix.toarray())))
 
     def test_lindbladian_celio(self):
-
         ssys = SpinSystem(["mu"], 10)
         ssys.add_linear_term(0, [0, 0, 1])
 
@@ -371,7 +362,6 @@ class TestSpinSystem(unittest.TestCase):
 
 class TestMuonSpinSystem(unittest.TestCase):
     def test_terms(self):
-
         mSsys = MuonSpinSystem(["e", "mu"])
 
         self.assertEqual(mSsys.dimension, (2, 2))

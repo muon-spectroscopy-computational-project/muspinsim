@@ -9,7 +9,7 @@ from numbers import Number
 import numpy as np
 import scipy.constants as cnst
 from scipy import sparse
-from qutip import sigmax, sigmay, sigmaz
+from qutip.core.operators import sigmax, sigmay, sigmaz
 
 from muspinsim.celio import CelioHamiltonian
 from muspinsim.utils import Clonable
@@ -21,7 +21,6 @@ from muspinsim.constants import gyromagnetic_ratio, spin, quadrupole_moment, EFG
 
 class InteractionTerm(Clonable):
     def __init__(self, spinsys, indices=[], tensor=0, label=None):
-
         self._spinsys = spinsys
         self._indices = np.array(indices)
         self._tensor = np.array(tensor)
@@ -33,7 +32,6 @@ class InteractionTerm(Clonable):
         self._recalc_operator()
 
     def _recalc_operator(self):
-
         total_op = None
         d = len(self._tensor.shape)
 
@@ -96,7 +94,6 @@ class InteractionTerm(Clonable):
 
 class SingleTerm(InteractionTerm):
     def __init__(self, spinsys, i, vector, label="Single"):
-
         super(SingleTerm, self).__init__(spinsys, [i], vector, label)
 
     @property
@@ -104,7 +101,6 @@ class SingleTerm(InteractionTerm):
         return self._indices[0]
 
     def rotate(self, rotmat):
-
         R = np.array(rotmat)
         v = self._tensor
         v = np.dot(v, R.T)
@@ -119,7 +115,6 @@ class SingleTerm(InteractionTerm):
 
 class DoubleTerm(InteractionTerm):
     def __init__(self, spinsys, i, j, matrix, label="Double"):
-
         super(DoubleTerm, self).__init__(spinsys, [i, j], matrix, label)
 
     @property
@@ -131,7 +126,6 @@ class DoubleTerm(InteractionTerm):
         return self._indices[1]
 
     def rotate(self, rotmat):
-
         R = np.array(rotmat)
         M = self._tensor
         M = np.linalg.multi_dot([R, M, R.T])
@@ -148,7 +142,6 @@ class DoubleTerm(InteractionTerm):
 
 class DissipationTerm(Clonable):
     def __init__(self, operator, gamma=0.0):
-
         self._op = operator
         self._g = gamma
 
@@ -599,7 +592,6 @@ class SpinSystem(Clonable):
         return M
 
     def rotate(self, rotmat=np.eye(3)):
-
         # Trying to avoid pointlessly cloning the terms
         terms = self._terms
         self._terms = []
@@ -635,7 +627,6 @@ class SpinSystem(Clonable):
 
     @property
     def lindbladian(self):
-
         H = self.hamiltonian
         dops = [t.tuple for t in self._dissip_terms]
         L = Lindbladian.from_hamiltonian(H, dops)
@@ -648,7 +639,6 @@ class SpinSystem(Clonable):
 
 class MuonSpinSystem(SpinSystem):
     def __init__(self, spins=["mu", "e"], celio_k=0):
-
         super(MuonSpinSystem, self).__init__(spins, celio_k)
 
         # Identify the muon index
@@ -761,7 +751,10 @@ class MuonSpinSystem(SpinSystem):
             raise ValueError("Vector passed to muon_operator must be three dimensional")
 
         # Spin matrix in direction of the muon
-        mu_ops = [sigmax().data, sigmay().data, sigmaz().data]
+        sigma_x = sigmax().data_as("csr_matrix")
+        sigma_y = sigmay().data_as("csr_matrix")
+        sigma_z = sigmaz().data_as("csr_matrix")
+        mu_ops = [sigma_x, sigma_y, sigma_z]
         sigma_mu = np.sum([x * mu_ops[i] for i, x in enumerate(v)])
 
         return sigma_mu

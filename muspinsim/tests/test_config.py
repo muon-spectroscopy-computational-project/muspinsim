@@ -10,7 +10,6 @@ from muspinsim.simconfig import MuSpinConfig, MuSpinConfigError
 
 class TestConfig(unittest.TestCase):
     def test_config(self):
-
         stest = StringIO(
             """
 spins
@@ -245,7 +244,7 @@ orientation
 
         cfg = MuSpinConfig(itest.evaluate())
 
-        for ((a, b, c), (q1, w)) in zip(angles, cfg._avg_ranges["orient"]):
+        for (a, b, c), (q1, w) in zip(angles, cfg._avg_ranges["orient"]):
             q2 = Quaternion.from_axis_angle([0, 0, 1], c)
             q2 *= Quaternion.from_axis_angle([0, 1, 0], b)
             q2 *= Quaternion.from_axis_angle([0, 0, 1], a)
@@ -260,7 +259,7 @@ orientation
 
         cfg = MuSpinConfig(itest.evaluate())
 
-        for ((a, b, c), (q1, w)) in zip(angles, cfg._avg_ranges["orient"]):
+        for (a, b, c), (q1, w) in zip(angles, cfg._avg_ranges["orient"]):
             q2 = Quaternion.from_axis_angle([0, 0, 1], c)
             q2 *= Quaternion.from_axis_angle([1, 0, 0], b)
             q2 *= Quaternion.from_axis_angle([0, 0, 1], a)
@@ -278,7 +277,7 @@ orientation
 
         cfg = MuSpinConfig(itest.evaluate())
 
-        for ((theta, phi), (q1, w)) in zip(angles, cfg._avg_ranges["orient"]):
+        for (theta, phi), (q1, w) in zip(angles, cfg._avg_ranges["orient"]):
             q2 = Quaternion.from_axis_angle([0, 0, 1], phi)
             q2 *= Quaternion.from_axis_angle([0, 1, 0], theta)
             q2 *= Quaternion.from_axis_angle([0, 0, 1], phi)

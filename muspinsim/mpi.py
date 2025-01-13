@@ -86,7 +86,6 @@ class MPIController:
 
         n_list = []
         for i in range(num_list):
-
             # broadcast object attributes
             if self.is_root:
                 # spinsys cannot be broadcast - issue with recursive object references?
@@ -103,7 +102,6 @@ class MPIController:
         return n_list
 
     def sum_data(self, data):
-
         if self._MPI is None:
             return data
 
@@ -114,7 +112,6 @@ class MPIController:
         return data_dest
 
     def split_1D(self, vector, size=None):
-
         n = size if size else self.size
 
         if n == 1:
@@ -139,7 +136,6 @@ class MPIController:
         return split
 
     def split_2D(self, vector1, vector2, size=None):
-
         n = size if size else self.size
 
         if n == 1:

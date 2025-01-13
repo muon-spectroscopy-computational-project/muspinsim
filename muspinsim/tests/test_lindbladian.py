@@ -8,7 +8,6 @@ from muspinsim.lindbladian import Lindbladian
 
 class TestLindbladian(unittest.TestCase):
     def test_creation(self):
-
         # Create a basic Hamiltonian
         sx = SpinOperator.from_axes()
         sz = SpinOperator.from_axes(0.5, "z")
@@ -39,7 +38,6 @@ class TestLindbladian(unittest.TestCase):
         )
 
     def test_evolve(self):
-
         # Basic test
         sx = SpinOperator.from_axes()
         sp = SpinOperator.from_axes(0.5, "+")
@@ -57,7 +55,6 @@ class TestLindbladian(unittest.TestCase):
 
         # Same but with decay
         for g in [1.0, 2.0, 5.0, 10.0]:
-
             L = Lindbladian.from_hamiltonian(H, [(sx, g)])
             evol = L.evolve(rho0, t, sx)
 
@@ -83,7 +80,6 @@ class TestLindbladian(unittest.TestCase):
             self.assertTrue(np.all(np.isclose(evol[:, 1], solz)))
 
     def test_evolve_density(self):
-
         # Basic test - no operator given so should return density matrices
         sx = SpinOperator.from_axes()
         sp = SpinOperator.from_axes(0.5, "+")
@@ -132,7 +128,6 @@ class TestLindbladian(unittest.TestCase):
         )
 
     def test_integrate(self):
-
         # Basic test
         sx = SpinOperator.from_axes()
         sz = SpinOperator.from_axes(0.5, "z")
@@ -149,7 +144,6 @@ class TestLindbladian(unittest.TestCase):
 
         # Same but with decay
         for g in [1.0, 2.0, 5.0, 10.0]:
-
             L = Lindbladian.from_hamiltonian(H, [(sx, g)])
             avg = L.integrate_decaying(rho0, tau, sx)
 

@@ -17,7 +17,6 @@ from muspinsim.validation import (
 class Lindbladian(SuperOperator):
     @classmethod
     def from_hamiltonian(self, H, dissipators=[]):
-
         if isinstance(H, CelioHamiltonian):
             raise NotImplementedError(
                 "Linbladian is not implemented for Celio's method"
@@ -28,13 +27,12 @@ class Lindbladian(SuperOperator):
         L = -1.0j * SuperOperator.commutator(H)
         L = self(L.matrix, L.dimension)
 
-        for (A, gamma) in dissipators:
+        for A, gamma in dissipators:
             L.add_dissipative_term(A, gamma)
 
         return L
 
     def add_dissipative_term(self, A, gamma=1.0):
-
         AA = A.dagger() * A
         Ld = gamma * (SuperOperator.bracket(A) - 0.5 * SuperOperator.anticommutator(AA))
         if Ld.dimension != self.dimension:
