@@ -103,15 +103,16 @@ jobs:
     # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
     # Even when installed, clang++ may not be able to find the OMP library when installed
     # To resolve this, export the environment variables suggested by brew to $GITHUB_ENV
+    # Note that this may change when bumping the macOS version -
+    # check the output of brew install libomp or brew info libomp
     - name: Add optional environment variables
       run: |
         if [ "$RUNNER_OS" == 'macOS' ]; then
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
           brew install libomp
-          brew info libomp
-          echo "LDFLAGS=-L/usr/local/opt/libomp/lib" >> "$GITHUB_ENV"
-          echo "CPPFLAGS=-I/usr/local/opt/libomp/include" >> "$GITHUB_ENV"
+          echo "LDFLAGS=-L/opt/homebrew/opt/libomp/lib" >> "$GITHUB_ENV"
+          echo "CPPFLAGS=-I/opt/homebrew/opt/libomp/include" >> "$GITHUB_ENV"
         fi
       shell: bash
 
