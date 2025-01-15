@@ -16,10 +16,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # macOS-11 pinned here due to usage of $(brew --prefix llvm@15)
-        # macOS-12 will become macOS-latest in the near future but
-        # is currently still unstable
-        os: [ubuntu-latest, macOS-11, windows-latest]
+        # macOS-14 pinned here due to usage of $(brew --prefix llvm@15)
+        os: [ubuntu-latest, macOS-14, windows-latest]
 
     steps:
       - uses: actions/checkout@v3
@@ -45,7 +43,7 @@ jobs:
 
           # Default compiler on macOS doesn't support OpenMP, so force the usage
           # of homebrew's llvm see
-          # https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
+          # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
           CIBW_ENVIRONMENT_MACOS: CC="$(brew --prefix llvm@15)/bin/clang" CXX="$(brew --prefix llvm@15)/bin/clang++"
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
