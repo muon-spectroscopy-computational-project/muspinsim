@@ -108,6 +108,7 @@ jobs:
         if [ "$RUNNER_OS" == 'macOS' ]; then
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
+          brew install libomp
           brew info libomp
           echo "LDFLAGS=-L/usr/local/opt/libomp/lib" >> "$GITHUB_ENV"
           echo "CPPFLAGS=-I/usr/local/opt/libomp/include" >> "$GITHUB_ENV"
