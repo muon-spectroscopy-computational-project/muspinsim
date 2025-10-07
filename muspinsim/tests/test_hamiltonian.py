@@ -8,7 +8,6 @@ from muspinsim.hamiltonian import Hamiltonian
 
 class TestHamiltonian(unittest.TestCase):
     def test_creation(self):
-
         H = np.array([[1, 0], [0, -1]])
         H = Hamiltonian(H)
 
@@ -19,7 +18,6 @@ class TestHamiltonian(unittest.TestCase):
             Hamiltonian(np.array([[1, 1], [0, 1]]))
 
     def test_diag(self):
-
         Sx = SpinOperator.from_axes()
         H = Hamiltonian(Sx.matrix)
 
@@ -34,7 +32,6 @@ class TestHamiltonian(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(Hrot.matrix, np.diag(evals))))
 
     def test_evolve(self):
-
         ssys = SpinSystem(["e"])
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
@@ -48,7 +45,6 @@ class TestHamiltonian(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(evol[:, 0], 0.5 * np.cos(2 * np.pi * t))))
 
     def test_evolve_density(self):
-
         ssys = SpinSystem(["e"])
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
@@ -107,7 +103,6 @@ class TestHamiltonian(unittest.TestCase):
         )
 
     def test_fast_evolve(self):
-
         ssys = MuonSpinSystem(["mu", "e"])
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian
@@ -121,7 +116,6 @@ class TestHamiltonian(unittest.TestCase):
         self.assertTrue(np.all(np.isclose(evol, 0.5 * np.cos(2 * np.pi * t))))
 
     def test_integrate(self):
-
         ssys = SpinSystem(["e"])
         ssys.add_linear_term(0, [1, 0, 0])  # Precession around x
         H = ssys.hamiltonian

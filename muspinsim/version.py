@@ -2,4 +2,4 @@
 
 Version of the package. Kept separated to allow for import from setup.py"""
 
-__version__ = "2.3.0"
+__version__ = "2.3.1"

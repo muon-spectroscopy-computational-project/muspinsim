@@ -35,7 +35,6 @@ class TestLark(unittest.TestCase):
         )
 
     def test_lark_func(self):
-
         self._larkepxr_parse(
             {
                 "expr": "double(2)",

@@ -5,7 +5,6 @@ class FittingVariable:
     """Class defining a fitting variable with a starting value and bounds"""
 
     def __init__(self, name, value=0.0, min_value=-np.inf, max_value=np.inf):
-
         self._name = name
         self._value = float(value)
         self._min = float(min_value)

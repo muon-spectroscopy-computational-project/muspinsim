@@ -106,7 +106,6 @@ class CelioHamiltonian:
                 for indices, group in itertools.groupby(
                     spin_ints, lambda term: term.indices
                 ):
-
                     grouped_spin_ints = list(group)
                     H_contrib = np.sum([term.matrix for term in grouped_spin_ints])
 
@@ -194,7 +193,7 @@ class CelioHamiltonian:
                 # For particle interactions that are not neighbors we must use
                 # a swap gate
                 qtip_obj = Qobj(
-                    inpt=evol_op_contrib,
+                    arg=evol_op_contrib,
                     dims=[H_contrib.spin_dimensions, H_contrib.spin_dimensions],
                 )
                 # Order we need to permute in order to obtain the same order
@@ -202,7 +201,7 @@ class CelioHamiltonian:
                 permute_order = np.argsort(H_contrib.spin_order)
 
                 qtip_obj = qtip_obj.permute(permute_order)
-                evol_op_contrib = qtip_obj.data
+                evol_op_contrib = qtip_obj.data_as("csr_matrix")
 
                 evol_op_contribs.append(evol_op_contrib)
 

@@ -350,7 +350,6 @@ class TestInput(unittest.TestCase):
         self.assertTrue(kw.id, "quadrupolar_1")
 
     def test_keyword_quadrupolar_defaults(self):
-
         self._eval_kw(
             {
                 "kw": "zeeman",

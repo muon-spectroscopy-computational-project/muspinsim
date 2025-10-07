@@ -43,8 +43,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10"]
+        python-version: ["3.10", "3.13"]
         os: [ubuntu-latest, macOS-latest, windows-latest]
+        exclude:
+          # Issue with GHA runners for windows and Python3.13 https://github.com/python/cpython/issues/118973
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
     - uses: actions/checkout@v3
@@ -71,11 +75,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10"]
-        # macOS-11 pinned here due to usage of $(brew --prefix llvm@15)
-        # macOS-12 will become macOS-latest in the near future but
-        # is currently still unstable
-        os: [ubuntu-latest, macOS-11, windows-latest]
+        python-version: ["3.10", "3.13"]
+        # macOS-14 pinned here due to usage of $(brew --prefix llvm@15)
+        os: [ubuntu-latest, macOS-14, windows-latest]
+        exclude:
+          # Issue with GHA runners for windows and Python3.13 https://github.com/python/cpython/issues/118973
+          - os: windows-latest
+            python-version: "3.13"
+
 
     steps:
     - uses: actions/checkout@v3
@@ -93,33 +100,35 @@ jobs:
 
     # Default compiler on macOS doesn't support OpenMP, so force the usage
     # of homebrew's llvm see
-    # https://github.com/actions/runner-images/blob/main/images/macos/macos-11-Readme.md
+    # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
     # Even when installed, clang++ may not be able to find the OMP library when installed
     # To resolve this, export the environment variables suggested by brew to $GITHUB_ENV
+    # Note that this may change when bumping the macOS version -
+    # check the output of brew install libomp or brew info libomp
     - name: Add optional environment variables
       run: |
         if [ "$RUNNER_OS" == 'macOS' ]; then
           echo "CC=$(brew --prefix llvm@15)/bin/clang" >> "$GITHUB_ENV"
           echo "CXX=$(brew --prefix llvm@15)/bin/clang++" >> "$GITHUB_ENV"
-          brew info libomp
-          echo "LDFLAGS=-L/usr/local/opt/libomp/lib" >> "$GITHUB_ENV"
-          echo "CPPFLAGS=-I/usr/local/opt/libomp/include" >> "$GITHUB_ENV"
+          brew install libomp
+          echo "LDFLAGS=-L/opt/homebrew/opt/libomp/lib" >> "$GITHUB_ENV"
+          echo "CPPFLAGS=-I/opt/homebrew/opt/libomp/include" >> "$GITHUB_ENV"
         fi
       shell: bash
 
     - name: Install package with -e
       env:
         MUSPINSIM_WITH_OPENMP: 1
-      if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
+      if: matrix.python-version == '3.13' && matrix.os == 'ubuntu-latest'
       run: pip install -e .
     - name: Install package
       env:
         MUSPINSIM_WITH_OPENMP: 1
-      if: matrix.python-version != '3.10' || matrix.os != 'ubuntu-latest'
+      if: matrix.python-version != '3.13' || matrix.os != 'ubuntu-latest'
       run: pip install .
 
     - name: Test with pytest
       run: pytest --cov --cov-report xml --pyargs muspinsim
     - name: Upload to Codecov
-      if: matrix.python-version == '3.10' && matrix.os == 'ubuntu-latest'
+      if: matrix.python-version == '3.13' && matrix.os == 'ubuntu-latest'
       uses: codecov/codecov-action@v3

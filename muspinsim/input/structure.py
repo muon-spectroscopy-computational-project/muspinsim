@@ -117,7 +117,6 @@ class MuonatedStructure:
 
         # Store only needed data for calculations
         for i, loaded_atom in enumerate(loaded_atoms):
-
             # Determine isotope by looking at loaded mass
             default_mass = ase.data.atomic_masses[
                 ase.data.atomic_numbers[loaded_atom.symbol]

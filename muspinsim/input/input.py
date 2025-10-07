@@ -51,7 +51,7 @@ y_axis
 def write_error(keyword, block_line_num, err):
     return (
         f"Error occurred when parsing keyword '{keyword}' "
-        f"(block starting at line {block_line_num}):\n{str(err)}"
+        f"(block starting at line {block_line_num}):\n{str(err)}"  # noqa: E231
     )
 
 

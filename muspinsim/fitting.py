@@ -190,9 +190,8 @@ class FittingRunner:
         runner = ExperimentRunner(
             self._input, variables=vardict, use_experimental_x_axis=False
         )
-        if (
-            runner.config.x_axis != self._runner.config.x_axis
-            or runner.config.x_axis_values != self._runner.config.x_axis_values
+        if runner.config.x_axis != self._runner.config.x_axis or not np.array_equal(
+            runner.config.x_axis_values, self._runner.config.x_axis_values
         ):
             # If our x_axis differs from the one used in the fitting, use the
             # user specified values for evaluation
