@@ -6,7 +6,7 @@ fonttools==4.43.0
 importlib-resources==5.10.2
 kiwisolver==1.4.4
 lark==1.1.5
-matplotlib==3.7.0
+matplotlib==3.10.7
 numpy==1.26.4
 packaging==23.0
 Pillow==11.1.0
