@@ -2,7 +2,7 @@ ase==3.22.1
 contourpy==1.0.7
 cycler==0.11.0
 Cython==0.29.33
-fonttools==4.38.0
+fonttools==4.43.0
 importlib-resources==5.10.2
 kiwisolver==1.4.4
 lark==1.1.5
@@ -17,4 +17,4 @@ qutip==5.1.0
 scipy==1.15.1
 six==1.16.0
 Soprano==0.8.13
-zipp==3.13.0
+zipp==3.19.1
