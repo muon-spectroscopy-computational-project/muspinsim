@@ -136,22 +136,17 @@ class MuSpinKeyword(object):
                 )
 
             for i, length in enumerate(entry_lengths):
-                if (
-                    length < self.expr_size_bounds[0]
-                    or length > self.expr_size_bounds[1]
-                ):
+                low_bound = self.expr_size_bounds[0]
+                high_bound = self.expr_size_bounds[1]
+                if length < low_bound or length > high_bound:
+                    if low_bound != high_bound:
+                        expected = f"between {low_bound} and {high_bound}"
+                    else:
+                        expected = low_bound
+
                     raise RuntimeError(
-                        "Incorrect number of args for entry '{0}', "
-                        "expected {1}, got {2}".format(
-                            block[i][0],
-                            "between {0} and {1}".format(
-                                self.expr_size_bounds[0],
-                                self.expr_size_bounds[1],
-                            )
-                            if self.expr_size_bounds[0] != self.expr_size_bounds[1]
-                            else self.expr_size_bounds[0],
-                            length,
-                        )
+                        f"Incorrect number of args for entry '{block[i][0]}', "
+                        f"expected {expected}, got {length}"
                     )
 
     def _default_args(self):
@@ -422,44 +417,50 @@ class KWTime(MuSpinExpandKeyword):
 
 
 class KWXAxis(MuSpinKeyword):
+    @staticmethod
+    def _validate(s) -> str:
+        if s[0] not in InputKeywords or not InputKeywords[s[0]].accept_as_x:
+            accepts = [i for i in InputKeywords if InputKeywords[i].accept_as_x]
+            return f"Invalid value {s[0]}, accepts {accepts}"
+        else:
+            return ""
+
     name = "x_axis"
     block_size = 1
     accept_range = False
     default = "time"
-    _validators = [
-        lambda s: "Invalid value {0}, accepts {1}".format(
-            s[0], [i for i in InputKeywords if InputKeywords[i].accept_as_x]
-        )
-        if s[0] not in InputKeywords or not InputKeywords[s[0]].accept_as_x
-        else ""
-    ]
+    _validators = [_validate]
 
 
 class KWYAxis(MuSpinKeyword):
+    @staticmethod
+    def _validate(s) -> str:
+        if s not in ["asymmetry", "integral"]:
+            return f"Invalid value '{s}', accepts ['asymmetry', 'integral']"
+        else:
+            return ""
+
     name = "y_axis"
     block_size = 1
     accept_range = False
     default = "asymmetry"
-    _validators = [
-        lambda s: "Invalid value '{0}', accepts ['asymmetry', 'integral']".format(s)
-        if s not in ["asymmetry", "integral"]
-        else ""
-    ]
+    _validators = [_validate]
 
 
 class KWAverageAxes(MuSpinKeyword):
+    @staticmethod
+    def _validate(s) -> str:
+        if not all((w in InputKeywords or w.lower() == "none") for w in s):
+            invalid = [w for w in s if (w not in InputKeywords) or w.lower() == "none"]
+            return f"Invalid value(s) '{invalid}': accepts {InputKeywords}"
+        else:
+            return ""
+
     name = "average_axes"
     block_size = 1
     accept_range = True
     default = "orientation"
-    _validators = [
-        lambda s: "Invalid value(s) '{0}': accepts {1}".format(
-            [w for w in s if (w not in InputKeywords) or w.lower() == "None"],
-            InputKeywords,
-        )
-        if not all((w in InputKeywords or w.lower() == "none") for w in s)
-        else ""
-    ]
+    _validators = [_validate]
 
 
 class KWOrientation(MuSpinExpandKeyword):
@@ -539,23 +540,30 @@ class KWDissipation(MuSpinCouplingKeyword):
 
 # Fitting variables. This is a special case
 class KWFittingVariables(MuSpinKeyword):
+    @staticmethod
+    def _validate_constant(s) -> str:
+        if s.name in {**_math_constants, **_phys_constants}:
+            return f"Invalid value '{s.name}': variable name conflicts with a constant"
+        else:
+            return ""
+
+    @staticmethod
+    def _validate_reserved(s) -> str:
+        if s.name in _reserved_variables:
+            return (
+                f"Invalid value '{s.name}': variable name conflicts with a reserved "
+                "variable name"
+            )
+        else:
+            return ""
+
     name = "fitting_variables"
     block_size = 1
     expr_size_bounds = (1, np.inf)
     accept_range = True
     default = ""
     _constants = {**_math_constants, **_phys_constants}
-    _validators = [
-        lambda s: f"Invalid value '{s.name}': variable name conflicts with a constant"
-        if s.name in {**_math_constants, **_phys_constants}
-        else "",
-        lambda s: (
-            f"Invalid value '{s.name}': variable name conflicts with a reserved "
-            "variable name"
-        )
-        if s.name in _reserved_variables
-        else "",
-    ]
+    _validators = [_validate_constant, _validate_reserved]
 
     def _store_values(self, block):
         variables = list(self._constants.keys())
@@ -594,30 +602,36 @@ class KWFittingData(MuSpinExpandKeyword):
 class KWFittingMethod(MuSpinKeyword):
     ACCEPTED_FITTING_METHODS = ["nelder-mead", "lbfgs", "least-squares"]
 
+    @staticmethod
+    def _validate(s) -> str:
+        if s[0].lower() not in KWFittingMethod.ACCEPTED_FITTING_METHODS:
+            return (
+                f"Invalid value '{s[0].lower()}', accepted values "
+                f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
+            )
+        else:
+            return ""
+
     name = "fitting_method"
     block_size = 1
     accept_range = False
     default = "nelder-mead"
-    _validators = [
-        lambda s: (
-            f"Invalid value '{s[0].lower()}', accepted values "
-            f"{KWFittingMethod.ACCEPTED_FITTING_METHODS}"
-        )
-        if s[0].lower() not in KWFittingMethod.ACCEPTED_FITTING_METHODS
-        else ""
-    ]
+    _validators = [_validate]
 
 
 class KWFittingTolerance(MuSpinKeyword):
+    @staticmethod
+    def _validate(s) -> str:
+        if not float(s[0]):
+            return f"Invalid value '{s[0]}', accepts only single float value"
+        else:
+            return ""
+
     name = "fitting_tolerance"
     block_size = 1
     accept_range = False
     default = "1e-3"
-    _validators = [
-        lambda s: f"Invalid value '{s[0]}', accepts only single float value"
-        if not float(s[0])
-        else "",
-    ]
+    _validators = [_validate]
 
 
 class KWResultsFunction(MuSpinExpandKeyword):
