@@ -5,7 +5,7 @@ requires = [
     "Cython",
     "pybind11",
     # See https://numpy.org/devdocs/user/troubleshooting-importerror.html#c-api-incompatibility
-    "oldest-supported-numpy",
+    "numpy<2",
     "scipy",
 ]
 build-backend = "setuptools.build_meta"
