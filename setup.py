@@ -148,7 +148,7 @@ def setup():
         setup_requires=["numpy"],
         install_requires=[
             "ase",
-            "numpy",
+            "numpy<2",
             "scipy",
             "soprano",
             "lark",
