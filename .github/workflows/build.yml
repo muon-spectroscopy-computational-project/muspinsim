@@ -44,7 +44,13 @@ jobs:
           # Default compiler on macOS doesn't support OpenMP, so force the usage
           # of homebrew's llvm see
           # https://github.com/actions/runner-images/blob/main/images/macos/macos-14-Readme.md
-          CIBW_ENVIRONMENT_MACOS: CC="$(brew --prefix llvm@15)/bin/clang" CXX="$(brew --prefix llvm@15)/bin/clang++"
+          CIBW_ENVIRONMENT_MACOS: >
+            CC="$(brew --prefix llvm@15)/bin/clang"
+            CXX="$(brew --prefix llvm@15)/bin/clang++"
+            CFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
+            CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
+            LDFLAGS="-L$(brew --prefix llvm@15)/lib -lomp"
+            SDKROOT=$(xcrun --show-sdk-path)
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
           CIBW_TEST_REQUIRES: pytest
