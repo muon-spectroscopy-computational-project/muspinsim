@@ -57,7 +57,7 @@ jobs:
             CXX="$(brew --prefix llvm@15)/bin/clang++"
             CFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
             CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
-            LDFLAGS="-L$(brew --prefix llvm@15)/lib -lomp"
+            LDFLAGS="$(brew --prefix llvm@15)/lib/libomp.dylib"
             SDKROOT=$(xcrun --show-sdk-path)
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
