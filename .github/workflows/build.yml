@@ -38,6 +38,14 @@ jobs:
           brew install llvm@15
           echo "$(brew --prefix llvm@15)/bin" >> $GITHUB_PATH
 
+      - name: Debug Homebrew LLVM lib Directory # <-- NEW STEP
+        if: runner.os == 'macOS'
+        run: |
+          echo "Listing contents of LLVM lib directory:"
+          ls -al "$(brew --prefix llvm@15)/lib/"
+          echo "Searching for libomp:"
+          find "$(brew --prefix llvm@15)/lib/" -name "*omp*"
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.2.0
         env:
@@ -58,7 +66,7 @@ jobs:
             CXX="$(brew --prefix llvm@15)/bin/clang++"
             CFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
             CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
-            LDFLAGS="$(brew --prefix llvm@15)/lib/libomp.dylib -Wl,-rpath,$(brew --prefix llvm@15)/lib"
+            LDFLAGS="-L$(brew --prefix llvm@15)/lib -Wl,-rpath,$(brew --prefix llvm@15)/lib -lomp"
             SDKROOT=$(xcrun --show-sdk-path)
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
