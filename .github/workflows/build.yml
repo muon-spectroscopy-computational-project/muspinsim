@@ -35,7 +35,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew update
-          brew install llvm@15
+          brew install llvm@15 libomp
           echo "$(brew --prefix llvm@15)/bin" >> $GITHUB_PATH
 
       - name: Debug Homebrew LLVM lib Directory # <-- NEW STEP
