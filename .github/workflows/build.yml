@@ -35,7 +35,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           brew update
-          brew install llvm@15 libomp
+          brew install llvm@15
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.2.0
