@@ -31,6 +31,12 @@ jobs:
         with:
           platforms: all
 
+      - name: install LLVM and OpenMP (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install llvm@15 libomp
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.2.0
         env:
