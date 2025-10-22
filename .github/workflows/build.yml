@@ -67,9 +67,9 @@ jobs:
             LIBOMP_INCLUDE="-I$(brew --prefix libomp)/include"
             LIBOMP_LIB="-L$(brew --prefix libomp)/lib"
             LIBOMP_RPATH="-Wl,-rpath,$(brew --prefix libomp)/lib"
-            CFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include **$LIBOMP_INCLUDE** -isysroot $(xcrun --show-sdk-path)"
-            CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include **$LIBOMP_INCLUDE** -isysroot $(xcrun --show-sdk-path)"
-            LDFLAGS="-L$(brew --prefix llvm@15)/lib **$LIBOMP_LIB** -Wl,-rpath,$(brew --prefix llvm@15)/lib **$LIBOMP_RPATH** -lomp"
+            CFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include $LIBOMP_INCLUDE -isysroot $(xcrun --show-sdk-path)"
+            CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include $LIBOMP_INCLUDE -isysroot $(xcrun --show-sdk-path)"
+            LDFLAGS="-L$(brew --prefix llvm@15)/lib $LIBOMP_LIB -Wl,-rpath,$(brew --prefix llvm@15)/lib $LIBOMP_RPATH -lomp"
             SDKROOT=$(xcrun --show-sdk-path)
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
