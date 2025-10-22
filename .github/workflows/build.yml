@@ -1,6 +1,8 @@
 name: Build pip wheels
 
 on:
+  workflow_dispatch:
+    description: "Manually trigger the build of pip wheels and source distribution."
   push:
     branches:
       - main
@@ -56,6 +58,7 @@ jobs:
           config-file: "{package}/pyproject.toml"
 
       - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
         with:
           path: ./wheelhouse/*.whl
 
@@ -76,4 +79,5 @@ jobs:
           pip install ./muspinsim-sdist
       - uses: actions/upload-artifact@v4
         with:
+          if: github.event_name == 'push'
           path: dist/*.tar.gz
