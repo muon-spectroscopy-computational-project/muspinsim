@@ -36,6 +36,7 @@ jobs:
         run: |
           brew update
           brew install llvm@15
+          echo "$(brew --prefix llvm@15)/bin" >> $GITHUB_PATH
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.2.0
@@ -57,7 +58,7 @@ jobs:
             CXX="$(brew --prefix llvm@15)/bin/clang++"
             CFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
             CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include -isysroot $(xcrun --show-sdk-path)"
-            LDFLAGS="-L$(brew --prefix llvm@15)/lib -Wl,-rpath,$(brew --prefix llvm@15)/lib -lomp"
+            LDFLAGS="$(brew --prefix llvm@15)/lib/libomp.dylib -Wl,-rpath,$(brew --prefix llvm@15)/lib"
             SDKROOT=$(xcrun --show-sdk-path)
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
