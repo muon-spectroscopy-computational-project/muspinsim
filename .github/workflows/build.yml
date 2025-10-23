@@ -71,12 +71,12 @@ jobs:
             CXXFLAGS="-fopenmp -I$(brew --prefix llvm@15)/include $LIBOMP_INCLUDE -isysroot $(xcrun --show-sdk-path)"
             LDFLAGS="-L$(brew --prefix llvm@15)/lib $LIBOMP_LIB -Wl,-rpath,$(brew --prefix llvm@15)/lib $LIBOMP_RPATH -lomp"
             SDKROOT=$(xcrun --show-sdk-path)
-            DYLD_LIBRARY_PATH="$(brew --prefix libomp)/lib:$DYLD_LIBRARY_PATH"
 
           # Run tests of the installed wheels (skipping ARM as they wont run here)
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest --pyargs muspinsim
           CIBW_TEST_SKIP: "*-*linux_{aarch64,ppc64le,s390x} *-macosx_arm64 *-macosx_universal2:arm64"
+          CIBW_BEFORE_TEST_MACOS: 'export DYLD_LIBRARY_PATH="$(brew --prefix libomp)/lib:$DYLD_LIBRARY_PATH"'
         with:
           package-dir: .
           output-dir: wheelhouse
