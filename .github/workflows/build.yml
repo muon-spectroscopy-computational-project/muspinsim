@@ -53,7 +53,10 @@ jobs:
           # defined here to allow them to be built on the Intel based runners
           CIBW_ARCHS_WINDOWS: auto # ARM64 - ignore for now, seems numpy causes issues here
           CIBW_ARCHS_LINUX: auto aarch64
-          CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_ARCHS_MACOS: x86_64 arm64#
+
+          # Preinstall NumPy to avoid source builds (esp. for macOS cross-compiles)
+          CIBW_BEFORE_BUILD: "pip install 'numpy<2' --only-binary=:all:"
 
           # Build with OpenMP
           CIBW_ENVIRONMENT: MUSPINSIM_WITH_OPENMP=1
