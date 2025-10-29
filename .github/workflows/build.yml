@@ -56,7 +56,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64 arm64
 
           # Preinstall NumPy to avoid source builds (esp. for macOS cross-compiles)
-          CIBW_BEFORE_BUILD: "pip install numpy<2 --only-binary=:all:"
+          CIBW_BEFORE_BUILD: "pip install 'numpy<2' --only-binary=:all"
 
           # Build with OpenMP
           CIBW_ENVIRONMENT: MUSPINSIM_WITH_OPENMP=1
