@@ -78,6 +78,6 @@ jobs:
           tar -xf ./dist/muspinsim-*.tar.gz -C ./muspinsim-sdist --strip-components 1
           pip install ./muspinsim-sdist
       - uses: actions/upload-artifact@v4
+        if: github.event_name == 'push'
         with:
-          if: github.event_name == 'push'
           path: dist/*.tar.gz
