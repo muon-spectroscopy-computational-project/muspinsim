@@ -62,6 +62,7 @@ jobs:
         if: github.event_name == 'push'
         with:
           path: ./wheelhouse/*.whl
+          overwrite: true
 
   build_sdist:
     name: Build source distribution
