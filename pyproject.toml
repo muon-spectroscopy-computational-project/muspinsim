@@ -3,7 +3,10 @@ requires = [
     "setuptools",
     "wheel",
     "Cython",
-    "pybind11",
+    # Pinned to match requirements-dev.txt: unpinned builds pick up the latest
+    # pybind11, and the pybind11 3.x line produces extensions that crash with an
+    # access violation on import on Windows with Python 3.10/3.11
+    "pybind11==2.10.3",
     # See https://numpy.org/devdocs/user/troubleshooting-importerror.html#c-api-incompatibility
     "numpy<2",
     "scipy",
