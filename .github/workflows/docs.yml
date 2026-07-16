@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build and deploy docs
 
 # Controls when the action will run.
@@ -8,41 +6,59 @@ on:
   push:
     paths:
       - "docs/**"
+      - requirements-docs.txt
       - .github/workflows/docs.yml
   pull_request:
     paths:
       - "docs/**"
+      - requirements-docs.txt
       - .github/workflows/docs.yml
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# Allow only one deployment at a time, but don't cancel a deployment that is
+# already in progress
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
-  build-deploy:
-    name: Build and deploy docs
+  build:
+    name: Build docs
     runs-on: ubuntu-latest
-    env:
-      gh_token: ${{ secrets.GITHUB_TOKEN }} # Created by GitHub at start of workflow
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       # Installs dependencies
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install wheel
           if [ -f requirements-docs.txt ]; then pip install -r requirements-docs.txt; else pip install .[docs]; fi
       # Build the docs
       - name: Build docs
         run: mkdocs build
         working-directory: docs
-      # Deploy docs only if this is an update to main
-      - name: Deploy docs
-        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: mkdocs gh-deploy
-        working-directory: docs
-        env:
-          GITHUB_TOKEN: ${{ env.gh_token }}
+
+      # Upload the built site so the deploy job can publish it
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/site
+
+  # Deploy docs only if this is an update to main (or triggered manually)
+  deploy:
+    name: Deploy docs
+    if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch' }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
